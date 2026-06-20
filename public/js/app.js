@@ -531,9 +531,7 @@ function renderPacientesTable(data) {
       </td>
       <td>${fmtNascimento(p.data_nascimento)}</td>
       <td>
-        ${p.telefone ? `📞 ${p.telefone}<br>` : ''}
-        ${p.whatsapp ? `<a href="https://wa.me/55${p.whatsapp.replace(/\D/g,'')}" target="_blank" style="color:var(--sage);font-size:12px">💬 ${p.whatsapp}</a>` : ''}
-        ${!p.telefone && !p.whatsapp ? '—' : ''}
+        ${p.whatsapp ? `<a href="https://wa.me/55${p.whatsapp.replace(/\D/g,'')}" target="_blank" style="color:var(--sage);font-size:12px">💬 ${p.whatsapp}</a>` : '—'}
       </td>
       <td>${p.convenio || '<span class="text-muted">Particular</span>'}</td>
       <td class="text-right fw-bold">${BRL(p.valor_sessao)}</td>
@@ -576,10 +574,6 @@ async function verDetalhePaciente(id) {
           </div>
           <hr class="divider">
           <div class="info-grid">
-            <div class="info-item">
-              <div class="info-label">Telefone</div>
-              <div class="info-value">${p.telefone || '—'}</div>
-            </div>
             <div class="info-item">
               <div class="info-label">WhatsApp</div>
               <div class="info-value">${p.whatsapp ? `<a href="https://wa.me/55${p.whatsapp.replace(/\D/g,'')}" target="_blank" style="color:var(--sage)">💬 ${p.whatsapp}</a>` : '—'}</div>
@@ -702,10 +696,6 @@ function pacienteFormHtml(p = {}) {
         </select>
       </div>
       <div class="form-group">
-        <label>Telefone</label>
-        <input type="tel" id="fp-tel" value="${p.telefone||''}" placeholder="(00) 0000-0000">
-      </div>
-      <div class="form-group">
         <label>WhatsApp</label>
         <input type="tel" id="fp-wpp" value="${p.whatsapp||''}" placeholder="(00) 00000-0000">
       </div>
@@ -764,7 +754,6 @@ function openModalPaciente(p = {}) {
       cpf:             document.getElementById('fp-cpf').value.trim(),
       data_nascimento: document.getElementById('fp-nasc').value,
       sexo:            document.getElementById('fp-sexo').value,
-      telefone:        document.getElementById('fp-tel').value.trim(),
       whatsapp:        document.getElementById('fp-wpp').value.trim(),
       email:           document.getElementById('fp-email').value.trim(),
       endereco:        document.getElementById('fp-end').value.trim(),
