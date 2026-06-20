@@ -664,6 +664,9 @@ tbody tr:hover { background: var(--rose-pale); }
   border-bottom: 2px solid var(--rose-pale);
 }
 
+/* ── ONLY-MOBILE ─────────────────────────────────────────── */
+.only-mobile { display: none; }
+
 /* ── UTILITIES ───────────────────────────────────────────── */
 .divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
 .mt-4 { margin-top: 16px; }
@@ -794,7 +797,14 @@ tbody tr:hover { background: var(--rose-pale); }
   #section-financeiro > div:first-child { flex-wrap: wrap; gap: 8px; }
   #fin-mes-label { min-width: unset !important; font-size: 14px !important; }
 
-  /* Contratos */
+  /* Contratos: esconde CPF(3), E-mail(4), Celular(5) */
+  #section-contratos table th:nth-child(3),
+  #section-contratos table th:nth-child(4),
+  #section-contratos table th:nth-child(5),
+  #contratos-tbody td:nth-child(3),
+  #contratos-tbody td:nth-child(4),
+  #contratos-tbody td:nth-child(5) { display: none; }
+  .only-mobile { display: block; }
   #cont-search { width: 100% !important; }
 
   /* Config */

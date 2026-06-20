@@ -1128,6 +1128,8 @@ function renderContratosTable(data) {
         <td>
           <strong>${c.nome}</strong>
           ${c.nome_responsavel ? `<br><span style="font-size:11px;color:var(--muted)">Resp: ${c.nome_responsavel}</span>` : ''}
+          ${c.celular ? `<span class="only-mobile" style="font-size:11px;color:var(--muted)">📞 ${c.celular}</span>` : ''}
+          ${c.email ? `<span class="only-mobile" style="font-size:11px;color:var(--muted)">✉ ${c.email}</span>` : ''}
         </td>
         <td>${c.cpf || '—'}</td>
         <td>${c.email || '—'}</td>
