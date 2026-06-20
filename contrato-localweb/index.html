@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Termo de Compromisso — Psi. Elissa Catarina Lorenzi</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #fce8f2 0%, #f0e6fb 100%);
+      min-height: 100vh;
+      padding: 30px 16px 60px;
+      color: #1a1a2e;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    /* Cabeçalho */
+    .header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .header .rosa-bar {
+      width: 60px; height: 4px;
+      background: linear-gradient(90deg, #c2657a, #9b7fba);
+      border-radius: 2px;
+      margin: 0 auto 16px;
+    }
+    .header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #2d1b3d;
+    }
+    .header .crp {
+      font-size: 13px;
+      color: #9b7fba;
+      margin-top: 4px;
+    }
+    .header .subtitulo {
+      font-size: 15px;
+      color: #5a3a7a;
+      margin-top: 6px;
+      font-weight: 600;
+    }
+
+    /* Card do termo */
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 4px 24px rgba(155,127,186,.15);
+      margin-bottom: 20px;
+    }
+    .card-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #c2657a;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #f0e6fb;
+    }
+
+    .termo-item {
+      margin-bottom: 14px;
+      padding-left: 12px;
+      border-left: 3px solid #f0e6fb;
+    }
+    .termo-item strong { color: #2d1b3d; font-size: 13.5px; }
+    .termo-item p { font-size: 13px; color: #444; line-height: 1.6; margin-top: 4px; }
+
+    .valor-destaque {
+      background: linear-gradient(135deg, #fce8f2, #f0e6fb);
+      border: 1.5px solid #c2657a;
+      border-radius: 10px;
+      padding: 10px 18px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: 700;
+      color: #2d1b3d;
+      margin: 8px 0;
+    }
+
+    /* Formulário */
+    .form-group { margin-bottom: 16px; }
+    .form-group label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #5a3a7a;
+      margin-bottom: 6px;
+    }
+    .form-group label .req { color: #c2657a; }
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid #e8d5f0;
+      border-radius: 10px;
+      font-size: 14px;
+      color: #1a1a2e;
+      background: #fdfaff;
+      outline: none;
+      transition: border .2s;
+    }
+    .form-group input:focus,
+    .form-group select:focus { border-color: #9b7fba; background: #fff; }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 500px) { .form-row { grid-template-columns: 1fr; } }
+
+    /* Forma de pagamento */
+    .pgto-options {
+      display: flex;
+      gap: 12px;
+    }
+    .pgto-option {
+      flex: 1;
+      border: 2px solid #e8d5f0;
+      border-radius: 10px;
+      padding: 12px;
+      cursor: pointer;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: #5a3a7a;
+      transition: all .2s;
+      user-select: none;
+    }
+    .pgto-option.ativo {
+      border-color: #c2657a;
+      background: #fce8f2;
+      color: #c2657a;
+    }
+    .pgto-option .pgto-icone { font-size: 22px; display: block; margin-bottom: 4px; }
+
+    /* Aceite */
+    .aceite-box {
+      background: #fdfaff;
+      border: 1.5px solid #e8d5f0;
+      border-radius: 12px;
+      padding: 16px;
+      font-size: 13px;
+      line-height: 1.65;
+      color: #333;
+      margin-bottom: 16px;
+    }
+    .aceite-check {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      cursor: pointer;
+      font-size: 13.5px;
+      color: #2d1b3d;
+      font-weight: 600;
+    }
+    .aceite-check input[type=checkbox] {
+      width: 20px; height: 20px;
+      margin-top: 1px;
+      accent-color: #c2657a;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* Botão */
+    .btn-enviar {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, #c2657a, #9b7fba);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .2s, transform .2s;
+      margin-top: 4px;
+    }
+    .btn-enviar:hover { opacity: .92; transform: translateY(-1px); }
+    .btn-enviar:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+    /* Tela de sucesso */
+    .sucesso {
+      display: none;
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .sucesso .icone { font-size: 60px; margin-bottom: 16px; }
+    .sucesso h2 { font-size: 22px; color: #2d1b3d; margin-bottom: 10px; }
+    .sucesso p { font-size: 14px; color: #666; line-height: 1.6; }
+
+    /* Erro inline */
+    .msg-erro {
+      background: #fff0f3;
+      border: 1.5px solid #f9a8b8;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #c2657a;
+      margin-bottom: 14px;
+      display: none;
+    }
+
+    .footer-info {
+      text-align: center;
+      font-size: 12px;
+      color: #aaa;
+      margin-top: 24px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="rosa-bar"></div>
+    <h1>Psi. Elissa Catarina Lorenzi</h1>
+    <div class="crp">CRP 06/91616 · Psicologia Clínica</div>
+    <div class="subtitulo">Termo de Compromisso — Orientação Profissional de Carreira</div>
+  </div>
+
+  <form id="form-contrato">
+
+    <!-- Termo -->
+    <div class="card">
+      <div class="card-title">📋 Termos e Condições</div>
+
+      <div class="termo-item">
+        <strong>1. Sobre o Processo</strong>
+        <p>O foco será definido na primeira sessão, com plano de trabalho personalizado. Não há garantia de resultados específicos — o progresso depende do comprometimento do(a) cliente.</p>
+      </div>
+      <div class="termo-item">
+        <strong>2. Sobre as Sessões</strong>
+        <p>Frequência semanal (ajustável) · Duração de <strong>50 minutos</strong> · Horário previamente combinado.</p>
+      </div>
+      <div class="termo-item">
+        <strong>3. Sigilo e Confidencialidade</strong>
+        <p>Todas as informações são protegidas pelo sigilo profissional, conforme o Código de Ética do Psicólogo (CFP). O sigilo só pode ser quebrado nas situações previstas em lei.</p>
+      </div>
+      <div class="termo-item">
+        <strong>4. Cancelamentos e Faltas</strong>
+        <p>Cancelamentos com menos de <strong>24h de antecedência</strong> ou faltas sem aviso prévio serão cobrados normalmente. Situações excepcionais são avaliadas individualmente.</p>
+      </div>
+      <div class="termo-item">
+        <strong>5. Honorários</strong>
+        <div class="valor-destaque">R$ 350,00 por sessão</div>
+        <p>Pagamento via <strong>Pix, transferência ou depósito</strong>. Dados enviados por WhatsApp.</p>
+      </div>
+      <div class="termo-item">
+        <strong>6. Atividades Entre Sessões</strong>
+        <p>Algumas etapas incluem pesquisas, leituras e exercícios. O comprometimento potencializa os resultados.</p>
+      </div>
+      <div class="termo-item">
+        <strong>7. Encerramento</strong>
+        <p>O processo pode ser encerrado por qualquer das partes com aviso prévio. Sessões já realizadas não são reembolsadas.</p>
+      </div>
+    </div>
+
+    <!-- Forma de pagamento -->
+    <div class="card">
+      <div class="card-title">💳 Forma de Pagamento</div>
+      <div class="pgto-options">
+        <div class="pgto-option" id="pgto-mensal" onclick="selecionarPgto('Mensal')">
+          <span class="pgto-icone">📅</span>
+          Mensal<br><small style="font-weight:400;color:#888">até o 5º dia útil</small>
+        </div>
+        <div class="pgto-option" id="pgto-sessao" onclick="selecionarPgto('Por sessão')">
+          <span class="pgto-icone">🗓️</span>
+          Por Sessão<br><small style="font-weight:400;color:#888">no dia da sessão</small>
+        </div>
+      </div>
+      <input type="hidden" id="forma_pgto" name="forma_pgto">
+    </div>
+
+    <!-- Dados pessoais -->
+    <div class="card">
+      <div class="card-title">👤 Dados Pessoais</div>
+
+      <div class="form-group">
+        <label>Nome completo <span class="req">*</span></label>
+        <input type="text" name="nome" placeholder="Seu nome completo" required>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Data de nascimento</label>
+          <input type="date" name="data_nascimento">
+        </div>
+        <div class="form-group">
+          <label>CPF <span class="req">*</span></label>
+          <input type="text" name="cpf" placeholder="000.000.000-00" maxlength="14" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>E-mail</label>
+        <input type="email" name="email" placeholder="seu@email.com">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Celular <span class="req">*</span></label>
+          <input type="tel" name="celular" placeholder="(00) 00000-0000" required>
+        </div>
+        <div class="form-group">
+          <label>WhatsApp</label>
+          <input type="tel" name="whatsapp" placeholder="(00) 00000-0000">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Endereço completo</label>
+        <input type="text" name="endereco" placeholder="Rua, número, bairro, cidade — CEP">
+      </div>
+
+      <div id="resp-section" style="margin-top:4px">
+        <div class="card-title" style="margin-top:8px">👨‍👩‍👧 Responsável (somente se menor de idade)</div>
+        <div class="form-group">
+          <label>Nome do responsável</label>
+          <input type="text" name="nome_responsavel" placeholder="Nome completo do responsável">
+        </div>
+        <div class="form-group">
+          <label>CPF do responsável</label>
+          <input type="text" name="cpf_responsavel" placeholder="000.000.000-00" maxlength="14">
+        </div>
+      </div>
+    </div>
+
+    <!-- Aceite -->
+    <div class="card">
+      <div class="aceite-box">
+        Declaro que li e compreendi todas as cláusulas deste Termo de Compromisso e <strong>concordo com todas as condições</strong> descritas acima para o processo de Orientação Profissional e de Carreira com a <strong>Psi. Elissa Catarina Lorenzi (CRP 06/91616)</strong>.
+      </div>
+      <label class="aceite-check">
+        <input type="checkbox" id="aceite" name="aceite" value="1" required>
+        Concordo com todos os termos acima e autorizo o início do processo.
+      </label>
+    </div>
+
+    <div class="msg-erro" id="msg-erro"></div>
+
+    <button type="submit" class="btn-enviar" id="btn-enviar">
+      Assinar e Enviar Contrato ✉️
+    </button>
+
+    <!-- Tela de sucesso -->
+    <div class="sucesso" id="tela-sucesso">
+      <div class="icone">🌸</div>
+      <h2>Contrato enviado com sucesso!</h2>
+      <p>
+        Obrigado(a)! Suas informações foram enviadas para a Psi. Elissa.<br>
+        Em breve ela entrará em contato para confirmar os próximos passos.
+      </p>
+    </div>
+
+  </form>
+
+  <div class="footer-info">
+    Psi. Elissa Catarina Lorenzi · CRP 06/91616 · sgblindados.com.br
+  </div>
+
+</div>
+
+<script>
+  let pgtoSelecionado = '';
+
+  function selecionarPgto(valor) {
+    pgtoSelecionado = valor;
+    document.getElementById('forma_pgto').value = valor;
+    document.getElementById('pgto-mensal').classList.toggle('ativo', valor === 'Mensal');
+    document.getElementById('pgto-sessao').classList.toggle('ativo', valor === 'Por sessão');
+  }
+
+  // Máscara CPF
+  document.querySelectorAll('input[name="cpf"], input[name="cpf_responsavel"]').forEach(inp => {
+    inp.addEventListener('input', function() {
+      let v = this.value.replace(/\D/g,'').slice(0,11);
+      if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/,'$1.$2.$3-$4');
+      else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{0,3})/,'$1.$2.$3');
+      else if (v.length > 3) v = v.replace(/(\d{3})(\d{0,3})/,'$1.$2');
+      this.value = v;
+    });
+  });
+
+  // Máscara telefone
+  document.querySelectorAll('input[name="celular"], input[name="whatsapp"]').forEach(inp => {
+    inp.addEventListener('input', function() {
+      let v = this.value.replace(/\D/g,'').slice(0,11);
+      if (v.length > 6) v = v.replace(/(\d{2})(\d{5})(\d{0,4})/,'($1) $2-$3');
+      else if (v.length > 2) v = v.replace(/(\d{2})(\d{0,5})/,'($1) $2');
+      this.value = v;
+    });
+  });
+
+  document.getElementById('form-contrato').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const msgErro = document.getElementById('msg-erro');
+    msgErro.style.display = 'none';
+
+    if (!pgtoSelecionado) {
+      msgErro.textContent = 'Selecione a forma de pagamento.';
+      msgErro.style.display = 'block';
+      return;
+    }
+    if (!document.getElementById('aceite').checked) {
+      msgErro.textContent = 'É necessário concordar com os termos para continuar.';
+      msgErro.style.display = 'block';
+      return;
+    }
+
+    const btn = document.getElementById('btn-enviar');
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+
+    const dados = new FormData(this);
+    dados.set('aceite', '1');
+
+    try {
+      const res  = await fetch('enviar.php', { method: 'POST', body: dados });
+      const json = await res.json();
+
+      if (json.ok) {
+        this.style.display = 'none';
+        document.getElementById('tela-sucesso').style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        msgErro.textContent = json.erro || 'Erro ao enviar. Tente novamente.';
+        msgErro.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Assinar e Enviar Contrato ✉️';
+      }
+    } catch {
+      msgErro.textContent = 'Erro de conexão. Verifique sua internet e tente novamente.';
+      msgErro.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Assinar e Enviar Contrato ✉️';
+    }
+  });
+</script>
+</body>
+</html>

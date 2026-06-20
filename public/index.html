@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Consultório — Gestão Psicológica</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <div class="brand">
+    <span class="brand-icon">🌸</span>
+    <div class="brand-name" id="brand-nome">Carregando...</div>
+    <div class="brand-crp" id="brand-crp"></div>
+  </div>
+  <nav>
+    <a href="#" class="nav-link active" data-section="dashboard">
+      <span class="icon">🏠</span> Dashboard
+    </a>
+
+    <div class="nav-group-label">Atendimento</div>
+    <a href="#" class="nav-link" data-section="contratos">
+      <span class="icon">📝</span> Contratos
+    </a>
+    <a href="#" class="nav-link" data-section="agenda">
+      <span class="icon">📅</span> Agenda
+    </a>
+    <a href="#" class="nav-link" data-section="prontuarios">
+      <span class="icon">📋</span> Prontuários
+    </a>
+
+    <div class="nav-group-label">Cadastros</div>
+    <a href="#" class="nav-link" data-section="pacientes">
+      <span class="icon">👤</span> Pacientes
+    </a>
+
+    <div class="nav-group-label">Financeiro</div>
+    <a href="#" class="nav-link" data-section="financeiro">
+      <span class="icon">💰</span> Financeiro
+    </a>
+
+    <div class="nav-group-label">Sistema</div>
+    <a href="#" class="nav-link" data-section="configuracoes">
+      <span class="icon">⚙️</span> Configurações
+    </a>
+  </nav>
+  <div class="sidebar-footer">v1.0 — Consultório</div>
+</aside>
+
+<!-- MAIN -->
+<div id="main">
+  <div id="topbar">
+    <h2 id="topbar-title">Dashboard</h2>
+    <div id="topbar-actions"></div>
+  </div>
+
+  <div id="content">
+
+    <!-- ── DASHBOARD ── -->
+    <div class="section active" id="section-dashboard">
+      <div id="dash-greeting" style="margin-bottom:22px"></div>
+      <div class="stats-row" id="dash-stats"></div>
+
+      <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:20px;margin-bottom:20px">
+        <!-- Agenda hoje -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">🌿 Agenda de Hoje</span>
+            <button class="btn btn-outline btn-sm" onclick="navigate('agenda')">Ver agenda</button>
+          </div>
+          <div class="card-body" style="padding-top:8px">
+            <div id="dash-hoje" class="timeline"></div>
+          </div>
+        </div>
+
+        <!-- Próximas sessões -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">✨ Próximas Sessões</span>
+            <button class="btn btn-primary btn-sm" onclick="openModalAgendamento()">+ Agendar</button>
+          </div>
+          <div class="card-body" style="padding-top:8px">
+            <div id="dash-proximas" class="timeline"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <!-- Gráfico -->
+        <div class="card">
+          <div class="card-header"><span class="card-title">📊 Sessões — Últimos 6 Meses</span></div>
+          <div class="card-body">
+            <div id="dash-chart"></div>
+          </div>
+        </div>
+        <!-- Aniversariantes -->
+        <div class="card">
+          <div class="card-header"><span class="card-title">🎂 Aniversariantes do Mês</span></div>
+          <div class="card-body">
+            <div id="dash-bday" class="bday-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CONTRATOS ── -->
+    <div class="section" id="section-contratos">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📝 Termos de Compromisso Assinados</span>
+          <a href="/contratos/" target="_blank" class="btn btn-primary btn-sm">+ Novo Contrato</a>
+        </div>
+        <div class="card-body" style="padding-bottom:0">
+          <div class="search-wrap" style="margin-bottom:14px">
+            <input type="text" id="cont-search" placeholder="Buscar por nome, CPF ou e-mail..."
+                   style="width:360px" oninput="filtrarContratos()">
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Nome</th>
+                <th>CPF</th>
+                <th>E-mail</th>
+                <th>Celular</th>
+                <th>Pagamento</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="contratos-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── AGENDA ── -->
+    <div class="section" id="section-agenda">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Calendário Semanal</span>
+          <button class="btn btn-primary btn-sm" onclick="openModalAgendamento()">+ Nova Sessão</button>
+        </div>
+        <div class="card-body">
+          <div class="week-nav">
+            <button class="btn btn-outline btn-sm" onclick="agendaNavSemana(-1)">&#8249; Anterior</button>
+            <span class="week-label" id="agenda-week-label"></span>
+            <button class="btn btn-outline btn-sm" onclick="agendaNavSemana(1)">Próxima &#8250;</button>
+            <button class="btn btn-ghost btn-sm" onclick="agendaIrHoje()">Hoje</button>
+          </div>
+          <div class="week-grid" id="agenda-week-grid"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Lista da Semana</span>
+          <div style="display:flex;gap:8px">
+            <select id="agenda-status-filter" onchange="renderAgendaLista()" style="font-size:12.5px;padding:6px 10px">
+              <option value="">Todos os status</option>
+              <option value="agendado">Agendado</option>
+              <option value="confirmado">Confirmado</option>
+              <option value="realizado">Realizado</option>
+              <option value="cancelado">Cancelado</option>
+              <option value="falta">Falta</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th><th>Hora</th><th>Paciente</th><th>Tipo</th>
+                <th>Status</th><th class="text-right">Valor</th><th>Pago</th><th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="agenda-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PACIENTES ── -->
+    <div class="section" id="section-pacientes">
+      <!-- Lista -->
+      <div id="pacientes-list-view">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Pacientes Ativos</span>
+            <button class="btn btn-primary btn-sm" onclick="openModalPaciente()">+ Nova Paciente</button>
+          </div>
+          <div class="card-body" style="padding-bottom:0">
+            <div class="search-wrap" style="margin-bottom:14px">
+              <input type="text" id="pac-search" placeholder="Buscar nome, CPF, convênio..."
+                     style="width:320px" oninput="filtrarPacientes()">
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nome</th><th>Nascimento</th><th>Contato</th>
+                  <th>Convênio</th><th class="text-right">Valor Sessão</th><th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="pacientes-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detalhe de paciente -->
+      <div id="pacientes-detail-view" style="display:none">
+        <button class="btn btn-outline btn-sm" onclick="voltarListaPacientes()" style="margin-bottom:16px">
+          ← Voltar à lista
+        </button>
+        <div id="pac-detail-content"></div>
+      </div>
+    </div>
+
+    <!-- ── PRONTUÁRIOS ── -->
+    <div class="section" id="section-prontuarios">
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-body" style="display:flex;gap:12px;align-items:center">
+          <label style="font-weight:700;color:var(--plum);font-size:13px;white-space:nowrap">Paciente:</label>
+          <select id="pront-paciente-select" onchange="loadProntuariosSection()" style="flex:1;max-width:360px">
+            <option value="">Selecione uma paciente...</option>
+          </select>
+          <button class="btn btn-primary btn-sm" id="btn-novo-pront" onclick="openModalProntuario()" style="display:none">
+            + Nova Anotação
+          </button>
+        </div>
+      </div>
+      <div id="pront-content">
+        <div class="empty-state">
+          <span class="empty-icon">📋</span>
+          <p>Selecione uma paciente para ver os prontuários</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── FINANCEIRO ── -->
+    <div class="section" id="section-financeiro">
+      <!-- Navegador de mês -->
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px">
+        <button class="btn btn-outline btn-sm" onclick="finNavMes(-1)">&#8249;</button>
+        <span id="fin-mes-label" style="font-size:16px;font-weight:800;color:var(--plum);min-width:150px;text-align:center"></span>
+        <button class="btn btn-outline btn-sm" onclick="finNavMes(1)">&#8250;</button>
+        <button class="btn btn-ghost btn-sm" onclick="finIrMesAtual()">Mês atual</button>
+      </div>
+
+      <div class="stats-row" id="fin-stats"></div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <!-- Receita por dia -->
+        <div class="card">
+          <div class="card-header"><span class="card-title">Receita por Dia</span></div>
+          <div class="card-body" id="fin-chart"></div>
+        </div>
+
+        <!-- A receber -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">💸 Pendências</span>
+          </div>
+          <div id="fin-pendentes-wrap">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Data</th><th>Paciente</th><th class="text-right">Valor</th><th>Ação</th></tr></thead>
+                <tbody id="fin-pendentes-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lista completa -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">Sessões Realizadas</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Data</th><th>Hora</th><th>Paciente</th><th class="text-right">Valor</th><th>Pago</th><th>Forma</th></tr>
+            </thead>
+            <tbody id="fin-lista-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CONFIGURAÇÕES ── -->
+    <div class="section" id="section-configuracoes">
+      <div class="card" style="max-width:600px">
+        <div class="card-header"><span class="card-title">Dados do Consultório</span></div>
+        <div class="card-body">
+          <div class="config-section">
+            <div class="config-section-title">Profissional</div>
+            <div class="form-grid">
+              <div class="form-group full">
+                <label>Nome completo (ex: Dra. Ana Paula Silva)</label>
+                <input type="text" id="cfg-nome">
+              </div>
+              <div class="form-group">
+                <label>CRP</label>
+                <input type="text" id="cfg-crp" placeholder="CRP 00/00000">
+              </div>
+              <div class="form-group">
+                <label>Especialidade</label>
+                <input type="text" id="cfg-especialidade" placeholder="Psicologia Clínica">
+              </div>
+            </div>
+          </div>
+          <div class="config-section">
+            <div class="config-section-title">Sessões</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Valor padrão da sessão (R$)</label>
+                <input type="number" id="cfg-valor" min="0" step="10">
+              </div>
+              <div class="form-group">
+                <label>Duração padrão (minutos)</label>
+                <input type="number" id="cfg-duracao" min="30" max="120" step="5">
+              </div>
+              <div class="form-group">
+                <label>Horário de início</label>
+                <input type="time" id="cfg-inicio">
+              </div>
+              <div class="form-group">
+                <label>Horário de fim</label>
+                <input type="time" id="cfg-fim">
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;margin-top:8px">
+            <button class="btn btn-primary" onclick="salvarConfiguracoes()">💾 Salvar Configurações</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- MODAL GENÉRICO -->
+<div id="modal-overlay">
+  <div class="modal" id="modal-box">
+    <div class="modal-header">
+      <h3 id="modal-title">Modal</h3>
+      <button class="close-btn" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" id="modal-save-btn" onclick="modalSave()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="/js/app.js"></script>
+</body>
+</html>

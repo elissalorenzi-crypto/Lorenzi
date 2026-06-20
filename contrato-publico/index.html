@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Termo de Compromisso — Psi. Elissa Catarina Lorenzi</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --rose:      #c2657a;
+      --plum:      #2d1b3d;
+      --lavender:  #9b7fba;
+      --sage:      #5aaa87;
+      --muted:     #a090b8;
+      --border:    #ede5f5;
+      --bg:        #faf6fb;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--plum);
+      font-size: 15px;
+      line-height: 1.75;
+      padding: 32px 16px 80px;
+    }
+
+    .page {
+      max-width: 780px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 8px 48px rgba(45,27,61,.13);
+      overflow: hidden;
+    }
+
+    /* ── Cabeçalho ── */
+    .header {
+      background: linear-gradient(140deg, #2d1b3d 0%, #5a3472 100%);
+      padding: 40px 48px 34px;
+      text-align: center;
+    }
+    .header .flor { font-size: 44px; margin-bottom: 10px; display: block; }
+    .header .label {
+      font-size: 11px; font-weight: 800; letter-spacing: 2.5px;
+      text-transform: uppercase; color: #d8b4e8; margin-bottom: 6px;
+    }
+    .header h1 { font-size: 24px; font-weight: 900; color: #fff; line-height: 1.2; }
+    .header .crp { font-size: 13px; color: #c4a8d8; margin-top: 5px; }
+
+    /* ── Título do termo ── */
+    .titulo-termo {
+      background: linear-gradient(90deg, #fce8f2, #f5eef8);
+      padding: 26px 48px;
+      text-align: center;
+      border-bottom: 2px solid var(--border);
+    }
+    .titulo-termo h2 { font-size: 17px; font-weight: 800; color: var(--plum); letter-spacing: .4px; }
+    .titulo-termo p  { font-size: 13px; color: var(--muted); margin-top: 3px; }
+
+    /* ── Corpo ── */
+    .corpo { padding: 40px 48px; }
+
+    .intro {
+      background: #fdf6fb;
+      border-left: 4px solid var(--rose);
+      border-radius: 0 12px 12px 0;
+      padding: 18px 22px;
+      margin-bottom: 34px;
+      font-size: 14.5px;
+      color: #5a3a5a;
+    }
+
+    .secao { margin-bottom: 28px; }
+    .secao-titulo {
+      font-size: 11.5px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 1.5px; color: var(--rose);
+      padding: 8px 14px;
+      background: linear-gradient(90deg, #fce8f2, #fff);
+      border-radius: 6px; margin-bottom: 14px;
+      border-left: 3px solid var(--rose);
+    }
+    .secao ol   { padding-left: 22px; }
+    .secao li   { margin-bottom: 10px; font-size: 14.5px; color: #3d2b3d; }
+    .secao li strong { color: var(--plum); }
+
+    .destaque {
+      background: #fdf0f5;
+      border: 1.5px solid #f0c8da;
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 12px 0 4px;
+      font-size: 14.5px;
+    }
+    .destaque strong { color: var(--rose); font-size: 16px; }
+    .destaque small  { font-size: 12.5px; color: #7a5a7a; }
+
+    hr { border: none; border-top: 1.5px solid var(--border); margin: 34px 0; }
+
+    /* ── Formulário ── */
+    .form-titulo    { font-size: 17px; font-weight: 800; color: var(--plum); margin-bottom: 4px; }
+    .form-subtitulo { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-grid .full { grid-column: 1 / -1; }
+
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-group label {
+      font-size: 11px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .6px;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      padding: 11px 14px;
+      font-family: inherit;
+      font-size: 14.5px;
+      color: var(--plum);
+      background: #fff;
+      width: 100%;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--rose);
+      box-shadow: 0 0 0 3px rgba(194,101,122,.1);
+    }
+    .form-group select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23a090b8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+    }
+    .form-group textarea { min-height: 80px; resize: vertical; }
+
+    /* Menor de idade */
+    .menor-wrap {
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 18px;
+      margin-bottom: 22px;
+    }
+    .menor-toggle-label {
+      display: flex; align-items: center; gap: 10px;
+      cursor: pointer; font-size: 14px; font-weight: 600; color: var(--plum);
+    }
+    .menor-toggle-label input { accent-color: var(--rose); width: 17px; height: 17px; }
+    .menor-campos { display: none; margin-top: 18px; }
+    .menor-campos.visivel { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    /* Pagamento */
+    .pgto-label {
+      font-size: 11px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .6px; margin-bottom: 10px;
+    }
+    .pgto-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 4px; }
+    .pgto-card {
+      border: 2px solid var(--border);
+      border-radius: 12px; padding: 16px;
+      cursor: pointer; transition: all .15s;
+      display: flex; align-items: flex-start; gap: 12px;
+    }
+    .pgto-card:has(input:checked) { border-color: var(--rose); background: #fdf0f5; }
+    .pgto-card input { accent-color: var(--rose); margin-top: 2px; width: 16px; height: 16px; flex-shrink: 0; }
+    .pgto-card-nome  { font-size: 14px; font-weight: 700; color: var(--plum); }
+    .pgto-card-desc  { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    /* Aceite */
+    .aceite-box {
+      background: linear-gradient(135deg, #fdf0f5, #f5eef8);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+      margin: 28px 0 22px;
+    }
+    .aceite-box label {
+      display: flex; align-items: flex-start; gap: 14px;
+      cursor: pointer; font-size: 14.5px; color: var(--plum); line-height: 1.65;
+    }
+    .aceite-box input {
+      accent-color: var(--rose); width: 20px; height: 20px;
+      flex-shrink: 0; margin-top: 1px;
+    }
+
+    /* Botão */
+    .btn-enviar {
+      width: 100%; padding: 17px;
+      background: linear-gradient(135deg, #c2657a 0%, #8a3558 100%);
+      color: #fff; border: none; border-radius: 12px;
+      font-size: 16px; font-weight: 800; cursor: pointer;
+      letter-spacing: .3px;
+      box-shadow: 0 4px 18px rgba(194,101,122,.38);
+      transition: all .18s;
+    }
+    .btn-enviar:hover   { transform: translateY(-2px); box-shadow: 0 7px 24px rgba(194,101,122,.48); }
+    .btn-enviar:active  { transform: translateY(0); }
+    .btn-enviar:disabled{ opacity: .6; cursor: not-allowed; transform: none; }
+
+    /* Validação */
+    .campo-erro input,
+    .campo-erro select { border-color: #d04060 !important; }
+    .msg-erro {
+      font-size: 12px; color: #d04060; margin-top: 4px; display: none;
+    }
+    .campo-erro .msg-erro { display: block; }
+    .aviso-global {
+      background: #fdf0f2; border: 1.5px solid #f0c0cc;
+      border-radius: 10px; padding: 14px 18px;
+      color: #a03050; font-size: 13.5px; font-weight: 600;
+      margin-bottom: 18px; display: none;
+    }
+
+    /* Sucesso */
+    .tela-sucesso {
+      display: none;
+      text-align: center;
+      padding: 60px 32px;
+    }
+    .tela-sucesso .icone { font-size: 64px; margin-bottom: 20px; display: block; }
+    .tela-sucesso h3     { font-size: 24px; font-weight: 900; color: var(--plum); margin-bottom: 12px; }
+    .tela-sucesso p      { font-size: 15px; color: var(--muted); line-height: 1.8; }
+
+    /* Rodapé */
+    .rodape {
+      text-align: center;
+      padding: 20px;
+      font-size: 12px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 580px) {
+      .corpo { padding: 24px 20px; }
+      .header, .titulo-termo { padding-left: 20px; padding-right: 20px; }
+      .form-grid  { grid-template-columns: 1fr; }
+      .pgto-grid  { grid-template-columns: 1fr; }
+      .menor-campos.visivel { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- Cabeçalho -->
+  <div class="header">
+    <span class="flor">🌸</span>
+    <div class="label">Consultório de Psicologia</div>
+    <h1>Psi. Elissa Catarina Lorenzi</h1>
+    <div class="crp">CRP 06/91616</div>
+  </div>
+
+  <!-- Título -->
+  <div class="titulo-termo">
+    <h2>TERMO DE COMPROMISSO</h2>
+    <p>Orientação Profissional e de Carreira</p>
+  </div>
+
+  <!-- Corpo -->
+  <div class="corpo">
+
+    <div class="intro">
+      Seja bem-vindo(a)! 🌿<br><br>
+      Apresento aqui algumas informações importantes para darmos início ao seu processo de <strong>Orientação Profissional e de Carreira</strong>.<br><br>
+      Essas informações têm como objetivo auxiliar o processo, deixando claros os acordos necessários para um bom funcionamento do nosso trabalho em conjunto.<br><br>
+      Peço que leia com atenção cada ponto. Ao final, preencha seus dados e confirme o aceite.
+    </div>
+
+    <!-- 1 -->
+    <div class="secao">
+      <div class="secao-titulo">Sobre o Processo</div>
+      <ol type="a">
+        <li>O foco do processo será definido durante a primeira sessão, a partir da compreensão das necessidades, expectativas e objetivos do(a) cliente. Será elaborado um plano de trabalho personalizado, ajustável ao longo do acompanhamento.</li>
+        <li>Por se tratar de um serviço psicológico, <strong>não há garantia ou promessa de resultados específicos</strong>. O resultado depende do comprometimento e da participação ativa do(a) cliente.</li>
+      </ol>
+    </div>
+
+    <!-- 2 -->
+    <div class="secao">
+      <div class="secao-titulo">Sobre as Sessões</div>
+      <ol type="a">
+        <li>A frequência será acordada entre as partes — preferencialmente <strong>uma vez por semana</strong>.</li>
+        <li>Havendo necessidade, a frequência poderá ser aumentada ou espaçada, sempre previamente combinado.</li>
+        <li>Cada sessão terá duração de <strong>50 minutos</strong>, em horário previamente combinado.</li>
+        <li>O número de sessões pode variar conforme a necessidade e evolução do(a) cliente.</li>
+      </ol>
+    </div>
+
+    <!-- 3 -->
+    <div class="secao">
+      <div class="secao-titulo">Sigilo e Confidencialidade</div>
+      <ol type="a">
+        <li>Todas as informações compartilhadas são protegidas pelo <strong>sigilo profissional</strong>, conforme o Código de Ética Profissional do Psicólogo.</li>
+        <li>O sigilo só poderá ser quebrado nas situações previstas legalmente.</li>
+        <li>Contato com terceiros ocorrerá somente com consentimento do(a) cliente, exceto nas situações previstas em lei.</li>
+      </ol>
+    </div>
+
+    <!-- 4 -->
+    <div class="secao">
+      <div class="secao-titulo">Horários, Cancelamentos e Remarcações</div>
+      <ol type="a">
+        <li>O horário será previamente combinado entre as partes.</li>
+        <li>Cancelamentos ou alterações devem ser comunicados com <strong>mínimo de 24 horas de antecedência</strong>.</li>
+        <li>Dentro desse prazo, as sessões poderão ser remarcadas conforme disponibilidade.</li>
+        <li>Mudanças de horário estão sujeitas à disponibilidade de agenda.</li>
+      </ol>
+    </div>
+
+    <!-- 5 -->
+    <div class="secao">
+      <div class="secao-titulo">Faltas</div>
+      <ol type="a">
+        <li>Sessões canceladas com menos de 24 horas de antecedência serão cobradas normalmente.</li>
+        <li>Ausências sem aviso prévio serão cobradas normalmente.</li>
+        <li>Situações excepcionais (saúde, instabilidade de internet etc.) serão avaliadas individualmente.</li>
+      </ol>
+    </div>
+
+    <!-- 6 -->
+    <div class="secao">
+      <div class="secao-titulo">Honorários</div>
+      <ol type="a">
+        <li>
+          O valor da sessão é:
+          <div class="destaque">
+            <strong>R$ 350,00</strong> <span style="font-weight:400;font-size:14px">(trezentos e cinquenta reais)</span><br>
+            <small>Os dados para pagamento serão enviados via WhatsApp.</small>
+          </div>
+        </li>
+        <li>O pagamento pode ser realizado <strong>por sessão</strong> (no dia da sessão) ou de forma <strong>mensal</strong> (em parcela única até o 5º dia útil do mês).</li>
+        <li>Formas aceitas: <strong>Pix, transferência ou depósito bancário</strong>.</li>
+      </ol>
+    </div>
+
+    <!-- 7 -->
+    <div class="secao">
+      <div class="secao-titulo">Atividades Entre Sessões</div>
+      <ol type="a">
+        <li>Algumas etapas poderão incluir pesquisas, leituras, exercícios, entrevistas ou outras atividades relacionadas ao projeto profissional.</li>
+        <li>O comprometimento com as atividades propostas contribui para um melhor aproveitamento do processo.</li>
+      </ol>
+    </div>
+
+    <!-- 8 -->
+    <div class="secao">
+      <div class="secao-titulo">Encerramento do Processo</div>
+      <ol type="a">
+        <li>O processo pode ser encerrado por qualquer das partes mediante comunicação prévia.</li>
+        <li>Em caso de encerramento por iniciativa do(a) cliente, não haverá devolução de valores de sessões já realizadas ou pagamentos efetuados.</li>
+        <li>O encerramento será, sempre que possível, realizado de forma planejada.</li>
+      </ol>
+    </div>
+
+    <hr>
+
+    <!-- ── FORMULÁRIO ── -->
+    <div id="tela-formulario">
+      <div class="form-titulo">Dados Pessoais</div>
+      <div class="form-subtitulo">Preencha com atenção. Estas informações são necessárias para o prontuário e para emissão de nota fiscal.</div>
+
+      <div class="aviso-global" id="aviso-global">
+        Por favor, preencha todos os campos obrigatórios antes de continuar.
+      </div>
+
+      <!-- Formulário — Netlify Forms processa o envio -->
+      <form name="contrato" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" onsubmit="return validarEnvio(event)">
+        <input type="hidden" name="form-name" value="contrato">
+        <input type="hidden" name="bot-field" style="display:none">
+
+        <!-- Menor de idade -->
+        <div class="menor-wrap">
+          <label class="menor-toggle-label">
+            <input type="checkbox" id="chk-menor" onchange="toggleMenor()">
+            O cliente é menor de idade (preencher dados do responsável)
+          </label>
+          <div class="menor-campos" id="menor-campos">
+            <div class="form-group" id="g-nome-resp">
+              <label>Nome completo do responsável *</label>
+              <input type="text" name="nome_responsavel" id="f-nome-resp" placeholder="Nome do responsável legal">
+              <span class="msg-erro">Campo obrigatório</span>
+            </div>
+            <div class="form-group" id="g-cpf-resp">
+              <label>CPF do responsável *</label>
+              <input type="text" name="cpf_responsavel" id="f-cpf-resp" placeholder="000.000.000-00" oninput="mascCPF(this)" maxlength="14">
+              <span class="msg-erro">Campo obrigatório</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dados pessoais -->
+        <div class="form-grid" style="margin-bottom:16px">
+          <div class="form-group full" id="g-nome">
+            <label>Nome completo *</label>
+            <input type="text" name="nome" id="f-nome" placeholder="Seu nome completo">
+            <span class="msg-erro">Campo obrigatório</span>
+          </div>
+          <div class="form-group" id="g-nasc">
+            <label>Data de nascimento *</label>
+            <input type="date" name="data_nascimento" id="f-nasc">
+            <span class="msg-erro">Campo obrigatório</span>
+          </div>
+          <div class="form-group" id="g-cpf">
+            <label>CPF *</label>
+            <input type="text" name="cpf" id="f-cpf" placeholder="000.000.000-00" oninput="mascCPF(this)" maxlength="14">
+            <span class="msg-erro">Campo obrigatório</span>
+          </div>
+          <div class="form-group" id="g-email">
+            <label>E-mail *</label>
+            <input type="email" name="email" id="f-email" placeholder="seu@email.com">
+            <span class="msg-erro">Campo obrigatório</span>
+          </div>
+          <div class="form-group" id="g-celular">
+            <label>Celular *</label>
+            <input type="tel" name="celular" id="f-celular" placeholder="(00) 00000-0000" oninput="mascTel(this)" maxlength="15">
+            <span class="msg-erro">Campo obrigatório</span>
+          </div>
+          <div class="form-group full" id="g-endereco">
+            <label>Endereço completo com CEP *</label>
+            <input type="text" name="endereco" id="f-endereco" placeholder="Rua, número, bairro, cidade — UF, CEP 00000-000">
+            <span class="msg-erro">Campo obrigatório</span>
+          </div>
+        </div>
+
+        <!-- Forma de pagamento -->
+        <div style="margin-bottom:22px">
+          <div class="pgto-label">Forma de Pagamento Preferida *</div>
+          <div class="pgto-grid" id="g-pgto">
+            <label class="pgto-card">
+              <input type="radio" name="forma_pagamento" value="Mensal" id="pgto-mensal">
+              <div>
+                <div class="pgto-card-nome">Mensal</div>
+                <div class="pgto-card-desc">Pagamento único até o 5º dia útil do mês</div>
+              </div>
+            </label>
+            <label class="pgto-card">
+              <input type="radio" name="forma_pagamento" value="Por sessão" id="pgto-sessao">
+              <div>
+                <div class="pgto-card-nome">Por Sessão</div>
+                <div class="pgto-card-desc">Pagamento no dia de cada sessão</div>
+              </div>
+            </label>
+          </div>
+          <span class="msg-erro" id="erro-pgto">Selecione uma forma de pagamento</span>
+        </div>
+
+        <!-- Aceite -->
+        <div class="aceite-box" id="g-aceite">
+          <label>
+            <input type="checkbox" name="aceite" id="chk-aceite" value="Sim">
+            <span>Declaro que li todas as informações apresentadas neste Termo de Compromisso e <strong>concordo com todas as condições descritas acima</strong>.</span>
+          </label>
+          <span class="msg-erro" id="erro-aceite">Você precisa concordar com os termos para continuar</span>
+        </div>
+
+        <button type="submit" class="btn-enviar" id="btn-enviar">
+          ✅ Confirmar e Assinar Termo
+        </button>
+      </form>
+    </div>
+
+    <!-- Tela de sucesso (exibida pelo Netlify após envio) -->
+    <div class="tela-sucesso" id="tela-sucesso">
+      <span class="icone">🌸</span>
+      <h3>Termo assinado com sucesso!</h3>
+      <p>
+        Obrigada por confirmar seu compromisso.<br>
+        Em breve entrarei em contato para darmos início ao processo.<br><br>
+        <span style="font-size:13px">Você pode fechar esta página.</span>
+      </p>
+    </div>
+
+  </div><!-- /corpo -->
+
+  <div class="rodape">
+    Psi. Elissa Catarina Lorenzi · CRP 06/91616 · Psicologia Clínica
+  </div>
+
+</div><!-- /page -->
+
+<script>
+  // Exibe sucesso se Netlify redirecionar com ?enviado=sim
+  if (window.location.search.includes('enviado=sim')) {
+    document.getElementById('tela-formulario').style.display = 'none';
+    document.getElementById('tela-sucesso').style.display    = 'block';
+  }
+
+  function toggleMenor() {
+    const chk    = document.getElementById('chk-menor');
+    const campos = document.getElementById('menor-campos');
+    campos.className = 'menor-campos' + (chk.checked ? ' visivel' : '');
+  }
+
+  function mascCPF(el) {
+    let v = el.value.replace(/\D/g, '').slice(0, 11);
+    v = v.replace(/(\d{3})(\d)/, '$1.$2');
+    v = v.replace(/(\d{3})(\d)/, '$1.$2');
+    v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    el.value = v;
+  }
+
+  function mascTel(el) {
+    let v = el.value.replace(/\D/g, '').slice(0, 11);
+    if (v.length > 10) v = v.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+    else               v = v.replace(/^(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+    el.value = v.trim().replace(/-$/, '');
+  }
+
+  function marcarErro(id, sim) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (sim) el.classList.add('campo-erro');
+    else     el.classList.remove('campo-erro');
+  }
+
+  function validarEnvio(e) {
+    let ok = true;
+
+    const campos = [
+      { id: 'g-nome',     input: 'f-nome'     },
+      { id: 'g-nasc',     input: 'f-nasc'     },
+      { id: 'g-cpf',      input: 'f-cpf'      },
+      { id: 'g-email',    input: 'f-email'    },
+      { id: 'g-celular',  input: 'f-celular'  },
+      { id: 'g-endereco', input: 'f-endereco' },
+    ];
+
+    campos.forEach(c => {
+      const val = document.getElementById(c.input)?.value.trim();
+      marcarErro(c.id, !val);
+      if (!val) ok = false;
+    });
+
+    const menor = document.getElementById('chk-menor').checked;
+    if (menor) {
+      ['f-nome-resp', 'f-cpf-resp'].forEach((inp, i) => {
+        const val = document.getElementById(inp)?.value.trim();
+        marcarErro(['g-nome-resp','g-cpf-resp'][i], !val);
+        if (!val) ok = false;
+      });
+    }
+
+    const pgto = document.querySelector('input[name="forma_pagamento"]:checked');
+    const erroPgto = document.getElementById('erro-pgto');
+    if (!pgto) { erroPgto.style.display = 'block'; ok = false; }
+    else        { erroPgto.style.display = 'none'; }
+
+    const aceite     = document.getElementById('chk-aceite').checked;
+    const erroAceite = document.getElementById('erro-aceite');
+    if (!aceite) { erroAceite.style.display = 'block'; ok = false; }
+    else          { erroAceite.style.display = 'none'; }
+
+    if (!ok) {
+      e.preventDefault();
+      document.getElementById('aviso-global').style.display = 'block';
+      document.querySelector('.campo-erro, [style*="block"]')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return false;
+    }
+
+    document.getElementById('btn-enviar').disabled    = true;
+    document.getElementById('btn-enviar').textContent = 'Enviando...';
+    return true;
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Termo de Compromisso — Orientação Profissional de Carreira</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --rose:     #c2657a;
+      --plum:     #2d1b3d;
+      --lavender: #9b7fba;
+      --sage:     #5aaa87;
+      --muted:    #a090b8;
+      --border:   #ede5f5;
+      --bg:       #faf6fb;
+      --text:     #2d1b3d;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.7;
+      padding: 40px 20px 80px;
+    }
+
+    .page {
+      max-width: 760px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 8px 40px rgba(45,27,61,.12);
+      overflow: hidden;
+    }
+
+    /* Cabeçalho */
+    .header {
+      background: linear-gradient(135deg, #2d1b3d 0%, #503468 100%);
+      padding: 36px 48px 32px;
+      text-align: center;
+      color: #fff;
+    }
+    .header .logo { font-size: 38px; margin-bottom: 10px; }
+    .header h1 {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #e8c5d5;
+      margin-bottom: 6px;
+    }
+    .header .psico-nome {
+      font-size: 22px;
+      font-weight: 800;
+      color: #fff;
+    }
+    .header .crp {
+      font-size: 13px;
+      color: #c4a8d8;
+      margin-top: 4px;
+    }
+
+    /* Título do termo */
+    .termo-titulo {
+      background: linear-gradient(90deg, #fce8f2, #f5eef8);
+      padding: 28px 48px;
+      border-bottom: 2px solid var(--border);
+      text-align: center;
+    }
+    .termo-titulo h2 {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--plum);
+      letter-spacing: .5px;
+    }
+    .termo-titulo .subtitulo {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* Corpo */
+    .body { padding: 40px 48px; }
+
+    .intro {
+      background: #fdf6fb;
+      border-left: 4px solid var(--rose);
+      border-radius: 0 10px 10px 0;
+      padding: 18px 22px;
+      margin-bottom: 32px;
+      font-size: 14.5px;
+      color: #5a3a5a;
+      line-height: 1.8;
+    }
+
+    .secao {
+      margin-bottom: 30px;
+    }
+    .secao-titulo {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--rose);
+      padding: 8px 14px;
+      background: linear-gradient(90deg, #fce8f2, #fff);
+      border-radius: 6px;
+      margin-bottom: 14px;
+      border-left: 3px solid var(--rose);
+    }
+    .secao ol { padding-left: 20px; }
+    .secao li {
+      margin-bottom: 10px;
+      font-size: 14.5px;
+      color: #3d2b3d;
+    }
+
+    /* Destaques */
+    .destaque {
+      background: #fdf0f5;
+      border: 1.5px solid #f0c8da;
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin: 14px 0;
+      font-size: 14.5px;
+    }
+    .destaque strong { color: var(--rose); }
+
+    /* Divisor */
+    .divider {
+      border: none;
+      border-top: 1.5px solid var(--border);
+      margin: 32px 0;
+    }
+
+    /* Formulário */
+    .form-titulo {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--plum);
+      margin-bottom: 6px;
+    }
+    .form-subtitulo {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-group label {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+    .form-group input, .form-group select, .form-group textarea {
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 13px;
+      font-family: inherit;
+      font-size: 14.5px;
+      color: var(--text);
+      background: #fff;
+      transition: border-color .15s, box-shadow .15s;
+      width: 100%;
+    }
+    .form-group input:focus, .form-group select:focus {
+      outline: none;
+      border-color: var(--rose);
+      box-shadow: 0 0 0 3px rgba(194,101,122,.1);
+    }
+
+    /* Pagamento */
+    .pgto-opcoes { display: flex; gap: 14px; margin-top: 6px; }
+    .pgto-opcao {
+      flex: 1;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: all .15s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .pgto-opcao input[type="radio"] { accent-color: var(--rose); width: 16px; height: 16px; }
+    .pgto-opcao:has(input:checked) {
+      border-color: var(--rose);
+      background: #fdf0f5;
+    }
+    .pgto-opcao label { cursor: pointer; font-weight: 600; color: var(--plum); font-size: 14px; }
+    .pgto-opcao .pgto-desc { font-size: 12px; color: var(--muted); }
+
+    /* Seção menor de idade */
+    .menor-toggle {
+      margin-bottom: 20px;
+    }
+    .menor-toggle label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--plum);
+    }
+    .menor-toggle input { accent-color: var(--rose); width: 16px; height: 16px; }
+    .menor-campos { display: none; margin-top: 14px; }
+    .menor-campos.visivel { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    /* Aceite */
+    .aceite-box {
+      background: linear-gradient(135deg, #fdf0f5, #f5eef8);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 22px;
+      margin: 28px 0 22px;
+    }
+    .aceite-box label {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      cursor: pointer;
+      font-size: 14.5px;
+      color: var(--plum);
+      line-height: 1.6;
+    }
+    .aceite-box input[type="checkbox"] {
+      accent-color: var(--rose);
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* Botão */
+    .btn-enviar {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, var(--rose) 0%, #a0466e 100%);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: .3px;
+      box-shadow: 0 4px 16px rgba(194,101,122,.35);
+      transition: all .18s;
+    }
+    .btn-enviar:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(194,101,122,.45); }
+    .btn-enviar:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+    /* Mensagem de sucesso */
+    .sucesso {
+      display: none;
+      text-align: center;
+      padding: 48px 32px;
+    }
+    .sucesso .icone { font-size: 60px; margin-bottom: 16px; }
+    .sucesso h3 { font-size: 22px; font-weight: 800; color: var(--plum); margin-bottom: 8px; }
+    .sucesso p { color: var(--muted); font-size: 15px; line-height: 1.7; }
+
+    /* Erro de validação */
+    .erro-msg {
+      color: #c0425d;
+      font-size: 12.5px;
+      margin-top: 4px;
+      display: none;
+    }
+    .campo-erro input, .campo-erro select { border-color: #c0425d !important; }
+    .campo-erro .erro-msg { display: block; }
+
+    @media (max-width: 600px) {
+      .body { padding: 24px 20px; }
+      .header { padding: 28px 20px; }
+      .termo-titulo { padding: 20px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .pgto-opcoes { flex-direction: column; }
+      .menor-campos.visivel { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- Cabeçalho -->
+  <div class="header">
+    <div class="logo">🌸</div>
+    <h1>Consultório de Psicologia</h1>
+    <div class="psico-nome" id="psico-nome">Psi. Elissa Catarina Lorenzi</div>
+    <div class="crp" id="psico-crp">CRP 06/91616</div>
+  </div>
+
+  <!-- Título -->
+  <div class="termo-titulo">
+    <h2>TERMO DE COMPROMISSO</h2>
+    <div class="subtitulo">Orientação Profissional e de Carreira</div>
+  </div>
+
+  <!-- Corpo do termo -->
+  <div class="body" id="corpo-termo">
+
+    <!-- Introdução -->
+    <div class="intro">
+      Seja bem-vindo(a)!<br><br>
+      Apresento aqui algumas informações importantes para darmos início ao seu processo de Orientação Profissional e de Carreira.<br><br>
+      Essas informações têm como objetivo auxiliar o processo, deixando claros os acordos necessários para um bom funcionamento do nosso trabalho em conjunto.<br><br>
+      Peço que leia com atenção cada ponto e sinalize com <strong>"ciente"</strong> caso esteja de acordo. Caso tenha alguma dúvida, fique à vontade para entrar em contato.<br><br>
+      Ao final deste termo você encontrará algumas perguntas sobre seus dados pessoais. Essas informações são importantes para o seu prontuário, bem como para emissão de notas fiscais referentes aos serviços prestados.
+    </div>
+
+    <!-- Seção 1 -->
+    <div class="secao">
+      <div class="secao-titulo">Sobre o Processo de Orientação Profissional e de Carreira</div>
+      <ol type="a">
+        <li>O foco específico do processo de orientação profissional e de carreira será definido durante a primeira sessão, a partir da compreensão das necessidades, expectativas, momento profissional e objetivos apresentados pelo(a) cliente. A partir desse levantamento inicial, será elaborado um plano de trabalho personalizado, que poderá ser ajustado ao longo do acompanhamento conforme a evolução do processo e o surgimento de novas demandas.</li>
+        <li>Por se tratar de um serviço psicológico, <strong>não há garantia ou promessa de resultados específicos</strong>. O resultado do processo está diretamente relacionado ao comprometimento e à participação ativa do contratante nas reflexões e atividades propostas.</li>
+      </ol>
+    </div>
+
+    <!-- Seção 2 -->
+    <div class="secao">
+      <div class="secao-titulo">Sobre as Sessões</div>
+      <ol type="a">
+        <li>A frequência do processo será acordada entre as partes, preferencialmente acontecerá semanal, uma vez por semana.</li>
+        <li>Havendo necessidade, a frequência dos encontros semanais poderá ser aumentada ou espaçada, sendo isso previamente combinado entre as partes.</li>
+        <li>Cada sessão terá duração de <strong>50 minutos</strong>, sendo realizada em horário previamente combinado.</li>
+        <li>O número de sessões pode variar de acordo com a necessidade do cliente, o nível de maturidade em relação ao objetivo trabalhado e a evolução do cliente ao longo das etapas.</li>
+      </ol>
+    </div>
+
+    <!-- Seção 3 -->
+    <div class="secao">
+      <div class="secao-titulo">Sigilo e Confidencialidade</div>
+      <ol type="a">
+        <li>Todas as informações compartilhadas durante o processo são protegidas pelo sigilo profissional, conforme o Código de Ética Profissional do Psicólogo.</li>
+        <li>O sigilo poderá ser quebrado apenas nas situações previstas legalmente e pelo Código de Ética Profissional do Psicólogo.</li>
+        <li>Caso seja necessário contato com familiares, responsáveis ou outros profissionais, ocorrerá somente com consentimento do cliente, exceto nas situações previstas em lei.</li>
+      </ol>
+    </div>
+
+    <!-- Seção 4 -->
+    <div class="secao">
+      <div class="secao-titulo">Horários, Desmarcações e Remarcações</div>
+      <ol type="a">
+        <li>O horário das sessões será previamente combinado entre as partes.</li>
+        <li>Cancelamentos ou pedidos de alteração deverão ocorrer com antecedência mínima de <strong>24 horas</strong>.</li>
+        <li>Quando avisadas dentro desse prazo, as sessões poderão ser remarcadas conforme disponibilidade de agenda.</li>
+        <li>Mudanças de horário estarão sujeitas à disponibilidade da agenda.</li>
+      </ol>
+    </div>
+
+    <!-- Seção 5 -->
+    <div class="secao">
+      <div class="secao-titulo">Faltas</div>
+      <ol type="a">
+        <li>Sessões canceladas com menos de 24 horas de antecedência serão cobradas normalmente.</li>
+        <li>Sessões em que houver ausência sem aviso prévio serão cobradas normalmente.</li>
+        <li>Situações excepcionais, como problemas de saúde, instabilidade de internet ou outras intercorrências relevantes, serão avaliadas individualmente.</li>
+      </ol>
+    </div>
+
+    <!-- Seção 6 -->
+    <div class="secao">
+      <div class="secao-titulo">Honorários</div>
+      <ol type="a">
+        <li>
+          O valor da sessão é de:
+          <div class="destaque">
+            <strong>R$ 350,00 (trezentos e cinquenta reais)</strong><br>
+            <span style="font-size:13px;color:#7a5a7a">Os dados para pagamento serão enviados via WhatsApp.</span>
+          </div>
+        </li>
+        <li>O pagamento poderá ocorrer <strong>por sessão</strong> — realizado no mesmo dia da sessão — ou de forma <strong>mensal</strong>, em parcela única até o 5º dia útil do mês em que ocorrerão as sessões.</li>
+        <li>O pagamento deverá ser realizado via <strong>Pix, transferência ou depósito bancário</strong>.</li>
+        <li>Os dados para pagamento serão disponibilizados pela psicóloga.</li>
+      </ol>
+    </div>
+
+    <!-- Seção 7 -->
+    <div class="secao">
+      <div class="secao-titulo">Atividades Entre Sessões</div>
+      <ol type="a">
+        <li>Algumas etapas do processo poderão incluir pesquisas, leituras, exercícios, entrevistas com profissionais ou outras atividades relacionadas à construção do projeto profissional.</li>
+        <li>A qualidade das reflexões e decisões construídas durante o processo depende também da realização dessas atividades.</li>
+        <li>O comprometimento com as atividades propostas contribui para um melhor aproveitamento do processo.</li>
+      </ol>
+    </div>
+
+    <!-- Seção 8 -->
+    <div class="secao">
+      <div class="secao-titulo">Encerramento do Processo</div>
+      <ol type="a">
+        <li>O processo poderá ser encerrado por qualquer das partes mediante comunicação prévia.</li>
+        <li>Caso o encerramento seja realizado por iniciativa do cliente, não haverá devolução de valores referentes a sessões já realizadas ou pagamentos já efetuados.</li>
+        <li>Sempre que possível, o encerramento será realizado de forma planejada e discutido durante os encontros.</li>
+      </ol>
+    </div>
+
+    <hr class="divider">
+
+    <!-- Formulário de dados -->
+    <div id="formulario">
+      <div class="form-titulo">Dados Pessoais</div>
+      <div class="form-subtitulo">Preencha os campos abaixo. Essas informações são necessárias para o prontuário e emissão de nota fiscal.</div>
+
+      <!-- Menor de idade -->
+      <div class="menor-toggle">
+        <label>
+          <input type="checkbox" id="chk-menor" onchange="toggleMenor()">
+          O cliente é menor de idade (preencher dados do responsável)
+        </label>
+        <div class="menor-campos" id="menor-campos">
+          <div class="form-group">
+            <label>Nome completo do responsável *</label>
+            <input type="text" id="f-nome-resp" placeholder="Nome do responsável legal">
+            <span class="erro-msg">Campo obrigatório</span>
+          </div>
+          <div class="form-group">
+            <label>CPF do responsável *</label>
+            <input type="text" id="f-cpf-resp" placeholder="000.000.000-00" oninput="mascCPF(this)">
+            <span class="erro-msg">Campo obrigatório</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Nome completo *</label>
+          <input type="text" id="f-nome" placeholder="Seu nome completo">
+          <span class="erro-msg">Campo obrigatório</span>
+        </div>
+        <div class="form-group">
+          <label>Data de nascimento *</label>
+          <input type="date" id="f-nasc">
+          <span class="erro-msg">Campo obrigatório</span>
+        </div>
+        <div class="form-group">
+          <label>CPF *</label>
+          <input type="text" id="f-cpf" placeholder="000.000.000-00" oninput="mascCPF(this)">
+          <span class="erro-msg">Campo obrigatório</span>
+        </div>
+        <div class="form-group">
+          <label>E-mail *</label>
+          <input type="email" id="f-email" placeholder="seu@email.com">
+          <span class="erro-msg">Campo obrigatório</span>
+        </div>
+        <div class="form-group">
+          <label>Celular *</label>
+          <input type="tel" id="f-celular" placeholder="(00) 00000-0000" oninput="mascTel(this)">
+          <span class="erro-msg">Campo obrigatório</span>
+        </div>
+        <div class="form-group full">
+          <label>Endereço completo com CEP *</label>
+          <input type="text" id="f-endereco" placeholder="Rua, número, bairro, cidade — UF, CEP 00000-000">
+          <span class="erro-msg">Campo obrigatório</span>
+        </div>
+      </div>
+
+      <!-- Forma de pagamento -->
+      <div style="margin-top:22px">
+        <div style="font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Forma de Pagamento Preferida *</div>
+        <div class="pgto-opcoes">
+          <div class="pgto-opcao">
+            <input type="radio" name="forma_pgto" id="pgto-mensal" value="mensal">
+            <div>
+              <label for="pgto-mensal">Mensal</label>
+              <div class="pgto-desc">Pagamento único até o 5º dia útil do mês</div>
+            </div>
+          </div>
+          <div class="pgto-opcao">
+            <input type="radio" name="forma_pgto" id="pgto-sessao" value="por sessão">
+            <div>
+              <label for="pgto-sessao">Por Sessão</label>
+              <div class="pgto-desc">Pagamento no dia de cada sessão</div>
+            </div>
+          </div>
+        </div>
+        <span class="erro-msg" id="erro-pgto" style="display:none">Selecione uma forma de pagamento</span>
+      </div>
+
+      <!-- Aceite -->
+      <div class="aceite-box">
+        <label>
+          <input type="checkbox" id="chk-aceite">
+          Declaro que li todas as informações apresentadas neste Termo de Compromisso e concordo com as condições descritas acima.
+        </label>
+        <span class="erro-msg" id="erro-aceite" style="display:none">Você precisa concordar com os termos para continuar</span>
+      </div>
+
+      <button class="btn-enviar" onclick="enviarContrato()">
+        ✅ Confirmar e Assinar Termo
+      </button>
+    </div>
+
+    <!-- Mensagem de sucesso -->
+    <div class="sucesso" id="sucesso">
+      <div class="icone">🌸</div>
+      <h3>Termo assinado com sucesso!</h3>
+      <p>
+        Obrigada por confirmar seu compromisso.<br>
+        Em breve entrarei em contato para darmos início ao processo.<br><br>
+        <span style="font-size:13px;color:#b0a0c0">Você pode fechar esta página.</span>
+      </p>
+    </div>
+
+  </div><!-- /body -->
+</div><!-- /page -->
+
+<script>
+  // Carrega dados da psicóloga
+  fetch('/api/configuracoes')
+    .then(r => r.json())
+    .then(cfg => {
+      if (cfg.nome_psicologa) document.getElementById('psico-nome').textContent = cfg.nome_psicologa;
+      if (cfg.crp)            document.getElementById('psico-crp').textContent  = cfg.crp;
+    })
+    .catch(() => {});
+
+  function toggleMenor() {
+    const chk = document.getElementById('chk-menor');
+    const campos = document.getElementById('menor-campos');
+    campos.className = 'menor-campos' + (chk.checked ? ' visivel' : '');
+  }
+
+  function mascCPF(el) {
+    let v = el.value.replace(/\D/g, '').slice(0, 11);
+    v = v.replace(/(\d{3})(\d)/, '$1.$2');
+    v = v.replace(/(\d{3})(\d)/, '$1.$2');
+    v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    el.value = v;
+  }
+
+  function mascTel(el) {
+    let v = el.value.replace(/\D/g, '').slice(0, 11);
+    if (v.length > 10) v = v.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+    else               v = v.replace(/^(\d{2})(\d{4})(\d{0,4})$/, '($1) $2-$3');
+    el.value = v;
+  }
+
+  function validar() {
+    let ok = true;
+
+    const obrigatorios = ['f-nome', 'f-nasc', 'f-cpf', 'f-email', 'f-celular', 'f-endereco'];
+    obrigatorios.forEach(id => {
+      const el = document.getElementById(id);
+      const grupo = el.closest('.form-group');
+      if (!el.value.trim()) { grupo.classList.add('campo-erro'); ok = false; }
+      else { grupo.classList.remove('campo-erro'); }
+    });
+
+    const menor = document.getElementById('chk-menor').checked;
+    if (menor) {
+      ['f-nome-resp','f-cpf-resp'].forEach(id => {
+        const el = document.getElementById(id);
+        const grupo = el.closest('.form-group');
+        if (!el.value.trim()) { grupo.classList.add('campo-erro'); ok = false; }
+        else { grupo.classList.remove('campo-erro'); }
+      });
+    }
+
+    const pgto = document.querySelector('input[name="forma_pgto"]:checked');
+    const erroPgto = document.getElementById('erro-pgto');
+    if (!pgto) { erroPgto.style.display = 'block'; ok = false; }
+    else { erroPgto.style.display = 'none'; }
+
+    const aceite = document.getElementById('chk-aceite');
+    const erroAceite = document.getElementById('erro-aceite');
+    if (!aceite.checked) { erroAceite.style.display = 'block'; ok = false; }
+    else { erroAceite.style.display = 'none'; }
+
+    return ok;
+  }
+
+  async function enviarContrato() {
+    if (!validar()) {
+      document.querySelector('.campo-erro, #erro-pgto[style*="block"], #erro-aceite[style*="block"]')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    const btn = document.querySelector('.btn-enviar');
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+
+    const menor = document.getElementById('chk-menor').checked;
+    const body = {
+      nome:            document.getElementById('f-nome').value.trim(),
+      data_nascimento: document.getElementById('f-nasc').value,
+      cpf:             document.getElementById('f-cpf').value.trim(),
+      email:           document.getElementById('f-email').value.trim(),
+      celular:         document.getElementById('f-celular').value.trim(),
+      endereco:        document.getElementById('f-endereco').value.trim(),
+      forma_pgto:      document.querySelector('input[name="forma_pgto"]:checked').value,
+      nome_responsavel: menor ? document.getElementById('f-nome-resp').value.trim() : null,
+      cpf_responsavel:  menor ? document.getElementById('f-cpf-resp').value.trim()  : null,
+      aceite: 1
+    };
+
+    try {
+      const res = await fetch('/api/contratos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erro ao enviar');
+
+      document.getElementById('formulario').style.display = 'none';
+      document.getElementById('sucesso').style.display = 'block';
+      document.getElementById('sucesso').scrollIntoView({ behavior: 'smooth' });
+    } catch(e) {
+      btn.disabled = false;
+      btn.textContent = '✅ Confirmar e Assinar Termo';
+      alert('Erro ao enviar: ' + e.message);
+    }
+  }
+</script>
+</body>
+</html>
