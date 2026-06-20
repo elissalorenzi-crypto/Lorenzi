@@ -177,29 +177,33 @@ async function loadDashboard() {
 
   // Stats
   document.getElementById('dash-stats').innerHTML = `
-    <div class="stat-card rose">
+    <div class="stat-card rose stat-clickable" onclick="navigate('agenda')" title="Ver agenda">
       <span class="stat-icon">📅</span>
       <div class="stat-label">Sessões Hoje</div>
       <div class="stat-value">${data.agendaHoje.length}</div>
       <div class="stat-sub">${data.agendaHoje.filter(a=>a.status==='realizado').length} realizadas</div>
+      <div class="stat-arrow">›</div>
     </div>
-    <div class="stat-card lavender">
+    <div class="stat-card lavender stat-clickable" onclick="navigate('agenda')" title="Ver agenda do mês">
       <span class="stat-icon">🗓</span>
       <div class="stat-label">Sessões no Mês</div>
       <div class="stat-value">${data.sessoesMes}</div>
       <div class="stat-sub">${MESES[new Date().getMonth()]}</div>
+      <div class="stat-arrow">›</div>
     </div>
-    <div class="stat-card sage">
+    <div class="stat-card sage stat-clickable" onclick="navigate('pacientes')" title="Ver pacientes">
       <span class="stat-icon">👤</span>
       <div class="stat-label">Pacientes Ativos</div>
       <div class="stat-value">${data.totalPacientes}</div>
       <div class="stat-sub">em atendimento</div>
+      <div class="stat-arrow">›</div>
     </div>
-    <div class="stat-card peach">
+    <div class="stat-card peach stat-clickable" onclick="navigate('financeiro')" title="Ver financeiro">
       <span class="stat-icon">💰</span>
       <div class="stat-label">Recebido no Mês</div>
       <div class="stat-value" style="font-size:18px">${BRL(data.recebidoMes)}</div>
       <div class="stat-sub">${BRL(data.pendenteMes)} pendente</div>
+      <div class="stat-arrow">›</div>
     </div>
   `;
 
