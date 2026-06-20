@@ -572,7 +572,7 @@ async function verDetalhePaciente(id) {
   const ultimasAgs = ags.slice(-5).reverse();
 
   document.getElementById('pac-detail-content').innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+    <div class="grid-2col">
       <!-- Info pessoal -->
       <div class="card">
         <div class="card-body">
@@ -631,7 +631,7 @@ async function verDetalhePaciente(id) {
 
       <!-- Stats e histórico -->
       <div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
+        <div class="grid-3col-stats">
           <div class="stat-card rose" style="padding:14px">
             <div class="stat-label">Total Sessões</div>
             <div class="stat-value" style="font-size:22px">${total}</div>

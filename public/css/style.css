@@ -656,6 +656,12 @@ tbody tr:hover { background: var(--rose-pale); }
 .gap-2 { gap: 8px; }
 .gap-3 { gap: 12px; }
 
+/* ── GRID HELPERS ────────────────────────────────────────── */
+.grid-2col       { display: grid; grid-template-columns: 1fr 1fr;      gap: 20px; margin-bottom: 20px; }
+.grid-dash-main  { display: grid; grid-template-columns: 1fr 1.4fr;    gap: 20px; margin-bottom: 20px; }
+.grid-3col-stats { display: grid; grid-template-columns: 1fr 1fr 1fr;  gap: 12px; margin-bottom: 16px; }
+.grid-fin        { display: grid; grid-template-columns: 1fr 1fr;      gap: 20px; }
+
 /* ── HAMBURGER ───────────────────────────────────────────── */
 #menu-toggle {
   display: none;
@@ -686,103 +692,92 @@ tbody tr:hover { background: var(--rose-pale); }
 
 /* ── RESPONSIVO MOBILE ───────────────────────────────────── */
 @media (max-width: 768px) {
+
+  /* Sidebar */
   #menu-toggle { display: flex; }
+  #sidebar { transform: translateX(-100%); transition: transform .25s ease; z-index: 200; }
+  #sidebar.open { transform: translateX(0); }
+  #sidebar-overlay.open { display: block; }
+  #main { margin-left: 0; }
 
-  #sidebar {
-    transform: translateX(-100%);
-    transition: transform .25s ease;
-    z-index: 200;
-  }
-  #sidebar.open {
-    transform: translateX(0);
-  }
-  #sidebar-overlay.open {
-    display: block;
-  }
+  /* Topbar */
+  #topbar { padding: 0 14px; height: 54px; }
+  #topbar-title { font-size: 15px; }
+  #topbar-actions { gap: 6px; }
 
-  #main {
-    margin-left: 0;
-  }
+  /* Content */
+  #content { padding: 12px; }
 
-  #topbar {
-    padding: 0 16px;
-  }
-  #topbar-title {
-    font-size: 15px;
-  }
+  /* Cards */
+  .card-header { flex-wrap: wrap; gap: 8px; padding: 14px 16px 10px; }
+  .card-body   { padding: 14px 16px; }
+  .card-title  { font-size: 14px; }
 
-  #content {
-    padding: 16px;
-  }
-
-  /* Stats: 2 colunas */
-  .stats-row {
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
+  /* Stats */
+  .stats-row { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .stat-card { padding: 14px; }
   .stat-value { font-size: 20px; }
+  .stat-icon  { font-size: 20px; margin-bottom: 6px; }
 
-  /* Dashboard grids: 1 coluna */
-  #section-dashboard > div[style*="grid-template-columns:1fr 1.4fr"],
-  #section-dashboard > div[style*="grid-template-columns:1fr 1fr"] {
-    display: flex !important;
-    flex-direction: column !important;
-  }
+  /* Grids helpers: 1 coluna */
+  .grid-2col, .grid-dash-main, .grid-fin { grid-template-columns: 1fr; gap: 14px; }
+  .grid-3col-stats { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
 
-  /* Financeiro grid: 1 coluna */
-  #section-financeiro > div[style*="grid-template-columns:1fr 1fr"] {
-    display: flex !important;
-    flex-direction: column !important;
-  }
+  /* Formulários */
+  .form-grid { grid-template-columns: 1fr; gap: 10px; }
 
-  /* Detalhe paciente: 1 coluna */
-  #pac-detail-content > div[style*="grid-template-columns:1fr 1fr"] {
-    display: flex !important;
-    flex-direction: column !important;
-  }
-
-  /* Agenda semanal: scroll horizontal */
+  /* Agenda semanal */
   .week-grid {
     grid-template-columns: repeat(7, minmax(110px, 1fr));
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     padding-bottom: 8px;
+    gap: 6px;
   }
-
-  /* Formulários: 1 coluna */
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-
-  /* Modal: tela cheia */
-  #modal-overlay {
-    padding: 0;
-    align-items: flex-end;
-  }
-  .modal, .modal-lg {
-    max-width: 100%;
-    max-height: 92vh;
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  }
-
-  /* Toast: centralizado */
-  #toast-container {
-    left: 16px;
-    right: 16px;
-    bottom: 16px;
-  }
-  .toast { max-width: 100%; }
-
-  /* Tabelas: scroll horizontal */
-  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-
-  /* Week nav */
   .week-nav { flex-wrap: wrap; gap: 8px; }
-  .week-nav .week-label { min-width: unset; font-size: 13px; }
+  .week-nav .week-label { min-width: unset; font-size: 13px; order: -1; width: 100%; text-align: left; }
+  .day-slots { min-height: 60px; }
+
+  /* Tabelas */
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  th, td { padding: 10px 10px; font-size: 12.5px; }
 
   /* Busca full width */
   .search-wrap { width: 100%; }
   .search-wrap input { width: 100% !important; }
 
-  /* Botões no card-header */
-  .card-header { flex-wrap: wrap; gap: 8px; }
+  /* Prontuário */
+  .pront-header { padding: 12px 14px; }
+  .pront-body   { padding: 14px; }
+
+  /* Detalhe paciente */
+  .pac-detail-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .pac-avatar { width: 56px; height: 56px; font-size: 22px; }
+  .pac-detail-name { font-size: 17px; }
+  .info-grid { grid-template-columns: 1fr; gap: 10px; }
+
+  /* Modal: sobe de baixo */
+  #modal-overlay { padding: 0; align-items: flex-end; }
+  .modal, .modal-lg {
+    max-width: 100%;
+    max-height: 92vh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+  .modal-header { padding: 18px 18px 14px; }
+  .modal-body   { padding: 16px 18px; }
+  .modal-footer { padding: 12px 18px; }
+
+  /* Toast */
+  #toast-container { left: 12px; right: 12px; bottom: 12px; }
+  .toast { max-width: 100%; font-size: 13px; }
+
+  /* Financeiro nav mes */
+  #section-financeiro > div:first-child { flex-wrap: wrap; gap: 8px; }
+  #fin-mes-label { min-width: unset !important; font-size: 14px !important; }
+
+  /* Contratos */
+  #cont-search { width: 100% !important; }
+
+  /* Config */
+  .config-section-title { font-size: 12px; }
 }
