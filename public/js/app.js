@@ -98,8 +98,20 @@ function navigate(name) {
 }
 
 document.querySelectorAll('.nav-link').forEach(a => {
-  a.addEventListener('click', e => { e.preventDefault(); navigate(a.dataset.section); });
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    navigate(a.dataset.section);
+    if (window.innerWidth <= 768) toggleSidebar(false);
+  });
 });
+
+function toggleSidebar(force) {
+  const sidebar  = document.getElementById('sidebar');
+  const overlay  = document.getElementById('sidebar-overlay');
+  const isOpen   = typeof force === 'boolean' ? force : !sidebar.classList.contains('open');
+  sidebar.classList.toggle('open', isOpen);
+  overlay.classList.toggle('open', isOpen);
+}
 
 // ── HELPERS ──────────────────────────────────────────────────
 function fmtData(d) {

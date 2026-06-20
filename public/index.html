@@ -8,6 +8,8 @@
 </head>
 <body>
 
+<div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
 <!-- SIDEBAR -->
 <aside id="sidebar">
   <div class="brand">
@@ -52,7 +54,12 @@
 <!-- MAIN -->
 <div id="main">
   <div id="topbar">
-    <h2 id="topbar-title">Dashboard</h2>
+    <div style="display:flex;align-items:center">
+      <button id="menu-toggle" onclick="toggleSidebar()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+      <h2 id="topbar-title">Dashboard</h2>
+    </div>
     <div id="topbar-actions"></div>
   </div>
 
