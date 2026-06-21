@@ -2301,25 +2301,60 @@ function abrirAtividade(areaId, pastaId, atvId) {
 function copiarAtividade() {
   const corpo = document.getElementById('bib-atv-corpo-atual');
   if (!corpo) return;
-  // Extrai texto limpo preservando quebras de linha e listas
-  const clone = corpo.cloneNode(true);
-  clone.querySelectorAll('h3').forEach(h => { h.textContent = '\n' + h.textContent.toUpperCase() + '\n'; });
-  clone.querySelectorAll('li').forEach(li => { li.textContent = '• ' + li.textContent; });
-  clone.querySelectorAll('p, li, h3, div').forEach(el => {
-    if (!el.textContent.endsWith('\n')) el.insertAdjacentText('afterend', '\n');
-  });
-  const texto = clone.innerText || clone.textContent;
-  navigator.clipboard.writeText(texto.replace(/\n{3,}/g, '\n\n').trim())
-    .then(() => showToast('Atividade copiada!', 'success'))
-    .catch(() => {
-      const ta = document.createElement('textarea');
-      ta.value = texto;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      document.body.removeChild(ta);
-      showToast('Atividade copiada!', 'success');
-    });
+
+  // ── Texto estruturado (fallback plain text) ──────────────
+  function noParaTexto(node) {
+    if (node.nodeType === 3) return node.textContent;
+    const tag = node.tagName?.toLowerCase();
+    const filhos = () => Array.from(node.childNodes).map(noParaTexto).join('');
+    if (tag === 'h3')     return '\n\n' + node.textContent.toUpperCase() + '\n' + '─'.repeat(36) + '\n';
+    if (tag === 'p')      return '\n' + filhos() + '\n';
+    if (tag === 'strong') return filhos();
+    if (tag === 'em')     return filhos();
+    if (tag === 'ul')     return '\n' + Array.from(node.children).map(li => '• ' + li.textContent).join('\n') + '\n';
+    if (tag === 'ol')     return '\n' + Array.from(node.children).map((li, i) => (i+1) + '. ' + li.textContent).join('\n') + '\n';
+    if (tag === 'li')     return filhos();
+    if (tag === 'div')    return filhos() + '\n';
+    return filhos();
+  }
+  const textoPlano = Array.from(corpo.childNodes).map(noParaTexto).join('').replace(/\n{3,}/g, '\n\n').trim();
+
+  // ── HTML rico com estilos inline para colar em Word/Docs ─
+  const htmlRico = `
+    <html><head><meta charset="utf-8"></head><body style="font-family:Arial,sans-serif;font-size:14px;line-height:1.6;color:#1a1a1a">
+    <style>
+      h3{font-size:15px;font-weight:700;color:#14392F;margin:18px 0 6px;border-bottom:1px solid #ccc;padding-bottom:4px}
+      p{margin:0 0 8px}
+      ul,ol{margin:6px 0 10px;padding-left:22px}
+      li{margin-bottom:4px}
+      strong{font-weight:700}
+      .atv-bloco{background:#F0E8E0;border-left:3px solid #75553C;padding:10px 14px;margin:10px 0;border-radius:4px}
+      .atv-destaque{background:#DFF0E7;border-left:3px solid #2A6B4A;padding:10px 14px;margin:10px 0;border-radius:4px}
+      .atv-verbos{background:#f5f5f5;border:1px solid #ddd;padding:12px;border-radius:6px;line-height:2;margin:10px 0}
+      .curtigrama-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+      .curtigrama-celula{padding:10px;border-radius:6px;border:1px solid #ccc}
+    </style>
+    ${corpo.innerHTML}
+    </body></html>`;
+
+  const ok = () => showToast('Atividade copiada com formatação!', 'success');
+  const fallback = () => {
+    const ta = document.createElement('textarea');
+    ta.value = textoPlano;
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    ok();
+  };
+
+  if (navigator.clipboard && window.ClipboardItem) {
+    navigator.clipboard.write([new ClipboardItem({
+      'text/html':  new Blob([htmlRico],    { type: 'text/html'  }),
+      'text/plain': new Blob([textoPlano],  { type: 'text/plain' })
+    })]).then(ok).catch(() => navigator.clipboard.writeText(textoPlano).then(ok).catch(fallback));
+  } else {
+    navigator.clipboard?.writeText(textoPlano).then(ok).catch(fallback) ?? fallback();
+  }
 }
 
 function bibNovoCard() {
