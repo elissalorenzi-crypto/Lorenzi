@@ -663,14 +663,11 @@ function renderPacientesTable(data) {
   if (contadorEl) contadorEl.textContent = `${data.length} cliente${data.length !== 1 ? 's' : ''}`;
   tbody.innerHTML = data.map((p, i) => `
     <tr>
-      <td style="text-align:center;color:var(--muted);font-size:12px;font-weight:600">${i + 1}</td>
+      <td style="text-align:center;color:var(--muted);font-size:11px;font-weight:600;width:28px;padding:0 4px">${i + 1}</td>
       <td>
-        <div style="display:flex;align-items:center;gap:10px">
-          <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--rose),var(--lavender));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:12px;flex-shrink:0">${iniciais(p.nome)}</div>
-          <div>
-            <div style="font-weight:700;color:var(--plum)">${p.nome}</div>
-            ${p.cpf ? `<div style="font-size:11px;color:var(--muted)">${p.cpf}</div>` : ''}
-          </div>
+        <div>
+          <div style="font-weight:700;color:var(--plum)">${p.nome}</div>
+          ${p.cpf ? `<div style="font-size:11px;color:var(--muted)">${p.cpf}</div>` : ''}
         </div>
       </td>
       <td>
