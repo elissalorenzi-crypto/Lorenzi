@@ -1192,8 +1192,112 @@ function atualizarBrand() {
 let _contratos = [];
 
 async function loadContratos() {
-  _contratos = await api('GET', '/contratos');
+  const [contratos, convites] = await Promise.all([
+    api('GET', '/contratos'),
+    api('GET', '/convites')
+  ]);
+  _contratos = contratos;
+  renderConvitesPendentes(convites);
   filtrarContratos();
+}
+
+function renderConvitesPendentes(convites) {
+  const pendentes = convites.filter(c => !c.usado && new Date(c.expires_at) > new Date());
+  const expirados = convites.filter(c => !c.usado && new Date(c.expires_at) <= new Date());
+
+  let el = document.getElementById('convites-pendentes');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'convites-pendentes';
+    el.style.marginBottom = '16px';
+    document.getElementById('section-contratos').prepend(el);
+  }
+
+  if (!pendentes.length && !expirados.length) { el.innerHTML = ''; return; }
+
+  el.innerHTML = `
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">📨 Convites Enviados</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Paciente</th><th>Enviado em</th><th>Expira em</th><th>Status</th><th>Link</th><th></th></tr></thead>
+          <tbody>
+            ${[...pendentes, ...expirados].map(c => {
+              const exp = new Date(c.expires_at);
+              const expirado = exp <= new Date();
+              const diasRestantes = Math.ceil((exp - new Date()) / 86400000);
+              return `
+                <tr>
+                  <td><strong>${c.nome_paciente || '—'}</strong></td>
+                  <td>${fmtData(c.created_at?.split(' ')[0])}</td>
+                  <td>${fmtData(c.expires_at?.split(' ')[0])}</td>
+                  <td>${expirado
+                    ? '<span style="color:var(--red);font-size:12px;font-weight:700">Expirado</span>'
+                    : `<span style="color:var(--sage);font-size:12px;font-weight:700">Pendente · ${diasRestantes}d</span>`}
+                  </td>
+                  <td>
+                    ${!expirado ? `<button class="btn btn-outline btn-xs" onclick="copiarLinkConvite('${c.token}')">📋 Copiar Link</button>` : '—'}
+                  </td>
+                  <td>
+                    <button class="btn btn-ghost btn-xs" style="color:var(--red)" onclick="cancelarConvite(${c.id})">🗑</button>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function copiarLinkConvite(token) {
+  const link = `${location.origin}/contratos/?token=${token}`;
+  navigator.clipboard.writeText(link).then(() => toast('Link copiado! 📋'));
+}
+
+async function cancelarConvite(id) {
+  if (!confirm('Cancelar este convite?')) return;
+  await api('DELETE', `/convites/${id}`);
+  toast('Convite cancelado');
+  loadContratos();
+}
+
+async function novoConvite() {
+  openModal('Novo Contrato', `
+    <div class="form-group" style="margin-bottom:8px">
+      <label>Nome do Paciente</label>
+      <input type="text" id="conv-nome" placeholder="Nome completo" autofocus>
+    </div>
+    <p style="font-size:12.5px;color:var(--muted);margin-top:8px">Um link único será gerado para este paciente assinar o termo online.</p>
+    <div id="conv-link-box" style="display:none;margin-top:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--text-mid);margin-bottom:6px">Link gerado:</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="text" id="conv-link-input" readonly style="flex:1;font-size:12px;background:#f5f0fa">
+        <button class="btn btn-primary btn-sm" onclick="copiarLinkGerado()">📋 Copiar</button>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin-top:8px">⏱ Válido por 7 dias · uso único</p>
+    </div>
+  `, async () => {
+    const nome = document.getElementById('conv-nome')?.value.trim();
+    if (!nome) return toast('Informe o nome do paciente', 'error');
+    try {
+      const res = await api('POST', '/convites', { nome_paciente: nome });
+      document.getElementById('conv-link-input').value = res.link;
+      document.getElementById('conv-link-box').style.display = 'block';
+      document.getElementById('modal-save-btn').style.display = 'none';
+      navigator.clipboard.writeText(res.link).catch(() => {});
+      toast('Link gerado e copiado! 📋');
+      loadContratos();
+    } catch(e) { toast(e.message, 'error'); }
+  }, { saveLabel: 'Gerar Link' });
+}
+
+function copiarLinkGerado() {
+  const link = document.getElementById('conv-link-input')?.value;
+  if (link) navigator.clipboard.writeText(link).then(() => toast('Link copiado! 📋'));
 }
 
 function filtrarContratos() {

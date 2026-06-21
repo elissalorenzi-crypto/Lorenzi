@@ -125,6 +125,30 @@ app.get('/api/financeiro', (req, res) => {
   res.json(db.getFinanceiro(ano, mes));
 });
 
+// ── CONVITES ─────────────────────────────────────────────────
+app.get('/api/convites', (req, res) => res.json(db.getConvites()));
+
+app.post('/api/convites', (req, res) => {
+  try {
+    const token = db.createConvite(req.body.nome_paciente);
+    const base  = `${req.protocol}://${req.get('host')}`;
+    res.json({ token, link: `${base}/contratos/?token=${token}`, success: true });
+  } catch(e) { erro(res, e); }
+});
+
+app.get('/api/convites/validar/:token', (req, res) => {
+  const c = db.getConviteByToken(req.params.token);
+  if (!c)        return res.status(404).json({ error: 'Link inválido.' });
+  if (c.usado)   return res.status(410).json({ error: 'Este link já foi utilizado.' });
+  if (new Date(c.expires_at) < new Date()) return res.status(410).json({ error: 'Este link expirou. Solicite um novo.' });
+  res.json(c);
+});
+
+app.delete('/api/convites/:id', (req, res) => {
+  try { db.deleteConvite(req.params.id); res.json({ success: true }); }
+  catch(e) { erro(res, e); }
+});
+
 // ── CONTRATOS ────────────────────────────────────────────────
 app.get('/api/contratos', (req, res) => res.json(db.getContratos()));
 
@@ -154,6 +178,11 @@ app.post('/api/contratos', (req, res) => {
       }
     } catch(e) {
       console.warn('Aviso: não foi possível criar paciente automaticamente:', e.message);
+    }
+
+    // Marca o convite como usado se veio com token
+    if (req.body.token) {
+      try { db.usarConvite(req.body.token, id); } catch(e) {}
     }
 
     res.json({ id, success: true });

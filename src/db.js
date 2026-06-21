@@ -87,6 +87,17 @@ db.exec(`
     aceite           INTEGER DEFAULT 0,
     created_at       TEXT DEFAULT (datetime('now','localtime'))
   );
+
+  CREATE TABLE IF NOT EXISTS convites (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    token          TEXT NOT NULL UNIQUE,
+    nome_paciente  TEXT,
+    expires_at     TEXT NOT NULL,
+    usado          INTEGER DEFAULT 0,
+    contrato_id    INTEGER,
+    created_at     TEXT DEFAULT (datetime('now','localtime')),
+    FOREIGN KEY (contrato_id) REFERENCES contratos(id)
+  );
 `);
 
 // Seed configurações padrão
@@ -362,6 +373,32 @@ const setConfig = (chave, valor) =>
   db.prepare('INSERT OR REPLACE INTO configuracoes (chave, valor) VALUES (?,?)').run(chave, valor);
 
 // ============================================================
+// CONVITES
+// ============================================================
+const crypto = require('crypto');
+
+const createConvite = (nome_paciente) => {
+  const token = crypto.randomBytes(16).toString('hex');
+  rid(db.prepare(`
+    INSERT INTO convites (token, nome_paciente, expires_at)
+    VALUES (?, ?, datetime('now', '+7 days', 'localtime'))
+  `).run(token, nome_paciente || null));
+  return token;
+};
+
+const getConvites = () =>
+  db.prepare('SELECT * FROM convites ORDER BY created_at DESC').all();
+
+const getConviteByToken = (token) =>
+  db.prepare('SELECT * FROM convites WHERE token=?').get(token);
+
+const usarConvite = (token, contrato_id) =>
+  db.prepare('UPDATE convites SET usado=1, contrato_id=? WHERE token=?').run(contrato_id, token);
+
+const deleteConvite = (id) =>
+  db.prepare('DELETE FROM convites WHERE id=?').run(id);
+
+// ============================================================
 // CONTRATOS
 // ============================================================
 const getContratos = () =>
@@ -387,5 +424,6 @@ module.exports = {
   getAgendamentos, getAgendamentoById, createAgendamento, updateAgendamento, deleteAgendamento,
   getProntuarios, createProntuario, updateProntuario, deleteProntuario,
   getDashboard, getFinanceiro, getConfig, setConfig,
-  getContratos, createContrato, deleteContrato
+  getContratos, createContrato, deleteContrato,
+  createConvite, getConvites, getConviteByToken, usarConvite, deleteConvite
 };

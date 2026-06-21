@@ -257,6 +257,16 @@
     .btn-enviar:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(194,101,122,.45); }
     .btn-enviar:disabled { opacity: .6; cursor: not-allowed; transform: none; }
 
+    /* Link inválido */
+    .link-invalido {
+      display: none;
+      text-align: center;
+      padding: 48px 32px;
+    }
+    .link-invalido .icone { font-size: 52px; margin-bottom: 16px; }
+    .link-invalido h3 { font-size: 20px; font-weight: 800; color: var(--plum); margin-bottom: 8px; }
+    .link-invalido p { color: var(--muted); font-size: 14px; line-height: 1.7; }
+
     /* Mensagem de sucesso */
     .sucesso {
       display: none;
@@ -501,6 +511,13 @@
       </button>
     </div>
 
+    <!-- Link inválido -->
+    <div class="link-invalido" id="link-invalido">
+      <div class="icone">🔒</div>
+      <h3>Link inválido</h3>
+      <p id="link-invalido-msg">Este link não é válido.<br>Por favor, solicite um novo link à psicóloga.</p>
+    </div>
+
     <!-- Mensagem de sucesso -->
     <div class="sucesso" id="sucesso">
       <div class="icone">🌸</div>
@@ -516,7 +533,9 @@
 </div><!-- /page -->
 
 <script>
-  // Carrega dados da psicóloga
+  let _token = null;
+
+  // Carrega dados da psicóloga e valida token
   fetch('/api/configuracoes')
     .then(r => r.json())
     .then(cfg => {
@@ -524,6 +543,31 @@
       if (cfg.crp)            document.getElementById('psico-crp').textContent  = cfg.crp;
     })
     .catch(() => {});
+
+  // Valida token do link
+  const _params = new URLSearchParams(window.location.search);
+  _token = _params.get('token');
+
+  if (!_token) {
+    document.getElementById('formulario').style.display = 'none';
+    document.getElementById('link-invalido').style.display = 'block';
+  } else {
+    fetch(`/api/convites/validar/${_token}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) {
+          document.getElementById('formulario').style.display = 'none';
+          document.getElementById('link-invalido').style.display = 'block';
+          document.getElementById('link-invalido-msg').textContent = data.error + '\nPor favor, solicite um novo link à psicóloga.';
+        } else if (data.nome_paciente) {
+          document.getElementById('f-nome').value = data.nome_paciente;
+        }
+      })
+      .catch(() => {
+        document.getElementById('formulario').style.display = 'none';
+        document.getElementById('link-invalido').style.display = 'block';
+      });
+  }
 
   function toggleMenor() {
     const chk = document.getElementById('chk-menor');
@@ -602,7 +646,8 @@
       forma_pgto:      document.querySelector('input[name="forma_pgto"]:checked').value,
       nome_responsavel: menor ? document.getElementById('f-nome-resp').value.trim() : null,
       cpf_responsavel:  menor ? document.getElementById('f-cpf-resp').value.trim()  : null,
-      aceite: 1
+      aceite: 1,
+      token: _token
     };
 
     try {
