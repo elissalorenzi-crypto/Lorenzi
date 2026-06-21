@@ -198,8 +198,14 @@
       <div id="pacientes-list-view">
         <div class="card">
           <div class="card-header">
-            <span class="card-title">Clientes Ativos</span>
-            <button class="btn btn-primary btn-sm" onclick="openModalPaciente()">+ Novo Cliente</button>
+            <span class="card-title" id="pac-list-title">Clientes Ativos</span>
+            <div style="display:flex;gap:8px;align-items:center">
+              <select id="pac-filtro-status" onchange="filtrarPacientes()" style="font-size:12.5px;padding:6px 10px">
+                <option value="ativos">Clientes Ativos</option>
+                <option value="todos">Todos os Clientes</option>
+              </select>
+              <button class="btn btn-primary btn-sm" onclick="openModalPaciente()">+ Novo Cliente</button>
+            </div>
           </div>
           <div class="card-body" style="padding-bottom:0">
             <div class="search-wrap" style="margin-bottom:14px">

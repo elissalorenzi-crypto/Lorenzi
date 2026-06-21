@@ -639,13 +639,17 @@ async function loadPacientes() {
 }
 
 function filtrarPacientes() {
-  const q = (document.getElementById('pac-search')?.value || '').toLowerCase();
-  const filtered = _pacientes.filter(p =>
-    !q || p.nome.toLowerCase().includes(q) ||
-    (p.cpf||'').includes(q) ||
-    (p.convenio||'').toLowerCase().includes(q) ||
-    (p.email||'').toLowerCase().includes(q)
-  );
+  const q      = (document.getElementById('pac-search')?.value || '').toLowerCase();
+  const status = document.getElementById('pac-filtro-status')?.value || 'ativos';
+  const titulo = document.getElementById('pac-list-title');
+  if (titulo) titulo.textContent = status === 'todos' ? 'Todos os Clientes' : 'Clientes Ativos';
+  const filtered = _pacientes.filter(p => {
+    if (status === 'ativos' && !p.ativo) return false;
+    return !q || p.nome.toLowerCase().includes(q) ||
+      (p.cpf||'').includes(q) ||
+      (p.convenio||'').toLowerCase().includes(q) ||
+      (p.email||'').toLowerCase().includes(q);
+  });
   renderPacientesTable(filtered);
 }
 
