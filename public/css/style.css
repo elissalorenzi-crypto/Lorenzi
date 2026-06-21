@@ -723,9 +723,14 @@ tbody tr:hover { background: var(--rose-pale); }
 .status-select.sim        { border-color: var(--sage); color: var(--sage); background-color: var(--sage-pale); }
 .status-select.nao        { border-color: var(--muted); color: var(--muted); background-color: var(--bg); }
 .status-select.nf         { min-width: 68px; }
-.status-select.semanal    { border-color: var(--lavender); color: var(--lavender); background-color: #f3eeff; }
-.status-select.quinzenal  { border-color: var(--peach); color: var(--peach); background-color: #fef3e8; }
-.status-select.mensal     { border-color: var(--muted); color: var(--muted); background-color: var(--bg); }
+.status-select.semanal      { border-color: var(--lavender); color: var(--lavender); background-color: #f3eeff; }
+.status-select.quinzenal    { border-color: var(--peach); color: var(--peach); background-color: #fef3e8; }
+.status-select.mensal       { border-color: var(--muted); color: var(--muted); background-color: var(--bg); }
+.status-select.pix          { border-color: var(--sage); color: var(--sage); background-color: var(--sage-pale); }
+.status-select.credito      { border-color: var(--lavender); color: var(--lavender); background-color: #f3eeff; }
+.status-select.debito       { border-color: var(--peach); color: var(--peach); background-color: #fef3e8; }
+.status-select.dinheiro     { border-color: var(--rose); color: var(--rose); background-color: #fef0f3; }
+.status-select.transferencia{ border-color: var(--muted); color: var(--muted); background-color: var(--bg); }
 .status-select:focus { outline: none; box-shadow: 0 0 0 3px rgba(0,0,0,.06); }
 
 /* ── ONLY-MOBILE ─────────────────────────────────────────── */

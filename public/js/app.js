@@ -692,7 +692,16 @@ function renderPacientesTable(data) {
           <option value="mensal">Mensal</option>
         </select>`}
       </td>
-      <td style="font-size:11px;color:var(--muted);white-space:nowrap">${{pix:'PIX',credito:'Crédito',debito:'Débito',dinheiro:'Dinheiro',transferencia:'Transf.'}[p.forma_pgto] || '—'}</td>
+      <td>
+        <select class="status-select ${p.forma_pgto || 'pix'}"
+                onchange="this.className='status-select '+this.value;alterarFormaPgto(${p.id},this.value)">
+          <option value="pix"          ${p.forma_pgto==='pix'          ?'selected':''}>PIX</option>
+          <option value="credito"      ${p.forma_pgto==='credito'      ?'selected':''}>Crédito</option>
+          <option value="debito"       ${p.forma_pgto==='debito'       ?'selected':''}>Débito</option>
+          <option value="dinheiro"     ${p.forma_pgto==='dinheiro'     ?'selected':''}>Dinheiro</option>
+          <option value="transferencia"${p.forma_pgto==='transferencia'?'selected':''}>Transf.</option>
+        </select>
+      </td>
       <td>
         <select class="status-select nf ${p.nota_fiscal === 'sim' ? 'sim' : 'nao'}"
                 onchange="this.className='status-select nf '+this.value;alterarNotaFiscal(${p.id},this.value)">
@@ -982,6 +991,14 @@ async function deletePacienteItem(id) {
   await api('DELETE', `/pacientes/${id}`);
   toast('Cliente desativado');
   loadPacientes();
+}
+
+async function alterarFormaPgto(id, valor) {
+  const p = await api('GET', `/pacientes/${id}`);
+  if (!p?.id) return;
+  await api('PUT', `/pacientes/${id}`, { ...p, forma_pgto: valor });
+  const label = { pix:'PIX', credito:'Crédito', debito:'Débito', dinheiro:'Dinheiro', transferencia:'Transferência' }[valor] || valor;
+  toast(`Forma de pagamento: ${label}`);
 }
 
 async function alterarFrequencia(id, valor) {
