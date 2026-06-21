@@ -7,25 +7,25 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --rose:     #c2657a;
-      --plum:     #2d1b3d;
-      --lavender: #9b7fba;
-      --sage:     #5aaa87;
-      --muted:    #a090b8;
-      --border:   #ede5f5;
-      --bg:       #faf6fb;
+      --rose:     #75553C;
+      --plum:     #14392F;
+      --lavender: #CEBDB0;
+      --sage:     #2A6B4A;
+      --muted:    #9B8A7E;
+      --border:   #D4C8BE;
+      --bg:       #EBEBEB;
     }
     body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--plum); font-size:15px; line-height:1.6; padding:0 0 60px; }
-    .page { max-width:680px; margin:0 auto; background:#fff; border-radius:0 0 18px 18px; box-shadow:0 8px 40px rgba(45,27,61,.12); overflow:hidden; }
+    .page { max-width:680px; margin:0 auto; background:#fff; border-radius:0 0 18px 18px; box-shadow:0 8px 40px rgba(20,57,47,.12); overflow:hidden; }
 
     /* Header */
-    .header { background:linear-gradient(135deg,#2d1b3d 0%,#503468 100%); padding:30px 36px 26px; text-align:center; color:#fff; }
+    .header { background:linear-gradient(135deg,#14392F 0%,#1e4d3f 100%); padding:30px 36px 26px; text-align:center; color:#fff; }
     .header .logo { font-size:34px; margin-bottom:8px; }
     .header h1 { font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#e8c5d5; margin-bottom:5px; }
     .header .psico-nome { font-size:19px; font-weight:800; }
     .header .crp { font-size:12px; color:#c4a8d8; margin-top:3px; }
 
-    .hero { background:linear-gradient(90deg,#fce8f2,#f5eef8); padding:20px 36px; border-bottom:2px solid var(--border); }
+    .hero { background:linear-gradient(90deg,#F5EDE7,#EDE5DC); padding:20px 36px; border-bottom:2px solid var(--border); }
     .hero h2 { font-size:16px; font-weight:800; color:var(--plum); }
     .hero p  { font-size:13px; color:var(--muted); margin-top:3px; }
 
@@ -46,19 +46,19 @@
       position:relative;
     }
     .cal-day.disponivel {
-      background:linear-gradient(135deg,#fce8f2,#f5eef8);
+      background:linear-gradient(135deg,#F5EDE7,#EDE0D5);
       color:var(--plum); font-weight:700; cursor:pointer;
       border:2px solid var(--border);
       transition:all .15s;
     }
-    .cal-day.disponivel:hover { border-color:var(--rose); background:linear-gradient(135deg,#f9d5e3,#ede5f5); transform:scale(1.05); }
+    .cal-day.disponivel:hover { border-color:var(--rose); background:linear-gradient(135deg,#EDE0D5,#D4C8BE); transform:scale(1.05); }
     .cal-day.disponivel.selecionado { background:var(--rose); color:#fff; border-color:var(--rose); }
     .cal-day.hoje { font-weight:800; }
     .cal-day.hoje::after { content:''; position:absolute; bottom:4px; left:50%; transform:translateX(-50%); width:4px; height:4px; border-radius:50%; background:var(--rose); }
     .cal-day.disponivel.hoje::after { background:#fff; }
 
     /* Horários */
-    .horarios-box { display:none; margin-top:22px; padding:20px; background:#fdf6fb; border-radius:14px; border:2px solid var(--border); }
+    .horarios-box { display:none; margin-top:22px; padding:20px; background:#F5EDE7; border-radius:14px; border:2px solid var(--border); }
     .horarios-box.visivel { display:block; }
     .horarios-titulo { font-size:13px; font-weight:800; color:var(--plum); margin-bottom:12px; }
     .horarios-grid { display:flex; flex-wrap:wrap; gap:8px; }
@@ -71,7 +71,7 @@
     .hora-btn.selecionado { background:var(--rose); color:#fff; border-color:var(--rose); }
 
     /* Formulário */
-    .form-box { display:none; margin-top:20px; padding:22px; background:linear-gradient(135deg,#fdf0f5,#f5eef8); border-radius:14px; border:2px solid var(--border); }
+    .form-box { display:none; margin-top:20px; padding:22px; background:linear-gradient(135deg,#F5EDE7,#EDE0D5); border-radius:14px; border:2px solid var(--border); }
     .form-box.visivel { display:block; }
     .resumo-agendamento { font-size:14px; font-weight:700; color:var(--rose); margin-bottom:16px; padding:10px 14px; background:#fff; border-radius:8px; border:1.5px solid var(--border); }
     .form-group { display:flex; flex-direction:column; gap:5px; margin-bottom:14px; }
