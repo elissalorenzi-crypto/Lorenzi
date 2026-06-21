@@ -285,7 +285,7 @@ async function loadDashboard() {
 // ============================================================
 // ── AGENDA ───────────────────────────────────────────────────
 // ============================================================
-let _agendaSemana = getSegundaFeira(HOJE());
+let _agendaSemana = HOJE();
 let _agendaData   = [];
 
 async function loadAgenda() {
@@ -306,7 +306,7 @@ function agendaNavSemana(delta) {
 }
 
 function agendaIrHoje() {
-  _agendaSemana = getSegundaFeira(HOJE());
+  _agendaSemana = HOJE();
   fetchAgendaSemana();
 }
 
@@ -318,9 +318,11 @@ function renderAgendaGrid() {
   const fim = addDays(_agendaSemana, 6);
   const [, mI, dI] = _agendaSemana.split('-');
   const [, mF, dF] = fim.split('-');
-  label.textContent = mI === mF
+  const isHojeInicio = _agendaSemana === HOJE();
+  const intervalo = mI === mF
     ? `${parseInt(dI)} – ${parseInt(dF)} de ${MESES[parseInt(mI)-1]}`
     : `${parseInt(dI)} ${MESES[parseInt(mI)-1].slice(0,3)} – ${parseInt(dF)} ${MESES[parseInt(mF)-1].slice(0,3)}`;
+  label.textContent = isHojeInicio ? `Hoje · ${intervalo}` : intervalo;
 
   const dias = Array.from({length:7}, (_, i) => addDays(_agendaSemana, i));
 
