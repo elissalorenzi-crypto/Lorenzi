@@ -180,7 +180,7 @@ async function loadDashboard() {
   const primeiroNome = (_config.nome_psicologa || 'Doutora').split(' ')[0];
   document.getElementById('dash-greeting').innerHTML = `
     <div style="display:flex;align-items:baseline;gap:10px">
-      <h2 style="font-size:22px;font-weight:800;color:var(--plum)">${saudacao}, ${primeiroNome} 🌸</h2>
+      <h2 style="font-size:22px;font-weight:800;color:var(--plum)">${saudacao}, ${primeiroNome}</h2>
       <span style="font-size:14px;color:var(--muted)">${new Date().toLocaleDateString('pt-BR', {weekday:'long', day:'numeric', month:'long'})}</span>
     </div>
   `;
@@ -528,7 +528,7 @@ async function openModalAgendamento(ag = null, dataPreset = null, pacienteIdPres
     if (!body.data || !body.hora) return toast('Data e hora são obrigatórios', 'error');
     try {
       if (isEdit) { await api('PUT', `/agendamentos/${ag.id}`, body); toast('Agendamento atualizado!'); }
-      else        { await api('POST', '/agendamentos', body);          toast('Sessão agendada! 🌸'); }
+      else        { await api('POST', '/agendamentos', body);          toast('Sessão agendada!'); }
       closeModal();
       refreshAll();
     } catch(e) { toast(e.message, 'error'); }
@@ -652,7 +652,7 @@ async function openModalGerenciarAgenda() {
         salvos++;
       } catch(e) {}
     }
-    toast(`${salvos} sessão(ões) atualizada(s)! 🌸`);
+    toast(`${salvos} sessão(ões) atualizada(s)!`);
     closeModal();
     refreshAll();
   }, { saveLabel: '💾 Salvar Alterações' });
@@ -1064,8 +1064,8 @@ function openModalPaciente(p = {}) {
     };
     if (!body.nome) return toast('Nome é obrigatório', 'error');
     try {
-      if (p.id) { await api('PUT', `/pacientes/${p.id}`, body); toast('Cliente atualizado! 🌸'); }
-      else      { await api('POST', '/pacientes', body);         toast('Cliente cadastrado! 🌸'); }
+      if (p.id) { await api('PUT', `/pacientes/${p.id}`, body); toast('Cliente atualizado!'); }
+      else      { await api('POST', '/pacientes', body);         toast('Cliente cadastrado!'); }
       closeModal();
       refreshAll();
     } catch(e) { toast(e.message, 'error'); }
@@ -1624,7 +1624,7 @@ async function salvarConfiguracoes() {
     await api('POST', '/configuracoes', body);
     _config = { ..._config, ...body };
     atualizarBrand();
-    toast('Configurações salvas! 🌸');
+    toast('Configurações salvas!');
 
     // Se o valor padrão mudou, oferece atualizar pacientes que ainda usam o valor antigo
     if (novoValor !== valorAntigo && valorAntigo > 0) {
@@ -1642,7 +1642,7 @@ async function salvarConfiguracoes() {
           for (const p of desatualizadas) {
             await api('PUT', `/pacientes/${p.id}`, { ...p, valor_sessao: novoValor });
           }
-          toast(`${desatualizadas.length} cliente(s) atualizado(s)! 🌸`);
+          toast(`${desatualizadas.length} cliente(s) atualizado(s)!`);
           closeModal();
         }, { saveLabel: 'Sim, atualizar clientes' });
       }
@@ -1971,7 +1971,7 @@ async function novoConvite() {
             criadas++;
           } catch(e) {}
         }
-        toast(`Link gerado + ${criadas} sessão(ões) agendada(s)! 🌸`);
+        toast(`Link gerado + ${criadas} sessão(ões) agendada(s)!`);
       } else {
         toast('Link gerado e copiado! 📋');
       }
