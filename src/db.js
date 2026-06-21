@@ -166,7 +166,8 @@ const updatePaciente = (id, data) =>
     UPDATE pacientes SET
       nome=?, cpf=?, data_nascimento=?, sexo=?, telefone=?, whatsapp=?, email=?,
       endereco=?, ocupacao=?, convenio=?, num_convenio=?, responsavel=?,
-      tel_responsavel=?, queixa_principal=?, encaminhamento=?, valor_sessao=?, obs=?
+      tel_responsavel=?, queixa_principal=?, encaminhamento=?, valor_sessao=?, obs=?,
+      ativo=?, nota_fiscal=?, forma_pgto=?
     WHERE id=?
   `).run(
     data.nome, data.cpf || null, data.data_nascimento || null, data.sexo || 'F',
@@ -174,7 +175,8 @@ const updatePaciente = (id, data) =>
     data.ocupacao || null, data.convenio || null, data.num_convenio || null,
     data.responsavel || null, data.tel_responsavel || null,
     data.queixa_principal || null, data.encaminhamento || null,
-    data.valor_sessao || 0, data.obs || null, id
+    data.valor_sessao || 0, data.obs || null,
+    data.ativo ?? 1, data.nota_fiscal || 'nao', data.forma_pgto || null, id
   );
 
 const deletePaciente = (id) =>
