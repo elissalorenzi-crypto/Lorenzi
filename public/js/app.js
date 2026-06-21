@@ -1199,6 +1199,14 @@ async function loadContratos() {
   _contratos = contratos;
   renderConvitesPendentes(convites);
   filtrarContratos();
+  // Marca todos como vistos e limpa badge/dashboard
+  try {
+    await api('POST', '/contratos/marcar-vistos');
+    const badge = document.getElementById('badge-contratos');
+    if (badge) { badge.textContent = ''; badge.style.display = 'none'; }
+    const el = document.getElementById('dash-novidades');
+    if (el) el.style.display = 'none';
+  } catch(e) {}
 }
 
 function renderConvitesPendentes(convites) {
@@ -1351,10 +1359,45 @@ async function deleteContratoItem(id) {
 
 // ── INIT ─────────────────────────────────────────────────────
 // ============================================================
+async function loadNotificacoes() {
+  try {
+    const { count, contratos } = await api('GET', '/contratos/novos');
+    const badge = document.getElementById('badge-contratos');
+    if (badge) {
+      badge.textContent = count || '';
+      badge.style.display = count > 0 ? 'inline-block' : 'none';
+    }
+    const el = document.getElementById('dash-novidades');
+    if (!el) return;
+    if (!count) { el.style.display = 'none'; return; }
+    el.style.display = 'block';
+    el.innerHTML = `
+      <div class="card" style="border-left:3px solid var(--rose)">
+        <div class="card-header">
+          <span class="card-title">🔔 ${count} novo${count > 1 ? 's' : ''} contrato${count > 1 ? 's' : ''} assinado${count > 1 ? 's' : ''}</span>
+          <button class="btn btn-primary btn-sm" onclick="navigate('contratos')">Ver contratos</button>
+        </div>
+        <div class="card-body" style="padding-top:4px">
+          ${contratos.slice(0, 5).map(c => `
+            <div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px">
+              <span style="font-size:20px">📝</span>
+              <div>
+                <div style="font-weight:700;font-size:13.5px">${c.nome}</div>
+                <div style="font-size:12px;color:var(--muted)">${fmtData(c.created_at?.split(' ')[0])} · ${c.origem === 'whatsapp' ? 'WhatsApp' : 'Online'}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  } catch(e) {}
+}
+
 async function init() {
   _config = await api('GET', '/configuracoes');
   atualizarBrand();
   loadDashboard();
+  loadNotificacoes();
 }
 
 init();

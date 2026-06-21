@@ -110,6 +110,19 @@ nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
 }
 .nav-link .icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
 .nav-link:hover { background: rgba(194,101,122,.12); color: var(--plum); }
+.nav-badge {
+  background: var(--rose);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: auto;
+  min-width: 18px;
+  text-align: center;
+  line-height: 1.5;
+}
+.nav-link.active .nav-badge { background: rgba(255,255,255,.35); color: #fff; }
 .nav-link.active {
   background: linear-gradient(90deg, var(--rose) 0%, var(--lavender) 100%);
   color: #fff;

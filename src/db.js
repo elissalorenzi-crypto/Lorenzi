@@ -100,6 +100,9 @@ db.exec(`
   );
 `);
 
+// Migração: adiciona coluna visto em contratos se ainda não existir
+try { db.prepare('ALTER TABLE contratos ADD COLUMN visto INTEGER DEFAULT 0').run(); } catch(e) {}
+
 // Seed configurações padrão
 const cfgCount = db.prepare('SELECT COUNT(*) as n FROM configuracoes').get().n;
 if (cfgCount === 0) {
@@ -372,6 +375,9 @@ const getConfig = () => {
 const setConfig = (chave, valor) =>
   db.prepare('INSERT OR REPLACE INTO configuracoes (chave, valor) VALUES (?,?)').run(chave, valor);
 
+const getContratosNovos    = () => db.prepare('SELECT * FROM contratos WHERE visto=0 ORDER BY created_at DESC').all();
+const marcarContratosVistos = () => db.prepare('UPDATE contratos SET visto=1 WHERE visto=0').run();
+
 // ============================================================
 // CONVITES
 // ============================================================
@@ -424,6 +430,6 @@ module.exports = {
   getAgendamentos, getAgendamentoById, createAgendamento, updateAgendamento, deleteAgendamento,
   getProntuarios, createProntuario, updateProntuario, deleteProntuario,
   getDashboard, getFinanceiro, getConfig, setConfig,
-  getContratos, createContrato, deleteContrato,
+  getContratos, createContrato, deleteContrato, getContratosNovos, marcarContratosVistos,
   createConvite, getConvites, getConviteByToken, usarConvite, deleteConvite
 };

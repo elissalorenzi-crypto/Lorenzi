@@ -152,6 +152,16 @@ app.delete('/api/convites/:id', (req, res) => {
 // ── CONTRATOS ────────────────────────────────────────────────
 app.get('/api/contratos', (req, res) => res.json(db.getContratos()));
 
+app.get('/api/contratos/novos', (req, res) => {
+  const contratos = db.getContratosNovos();
+  res.json({ count: contratos.length, contratos });
+});
+
+app.post('/api/contratos/marcar-vistos', (req, res) => {
+  try { db.marcarContratosVistos(); res.json({ success: true }); }
+  catch(e) { erro(res, e); }
+});
+
 app.post('/api/contratos', (req, res) => {
   try {
     const id = db.createContrato(req.body);
