@@ -173,7 +173,15 @@ app.get('/api/agendamento-links/:token/slots', (req, res) => {
   }
 
   const cfg = db.getConfig();
-  res.json({ slots, nome_psicologa: cfg.nome_psicologa, crp: cfg.crp });
+
+  // Remove horários dentro do intervalo bloqueado (ex: 11:00–14:00)
+  const bIni = cfg.bloqueio_inicio || '';
+  const bFim = cfg.bloqueio_fim    || '';
+  const slotsFinais = (bIni && bFim)
+    ? slots.filter(s => !(s.hora >= bIni && s.hora < bFim))
+    : slots;
+
+  res.json({ slots: slotsFinais, nome_psicologa: cfg.nome_psicologa, crp: cfg.crp });
 });
 
 app.post('/api/agendamento-links/:token/reservar', (req, res) => {

@@ -1222,8 +1222,10 @@ async function loadConfiguracoes() {
   document.getElementById('cfg-especialidade').value= cfg.especialidade || '';
   document.getElementById('cfg-valor').value        = cfg.valor_sessao_padrao || 180;
   document.getElementById('cfg-duracao').value      = cfg.duracao_sessao || 50;
-  document.getElementById('cfg-inicio').value       = cfg.horario_inicio || '08:00';
-  document.getElementById('cfg-fim').value          = cfg.horario_fim || '18:00';
+  document.getElementById('cfg-inicio').value          = cfg.horario_inicio    || '08:00';
+  document.getElementById('cfg-fim').value             = cfg.horario_fim       || '18:00';
+  document.getElementById('cfg-bloqueio-inicio').value = cfg.bloqueio_inicio   || '';
+  document.getElementById('cfg-bloqueio-fim').value    = cfg.bloqueio_fim      || '';
 }
 
 async function salvarConfiguracoes() {
@@ -1237,7 +1239,9 @@ async function salvarConfiguracoes() {
     valor_sessao_padrao:  novoValor,
     duracao_sessao:       document.getElementById('cfg-duracao').value,
     horario_inicio:       document.getElementById('cfg-inicio').value,
-    horario_fim:          document.getElementById('cfg-fim').value
+    horario_fim:          document.getElementById('cfg-fim').value,
+    bloqueio_inicio:      document.getElementById('cfg-bloqueio-inicio').value || '',
+    bloqueio_fim:         document.getElementById('cfg-bloqueio-fim').value    || ''
   };
   try {
     await api('POST', '/configuracoes', body);

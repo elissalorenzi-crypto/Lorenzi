@@ -350,6 +350,20 @@
               </div>
             </div>
           </div>
+          <div class="config-section">
+            <div class="config-section-title">Horário Bloqueado</div>
+            <p style="font-size:12.5px;color:var(--muted);margin-bottom:12px">Horários neste intervalo não aparecerão no link de agendamento (ex: almoço).</p>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Início do bloqueio</label>
+                <input type="time" id="cfg-bloqueio-inicio">
+              </div>
+              <div class="form-group">
+                <label>Fim do bloqueio</label>
+                <input type="time" id="cfg-bloqueio-fim">
+              </div>
+            </div>
+          </div>
           <div style="display:flex;justify-content:flex-end;margin-top:8px">
             <button class="btn btn-primary" onclick="salvarConfiguracoes()">💾 Salvar Configurações</button>
           </div>
