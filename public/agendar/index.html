@@ -15,74 +15,102 @@
       --border:   #ede5f5;
       --bg:       #faf6fb;
     }
-    body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--plum); font-size:15px; line-height:1.7; padding:0 0 60px; }
+    body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--plum); font-size:15px; line-height:1.6; padding:0 0 60px; }
     .page { max-width:680px; margin:0 auto; background:#fff; border-radius:0 0 18px 18px; box-shadow:0 8px 40px rgba(45,27,61,.12); overflow:hidden; }
 
-    .header { background:linear-gradient(135deg,#2d1b3d 0%,#503468 100%); padding:32px 40px 28px; text-align:center; color:#fff; }
-    .header .logo { font-size:36px; margin-bottom:8px; }
-    .header h1 { font-size:12px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#e8c5d5; margin-bottom:6px; }
-    .header .psico-nome { font-size:20px; font-weight:800; }
+    /* Header */
+    .header { background:linear-gradient(135deg,#2d1b3d 0%,#503468 100%); padding:30px 36px 26px; text-align:center; color:#fff; }
+    .header .logo { font-size:34px; margin-bottom:8px; }
+    .header h1 { font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#e8c5d5; margin-bottom:5px; }
+    .header .psico-nome { font-size:19px; font-weight:800; }
     .header .crp { font-size:12px; color:#c4a8d8; margin-top:3px; }
 
-    .hero { background:linear-gradient(90deg,#fce8f2,#f5eef8); padding:24px 40px; border-bottom:2px solid var(--border); }
-    .hero h2 { font-size:17px; font-weight:800; color:var(--plum); }
-    .hero p { font-size:13.5px; color:var(--muted); margin-top:4px; }
+    .hero { background:linear-gradient(90deg,#fce8f2,#f5eef8); padding:20px 36px; border-bottom:2px solid var(--border); }
+    .hero h2 { font-size:16px; font-weight:800; color:var(--plum); }
+    .hero p  { font-size:13px; color:var(--muted); margin-top:3px; }
 
-    .body { padding:32px 40px; }
+    .body { padding:28px 32px; }
 
-    .loading { text-align:center; padding:40px; color:var(--muted); font-size:14px; }
+    /* Calendário */
+    .cal-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+    .cal-mes  { font-size:16px; font-weight:800; color:var(--plum); text-transform:capitalize; }
+    .cal-btn  { background:none; border:1.5px solid var(--border); border-radius:8px; width:34px; height:34px; cursor:pointer; font-size:16px; color:var(--plum); display:flex; align-items:center; justify-content:center; transition:all .15s; }
+    .cal-btn:hover { border-color:var(--rose); color:var(--rose); }
+    .cal-btn:disabled { opacity:.3; cursor:default; }
 
-    .dia-grupo { margin-bottom:22px; }
-    .dia-titulo { font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:var(--rose); margin-bottom:10px; padding:6px 12px; background:linear-gradient(90deg,#fce8f2,#fff); border-radius:6px; border-left:3px solid var(--rose); }
-    .slots-grid { display:flex; flex-wrap:wrap; gap:8px; }
-    .slot-btn {
-      padding:10px 18px; border:2px solid var(--border); border-radius:10px;
-      background:#fff; color:var(--plum); font-size:14px; font-weight:600;
+    .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+    .cal-dow  { text-align:center; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); padding:6px 0 10px; }
+    .cal-day  {
+      aspect-ratio:1; display:flex; align-items:center; justify-content:center;
+      border-radius:10px; font-size:14px; font-weight:500; color:#ccc;
+      position:relative;
+    }
+    .cal-day.disponivel {
+      background:linear-gradient(135deg,#fce8f2,#f5eef8);
+      color:var(--plum); font-weight:700; cursor:pointer;
+      border:2px solid var(--border);
+      transition:all .15s;
+    }
+    .cal-day.disponivel:hover { border-color:var(--rose); background:linear-gradient(135deg,#f9d5e3,#ede5f5); transform:scale(1.05); }
+    .cal-day.disponivel.selecionado { background:var(--rose); color:#fff; border-color:var(--rose); }
+    .cal-day.hoje { font-weight:800; }
+    .cal-day.hoje::after { content:''; position:absolute; bottom:4px; left:50%; transform:translateX(-50%); width:4px; height:4px; border-radius:50%; background:var(--rose); }
+    .cal-day.disponivel.hoje::after { background:#fff; }
+
+    /* Horários */
+    .horarios-box { display:none; margin-top:22px; padding:20px; background:#fdf6fb; border-radius:14px; border:2px solid var(--border); }
+    .horarios-box.visivel { display:block; }
+    .horarios-titulo { font-size:13px; font-weight:800; color:var(--plum); margin-bottom:12px; }
+    .horarios-grid { display:flex; flex-wrap:wrap; gap:8px; }
+    .hora-btn {
+      padding:10px 20px; border:2px solid var(--border); border-radius:10px;
+      background:#fff; color:var(--plum); font-size:15px; font-weight:700;
       cursor:pointer; transition:all .15s;
     }
-    .slot-btn:hover { border-color:var(--rose); background:#fdf0f5; }
-    .slot-btn.selected { border-color:var(--rose); background:var(--rose); color:#fff; }
+    .hora-btn:hover { border-color:var(--rose); background:#fdf0f5; }
+    .hora-btn.selecionado { background:var(--rose); color:#fff; border-color:var(--rose); }
 
-    .form-box { display:none; margin-top:28px; padding:22px; background:linear-gradient(135deg,#fdf0f5,#f5eef8); border-radius:14px; border:2px solid var(--border); }
+    /* Formulário */
+    .form-box { display:none; margin-top:20px; padding:22px; background:linear-gradient(135deg,#fdf0f5,#f5eef8); border-radius:14px; border:2px solid var(--border); }
     .form-box.visivel { display:block; }
-    .horario-selecionado { font-size:15px; font-weight:800; color:var(--rose); margin-bottom:18px; }
+    .resumo-agendamento { font-size:14px; font-weight:700; color:var(--rose); margin-bottom:16px; padding:10px 14px; background:#fff; border-radius:8px; border:1.5px solid var(--border); }
     .form-group { display:flex; flex-direction:column; gap:5px; margin-bottom:14px; }
-    .form-group label { font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); }
-    .form-group input { border:1.5px solid var(--border); border-radius:8px; padding:10px 13px; font-family:inherit; font-size:14.5px; color:var(--plum); background:#fff; transition:border-color .15s; }
+    .form-group label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); }
+    .form-group input { border:1.5px solid var(--border); border-radius:8px; padding:11px 13px; font-family:inherit; font-size:14.5px; color:var(--plum); background:#fff; transition:border-color .15s; }
     .form-group input:focus { outline:none; border-color:var(--rose); box-shadow:0 0 0 3px rgba(194,101,122,.1); }
-    .erro-msg { color:#c0425d; font-size:12.5px; display:none; margin-top:3px; }
+    .erro-msg { color:#c0425d; font-size:12px; display:none; margin-top:2px; }
     .campo-erro input { border-color:#c0425d !important; }
     .campo-erro .erro-msg { display:block; }
 
-    .btn-confirmar {
-      width:100%; padding:15px; background:linear-gradient(135deg,var(--rose) 0%,#a0466e 100%);
-      color:#fff; border:none; border-radius:10px; font-size:16px; font-weight:700;
-      cursor:pointer; letter-spacing:.3px; box-shadow:0 4px 16px rgba(194,101,122,.35);
-      transition:all .18s; margin-top:4px;
-    }
+    .btn-confirmar { width:100%; padding:15px; background:linear-gradient(135deg,var(--rose) 0%,#a0466e 100%); color:#fff; border:none; border-radius:10px; font-size:16px; font-weight:700; cursor:pointer; box-shadow:0 4px 16px rgba(194,101,122,.35); transition:all .18s; }
     .btn-confirmar:hover { transform:translateY(-2px); }
     .btn-confirmar:disabled { opacity:.6; cursor:not-allowed; transform:none; }
 
-    .estado { display:none; text-align:center; padding:48px 32px; }
-    .estado .icone { font-size:52px; margin-bottom:14px; }
-    .estado h3 { font-size:20px; font-weight:800; color:var(--plum); margin-bottom:8px; }
+    /* Estados */
+    .estado { display:none; text-align:center; padding:44px 28px; }
+    .estado .icone { font-size:50px; margin-bottom:14px; }
+    .estado h3 { font-size:19px; font-weight:800; color:var(--plum); margin-bottom:8px; }
     .estado p { color:var(--muted); font-size:14px; line-height:1.8; }
-    .estado .btn-contrato { display:inline-block; margin-top:18px; padding:14px 28px; background:linear-gradient(135deg,var(--rose),#a0466e); color:#fff; border-radius:10px; font-weight:700; font-size:15px; text-decoration:none; box-shadow:0 4px 16px rgba(194,101,122,.35); }
+    .btn-contrato { display:inline-block; margin-top:18px; padding:14px 28px; background:linear-gradient(135deg,var(--rose),#a0466e); color:#fff; border-radius:10px; font-weight:700; font-size:15px; text-decoration:none; box-shadow:0 4px 16px rgba(194,101,122,.35); }
+
+    .loading { text-align:center; padding:40px; color:var(--muted); font-size:14px; }
 
     @media(max-width:600px) {
       body { padding:0 0 40px; }
       .page { border-radius:0; }
-      .header { padding:24px 18px 20px; }
+      .header { padding:22px 16px 18px; }
       .header .logo { font-size:28px; }
       .header .psico-nome { font-size:16px; }
-      .hero { padding:18px 18px; }
-      .body { padding:22px 16px; }
-      .slot-btn { font-size:13px; padding:9px 14px; }
+      .hero { padding:16px 16px; }
+      .body { padding:20px 14px; }
+      .cal-day { font-size:13px; border-radius:8px; }
+      .hora-btn { font-size:14px; padding:9px 16px; }
     }
   </style>
 </head>
 <body>
 <div class="page">
+
   <div class="header">
     <div class="logo">🌸</div>
     <h1>Consultório de Psicologia</h1>
@@ -92,15 +120,28 @@
 
   <div class="hero">
     <h2>Agende sua Primeira Sessão</h2>
-    <p>Escolha o horário que melhor se encaixa na sua rotina.</p>
+    <p>Selecione um dia disponível no calendário e escolha o horário.</p>
   </div>
 
   <div class="body">
-    <div class="loading" id="loading">⏳ Carregando horários disponíveis...</div>
-    <div id="slots-container"></div>
+    <div class="loading" id="loading">⏳ Carregando calendário...</div>
+
+    <div id="cal-container" style="display:none">
+      <div class="cal-nav">
+        <button class="cal-btn" id="btn-mes-ant" onclick="navegarMes(-1)">&#8249;</button>
+        <span class="cal-mes" id="cal-mes-label"></span>
+        <button class="cal-btn" id="btn-mes-prox" onclick="navegarMes(1)">&#8250;</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+
+    <div class="horarios-box" id="horarios-box">
+      <div class="horarios-titulo" id="horarios-titulo"></div>
+      <div class="horarios-grid" id="horarios-grid"></div>
+    </div>
 
     <div class="form-box" id="form-box">
-      <div class="horario-selecionado" id="horario-selecionado"></div>
+      <div class="resumo-agendamento" id="resumo-agendamento"></div>
       <div class="form-group" id="fg-nome">
         <label>Seu nome completo *</label>
         <input type="text" id="f-nome" placeholder="Nome completo" spellcheck="true" lang="pt-BR">
@@ -127,32 +168,28 @@
       <h3>Sem horários disponíveis</h3>
       <p>Não há horários disponíveis no momento.<br>Entre em contato para agendar diretamente.</p>
     </div>
-
-    <div class="estado" id="estado-sucesso">
-      <div class="icone">🎉</div>
-      <h3>Horário reservado!</h3>
-      <p id="sucesso-desc"></p>
-      <a id="btn-contrato" href="#" class="btn-contrato">Assinar Termo de Compromisso →</a>
-      <p style="font-size:12px;color:var(--muted);margin-top:14px">Você receberá mais informações via WhatsApp.</p>
-    </div>
   </div>
 </div>
 
 <script>
-  const DIAS = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
-  const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  const DIAS_SEMANA  = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const DIAS_FULL    = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+  const MESES_LABEL  = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const MESES_GEN    = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+
   const _params = new URLSearchParams(window.location.search);
   const _token  = _params.get('token');
-  let _slotSelecionado = null;
+  const HOJE_STR = new Date().toISOString().slice(0,10);
 
-  function show(id) {
-    ['loading','slots-container','form-box','estado-invalido','estado-vazio','estado-sucesso']
-      .forEach(el => { const e = document.getElementById(el); if (e) e.style.display = el === id ? (id === 'slots-container' ? 'block' : (id === 'form-box' ? '' : 'block')) : 'none'; });
-  }
+  let _slots         = {};   // { "2026-06-23": ["09:00","10:00"], ... }
+  let _mesAtual      = null; // { ano, mes }
+  let _mesesDisponiveis = [];
+  let _diaSelecionado  = null;
+  let _horaSelecionada = null;
 
-  function fmtDia(dataStr) {
+  function fmtDiaCompleto(dataStr) {
     const d = new Date(dataStr + 'T12:00:00');
-    return `${DIAS[d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]}`;
+    return `${DIAS_FULL[d.getDay()]}, ${d.getDate()} de ${MESES_GEN[d.getMonth()]}`;
   }
 
   function mascTel(el) {
@@ -162,22 +199,73 @@
     el.value = v;
   }
 
-  function selecionarSlot(data, hora, btn) {
-    document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    _slotSelecionado = { data, hora };
-    document.getElementById('horario-selecionado').textContent = `📅 ${fmtDia(data)} às ${hora}`;
+  function navegarMes(dir) {
+    const idx = _mesesDisponiveis.findIndex(m => m.ano === _mesAtual.ano && m.mes === _mesAtual.mes);
+    const novo = _mesesDisponiveis[idx + dir];
+    if (novo) { _mesAtual = novo; renderCalendario(); }
+  }
+
+  function renderCalendario() {
+    const { ano, mes } = _mesAtual;
+    document.getElementById('cal-mes-label').textContent = `${MESES_LABEL[mes-1]} ${ano}`;
+
+    const idx = _mesesDisponiveis.findIndex(m => m.ano === ano && m.mes === mes);
+    document.getElementById('btn-mes-ant').disabled  = idx === 0;
+    document.getElementById('btn-mes-prox').disabled = idx === _mesesDisponiveis.length - 1;
+
+    const primeiroDia = new Date(ano, mes-1, 1).getDay(); // 0=dom
+    const totalDias   = new Date(ano, mes, 0).getDate();
+
+    let html = DIAS_SEMANA.map(d => `<div class="cal-dow">${d}</div>`).join('');
+
+    for (let i = 0; i < primeiroDia; i++) html += `<div class="cal-day"></div>`;
+
+    for (let dia = 1; dia <= totalDias; dia++) {
+      const dataStr = `${ano}-${String(mes).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+      const temSlot = !!_slots[dataStr];
+      const isHoje  = dataStr === HOJE_STR;
+      const isSel   = dataStr === _diaSelecionado;
+      const classes = ['cal-day', temSlot ? 'disponivel' : '', isHoje ? 'hoje' : '', isSel ? 'selecionado' : ''].filter(Boolean).join(' ');
+      const onclick = temSlot ? `onclick="selecionarDia('${dataStr}')"` : '';
+      html += `<div class="${classes}" ${onclick}>${dia}</div>`;
+    }
+
+    document.getElementById('cal-grid').innerHTML = html;
+  }
+
+  function selecionarDia(dataStr) {
+    _diaSelecionado  = dataStr;
+    _horaSelecionada = null;
+
+    renderCalendario();
+
+    const horas = _slots[dataStr] || [];
+    document.getElementById('horarios-titulo').textContent = `⏰ Horários — ${fmtDiaCompleto(dataStr)}`;
+    document.getElementById('horarios-grid').innerHTML = horas.map(h =>
+      `<button class="hora-btn" onclick="selecionarHora('${h}',this)">${h}</button>`
+    ).join('');
+    document.getElementById('horarios-box').classList.add('visivel');
+    document.getElementById('form-box').classList.remove('visivel');
+    document.getElementById('horarios-box').scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }
+
+  function selecionarHora(hora, btn) {
+    _horaSelecionada = hora;
+    document.querySelectorAll('.hora-btn').forEach(b => b.classList.remove('selecionado'));
+    btn.classList.add('selecionado');
+
+    document.getElementById('resumo-agendamento').textContent =
+      `📅 ${fmtDiaCompleto(_diaSelecionado)} às ${hora}`;
     document.getElementById('form-box').classList.add('visivel');
     document.getElementById('form-box').scrollIntoView({ behavior:'smooth', block:'nearest' });
   }
 
   async function confirmar() {
-    if (!_slotSelecionado) return;
+    if (!_diaSelecionado || !_horaSelecionada) return;
     const nome = document.getElementById('f-nome').value.trim();
     const wpp  = document.getElementById('f-wpp').value.trim();
     let ok = true;
-    ['fg-nome','fg-wpp'].forEach((id, i) => {
-      const val = i === 0 ? nome : wpp;
+    [['fg-nome', nome], ['fg-wpp', wpp]].forEach(([id, val]) => {
       const el = document.getElementById(id);
       if (!val) { el.classList.add('campo-erro'); ok = false; }
       else el.classList.remove('campo-erro');
@@ -189,9 +277,9 @@
 
     try {
       const r = await fetch(`/api/agendamento-links/${_token}/reservar`, {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ nome, whatsapp: wpp, data: _slotSelecionado.data, hora: _slotSelecionado.hora })
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome, whatsapp: wpp, data: _diaSelecionado, hora: _horaSelecionada })
       });
       const data = await r.json();
       if (!r.ok) {
@@ -200,12 +288,6 @@
         if (r.status === 409) location.reload();
         return;
       }
-      document.getElementById('sucesso-desc').textContent =
-        `${fmtDia(_slotSelecionado.data)} às ${_slotSelecionado.hora} está reservado para você, ${nome}!\n\nAgora assine o Termo de Compromisso para confirmar.`;
-      document.getElementById('btn-contrato').href = data.contratoLink;
-      document.getElementById('estado-sucesso').style.display = 'block';
-      document.getElementById('form-box').style.display = 'none';
-      document.getElementById('slots-container').style.display = 'none';
       window.location.href = data.contratoLink;
     } catch(e) {
       btn.disabled = false; btn.textContent = 'Confirmar e Assinar Contrato →';
@@ -214,33 +296,61 @@
   }
 
   async function carregar() {
-    if (!_token) { show('estado-invalido'); return; }
+    if (!_token) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('estado-invalido').style.display = 'block';
+      return;
+    }
     try {
       const r = await fetch(`/api/agendamento-links/${_token}/slots`);
       const data = await r.json();
-      if (!r.ok) { document.getElementById('estado-invalido-msg').textContent = data.error; show('estado-invalido'); return; }
+
+      if (!r.ok) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('estado-invalido-msg').textContent = data.error;
+        document.getElementById('estado-invalido').style.display = 'block';
+        return;
+      }
 
       document.getElementById('psico-nome').textContent = data.nome_psicologa || '';
       document.getElementById('psico-crp').textContent  = data.crp || '';
 
-      if (!data.slots.length) { show('estado-vazio'); return; }
+      if (!data.slots.length) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('estado-vazio').style.display = 'block';
+        return;
+      }
 
-      // Agrupa por data
-      const grupos = {};
-      data.slots.forEach(s => { if (!grupos[s.data]) grupos[s.data] = []; grupos[s.data].push(s.hora); });
+      // Agrupa slots por data
+      data.slots.forEach(s => {
+        if (!_slots[s.data]) _slots[s.data] = [];
+        _slots[s.data].push(s.hora);
+      });
 
-      const container = document.getElementById('slots-container');
-      container.innerHTML = Object.entries(grupos).map(([dia, horas]) => `
-        <div class="dia-grupo">
-          <div class="dia-titulo">${fmtDia(dia)}</div>
-          <div class="slots-grid">
-            ${horas.map(h => `<button class="slot-btn" onclick="selecionarSlot('${dia}','${h}',this)">${h}</button>`).join('')}
-          </div>
-        </div>
-      `).join('');
-      container.style.display = 'block';
+      // Descobre meses com disponibilidade
+      const mesesSet = new Set();
+      Object.keys(_slots).forEach(d => {
+        const [a, m] = d.split('-');
+        mesesSet.add(`${a}-${m}`);
+      });
+      _mesesDisponiveis = [...mesesSet].sort().map(ym => {
+        const [a, m] = ym.split('-');
+        return { ano: parseInt(a), mes: parseInt(m) };
+      });
+
+      // Começa no mês atual ou no primeiro com slots
+      const hoje = new Date();
+      const mesHoje = { ano: hoje.getFullYear(), mes: hoje.getMonth() + 1 };
+      _mesAtual = _mesesDisponiveis.find(m => m.ano === mesHoje.ano && m.mes === mesHoje.mes)
+                  || _mesesDisponiveis[0];
+
       document.getElementById('loading').style.display = 'none';
-    } catch(e) { show('estado-invalido'); }
+      document.getElementById('cal-container').style.display = 'block';
+      renderCalendario();
+    } catch(e) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('estado-invalido').style.display = 'block';
+    }
   }
 
   carregar();
