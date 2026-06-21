@@ -125,6 +125,89 @@ app.get('/api/financeiro', (req, res) => {
   res.json(db.getFinanceiro(ano, mes));
 });
 
+// ── LINKS AGENDAMENTO ────────────────────────────────────────
+app.get('/api/agendamento-links', (req, res) => res.json(db.getLinksAgendamento()));
+
+app.post('/api/agendamento-links', (req, res) => {
+  try {
+    const token = require('crypto').randomBytes(12).toString('hex');
+    db.createLinkAgendamento({ token, ...req.body });
+    const base = `${req.protocol}://${req.get('host')}`;
+    res.json({ token, link: `${base}/agendar/?token=${token}`, success: true });
+  } catch(e) { erro(res, e); }
+});
+
+app.delete('/api/agendamento-links/:id', (req, res) => {
+  try { db.desativarLinkAgendamento(req.params.id); res.json({ success: true }); }
+  catch(e) { erro(res, e); }
+});
+
+app.get('/api/agendamento-links/:token/slots', (req, res) => {
+  const link = db.getLinkAgendamento(req.params.token);
+  if (!link) return res.status(404).json({ error: 'Link inválido ou expirado.' });
+
+  const dias     = JSON.parse(link.dias);
+  const horarios = JSON.parse(link.horarios);
+  const semanas  = link.semanas || 2;
+
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const d    = new Date(hoje); d.setDate(d.getDate() + 1);
+  const fim  = new Date(hoje); fim.setDate(fim.getDate() + semanas * 7);
+
+  const hojeStr = hoje.toISOString().slice(0,10);
+  const fimStr  = fim.toISOString().slice(0,10);
+
+  const existentes = db.getAgendamentos({ data_de: hojeStr, data_ate: fimStr });
+  const ocupados   = new Set(existentes.map(a => `${a.data}|${a.hora}`));
+
+  const slots = [];
+  while (d <= fim) {
+    const dow     = d.getDay();
+    const dataStr = d.toISOString().slice(0,10);
+    if (dias.includes(dow)) {
+      for (const hora of horarios) {
+        if (!ocupados.has(`${dataStr}|${hora}`)) slots.push({ data: dataStr, hora });
+      }
+    }
+    d.setDate(d.getDate() + 1);
+  }
+
+  const cfg = db.getConfig();
+  res.json({ slots, nome_psicologa: cfg.nome_psicologa, crp: cfg.crp });
+});
+
+app.post('/api/agendamento-links/:token/reservar', (req, res) => {
+  const link = db.getLinkAgendamento(req.params.token);
+  if (!link) return res.status(404).json({ error: 'Link inválido.' });
+
+  const { nome, whatsapp, data, hora } = req.body;
+  if (!nome || !data || !hora) return res.status(400).json({ error: 'Dados incompletos.' });
+
+  try {
+    const existentes = db.getAgendamentos({ data });
+    if (existentes.find(a => a.hora === hora))
+      return res.status(409).json({ error: 'Este horário acabou de ser ocupado. Escolha outro.' });
+
+    const todos = db.getPacientes();
+    let pac = todos.find(p => p.nome.toLowerCase() === nome.toLowerCase());
+    if (!pac) {
+      const id = db.createPaciente({ nome, whatsapp: whatsapp || null });
+      pac = { id, nome };
+    }
+
+    const cfg = db.getConfig();
+    db.createAgendamento({
+      paciente_id: pac.id, data, hora,
+      tipo: 'sessao', status: 'agendado',
+      valor: cfg.valor_sessao_padrao || 180
+    });
+
+    const conviteToken = db.createConvite(nome);
+    const base = `${req.protocol}://${req.get('host')}`;
+    res.json({ success: true, contratoLink: `${base}/contratos/?token=${conviteToken}` });
+  } catch(e) { erro(res, e); }
+});
+
 // ── CONVITES ─────────────────────────────────────────────────
 app.get('/api/convites', (req, res) => res.json(db.getConvites()));
 

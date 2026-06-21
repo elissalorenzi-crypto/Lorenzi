@@ -1280,12 +1280,148 @@ function atualizarBrand() {
 // ============================================================
 let _contratos = [];
 
+async function novoLinkAgenda() {
+  openModal('Link de Agendamento', `
+    <p style="font-size:12.5px;color:var(--muted);margin-bottom:14px">Gere um link público onde o paciente escolhe o horário e assina o contrato em seguida.</p>
+    <div class="form-group" style="margin-bottom:14px">
+      <label>Dias disponíveis</label>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px" id="dias-btns">
+        ${[['1','Seg'],['2','Ter'],['3','Qua'],['4','Qui'],['5','Sex'],['6','Sáb']].map(([v,l]) =>
+          `<button type="button" class="btn btn-outline btn-sm dia-toggle" data-dia="${v}"
+            style="min-width:48px" onclick="toggleDia(this)">${l}</button>`
+        ).join('')}
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:10px">
+      <label>Horários disponíveis</label>
+      <div id="horarios-list" style="display:flex;flex-direction:column;gap:6px;margin-top:6px"></div>
+      <button type="button" class="btn btn-ghost btn-sm" style="margin-top:6px;align-self:flex-start"
+        onclick="addHorarioLink()">+ Adicionar horário</button>
+    </div>
+    <div class="form-group">
+      <label>Exibir vagas para os próximos</label>
+      <select id="ag-semanas" style="max-width:180px">
+        <option value="1">1 semana</option>
+        <option value="2" selected>2 semanas</option>
+        <option value="3">3 semanas</option>
+        <option value="4">4 semanas</option>
+      </select>
+    </div>
+    <div id="link-agenda-box" style="display:none;margin-top:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--text-mid);margin-bottom:6px">Link gerado:</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="text" id="link-agenda-input" readonly style="flex:1;font-size:12px;background:#f5f0fa">
+        <button class="btn btn-primary btn-sm" onclick="copiarLinkAgenda()">📋 Copiar</button>
+      </div>
+    </div>
+  `, async () => {
+    const dias = [...document.querySelectorAll('.dia-toggle.ativo')].map(b => parseInt(b.dataset.dia));
+    if (!dias.length) return toast('Selecione ao menos um dia', 'error');
+    const horarios = [...document.querySelectorAll('.horario-link-input')].map(i => i.value).filter(Boolean);
+    if (!horarios.length) return toast('Adicione ao menos um horário', 'error');
+    const semanas = parseInt(document.getElementById('ag-semanas').value);
+    try {
+      const res = await api('POST', '/agendamento-links', { dias, horarios, semanas });
+      document.getElementById('link-agenda-input').value = res.link;
+      document.getElementById('link-agenda-box').style.display = 'block';
+      document.getElementById('modal-save-btn').style.display = 'none';
+      navigator.clipboard.writeText(res.link).catch(() => {});
+      toast('Link de agenda gerado e copiado! 🗓');
+      loadContratos();
+    } catch(e) { toast(e.message, 'error'); }
+  }, { saveLabel: '🗓 Gerar Link de Agenda' });
+
+  // Adiciona um horário padrão ao abrir
+  setTimeout(() => addHorarioLink('09:00'), 50);
+}
+
+function toggleDia(btn) {
+  btn.classList.toggle('ativo');
+  btn.style.background    = btn.classList.contains('ativo') ? 'var(--rose)' : '';
+  btn.style.color         = btn.classList.contains('ativo') ? '#fff' : '';
+  btn.style.borderColor   = btn.classList.contains('ativo') ? 'var(--rose)' : '';
+}
+
+function addHorarioLink(valor = '') {
+  const list = document.getElementById('horarios-list');
+  if (!list) return;
+  const div = document.createElement('div');
+  div.style.cssText = 'display:flex;align-items:center;gap:8px';
+  div.innerHTML = `
+    <input type="time" class="horario-link-input" value="${valor}"
+      style="padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:14px;width:110px">
+    <button type="button" class="btn btn-ghost btn-xs" style="color:var(--red)"
+      onclick="this.parentElement.remove()">✕</button>
+  `;
+  list.appendChild(div);
+}
+
+function copiarLinkAgenda() {
+  const link = document.getElementById('link-agenda-input')?.value;
+  if (link) navigator.clipboard.writeText(link).then(() => toast('Link copiado! 📋'));
+}
+
+function renderLinksAgenda(links) {
+  if (!links.length) return;
+  let el = document.getElementById('links-agenda-panel');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'links-agenda-panel';
+    el.style.marginBottom = '16px';
+    document.getElementById('section-contratos').prepend(el);
+  }
+  el.innerHTML = `
+    <div class="card" style="border-left:3px solid var(--lavender)">
+      <div class="card-header">
+        <span class="card-title">🗓 Links de Agendamento Ativos</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Dias</th><th>Horários</th><th>Vagas</th><th>Link</th><th></th></tr></thead>
+          <tbody>
+            ${links.map(l => {
+              const DIAS_LABEL = {1:'Seg',2:'Ter',3:'Qua',4:'Qui',5:'Sex',6:'Sáb'};
+              const dias = JSON.parse(l.dias).map(d => DIAS_LABEL[d]).join(', ');
+              const horas = JSON.parse(l.horarios).join(' · ');
+              return `<tr>
+                <td><strong>${dias}</strong></td>
+                <td style="font-size:12.5px">${horas}</td>
+                <td style="font-size:12.5px">${l.semanas} sem.</td>
+                <td>
+                  <button class="btn btn-outline btn-xs" onclick="copiarLinkAgendaItem('${l.token}')">
+                    <span class="btn-copiar-icon">📋</span><span class="btn-copiar-label"> Copiar Link</span>
+                  </button>
+                </td>
+                <td><button class="btn btn-ghost btn-xs" style="color:var(--red)" onclick="desativarLinkAgenda(${l.id})">🗑</button></td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function copiarLinkAgendaItem(token) {
+  const link = `${location.origin}/agendar/?token=${token}`;
+  navigator.clipboard.writeText(link).then(() => toast('Link copiado! 📋'));
+}
+
+async function desativarLinkAgenda(id) {
+  if (!confirm('Desativar este link de agendamento?')) return;
+  await api('DELETE', `/agendamento-links/${id}`);
+  toast('Link desativado');
+  loadContratos();
+}
+
 async function loadContratos() {
-  const [contratos, convites] = await Promise.all([
+  const [contratos, convites, linksAgenda] = await Promise.all([
     api('GET', '/contratos'),
-    api('GET', '/convites')
+    api('GET', '/convites'),
+    api('GET', '/agendamento-links')
   ]);
   _contratos = contratos;
+  renderLinksAgenda(linksAgenda);
   renderConvitesPendentes(convites);
   filtrarContratos();
   // Marca todos como vistos e limpa badge/dashboard

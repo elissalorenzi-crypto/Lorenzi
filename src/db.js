@@ -101,6 +101,19 @@ db.exec(`
 `);
 
 // Migração: adiciona coluna visto em contratos se ainda não existir
+// Tabela de links de agendamento público
+db.exec(`
+  CREATE TABLE IF NOT EXISTS links_agendamento (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    token      TEXT NOT NULL UNIQUE,
+    dias       TEXT NOT NULL,
+    horarios   TEXT NOT NULL,
+    semanas    INTEGER DEFAULT 2,
+    ativo      INTEGER DEFAULT 1,
+    created_at TEXT DEFAULT (datetime('now','localtime'))
+  );
+`);
+
 try { db.prepare('ALTER TABLE contratos ADD COLUMN visto INTEGER DEFAULT 0').run(); } catch(e) {}
 
 // Seed configurações padrão
@@ -375,6 +388,17 @@ const getConfig = () => {
 const setConfig = (chave, valor) =>
   db.prepare('INSERT OR REPLACE INTO configuracoes (chave, valor) VALUES (?,?)').run(chave, valor);
 
+// ============================================================
+// LINKS AGENDAMENTO
+// ============================================================
+const createLinkAgendamento = ({ token, dias, horarios, semanas }) =>
+  rid(db.prepare('INSERT INTO links_agendamento (token,dias,horarios,semanas) VALUES (?,?,?,?)')
+    .run(token, JSON.stringify(dias), JSON.stringify(horarios), semanas || 2));
+
+const getLinkAgendamento  = (token) => db.prepare('SELECT * FROM links_agendamento WHERE token=? AND ativo=1').get(token);
+const getLinksAgendamento = ()      => db.prepare('SELECT * FROM links_agendamento WHERE ativo=1 ORDER BY created_at DESC').all();
+const desativarLinkAgendamento = (id) => db.prepare('UPDATE links_agendamento SET ativo=0 WHERE id=?').run(id);
+
 const getContratosNovos    = () => db.prepare('SELECT * FROM contratos WHERE visto=0 ORDER BY created_at DESC').all();
 const marcarContratosVistos = () => db.prepare('UPDATE contratos SET visto=1 WHERE visto=0').run();
 
@@ -431,5 +455,6 @@ module.exports = {
   getProntuarios, createProntuario, updateProntuario, deleteProntuario,
   getDashboard, getFinanceiro, getConfig, setConfig,
   getContratos, createContrato, deleteContrato, getContratosNovos, marcarContratosVistos,
+  createLinkAgendamento, getLinkAgendamento, getLinksAgendamento, desativarLinkAgendamento,
   createConvite, getConvites, getConviteByToken, usarConvite, deleteConvite
 };
