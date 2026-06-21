@@ -110,6 +110,9 @@ const getPacientes = () =>
 const getPacienteById = (id) =>
   db.prepare('SELECT * FROM pacientes WHERE id=?').get(id);
 
+const getPacienteByCpf = (cpf) =>
+  db.prepare('SELECT * FROM pacientes WHERE cpf=? LIMIT 1').get(cpf);
+
 const createPaciente = (data) =>
   rid(db.prepare(`
     INSERT INTO pacientes
@@ -380,7 +383,7 @@ const deleteContrato = (id) =>
   db.prepare('DELETE FROM contratos WHERE id=?').run(id);
 
 module.exports = {
-  getPacientes, getPacienteById, createPaciente, updatePaciente, deletePaciente,
+  getPacientes, getPacienteById, getPacienteByCpf, createPaciente, updatePaciente, deletePaciente,
   getAgendamentos, getAgendamentoById, createAgendamento, updateAgendamento, deleteAgendamento,
   getProntuarios, createProntuario, updateProntuario, deleteProntuario,
   getDashboard, getFinanceiro, getConfig, setConfig,

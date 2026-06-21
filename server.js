@@ -129,8 +129,35 @@ app.get('/api/financeiro', (req, res) => {
 app.get('/api/contratos', (req, res) => res.json(db.getContratos()));
 
 app.post('/api/contratos', (req, res) => {
-  try { res.json({ id: db.createContrato(req.body), success: true }); }
-  catch(e) { erro(res, e); }
+  try {
+    const id = db.createContrato(req.body);
+
+    // Cria ou atualiza paciente automaticamente com os dados do contrato
+    try {
+      const { nome, data_nascimento, cpf, email, celular, endereco, nome_responsavel } = req.body;
+      if (nome) {
+        const dadosPaciente = {
+          nome,
+          data_nascimento: data_nascimento || null,
+          cpf:             cpf            || null,
+          email:           email          || null,
+          whatsapp:        celular        || null,
+          endereco:        endereco       || null,
+          responsavel:     nome_responsavel || null,
+        };
+        const existente = cpf ? db.getPacienteByCpf(cpf) : null;
+        if (existente) {
+          db.updatePaciente(existente.id, { ...existente, ...dadosPaciente });
+        } else {
+          db.createPaciente(dadosPaciente);
+        }
+      }
+    } catch(e) {
+      console.warn('Aviso: não foi possível criar paciente automaticamente:', e.message);
+    }
+
+    res.json({ id, success: true });
+  } catch(e) { erro(res, e); }
 });
 
 app.post('/api/contratos/upload', upload.single('arquivo'), (req, res) => {
