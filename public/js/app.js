@@ -652,7 +652,7 @@ function filtrarPacientes() {
 function renderPacientesTable(data) {
   const tbody = document.getElementById('pacientes-tbody');
   if (!data.length) {
-    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="empty-icon">👤</span><p>Nenhum cliente encontrado</p></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="empty-icon">👤</span><p>Nenhum cliente encontrado</p></div></td></tr>`;
     return;
   }
   tbody.innerHTML = data.map(p => `
@@ -670,6 +670,7 @@ function renderPacientesTable(data) {
       <td>
         ${p.whatsapp ? `<a href="https://wa.me/55${p.whatsapp.replace(/\D/g,'')}" target="_blank" style="color:var(--sage);font-size:12px">💬 ${p.whatsapp}</a>` : '—'}
       </td>
+      <td style="font-size:12px;color:var(--muted)">${{pix:'PIX',credito:'Crédito',debito:'Débito',dinheiro:'Dinheiro',transferencia:'Transf.'}[p.forma_pgto] || '—'}</td>
       <td>
         <select class="status-select ${p.nota_fiscal === 'sim' ? 'sim' : 'nao'}"
                 onchange="this.className='status-select '+this.value;alterarNotaFiscal(${p.id},this.value)">
@@ -874,6 +875,17 @@ function pacienteFormHtml(p = {}) {
         <input type="number" id="fp-valor" value="${p.valor_sessao||_config.valor_sessao_padrao||180}" min="0" step="10">
       </div>
       <div class="form-group">
+        <label>Forma de Pagamento</label>
+        <select id="fp-forma">
+          <option value="">—</option>
+          <option value="pix"          ${p.forma_pgto==='pix'         ?'selected':''}>PIX</option>
+          <option value="credito"      ${p.forma_pgto==='credito'     ?'selected':''}>Cartão de Crédito</option>
+          <option value="debito"       ${p.forma_pgto==='debito'      ?'selected':''}>Cartão de Débito</option>
+          <option value="dinheiro"     ${p.forma_pgto==='dinheiro'    ?'selected':''}>Dinheiro</option>
+          <option value="transferencia"${p.forma_pgto==='transferencia'?'selected':''}>Transferência</option>
+        </select>
+      </div>
+      <div class="form-group">
         <label>Encaminhamento</label>
         <input type="text" id="fp-enc" value="${p.encaminhamento||''}" placeholder="Como chegou ao consultório">
       </div>
@@ -915,7 +927,8 @@ function openModalPaciente(p = {}) {
       responsavel:     document.getElementById('fp-resp').value.trim(),
       tel_responsavel: document.getElementById('fp-telresp').value.trim(),
       queixa_principal:document.getElementById('fp-queixa').value.trim(),
-      obs:             document.getElementById('fp-obs').value.trim()
+      obs:             document.getElementById('fp-obs').value.trim(),
+      forma_pgto:      document.getElementById('fp-forma').value || null
     };
     if (!body.nome) return toast('Nome é obrigatório', 'error');
     try {

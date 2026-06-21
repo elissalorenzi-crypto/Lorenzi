@@ -116,6 +116,7 @@ db.exec(`
 
 try { db.prepare('ALTER TABLE contratos ADD COLUMN visto INTEGER DEFAULT 0').run(); } catch(e) {}
 try { db.prepare("ALTER TABLE pacientes ADD COLUMN nota_fiscal TEXT DEFAULT 'nao'").run(); } catch(e) {}
+try { db.prepare("ALTER TABLE pacientes ADD COLUMN forma_pgto TEXT").run(); } catch(e) {}
 
 // Seed configurações padrão
 const cfgCount = db.prepare('SELECT COUNT(*) as n FROM configuracoes').get().n;
