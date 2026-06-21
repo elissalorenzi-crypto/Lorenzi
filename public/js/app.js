@@ -79,7 +79,7 @@ function navigate(name) {
 
   const titles = {
     dashboard: 'Dashboard', contratos: 'Contratos Assinados', agenda: 'Agenda',
-    pacientes: 'Clientes', prontuarios: 'Prontuários',
+    pacientes: 'Clientes', prontuarios: 'Prontuários', biblioteca: 'Biblioteca de Atividades',
     financeiro: 'Financeiro', configuracoes: 'Configurações'
   };
   document.getElementById('topbar-title').textContent = titles[name] || name;
@@ -91,6 +91,7 @@ function navigate(name) {
     agenda:       loadAgenda,
     pacientes:    loadPacientes,
     prontuarios:  loadProntuariosPage,
+    biblioteca:   bibRenderHome,
     financeiro:   loadFinanceiro,
     configuracoes:loadConfiguracoes
   };
@@ -2171,8 +2172,156 @@ async function loadNotificacoes() {
 }
 
 // ── BIBLIOTECA DE ATIVIDADES ─────────────────────────────────
-function abrirBiblioteca(area) {
-  showToast(`Em breve: atividades de "${area}"`, 'info');
+let _bibCards = null;
+
+function _getBibCards() {
+  if (!_bibCards) {
+    _bibCards = JSON.parse(localStorage.getItem('bib_cards_extra') || '[]');
+  }
+  return [...BIB_CARDS, ..._bibCards];
+}
+
+function bibRenderHome() {
+  const cards = _getBibCards();
+  const bc = document.getElementById('bib-breadcrumb');
+  const ct = document.getElementById('bib-conteudo');
+  if (!bc || !ct) return;
+  bc.style.display = 'none';
+  ct.innerHTML = `<div class="bib-grid">${cards.map(c => `
+    <div class="bib-card">
+      <div class="bib-card-header ${c.cor || 'bib-op'}">
+        <span class="bib-icon">${c.icone}</span>
+        <div>
+          <div class="bib-titulo">${c.titulo}</div>
+          <div class="bib-subtitulo">${c.subtitulo}</div>
+        </div>
+      </div>
+      <div class="bib-card-body">
+        <p class="bib-desc">${c.desc || ''}</p>
+        <div class="bib-acoes">
+          <button class="btn btn-primary btn-sm" onclick="abrirBiblioteca('${c.id}')">Ver Atividades</button>
+        </div>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+function abrirBiblioteca(areaId) {
+  const cards  = _getBibCards();
+  const card   = cards.find(c => c.id === areaId);
+  if (!card) return;
+  const bc = document.getElementById('bib-breadcrumb');
+  const ct = document.getElementById('bib-conteudo');
+
+  bc.style.display = 'flex';
+  bc.innerHTML = `
+    <span class="bib-bc-link" onclick="bibRenderHome()">Biblioteca</span>
+    <span class="bib-bc-sep">›</span>
+    <span class="bib-bc-cur">${card.icone} ${card.titulo} — ${card.subtitulo}</span>`;
+
+  if (!card.pastas || !card.pastas.length) {
+    ct.innerHTML = `<div class="empty-state"><span class="empty-icon">📂</span><p>Nenhuma pasta cadastrada ainda.</p></div>`;
+    return;
+  }
+
+  ct.innerHTML = `<div class="bib-grid">${card.pastas.map(p => `
+    <div class="bib-card bib-pasta" onclick="abrirPasta('${areaId}','${p.id}')">
+      <div class="bib-card-header ${card.cor || 'bib-op'}" style="cursor:pointer">
+        <span class="bib-icon">${p.icone || '📁'}</span>
+        <div>
+          <div class="bib-titulo">${p.nome}</div>
+          <div class="bib-subtitulo">${p.atividades.length} atividade${p.atividades.length !== 1 ? 's' : ''}</div>
+        </div>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+function abrirPasta(areaId, pastaId) {
+  const cards  = _getBibCards();
+  const card   = cards.find(c => c.id === areaId);
+  const pasta  = card?.pastas.find(p => p.id === pastaId);
+  if (!card || !pasta) return;
+  const bc = document.getElementById('bib-breadcrumb');
+  const ct = document.getElementById('bib-conteudo');
+
+  bc.style.display = 'flex';
+  bc.innerHTML = `
+    <span class="bib-bc-link" onclick="bibRenderHome()">Biblioteca</span>
+    <span class="bib-bc-sep">›</span>
+    <span class="bib-bc-link" onclick="abrirBiblioteca('${areaId}')">${card.icone} ${card.titulo}</span>
+    <span class="bib-bc-sep">›</span>
+    <span class="bib-bc-cur">${pasta.icone || '📁'} ${pasta.nome}</span>`;
+
+  ct.innerHTML = `<div class="bib-grid">${pasta.atividades.map(a => `
+    <div class="bib-card bib-atv-card" onclick="abrirAtividade('${areaId}','${pastaId}','${a.id}')">
+      <div class="bib-card-header ${card.cor || 'bib-op'}" style="cursor:pointer;min-height:72px">
+        <span class="bib-icon" style="font-size:26px">${a.icone || '📄'}</span>
+        <div>
+          <div class="bib-titulo" style="font-size:13px">${a.titulo}</div>
+          <div class="bib-subtitulo">${a.subtitulo || ''}</div>
+        </div>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+function abrirAtividade(areaId, pastaId, atvId) {
+  const cards  = _getBibCards();
+  const card   = cards.find(c => c.id === areaId);
+  const pasta  = card?.pastas.find(p => p.id === pastaId);
+  const atv    = pasta?.atividades.find(a => a.id === atvId);
+  if (!card || !pasta || !atv) return;
+  const bc = document.getElementById('bib-breadcrumb');
+  const ct = document.getElementById('bib-conteudo');
+
+  bc.style.display = 'flex';
+  bc.innerHTML = `
+    <span class="bib-bc-link" onclick="bibRenderHome()">Biblioteca</span>
+    <span class="bib-bc-sep">›</span>
+    <span class="bib-bc-link" onclick="abrirBiblioteca('${areaId}')">${card.icone} ${card.titulo}</span>
+    <span class="bib-bc-sep">›</span>
+    <span class="bib-bc-link" onclick="abrirPasta('${areaId}','${pastaId}')">${pasta.icone || '📁'} ${pasta.nome}</span>
+    <span class="bib-bc-sep">›</span>
+    <span class="bib-bc-cur">${atv.icone || '📄'} ${atv.titulo}</span>`;
+
+  ct.innerHTML = `
+    <div class="bib-atv-view">
+      <div class="bib-atv-header ${card.cor || 'bib-op'}">
+        <span style="font-size:36px">${atv.icone || '📄'}</span>
+        <div>
+          <h2 class="bib-atv-titulo">${atv.titulo}</h2>
+          <p class="bib-atv-sub">${atv.subtitulo || ''}</p>
+        </div>
+      </div>
+      <div class="bib-atv-corpo">${atv.conteudo}</div>
+    </div>`;
+}
+
+function bibNovoCard() {
+  document.getElementById('bib-new-icone').value   = '';
+  document.getElementById('bib-new-titulo').value  = '';
+  document.getElementById('bib-new-subtitulo').value = '';
+  document.getElementById('bib-new-desc').value    = '';
+  document.getElementById('modal-bib-card').style.display = 'flex';
+}
+
+function fecharModalBibCard() {
+  document.getElementById('modal-bib-card').style.display = 'none';
+}
+
+function salvarNovoBibCard() {
+  const icone    = document.getElementById('bib-new-icone').value.trim()    || '📚';
+  const titulo   = document.getElementById('bib-new-titulo').value.trim();
+  const subtitulo= document.getElementById('bib-new-subtitulo').value.trim();
+  const desc     = document.getElementById('bib-new-desc').value.trim();
+  const cor      = document.getElementById('bib-new-cor').value;
+  if (!titulo) { showToast('Informe o título do card', 'error'); return; }
+
+  const extra = JSON.parse(localStorage.getItem('bib_cards_extra') || '[]');
+  extra.push({ id: 'custom-' + Date.now(), icone, titulo, subtitulo, desc, cor, pastas: [] });
+  localStorage.setItem('bib_cards_extra', JSON.stringify(extra));
+  _bibCards = null;
+  fecharModalBibCard();
+  bibRenderHome();
+  showToast('Card criado com sucesso!', 'success');
 }
 
 async function init() {

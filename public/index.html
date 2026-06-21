@@ -279,46 +279,60 @@
 
     <!-- ── BIBLIOTECA DE ATIVIDADES ── -->
     <div class="section" id="section-biblioteca">
-      <div style="margin-bottom:24px">
-        <h2 style="font-size:20px;font-weight:700;color:var(--plum);margin-bottom:4px">Biblioteca de Atividades</h2>
-        <p style="font-size:13px;color:var(--muted)">Materiais e atividades organizados por área de atuação</p>
+      <!-- Header com botão de adicionar -->
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px">
+        <div>
+          <h2 style="font-size:20px;font-weight:700;color:var(--plum);margin-bottom:4px">Biblioteca de Atividades</h2>
+          <p style="font-size:13px;color:var(--muted)">Materiais e atividades organizados por área de atuação</p>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="bibNovoCard()" title="Adicionar nova área">+ Novo Card</button>
       </div>
-      <div class="bib-grid">
 
-        <!-- Card: Orientação Profissional Primeira Escolha -->
-        <div class="bib-card">
-          <div class="bib-card-header bib-op">
-            <span class="bib-icon">🎯</span>
-            <div>
-              <div class="bib-titulo">Orientação Profissional</div>
-              <div class="bib-subtitulo">Primeira Escolha</div>
-            </div>
+      <!-- Navegação breadcrumb -->
+      <div id="bib-breadcrumb" style="display:none;margin-bottom:18px"></div>
+
+      <!-- Grid principal de cards -->
+      <div id="bib-conteudo"></div>
+    </div>
+
+    <!-- Modal novo card biblioteca -->
+    <div class="modal-overlay" id="modal-bib-card" style="display:none">
+      <div class="modal" style="max-width:420px">
+        <div class="modal-header">
+          <span class="modal-title">Nova Área de Atividades</span>
+          <button class="modal-close" onclick="fecharModalBibCard()">✕</button>
+        </div>
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:14px">
+          <div class="form-group">
+            <label>Ícone</label>
+            <input type="text" id="bib-new-icone" maxlength="4" placeholder="📚" style="width:70px">
           </div>
-          <div class="bib-card-body">
-            <p class="bib-desc">Atividades e recursos voltados para jovens em processo de escolha da primeira carreira ou curso superior.</p>
-            <div class="bib-acoes">
-              <button class="btn btn-primary btn-sm" onclick="abrirBiblioteca('op-primeira-escolha')">Ver Atividades</button>
-            </div>
+          <div class="form-group">
+            <label>Título</label>
+            <input type="text" id="bib-new-titulo" placeholder="Ex: Orientação de Carreira">
+          </div>
+          <div class="form-group">
+            <label>Subtítulo</label>
+            <input type="text" id="bib-new-subtitulo" placeholder="Ex: Adulto">
+          </div>
+          <div class="form-group">
+            <label>Descrição</label>
+            <textarea id="bib-new-desc" rows="3" placeholder="Breve descrição do conteúdo..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Cor</label>
+            <select id="bib-new-cor">
+              <option value="bib-op">Verde floresta (Orientação Profissional)</option>
+              <option value="bib-oc">Marrom quente (Carreira Adulto)</option>
+              <option value="bib-custom1">Azul escuro</option>
+              <option value="bib-custom2">Roxo</option>
+            </select>
           </div>
         </div>
-
-        <!-- Card: Orientação de Carreira Adulto -->
-        <div class="bib-card">
-          <div class="bib-card-header bib-oc">
-            <span class="bib-icon">💼</span>
-            <div>
-              <div class="bib-titulo">Orientação de Carreira</div>
-              <div class="bib-subtitulo">Adulto</div>
-            </div>
-          </div>
-          <div class="bib-card-body">
-            <p class="bib-desc">Materiais de apoio para adultos em transição de carreira, reposicionamento profissional e desenvolvimento pessoal.</p>
-            <div class="bib-acoes">
-              <button class="btn btn-primary btn-sm" onclick="abrirBiblioteca('oc-adulto')">Ver Atividades</button>
-            </div>
-          </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" onclick="fecharModalBibCard()">Cancelar</button>
+          <button class="btn btn-primary" onclick="salvarNovoBibCard()">Criar Card</button>
         </div>
-
       </div>
     </div>
 
@@ -537,6 +551,7 @@
 </div>
 
 <div id="toast-container"></div>
+<script src="/js/biblioteca.js"></script>
 <script src="/js/app.js"></script>
 </body>
 </html>
