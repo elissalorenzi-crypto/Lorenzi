@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agendar Sessão</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --plum:     #2d1b3d;
+      --rose:     #c2657a;
+      --lavender: #9b7fba;
+      --sage:     #5aaa87;
+      --muted:    #a090b8;
+      --border:   #ede5f5;
+      --bg:       #faf6fb;
+    }
+    body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--plum); font-size:15px; min-height:100vh; padding-bottom:60px; }
+
+    /* Header */
+    .header { background:linear-gradient(135deg,#2d1b3d 0%,#503468 100%); padding:28px 32px 22px; text-align:center; color:#fff; }
+    .header .logo { font-size:30px; margin-bottom:8px; }
+    .header h1 { font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#e8c5d5; margin-bottom:4px; }
+    .header .nome { font-size:18px; font-weight:800; }
+    .header .crp  { font-size:12px; color:#c4a8d8; margin-top:2px; }
+
+    .hero { background:linear-gradient(90deg,#fce8f2,#f5eef8); padding:16px 32px; border-bottom:2px solid var(--border); text-align:center; }
+    .hero p { font-size:13.5px; color:var(--muted); }
+
+    /* Container */
+    .container { max-width:1020px; margin:0 auto; padding:24px 16px; }
+
+    /* Week nav */
+    .week-nav { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:20px; background:#fff; border-radius:12px; border:1.5px solid var(--border); padding:12px 16px; box-shadow:0 2px 8px rgba(45,27,61,.05); }
+    .week-nav .nav-btn { background:none; border:1.5px solid var(--border); border-radius:8px; padding:6px 16px; cursor:pointer; font-size:14px; color:var(--plum); font-weight:600; transition:all .15s; white-space:nowrap; }
+    .week-nav .nav-btn:hover:not(:disabled) { border-color:var(--rose); color:var(--rose); }
+    .week-nav .nav-btn:disabled { opacity:.3; cursor:default; }
+    .week-nav .sem-label { font-size:14px; font-weight:700; color:var(--plum); text-align:center; }
+
+    /* Grid */
+    .semana-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:8px; }
+
+    .dia-col { background:#fff; border-radius:12px; border:1.5px solid var(--border); overflow:visible; }
+    .dia-col.passado { opacity:.5; }
+    .dia-col.hoje { border-color:var(--rose); box-shadow:0 0 0 2px rgba(194,101,122,.15); }
+
+    .dia-header { border-radius:12px 12px 0 0; overflow:hidden; padding:10px 6px 8px; text-align:center; border-bottom:1px solid var(--border); background:#faf5fb; }
+    .dia-col.hoje .dia-header { background:linear-gradient(135deg,var(--rose),var(--lavender)); }
+    .dia-header .dow { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); }
+    .dia-col.hoje .dia-header .dow,
+    .dia-col.hoje .dia-header .data-num,
+    .dia-col.hoje .dia-header .data-mes { color:#fff; }
+    .dia-header .data-num { font-size:18px; font-weight:800; color:var(--plum); line-height:1.2; margin-top:3px; }
+    .dia-header .data-mes { font-size:10px; color:var(--muted); }
+
+    .dia-slots { padding:8px 6px; display:flex; flex-direction:column; gap:5px; min-height:60px; }
+    .dia-vazio { padding:20px 4px; text-align:center; color:var(--muted); font-size:12px; }
+
+    /* Slot buttons */
+    .slot-livre {
+      display:block; width:100%; padding:8px 4px; text-align:center;
+      background:linear-gradient(135deg,#e8f8f0,#d0f0e2);
+      color:#1e7a50; border:1.5px solid #a0dfc0; border-radius:8px;
+      font-size:13px; font-weight:700; cursor:pointer; transition:all .15s;
+    }
+    .slot-livre:hover { background:linear-gradient(135deg,#d0f0e2,#a0dfc0); transform:scale(1.02); box-shadow:0 2px 8px rgba(30,122,80,.15); }
+    .slot-ocupado {
+      display:block; width:100%; padding:8px 4px; text-align:center;
+      background:#f4f0f8; color:#c0b0d0; border:1.5px solid #e5ddf0;
+      border-radius:8px; font-size:11.5px; font-weight:600; cursor:default;
+    }
+
+    /* Loading */
+    .loading { text-align:center; padding:64px 20px; color:var(--muted); font-size:15px; }
+
+    /* Modal */
+    .modal-overlay {
+      display:none; position:fixed; inset:0; z-index:900;
+      background:rgba(45,27,61,.55); backdrop-filter:blur(3px);
+      align-items:center; justify-content:center; padding:16px;
+    }
+    .modal-overlay.open { display:flex; }
+    .modal-box { background:#fff; border-radius:18px; box-shadow:0 20px 60px rgba(45,27,61,.28); width:100%; max-width:440px; overflow:hidden; }
+    .modal-head { background:linear-gradient(135deg,#2d1b3d,#503468); padding:22px 28px; color:#fff; }
+    .modal-head h3 { font-size:17px; font-weight:800; }
+    .modal-head .resumo { font-size:13px; color:#dbbfe8; margin-top:5px; }
+    .modal-body { padding:24px 28px; }
+    .fg { display:flex; flex-direction:column; gap:5px; margin-bottom:16px; }
+    .fg label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); }
+    .fg input { border:1.5px solid var(--border); border-radius:8px; padding:11px 13px; font-family:inherit; font-size:14.5px; color:var(--plum); background:#fff; transition:border-color .15s; }
+    .fg input:focus { outline:none; border-color:var(--rose); box-shadow:0 0 0 3px rgba(194,101,122,.1); }
+    .fg.erro input { border-color:#c0425d; }
+    .fg.erro .errmsg { display:block; }
+    .errmsg { display:none; color:#c0425d; font-size:12px; margin-top:2px; }
+    .modal-footer { display:flex; gap:10px; margin-top:6px; }
+    .btn-cancel { flex:1; padding:12px; border:1.5px solid var(--border); border-radius:10px; background:#fff; color:var(--muted); font-size:14px; font-weight:600; cursor:pointer; transition:all .15s; }
+    .btn-cancel:hover { border-color:var(--rose); color:var(--rose); }
+    .btn-confirmar { flex:2; padding:12px; background:linear-gradient(135deg,var(--rose),#a0466e); color:#fff; border:none; border-radius:10px; font-size:14.5px; font-weight:700; cursor:pointer; box-shadow:0 4px 16px rgba(194,101,122,.35); transition:all .15s; }
+    .btn-confirmar:hover:not(:disabled) { transform:translateY(-1px); }
+    .btn-confirmar:disabled { opacity:.6; cursor:not-allowed; transform:none; }
+
+    @media(max-width:760px) {
+      .semana-grid { grid-template-columns:repeat(3,1fr); }
+      .header { padding:20px 16px 16px; }
+    }
+    @media(max-width:440px) {
+      .semana-grid { grid-template-columns:repeat(2,1fr); }
+      .container { padding:16px 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">🌸</div>
+  <h1>Consultório de Psicologia</h1>
+  <div class="nome" id="h-nome">Carregando...</div>
+  <div class="crp"  id="h-crp"></div>
+</div>
+
+<div class="hero">
+  <p>Selecione um horário disponível para agendar sua sessão.</p>
+</div>
+
+<div class="container">
+  <div class="loading" id="loading">⏳ Carregando agenda...</div>
+
+  <div id="main" style="display:none">
+    <div class="week-nav">
+      <button class="nav-btn" id="btn-ant"  onclick="navSem(-1)">&#8249; Anterior</button>
+      <span class="sem-label" id="sem-label"></span>
+      <button class="nav-btn" id="btn-prox" onclick="navSem(1)">Próxima &#8250;</button>
+    </div>
+    <div class="semana-grid" id="semana-grid"></div>
+  </div>
+</div>
+
+<!-- Modal de confirmação -->
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)fecharModal()">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>Confirmar Agendamento</h3>
+      <div class="resumo" id="modal-resumo"></div>
+    </div>
+    <div class="modal-body">
+      <div class="fg" id="fg-nome">
+        <label>Seu nome completo *</label>
+        <input type="text" id="f-nome" placeholder="Nome completo" spellcheck="true" lang="pt-BR" autocomplete="name">
+        <span class="errmsg">Campo obrigatório</span>
+      </div>
+      <div class="fg" id="fg-wpp">
+        <label>WhatsApp *</label>
+        <input type="tel" id="f-wpp" placeholder="(00) 00000-0000" oninput="mascTel(this)" autocomplete="tel">
+        <span class="errmsg">Campo obrigatório</span>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="fecharModal()">Cancelar</button>
+        <button class="btn-confirmar" id="btn-conf" onclick="confirmar()">Confirmar e Assinar Contrato →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DIAS_SHORT  = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const DIAS_FULL   = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+const MESES_GEN   = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const MESES_CURTO = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+// Estado
+const _hojeDate = new Date(); _hojeDate.setHours(0,0,0,0);
+const HOJE_STR  = _hojeDate.toISOString().slice(0, 10);
+let _semana     = HOJE_STR;
+let _slotSel    = null; // { data, hora }
+
+// Desloca _semana N semanas
+function semDeslocar(delta) {
+  const d = new Date(_semana + 'T12:00:00');
+  d.setDate(d.getDate() + delta * 7);
+  return d.toISOString().slice(0, 10);
+}
+
+// Retorna true se o horário já passou
+function isPast(dataStr, hora) {
+  if (dataStr < HOJE_STR) return true;
+  if (dataStr === HOJE_STR) {
+    const agora = new Date();
+    const [h, m] = hora.split(':').map(Number);
+    return h * 60 + m <= agora.getHours() * 60 + agora.getMinutes();
+  }
+  return false;
+}
+
+function fmtResumo(dataStr, hora) {
+  const d = new Date(dataStr + 'T12:00:00');
+  return `📅 ${DIAS_FULL[d.getDay()]}, ${d.getDate()} de ${MESES_GEN[d.getMonth()]} às ${hora}`;
+}
+
+function renderSemana(data) {
+  const de  = new Date(data.semDe  + 'T12:00:00');
+  const ate = new Date(data.semAte + 'T12:00:00');
+
+  document.getElementById('sem-label').textContent =
+    `${de.getDate()} ${MESES_CURTO[de.getMonth()]} – ${ate.getDate()} ${MESES_CURTO[ate.getMonth()]} ${ate.getFullYear()}`;
+
+  const segDate = new Date(data.semDe + 'T12:00:00');
+  document.getElementById('btn-ant').disabled = segDate <= _hojeDate;
+
+  document.getElementById('semana-grid').innerHTML = data.semana.map(dia => {
+    const d = new Date(dia.data + 'T12:00:00');
+    const passado = dia.data < HOJE_STR;
+    const isHoje  = dia.data === HOJE_STR;
+
+    let slotsHtml;
+    if (passado) {
+      slotsHtml = `<div class="dia-vazio">—</div>`;
+    } else {
+      const itens = dia.slots.map(s => {
+        if (!s.livre || isPast(dia.data, s.hora)) {
+          return s.livre
+            ? '' // hora passou hoje — não mostrar
+            : `<span class="slot-ocupado">🔒 Ocupado</span>`;
+        }
+        return `<button class="slot-livre" onclick="abrirModal('${dia.data}','${s.hora}')">${s.hora}</button>`;
+      }).filter(Boolean);
+
+      slotsHtml = itens.length
+        ? itens.join('')
+        : `<div class="dia-vazio">Sem horários</div>`;
+    }
+
+    return `
+      <div class="dia-col${isHoje ? ' hoje' : ''}${passado ? ' passado' : ''}">
+        <div class="dia-header">
+          <div class="dow">${DIAS_SHORT[d.getDay()]}</div>
+          <div class="data-num">${d.getDate()}</div>
+          <div class="data-mes">${MESES_CURTO[d.getMonth()]}</div>
+        </div>
+        <div class="dia-slots">${slotsHtml}</div>
+      </div>`;
+  }).join('');
+}
+
+async function carregar() {
+  try {
+    const r = await fetch(`/api/agenda-publica?semana=${_semana}`);
+    if (!r.ok) throw new Error();
+    const data = await r.json();
+
+    if (!document.getElementById('h-nome').dataset.loaded) {
+      document.getElementById('h-nome').textContent = data.config.nome_psicologa || '';
+      document.getElementById('h-crp').textContent  = data.config.crp ? `CRP ${data.config.crp}` : '';
+      document.getElementById('h-nome').dataset.loaded = '1';
+    }
+
+    renderSemana(data);
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('main').style.display    = 'block';
+  } catch(e) {
+    document.getElementById('loading').textContent = '⚠️ Erro ao carregar. Atualize a página.';
+  }
+}
+
+async function navSem(delta) {
+  _semana = semDeslocar(delta);
+  await carregar();
+}
+
+function abrirModal(data, hora) {
+  _slotSel = { data, hora };
+  document.getElementById('modal-resumo').textContent = fmtResumo(data, hora);
+  document.getElementById('f-nome').value = '';
+  document.getElementById('f-wpp').value  = '';
+  document.getElementById('fg-nome').classList.remove('erro');
+  document.getElementById('fg-wpp').classList.remove('erro');
+  document.getElementById('btn-conf').disabled    = false;
+  document.getElementById('btn-conf').textContent = 'Confirmar e Assinar Contrato →';
+  document.getElementById('modal').classList.add('open');
+  setTimeout(() => document.getElementById('f-nome').focus(), 50);
+}
+
+function fecharModal() {
+  document.getElementById('modal').classList.remove('open');
+}
+
+function mascTel(el) {
+  let v = el.value.replace(/\D/g, '').slice(0, 11);
+  if (v.length > 10) v = v.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+  else               v = v.replace(/^(\d{2})(\d{4})(\d{0,4})$/, '($1) $2-$3');
+  el.value = v;
+}
+
+async function confirmar() {
+  if (!_slotSel) return;
+  const nome = document.getElementById('f-nome').value.trim();
+  const wpp  = document.getElementById('f-wpp').value.trim();
+
+  let ok = true;
+  [['fg-nome', nome], ['fg-wpp', wpp]].forEach(([id, val]) => {
+    document.getElementById(id).classList.toggle('erro', !val);
+    if (!val) ok = false;
+  });
+  if (!ok) return;
+
+  const btn = document.getElementById('btn-conf');
+  btn.disabled = true;
+  btn.textContent = 'Reservando...';
+
+  try {
+    const r = await fetch('/api/agenda-publica/reservar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nome, whatsapp: wpp, data: _slotSel.data, hora: _slotSel.hora })
+    });
+    const data = await r.json();
+
+    if (!r.ok) {
+      btn.disabled = false;
+      btn.textContent = 'Confirmar e Assinar Contrato →';
+      alert(data.error || 'Erro ao reservar. Tente novamente.');
+      if (r.status === 409) { fecharModal(); await carregar(); }
+      return;
+    }
+    window.location.href = data.contratoLink;
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = 'Confirmar e Assinar Contrato →';
+    alert('Erro de conexão. Tente novamente.');
+  }
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') fecharModal(); });
+
+carregar();
+</script>
+</body>
+</html>

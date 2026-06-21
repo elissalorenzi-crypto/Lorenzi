@@ -283,6 +283,101 @@ app.post('/api/agendamento-links/:token/reservar', (req, res) => {
   } catch(e) { erro(res, e); }
 });
 
+// ── AGENDA PÚBLICA (cliente) ──────────────────────────────────
+app.get('/api/agenda-publica', (req, res) => {
+  const semana = req.query.semana || new Date().toISOString().slice(0, 10);
+  const d = new Date(semana + 'T12:00:00');
+  const dow = d.getDay() || 7;
+  const seg = new Date(d); seg.setDate(d.getDate() - dow + 1);
+
+  const dias = Array.from({ length: 6 }, (_, i) => {
+    const x = new Date(seg); x.setDate(seg.getDate() + i);
+    return x.toISOString().slice(0, 10);
+  });
+
+  const cfg = db.getConfig();
+  const inicio  = cfg.horario_inicio  || '08:00';
+  const fim     = cfg.horario_fim     || '18:00';
+  const duracao = parseInt(cfg.duracao_sessao) || 50;
+
+  const toMin   = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+  const fromMin = n => `${String(Math.floor(n / 60)).padStart(2, '0')}:${String(n % 60).padStart(2, '0')}`;
+
+  const inicioMin = toMin(inicio);
+  const fimMin    = toMin(fim);
+  const todosSlots = [];
+  for (let m = inicioMin; m + duracao <= fimMin; m += 60) todosSlots.push(fromMin(m));
+
+  const existentes = db.getAgendamentos({ data_de: dias[0], data_ate: dias[dias.length - 1] })
+    .filter(a => ['agendado', 'confirmado'].includes(a.status));
+
+  const bloqueios = [
+    [cfg.bloqueio_inicio  || '', cfg.bloqueio_fim  || ''],
+    [cfg.bloqueio2_inicio || '', cfg.bloqueio2_fim || ''],
+  ].filter(([i, f]) => i && f);
+
+  const semana_data = dias.map(data => ({
+    data,
+    slots: todosSlots
+      .filter(hora => {
+        const m = toMin(hora);
+        return !bloqueios.some(([i, f]) => m >= toMin(i) && m < toMin(f));
+      })
+      .map(hora => {
+        const slotMin = toMin(hora), slotFim = slotMin + duracao;
+        const ocupado = existentes.some(a => {
+          if (a.data !== data) return false;
+          const am = toMin(a.hora), af = am + duracao;
+          return slotMin < af && am < slotFim;
+        });
+        return { hora, livre: !ocupado };
+      })
+  }));
+
+  res.json({
+    semDe: dias[0], semAte: dias[dias.length - 1],
+    semana: semana_data,
+    config: { nome_psicologa: cfg.nome_psicologa || '', crp: cfg.crp || '' }
+  });
+});
+
+app.post('/api/agenda-publica/reservar', async (req, res) => {
+  const { nome, whatsapp, data, hora } = req.body;
+  if (!nome || !data || !hora) return res.status(400).json({ error: 'Dados incompletos.' });
+
+  try {
+    const cfg = db.getConfig();
+    const duracao = parseInt(cfg.duracao_sessao) || 50;
+    const toMin = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+
+    const existentes = db.getAgendamentos({ data })
+      .filter(a => ['agendado', 'confirmado'].includes(a.status));
+    const slotMin = toMin(hora), slotFim = slotMin + duracao;
+    const conflict = existentes.find(a => {
+      const am = toMin(a.hora), af = am + duracao;
+      return slotMin < af && am < slotFim;
+    });
+    if (conflict) return res.status(409).json({ error: 'Este horário acabou de ser ocupado. Escolha outro.' });
+
+    const todos = db.getPacientes();
+    let pac = todos.find(p => p.nome.toLowerCase() === nome.toLowerCase());
+    if (!pac) {
+      const id = db.createPaciente({ nome, whatsapp: whatsapp || null });
+      pac = { id, nome };
+    }
+
+    db.createAgendamento({
+      paciente_id: pac.id, data, hora,
+      tipo: 'sessao', status: 'agendado',
+      valor: cfg.valor_sessao_padrao || 180
+    });
+
+    const conviteToken = db.createConvite(nome);
+    const base = `${req.protocol}://${req.get('host')}`;
+    res.json({ success: true, contratoLink: `${base}/contratos/?token=${conviteToken}` });
+  } catch(e) { erro(res, e); }
+});
+
 // ── CONVITES ─────────────────────────────────────────────────
 app.get('/api/convites', (req, res) => res.json(db.getConvites()));
 

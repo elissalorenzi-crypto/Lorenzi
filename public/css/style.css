@@ -110,6 +110,8 @@ nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
 }
 .nav-link .icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
 .nav-link:hover { background: rgba(194,101,122,.12); color: var(--plum); }
+.nav-link-ext { color: var(--muted); font-size: 13px; }
+.nav-link-ext::after { content: '↗'; font-size: 10px; margin-left: auto; opacity: .5; }
 .nav-badge {
   background: var(--rose);
   color: #fff;
