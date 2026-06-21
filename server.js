@@ -183,7 +183,13 @@ app.post('/api/contratos', (req, res) => {
         if (existente) {
           db.updatePaciente(existente.id, { ...existente, ...dadosPaciente });
         } else {
-          db.createPaciente(dadosPaciente);
+          // Verifica por nome (caso paciente tenha sido criado ao gerar o link)
+          const porNome = db.getPacientes().find(p => p.nome.toLowerCase() === nome.toLowerCase());
+          if (porNome) {
+            db.updatePaciente(porNome.id, { ...porNome, ...dadosPaciente });
+          } else {
+            db.createPaciente(dadosPaciente);
+          }
         }
       }
     } catch(e) {

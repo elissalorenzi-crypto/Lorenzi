@@ -1273,13 +1273,51 @@ async function cancelarConvite(id) {
   loadContratos();
 }
 
+function calcularDatas(inicio, diaSemana, qtd) {
+  const datas = [];
+  const d = new Date(inicio + 'T12:00:00');
+  while (d.getDay() !== diaSemana) d.setDate(d.getDate() + 1);
+  for (let i = 0; i < qtd; i++) {
+    datas.push(d.toISOString().slice(0, 10));
+    d.setDate(d.getDate() + 7);
+  }
+  return datas;
+}
+
 async function novoConvite() {
   openModal('Novo Contrato', `
-    <div class="form-group" style="margin-bottom:8px">
+    <div class="form-group" style="margin-bottom:12px">
       <label>Nome do Paciente</label>
       <input type="text" id="conv-nome" placeholder="Nome completo" autofocus>
     </div>
-    <p style="font-size:12.5px;color:var(--muted);margin-top:8px">Um link único será gerado para este paciente assinar o termo online.</p>
+    <hr style="border:none;border-top:1px solid var(--border);margin:14px 0 12px">
+    <div style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:10px">📅 Sessões na agenda (opcional)</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Dia da semana</label>
+        <select id="conv-dia">
+          <option value="">— Não agendar —</option>
+          <option value="1">Segunda-feira</option>
+          <option value="2">Terça-feira</option>
+          <option value="3">Quarta-feira</option>
+          <option value="4">Quinta-feira</option>
+          <option value="5">Sexta-feira</option>
+          <option value="6">Sábado</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Horário</label>
+        <input type="time" id="conv-hora" value="09:00">
+      </div>
+      <div class="form-group">
+        <label>Data de início</label>
+        <input type="date" id="conv-inicio" value="${HOJE()}">
+      </div>
+      <div class="form-group">
+        <label>Qtd. de sessões</label>
+        <input type="number" id="conv-qtd" min="1" max="30" placeholder="Ex: 8">
+      </div>
+    </div>
     <div id="conv-link-box" style="display:none;margin-top:16px">
       <div style="font-size:12px;font-weight:700;color:var(--text-mid);margin-bottom:6px">Link gerado:</div>
       <div style="display:flex;gap:8px;align-items:center">
@@ -1289,15 +1327,49 @@ async function novoConvite() {
       <p style="font-size:12px;color:var(--muted);margin-top:8px">⏱ Válido por 7 dias · uso único</p>
     </div>
   `, async () => {
-    const nome = document.getElementById('conv-nome')?.value.trim();
+    const nome   = document.getElementById('conv-nome')?.value.trim();
     if (!nome) return toast('Informe o nome do paciente', 'error');
+
+    const dia    = parseInt(document.getElementById('conv-dia')?.value) || 0;
+    const hora   = document.getElementById('conv-hora')?.value;
+    const inicio = document.getElementById('conv-inicio')?.value;
+    const qtd    = parseInt(document.getElementById('conv-qtd')?.value) || 0;
+    const agendarSessoes = dia && hora && inicio && qtd > 0;
+
     try {
       const res = await api('POST', '/convites', { nome_paciente: nome });
       document.getElementById('conv-link-input').value = res.link;
       document.getElementById('conv-link-box').style.display = 'block';
       document.getElementById('modal-save-btn').style.display = 'none';
       navigator.clipboard.writeText(res.link).catch(() => {});
-      toast('Link gerado e copiado! 📋');
+
+      if (agendarSessoes) {
+        // Cria ou localiza o paciente
+        const todos = await api('GET', '/pacientes');
+        let pac = todos.find(p => p.nome.toLowerCase() === nome.toLowerCase());
+        if (!pac) {
+          const criado = await api('POST', '/pacientes', { nome });
+          pac = { id: criado.id, nome, valor_sessao: null };
+        }
+        _pacientesCache = [...todos.filter(p => p.id !== pac.id), pac];
+
+        const valor = pac.valor_sessao || _config?.valor_sessao_padrao || 180;
+        const datas = calcularDatas(inicio, dia, qtd);
+        let criadas = 0;
+        for (const data of datas) {
+          try {
+            await api('POST', '/agendamentos', {
+              paciente_id: pac.id, data, hora,
+              tipo: 'sessao', status: 'agendado', valor
+            });
+            criadas++;
+          } catch(e) {}
+        }
+        toast(`Link gerado + ${criadas} sessão(ões) agendada(s)! 🌸`);
+      } else {
+        toast('Link gerado e copiado! 📋');
+      }
+
       loadContratos();
     } catch(e) { toast(e.message, 'error'); }
   }, { saveLabel: 'Gerar Link' });
