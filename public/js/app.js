@@ -656,7 +656,7 @@ function filtrarPacientes() {
 function renderPacientesTable(data) {
   const tbody = document.getElementById('pacientes-tbody');
   if (!data.length) {
-    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><span class="empty-icon">👤</span><p>Nenhum cliente encontrado</p></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><span class="empty-icon">👤</span><p>Nenhum cliente encontrado</p></div></td></tr>`;
     return;
   }
   const contadorEl = document.getElementById('pac-contador');
@@ -673,7 +673,6 @@ function renderPacientesTable(data) {
           </div>
         </div>
       </td>
-      <td>${fmtNascimento(p.data_nascimento)}</td>
       <td>
         ${p.whatsapp ? `<a href="https://wa.me/55${p.whatsapp.replace(/\D/g,'')}" target="_blank" style="color:var(--sage);font-size:12px">💬 ${p.whatsapp}</a>` : '—'}
       </td>
