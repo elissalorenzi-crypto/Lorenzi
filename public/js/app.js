@@ -693,7 +693,7 @@ function renderPacientesTable(data) {
           <option value="mensal">Mensal</option>
         </select>`}
       </td>
-      <td style="font-size:12px;color:var(--muted)">${{pix:'PIX',credito:'Crédito',debito:'Débito',dinheiro:'Dinheiro',transferencia:'Transf.'}[p.forma_pgto] || '—'}</td>
+      <td style="font-size:11px;color:var(--muted);white-space:nowrap">${{pix:'PIX',credito:'Crédito',debito:'Débito',dinheiro:'Dinheiro',transferencia:'Transf.'}[p.forma_pgto] || '—'}</td>
       <td>
         <select class="status-select nf ${p.nota_fiscal === 'sim' ? 'sim' : 'nao'}"
                 onchange="this.className='status-select nf '+this.value;alterarNotaFiscal(${p.id},this.value)">
