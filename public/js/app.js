@@ -358,9 +358,13 @@ function renderAgendaGrid() {
                     <div class="appt-tipo">${TIPO_LABEL[a.tipo]||a.tipo}</div>
                   </div>
                   <div class="appt-actions">
-                    <button class="appt-btn appt-btn-ok"  onclick="marcarRealizado(${a.id})"      title="Finalizar">✓</button>
-                    <button class="appt-btn appt-btn-edit" onclick="editAgendamento(${a.id})"     title="Alterar">✏</button>
-                    <button class="appt-btn appt-btn-del"  onclick="deleteAgendamentoItem(${a.id})" title="Excluir">✕</button>
+                    <button class="appt-btn appt-btn-ok"   onclick="marcarRealizado(${a.id})"       title="Finalizar">✓</button>
+                    <button class="appt-btn appt-btn-edit"  onclick="editAgendamento(${a.id})"      title="Alterar">✏</button>
+                    <button class="appt-btn appt-btn-del"   onclick="deleteAgendamentoItem(${a.id})" title="Excluir">✕</button>
+                    ${a.zoom_link
+                      ? `<a class="appt-btn appt-btn-zoom appt-btn-zoom-ok" href="${a.zoom_link}" target="_blank" title="Abrir Zoom">🎥</a>`
+                      : `<button class="appt-btn appt-btn-zoom" onclick="gerarZoom(${a.id})" title="Gerar link Zoom">📹</button>`
+                    }
                   </div>
                 </div>
               `).join('')
@@ -398,6 +402,10 @@ function renderAgendaLista() {
           <button class="btn btn-xs" style="background:var(--sage-pale);color:var(--sage);border:1.5px solid var(--sage);font-weight:700" onclick="marcarRealizado(${a.id})" title="Finalizar">✓</button>
           <button class="btn btn-outline btn-xs" onclick="editAgendamento(${a.id})" title="Alterar">✏️</button>
           <button class="btn btn-ghost btn-xs" style="color:var(--red)" onclick="deleteAgendamentoItem(${a.id})" title="Excluir">🗑</button>
+          ${a.zoom_link
+            ? `<a class="btn btn-xs" href="${a.zoom_link}" target="_blank" title="Abrir Zoom" style="background:#1a6ff4;color:#fff;border-color:#1a6ff4;text-decoration:none">🎥 Zoom</a>`
+            : `<button class="btn btn-outline btn-xs" style="color:#1a6ff4;border-color:#1a6ff4" onclick="gerarZoom(${a.id})" title="Gerar link Zoom">📹</button>`
+          }
         </div>
       </td>
     </tr>
@@ -522,6 +530,19 @@ function autoPreencherAgendamento() {
 async function editAgendamento(id) {
   const ag = await api('GET', `/agendamentos/${id}`);
   openModalAgendamento(ag);
+}
+
+async function gerarZoom(id) {
+  const btn = event?.target;
+  if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
+  try {
+    const r = await api('POST', `/agendamentos/${id}/zoom`);
+    toast('Link Zoom gerado! 🎥');
+    fetchAgendaSemana();
+  } catch(e) {
+    toast(e.message, 'error');
+    if (btn) { btn.textContent = '📹'; btn.disabled = false; }
+  }
 }
 
 async function deleteAgendamentoItem(id) {
@@ -1534,6 +1555,9 @@ async function loadConfiguracoes() {
   document.getElementById('cfg-bloqueio-fim').value     = cfg.bloqueio_fim     || '';
   document.getElementById('cfg-bloqueio2-inicio').value = cfg.bloqueio2_inicio || '';
   document.getElementById('cfg-bloqueio2-fim').value    = cfg.bloqueio2_fim    || '';
+  document.getElementById('cfg-zoom-account').value        = cfg.zoom_account_id     || '';
+  document.getElementById('cfg-zoom-client-id').value      = cfg.zoom_client_id      || '';
+  document.getElementById('cfg-zoom-client-secret').value  = cfg.zoom_client_secret  || '';
 }
 
 async function salvarConfiguracoes() {
@@ -1551,7 +1575,10 @@ async function salvarConfiguracoes() {
     bloqueio_inicio:      document.getElementById('cfg-bloqueio-inicio').value  || '',
     bloqueio_fim:         document.getElementById('cfg-bloqueio-fim').value     || '',
     bloqueio2_inicio:     document.getElementById('cfg-bloqueio2-inicio').value || '',
-    bloqueio2_fim:        document.getElementById('cfg-bloqueio2-fim').value    || ''
+    bloqueio2_fim:        document.getElementById('cfg-bloqueio2-fim').value    || '',
+    zoom_account_id:      document.getElementById('cfg-zoom-account').value.trim(),
+    zoom_client_id:       document.getElementById('cfg-zoom-client-id').value.trim(),
+    zoom_client_secret:   document.getElementById('cfg-zoom-client-secret').value.trim(),
   };
   try {
     await api('POST', '/configuracoes', body);

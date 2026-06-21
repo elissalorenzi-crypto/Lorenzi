@@ -125,6 +125,50 @@ app.get('/api/financeiro', (req, res) => {
   res.json(db.getFinanceiro(ano, mes));
 });
 
+// ── ZOOM ─────────────────────────────────────────────────────
+async function criarReuniaozoom(cfg, topic, startLocal, durationMin) {
+  if (!cfg.zoom_account_id || !cfg.zoom_client_id || !cfg.zoom_client_secret)
+    throw new Error('Credenciais Zoom não configuradas. Acesse Configurações → Zoom.');
+
+  const tokenRes = await fetch(
+    `https://zoom.us/oauth/token?grant_type=account_credentials&account_id=${cfg.zoom_account_id}`,
+    { method: 'POST', headers: {
+        Authorization: 'Basic ' + Buffer.from(`${cfg.zoom_client_id}:${cfg.zoom_client_secret}`).toString('base64'),
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }}
+  );
+  const tok = await tokenRes.json();
+  if (!tok.access_token) throw new Error('Zoom: falha na autenticação — verifique Account ID, Client ID e Client Secret.');
+
+  const meetRes = await fetch('https://api.zoom.us/v2/users/me/meetings', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${tok.access_token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      topic,
+      type: 2,
+      start_time: startLocal,
+      duration: durationMin,
+      timezone: 'America/Sao_Paulo',
+      settings: { join_before_host: true, waiting_room: false }
+    })
+  });
+  const meet = await meetRes.json();
+  if (!meet.join_url) throw new Error('Zoom: ' + (meet.message || 'não foi possível criar reunião'));
+  return meet.join_url;
+}
+
+app.post('/api/agendamentos/:id/zoom', async (req, res) => {
+  try {
+    const ag  = db.getAgendamentoById(req.params.id);
+    if (!ag) return res.status(404).json({ error: 'Agendamento não encontrado' });
+    const cfg  = db.getConfig();
+    const nome = ag.paciente_nome || 'Consulta';
+    const link = await criarReuniaozoom(cfg, `Sessão — ${nome}`, `${ag.data}T${ag.hora}:00`, ag.duracao || cfg.duracao_sessao || 50);
+    db.updateAgendamento(ag.id, { ...ag, zoom_link: link });
+    res.json({ zoom_link: link, success: true });
+  } catch(e) { erro(res, e); }
+});
+
 app.get('/api/financeiro/previsao-pgto', (req, res) => {
   const hoje = req.query.hoje || new Date().toISOString().slice(0,10);
   res.json(db.getPrevisaoPgto(hoje));

@@ -211,26 +211,29 @@ const getAgendamentoById = (id) =>
     WHERE a.id=?
   `).get(id);
 
+try { db.prepare('ALTER TABLE agendamentos ADD COLUMN zoom_link TEXT').run(); } catch(e) {}
+
 const createAgendamento = (data) =>
   rid(db.prepare(`
-    INSERT INTO agendamentos (paciente_id, data, hora, duracao, tipo, status, valor, pago, forma_pgto, obs)
-    VALUES (?,?,?,?,?,?,?,?,?,?)
+    INSERT INTO agendamentos (paciente_id, data, hora, duracao, tipo, status, valor, pago, forma_pgto, obs, zoom_link)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?)
   `).run(
     data.paciente_id || null, data.data, data.hora,
     data.duracao || 50, data.tipo || 'sessao', data.status || 'agendado',
-    data.valor || 0, data.pago || 0, data.forma_pgto || null, data.obs || null
+    data.valor || 0, data.pago || 0, data.forma_pgto || null, data.obs || null, data.zoom_link || null
   ));
 
 const updateAgendamento = (id, data) =>
   db.prepare(`
     UPDATE agendamentos SET
       paciente_id=?, data=?, hora=?, duracao=?, tipo=?, status=?,
-      valor=?, pago=?, forma_pgto=?, obs=?
+      valor=?, pago=?, forma_pgto=?, obs=?, zoom_link=?
     WHERE id=?
   `).run(
     data.paciente_id || null, data.data, data.hora,
     data.duracao || 50, data.tipo || 'sessao', data.status || 'agendado',
-    data.valor || 0, data.pago || 0, data.forma_pgto || null, data.obs || null, id
+    data.valor || 0, data.pago || 0, data.forma_pgto || null, data.obs || null,
+    data.zoom_link || null, id
   );
 
 const deleteAgendamento = (id) =>

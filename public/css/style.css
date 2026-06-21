@@ -451,6 +451,9 @@ tbody tr:hover { background: var(--rose-pale); }
 .appt-btn-ok:hover   { color: var(--sage); }
 .appt-btn-edit:hover { color: var(--lavender); }
 .appt-btn-del:hover  { color: var(--red); }
+.appt-btn-zoom      { color: #1a6ff4; text-decoration: none; display: inline-flex; align-items: center; }
+.appt-btn-zoom:hover { color: #1a6ff4; background: #e8f0fe; }
+.appt-btn-zoom-ok   { color: #fff !important; background: #1a6ff4 !important; }
 
 .empty-day { font-size: 11px; color: var(--muted); text-align: center; padding: 12px 0; }
 
