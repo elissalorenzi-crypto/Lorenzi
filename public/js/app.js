@@ -339,10 +339,17 @@ function renderAgendaGrid() {
         <div class="day-slots">
           ${appts.length
             ? appts.map(a => `
-                <div class="appt-chip ${a.status}" onclick="editAgendamento(${a.id})" title="${a.paciente_nome||''}">
-                  <div class="appt-hora">${a.hora}</div>
-                  <div class="appt-nome">${a.paciente_nome || 'Sem cliente'}</div>
-                  <div class="appt-tipo">${TIPO_LABEL[a.tipo]||a.tipo}</div>
+                <div class="appt-chip ${a.status}" title="${a.paciente_nome||''}">
+                  <div onclick="editAgendamento(${a.id})" style="cursor:pointer">
+                    <div class="appt-hora">${a.hora}</div>
+                    <div class="appt-nome">${a.paciente_nome || 'Sem cliente'}</div>
+                    <div class="appt-tipo">${TIPO_LABEL[a.tipo]||a.tipo}</div>
+                  </div>
+                  <div class="appt-actions">
+                    <button class="appt-btn appt-btn-ok"  onclick="marcarRealizado(${a.id})"      title="Finalizar">✓</button>
+                    <button class="appt-btn appt-btn-edit" onclick="editAgendamento(${a.id})"     title="Alterar">✏</button>
+                    <button class="appt-btn appt-btn-del"  onclick="deleteAgendamentoItem(${a.id})" title="Excluir">✕</button>
+                  </div>
                 </div>
               `).join('')
             : `<div class="empty-day">livre</div>`
@@ -376,8 +383,9 @@ function renderAgendaLista() {
       <td>${a.pago ? '<span style="color:var(--sage);font-size:16px">✓</span>' : '<span style="color:var(--peach);font-size:16px">○</span>'}</td>
       <td>
         <div class="inline-actions">
-          <button class="btn btn-outline btn-xs" onclick="editAgendamento(${a.id})">✏️</button>
-          <button class="btn btn-ghost btn-xs" style="color:var(--red)" onclick="deleteAgendamentoItem(${a.id})">🗑</button>
+          <button class="btn btn-xs" style="background:var(--sage-pale);color:var(--sage);border:1.5px solid var(--sage);font-weight:700" onclick="marcarRealizado(${a.id})" title="Finalizar">✓</button>
+          <button class="btn btn-outline btn-xs" onclick="editAgendamento(${a.id})" title="Alterar">✏️</button>
+          <button class="btn btn-ghost btn-xs" style="color:var(--red)" onclick="deleteAgendamentoItem(${a.id})" title="Excluir">🗑</button>
         </div>
       </td>
     </tr>
@@ -510,6 +518,15 @@ async function deleteAgendamentoItem(id) {
   if (!confirm('Remover este agendamento?')) return;
   await api('DELETE', `/agendamentos/${id}`);
   toast('Agendamento removido');
+  fetchAgendaSemana();
+}
+
+async function marcarRealizado(id) {
+  const ag = await api('GET', `/agendamentos/${id}`);
+  if (!ag?.id) return;
+  if (ag.status === 'realizado') { toast('Sessão já finalizada', 'info'); return; }
+  await api('PUT', `/agendamentos/${id}`, { ...ag, status: 'realizado' });
+  toast('Sessão finalizada ✓');
   fetchAgendaSemana();
 }
 
