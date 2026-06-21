@@ -362,7 +362,13 @@ function renderAgendaGrid() {
                     <button class="appt-btn appt-btn-edit"  onclick="editAgendamento(${a.id})"      title="Alterar">✏</button>
                     <button class="appt-btn appt-btn-del"   onclick="deleteAgendamentoItem(${a.id})" title="Excluir">✕</button>
                     ${a.zoom_link
-                      ? `<a class="appt-btn appt-btn-zoom appt-btn-zoom-ok" href="${a.zoom_link}" target="_blank" title="Abrir Zoom">🎥</a>`
+                      ? `<div class="zoom-menu-wrap">
+                           <button class="appt-btn appt-btn-zoom appt-btn-zoom-ok" onclick="toggleZoomMenu(event,${a.id})" title="Zoom">🎥</button>
+                           <div class="zoom-menu" id="zmenu-${a.id}">
+                             <button onclick="copiarZoom('${a.zoom_link}')">📋 Copiar link</button>
+                             <a href="${a.zoom_link}" target="_blank" onclick="fecharZoomMenus()">🚀 Abrir sessão</a>
+                           </div>
+                         </div>`
                       : `<button class="appt-btn appt-btn-zoom" onclick="gerarZoom(${a.id})" title="Gerar link Zoom">📹</button>`
                     }
                   </div>
@@ -403,7 +409,13 @@ function renderAgendaLista() {
           <button class="btn btn-outline btn-xs" onclick="editAgendamento(${a.id})" title="Alterar">✏️</button>
           <button class="btn btn-ghost btn-xs" style="color:var(--red)" onclick="deleteAgendamentoItem(${a.id})" title="Excluir">🗑</button>
           ${a.zoom_link
-            ? `<a class="btn btn-xs" href="${a.zoom_link}" target="_blank" title="Abrir Zoom" style="background:#1a6ff4;color:#fff;border-color:#1a6ff4;text-decoration:none">🎥 Zoom</a>`
+            ? `<div class="zoom-menu-wrap">
+                 <button class="btn btn-xs appt-btn-zoom-ok" style="background:#1a6ff4;color:#fff;border-color:#1a6ff4" onclick="toggleZoomMenu(event,${a.id})" title="Zoom">🎥 Zoom</button>
+                 <div class="zoom-menu" id="zmenu-${a.id}">
+                   <button onclick="copiarZoom('${a.zoom_link}')">📋 Copiar link</button>
+                   <a href="${a.zoom_link}" target="_blank" onclick="fecharZoomMenus()">🚀 Abrir sessão</a>
+                 </div>
+               </div>`
             : `<button class="btn btn-outline btn-xs" style="color:#1a6ff4;border-color:#1a6ff4" onclick="gerarZoom(${a.id})" title="Gerar link Zoom">📹</button>`
           }
         </div>
@@ -531,6 +543,25 @@ async function editAgendamento(id) {
   const ag = await api('GET', `/agendamentos/${id}`);
   openModalAgendamento(ag);
 }
+
+function fecharZoomMenus() {
+  document.querySelectorAll('.zoom-menu.open').forEach(m => m.classList.remove('open'));
+}
+
+function toggleZoomMenu(e, id) {
+  e.stopPropagation();
+  const menu = document.getElementById('zmenu-' + id);
+  const isOpen = menu.classList.contains('open');
+  fecharZoomMenus();
+  if (!isOpen) menu.classList.add('open');
+}
+
+function copiarZoom(link) {
+  navigator.clipboard.writeText(link).then(() => toast('Link copiado! 📋'));
+  fecharZoomMenus();
+}
+
+document.addEventListener('click', fecharZoomMenus);
 
 async function gerarZoom(id) {
   const btn = event?.target;

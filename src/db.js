@@ -206,7 +206,7 @@ const getAgendamentos = (filtros = {}) => {
 
 const getAgendamentoById = (id) =>
   db.prepare(`
-    SELECT a.*, p.nome as paciente_nome
+    SELECT a.*, p.nome as paciente_nome, p.whatsapp as paciente_whatsapp
     FROM agendamentos a LEFT JOIN pacientes p ON p.id = a.paciente_id
     WHERE a.id=?
   `).get(id);
