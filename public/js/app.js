@@ -433,7 +433,7 @@ function renderAgendaHorario() {
 
   const DIAS_S = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
   const hoje   = HOJE();
-  const dias   = Array.from({ length: 6 }, (_, i) => addDays(_agendaSemana, i));
+  const dias   = Array.from({ length: 7 }, (_, i) => addDays(_agendaSemana, i));
 
   // Indexa por "data|hora" → array (suporta múltiplos no mesmo horário)
   const idx = {};
