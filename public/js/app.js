@@ -494,29 +494,31 @@ function renderAgendaHorario() {
       if (!lista.length) {
         return `<td class="hor-cell${domCl}" onclick="openModalAgendamento(null,'${d}',null,'${t}')"><span class="hor-add">+</span></td>`;
       }
-      const blocos = lista.map(a => {
-        const sc = a.status || 'agendado';
-        const zoomBtn = a.zoom_link
-          ? `<div class="zoom-menu-wrap">
-               <button class="appt-btn appt-btn-zoom appt-btn-zoom-ok" onclick="toggleZoomMenu(event,${a.id})" title="Zoom">🎥</button>
-               <div class="zoom-menu" id="zmenu-${a.id}">
-                 <button onclick="copiarZoom('${a.zoom_link}')">📋 Copiar link</button>
-                 <a href="${a.zoom_link}" target="_blank" onclick="fecharZoomMenus()">🚀 Abrir sessão</a>
-                 ${a.paciente_whatsapp ? `<a href="${zoomWaUrl(a.paciente_nome,a.zoom_link,a.paciente_whatsapp)}" target="_blank" onclick="fecharZoomMenus()" style="color:#25d366">💬 WhatsApp</a>` : ''}
-               </div>
-             </div>`
-          : `<button class="appt-btn appt-btn-zoom" onclick="gerarZoom(${a.id})" title="Zoom">📹</button>`;
-        return `<div class="hor-appt ${sc}" style="${lista.length>1?'margin-bottom:3px':''}">
-          <span class="hor-nome">${a.paciente_nome || '—'}</span>
-          <div class="hor-actions">
-            ${zoomBtn}
-            <button class="appt-btn appt-btn-ok"  onclick="marcarRealizado(${a.id})"       title="Finalizar">✓</button>
-            <button class="appt-btn appt-btn-edit" onclick="editAgendamento(${a.id})"       title="Alterar">✏</button>
-            <button class="appt-btn appt-btn-del"  onclick="deleteAgendamentoItem(${a.id})" title="Excluir">✕</button>
-          </div>
-        </div>`;
-      }).join('');
-      return `<td class="hor-cell has-appt${domCl}">${blocos}</td>`;
+      const a  = lista[0]; // exibe apenas o primeiro quando há múltiplos
+      const sc = a.status || 'agendado';
+      const duplo = lista.length > 1
+        ? `<span title="${lista.length} agendamentos" style="font-size:10px;color:var(--red);font-weight:700;margin-left:2px">×${lista.length}</span>`
+        : '';
+      const zoomBtn = a.zoom_link
+        ? `<div class="zoom-menu-wrap">
+             <button class="appt-btn appt-btn-zoom appt-btn-zoom-ok" onclick="toggleZoomMenu(event,${a.id})" title="Zoom">🎥</button>
+             <div class="zoom-menu" id="zmenu-${a.id}">
+               <button onclick="copiarZoom('${a.zoom_link}')">📋 Copiar link</button>
+               <a href="${a.zoom_link}" target="_blank" onclick="fecharZoomMenus()">🚀 Abrir sessão</a>
+               ${a.paciente_whatsapp ? `<a href="${zoomWaUrl(a.paciente_nome,a.zoom_link,a.paciente_whatsapp)}" target="_blank" onclick="fecharZoomMenus()" style="color:#25d366">💬 WhatsApp</a>` : ''}
+             </div>
+           </div>`
+        : `<button class="appt-btn appt-btn-zoom" onclick="gerarZoom(${a.id})" title="Zoom">📹</button>`;
+      const bloco = `<div class="hor-appt ${sc}">
+        <span class="hor-nome">${a.paciente_nome || '—'}${duplo}</span>
+        <div class="hor-actions">
+          ${zoomBtn}
+          <button class="appt-btn appt-btn-ok"  onclick="marcarRealizado(${a.id})"       title="Finalizar">✓</button>
+          <button class="appt-btn appt-btn-edit" onclick="editAgendamento(${a.id})"       title="Alterar">✏</button>
+          <button class="appt-btn appt-btn-del"  onclick="deleteAgendamentoItem(${a.id})" title="Excluir">✕</button>
+        </div>
+      </div>`;
+      return `<td class="hor-cell has-appt${domCl}">${bloco}</td>`;
     }).join('');
 
     html += `<tr class="${isHour ? 'hor-row-h' : 'hor-row-m'}"><td class="hor-hora">${t}</td>${cells}</tr>`;
