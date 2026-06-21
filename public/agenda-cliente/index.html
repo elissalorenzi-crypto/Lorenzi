@@ -366,11 +366,17 @@ function renderSemana(data) {
   else renderCards(data);
 }
 
-async function carregar() {
+async function carregar(autoAvancar = true) {
   try {
     const r = await fetch(`/api/agenda-publica?semana=${_semana}`);
     if (!r.ok) throw new Error();
     const data = await r.json();
+
+    // Semana inteira já passou (ex: domingo) → avança automaticamente
+    if (autoAvancar && data.semAte < HOJE_STR) {
+      _semana = semDeslocar(1);
+      return carregar(false);
+    }
 
     if (!document.getElementById('h-nome').dataset.loaded) {
       document.getElementById('h-nome').textContent = data.config.nome_psicologa || '';
