@@ -38,7 +38,7 @@ app.get('/api/dashboard', (req, res) => {
 });
 
 // ── PACIENTES ────────────────────────────────────────────────
-app.get('/api/pacientes', (req, res) => res.json(db.getPacientes()));
+app.get('/api/pacientes', (req, res) => res.json(db.getPacientes(req.query.todos === '1')));
 
 app.get('/api/pacientes/:id', (req, res) => {
   const p = db.getPacienteById(req.params.id);

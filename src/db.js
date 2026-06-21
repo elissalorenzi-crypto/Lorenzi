@@ -131,8 +131,11 @@ if (cfgCount === 0) {
 // ============================================================
 // PACIENTES
 // ============================================================
-const getPacientes = () =>
-  db.prepare('SELECT * FROM pacientes WHERE ativo=1 ORDER BY nome').all();
+const getPacientes = (todos = false) =>
+  db.prepare(todos
+    ? 'SELECT * FROM pacientes ORDER BY ativo DESC, nome'
+    : 'SELECT * FROM pacientes WHERE ativo=1 ORDER BY nome'
+  ).all();
 
 const getPacienteById = (id) =>
   db.prepare('SELECT * FROM pacientes WHERE id=?').get(id);

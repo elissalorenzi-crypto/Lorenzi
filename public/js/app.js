@@ -627,7 +627,7 @@ async function gerExcluir(i, id) {
 let _pacientes = [];
 
 async function loadPacientes() {
-  _pacientes = await api('GET', '/pacientes');
+  _pacientes = await api('GET', '/pacientes?todos=1');
   document.getElementById('pacientes-list-view').style.display = '';
   document.getElementById('pacientes-detail-view').style.display = 'none';
   filtrarPacientes();
@@ -648,7 +648,7 @@ function filtrarPacientes() {
 function renderPacientesTable(data) {
   const tbody = document.getElementById('pacientes-tbody');
   if (!data.length) {
-    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><span class="empty-icon">👤</span><p>Nenhum cliente encontrado</p></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="empty-icon">👤</span><p>Nenhum cliente encontrado</p></div></td></tr>`;
     return;
   }
   tbody.innerHTML = data.map(p => `
@@ -668,6 +668,13 @@ function renderPacientesTable(data) {
       </td>
       <td>${p.convenio || '<span class="text-muted">Particular</span>'}</td>
       <td class="text-right fw-bold">${BRL(p.valor_sessao)}</td>
+      <td>
+        <select class="status-select ${p.ativo ? 'ativo' : 'finalizado'}"
+                onchange="this.className='status-select '+(this.value==='1'?'ativo':'finalizado');alterarStatusCliente(${p.id}, this.value, this)">
+          <option value="1" ${p.ativo ? 'selected' : ''}>Ativo</option>
+          <option value="0" ${!p.ativo ? 'selected' : ''}>Finalizado</option>
+        </select>
+      </td>
       <td>
         <div class="inline-actions">
           <button class="btn btn-outline btn-xs" onclick="verDetalhePaciente(${p.id})">👁</button>
@@ -920,6 +927,32 @@ async function deletePacienteItem(id) {
   await api('DELETE', `/pacientes/${id}`);
   toast('Cliente desativado');
   loadPacientes();
+}
+
+async function alterarStatusCliente(id, novoAtivoStr, selectEl) {
+  const novoAtivo = parseInt(novoAtivoStr);
+  const p = await api('GET', `/pacientes/${id}`);
+  if (!p?.id) { loadPacientes(); return; }
+
+  if (novoAtivo === 0) {
+    if (!confirm(`Finalizar ${p.nome}?\n\nAs sessões futuras pendentes serão removidas da agenda.`)) {
+      // revert select
+      if (selectEl) { selectEl.value = '1'; selectEl.className = 'status-select ativo'; }
+      return;
+    }
+    const hoje = HOJE();
+    const ags = await api('GET', `/pacientes/${id}/agendamentos`);
+    const futuras = (ags || []).filter(a => a.data >= hoje && ['agendado','confirmado'].includes(a.status));
+    for (const ag of futuras) await api('DELETE', `/agendamentos/${ag.id}`);
+    await api('PUT', `/pacientes/${id}`, { ...p, ativo: 0 });
+    toast(`${p.nome} finalizado · ${futuras.length} sessão(ões) removida(s)`);
+  } else {
+    await api('PUT', `/pacientes/${id}`, { ...p, ativo: 1 });
+    toast(`${p.nome} reativado`);
+  }
+
+  loadPacientes();
+  fetchAgendaSemana();
 }
 
 // ============================================================
