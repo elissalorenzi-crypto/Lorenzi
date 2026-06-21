@@ -387,23 +387,26 @@ function renderAgendaLista() {
 // ── Modal Agendamento ─────────────────────────────────────────
 let _pacientesCache = [];
 
-async function openModalAgendamento(ag = null, dataPreset = null) {
+async function openModalAgendamento(ag = null, dataPreset = null, pacienteIdPreset = null) {
   _pacientesCache = await api('GET', '/pacientes');
   const cfg = _config;
   const isEdit = !!ag?.id;
   const defaultDate = dataPreset || HOJE();
-  const defaultValor = cfg.valor_sessao_padrao || 180;
-  const defaultDur   = cfg.duracao_sessao || 50;
+  const defaultDur  = cfg.duracao_sessao || 50;
+
+  const pacIdSel = ag?.paciente_id || pacienteIdPreset || null;
+  const presetPac = pacIdSel ? _pacientesCache.find(p => p.id == pacIdSel) : null;
+  const defaultValor = ag?.valor ?? presetPac?.valor_sessao ?? cfg.valor_sessao_padrao ?? 180;
 
   const pacOptions = _pacientesCache.map(p =>
-    `<option value="${p.id}" ${ag?.paciente_id == p.id ? 'selected' : ''}>${p.nome}</option>`
+    `<option value="${p.id}" ${pacIdSel == p.id ? 'selected' : ''}>${p.nome}</option>`
   ).join('');
 
   const html = `
     <div class="form-grid">
       <div class="form-group full">
         <label>Paciente</label>
-        <select id="ag-paciente">
+        <select id="ag-paciente" onchange="autoPreencherAgendamento()">
           <option value="">Sem paciente (bloquear horário)</option>
           ${pacOptions}
         </select>
@@ -490,6 +493,12 @@ async function openModalAgendamento(ag = null, dataPreset = null) {
       if (_currentSection === 'financeiro') loadFinanceiro();
     } catch(e) { toast(e.message, 'error'); }
   });
+}
+
+function autoPreencherAgendamento() {
+  const pacId = document.getElementById('ag-paciente')?.value;
+  const pac   = pacId ? _pacientesCache.find(p => p.id == pacId) : null;
+  if (pac?.valor_sessao) document.getElementById('ag-valor').value = pac.valor_sessao;
 }
 
 async function editAgendamento(id) {
