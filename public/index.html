@@ -273,18 +273,6 @@
 
       <div class="stats-row" id="fin-stats"></div>
 
-      <!-- Previsão por frequência de pagamento -->
-      <div class="card" style="margin-bottom:20px">
-        <div class="card-header">
-          <span class="card-title">💳 Previsão por Frequência de Pgto</span>
-          <div style="display:flex;gap:6px">
-            <button id="tab-pgto-sem" class="btn btn-primary btn-sm" onclick="switchTabPgto('semanal')">📅 Esta Semana</button>
-            <button id="tab-pgto-mes" class="btn btn-outline btn-sm" onclick="switchTabPgto('mensal')">📆 Este Mês</button>
-          </div>
-        </div>
-        <div class="card-body" id="fin-previsao-pgto-body" style="padding-top:0"></div>
-      </div>
-
       <div class="grid-2col">
         <!-- Receita por dia -->
         <div class="card">
@@ -308,17 +296,32 @@
         </div>
       </div>
 
-      <!-- Previsão de faturamento -->
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">📅 Previsão de Faturamento</span>
-          <span id="fin-previsao-total" style="font-weight:800;font-size:13px;color:var(--plum)"></span>
+      <!-- Previsão lado a lado -->
+      <div class="grid-2col">
+        <!-- Previsão de faturamento do mês -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">📅 Previsão de Faturamento</span>
+            <span id="fin-previsao-total" style="font-weight:800;font-size:13px;color:var(--plum)"></span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Data</th><th>Hora</th><th>Cliente</th><th class="text-right">Valor</th><th>Status</th></tr></thead>
+              <tbody id="fin-previsao-tbody"></tbody>
+            </table>
+          </div>
         </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Data</th><th>Hora</th><th>Cliente</th><th class="text-right">Valor</th><th>Status</th></tr></thead>
-            <tbody id="fin-previsao-tbody"></tbody>
-          </table>
+
+        <!-- Previsão por frequência de pagamento -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">💳 Previsão por Pgto</span>
+            <div style="display:flex;gap:6px">
+              <button id="tab-pgto-sem" class="btn btn-primary btn-sm" onclick="switchTabPgto('semanal')">Semana</button>
+              <button id="tab-pgto-mes" class="btn btn-outline btn-sm" onclick="switchTabPgto('mensal')">Mês</button>
+            </div>
+          </div>
+          <div id="fin-previsao-pgto-body"></div>
         </div>
       </div>
 

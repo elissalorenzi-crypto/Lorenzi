@@ -1270,25 +1270,23 @@ function renderTabPgto() {
     ? `${fmtData(_previsaoPgto.semDe)} – ${fmtData(_previsaoPgto.semAte)}`
     : `${fmtData(_previsaoPgto.mesDe)} – ${fmtData(_previsaoPgto.mesAte)}`;
   const freqLabel = { 'fp-semanal':'Semanal', 'por-sessao':'Por sessão', 'fp-mensal':'Mensal', 'cada4':'A cada 4' };
+  const totalEl = document.getElementById('tab-pgto-total');
+  if (totalEl) totalEl.textContent = d.sessoes.length ? `Total: ${BRL(d.total)}` : '';
   if (!d.sessoes.length) {
-    body.innerHTML = `<p class="text-muted" style="text-align:center;padding:20px 0">Nenhuma sessão agendada (${label})</p>`;
+    body.innerHTML = `<p class="text-muted" style="text-align:center;padding:20px 0">Nenhuma sessão agendada · ${label}</p>`;
     return;
   }
   body.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0 8px">
-      <span style="font-size:12px;color:var(--muted)">${label} · ${d.sessoes.length} sessão(ões)</span>
-      <span style="font-size:16px;font-weight:800;color:var(--plum)">${BRL(d.total)}</span>
-    </div>
+    <div style="text-align:right;padding:4px 16px 0;font-size:12px;color:var(--muted)">${label} · ${d.sessoes.length} sessão(ões) · <strong style="color:var(--plum)">${BRL(d.total)}</strong></div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Data</th><th>Hora</th><th>Cliente</th><th>Freq. Pgto</th><th class="text-right">Valor</th></tr></thead>
+        <thead><tr><th>Data</th><th>Hora</th><th>Cliente</th><th class="text-right">Valor</th></tr></thead>
         <tbody>
           ${d.sessoes.map(a => `
             <tr>
               <td>${fmtData(a.data)}</td>
               <td>${a.hora}</td>
               <td>${a.paciente_nome || '—'}</td>
-              <td><span style="font-size:11px;color:var(--muted)">${freqLabel[a.freq_pgto] || a.freq_pgto}</span></td>
               <td class="text-right fw-bold" style="color:var(--plum)">${BRL(a.valor)}</td>
             </tr>`).join('')}
         </tbody>
