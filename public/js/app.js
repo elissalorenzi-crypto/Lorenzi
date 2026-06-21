@@ -1238,7 +1238,7 @@ function renderConvitesPendentes(convites) {
                     : `<span style="color:var(--sage);font-size:12px;font-weight:700">Pendente · ${diasRestantes}d</span>`}
                   </td>
                   <td>
-                    ${!expirado ? `<button class="btn btn-outline btn-xs" onclick="copiarLinkConvite('${c.token}')">📋 Copiar Link</button>` : '—'}
+                    ${!expirado ? `<button class="btn btn-outline btn-xs" onclick="copiarLinkConvite('${c.token}')"><span class="btn-copiar-icon">📋</span><span class="btn-copiar-label"> Copiar Link</span></button>` : '—'}
                   </td>
                   <td>
                     <button class="btn btn-ghost btn-xs" style="color:var(--red)" onclick="cancelarConvite(${c.id})">🗑</button>

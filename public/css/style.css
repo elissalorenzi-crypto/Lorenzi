@@ -667,6 +667,9 @@ tbody tr:hover { background: var(--rose-pale); }
 /* ── ONLY-MOBILE ─────────────────────────────────────────── */
 .only-mobile { display: none; }
 
+/* Convites: ícone do botão copiar escondido no desktop */
+#convites-pendentes .btn-copiar-icon { display: none; }
+
 /* ── UTILITIES ───────────────────────────────────────────── */
 .divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
 .mt-4 { margin-top: 16px; }
@@ -797,7 +800,7 @@ tbody tr:hover { background: var(--rose-pale); }
   #section-financeiro > div:first-child { flex-wrap: wrap; gap: 8px; }
   #fin-mes-label { min-width: unset !important; font-size: 14px !important; }
 
-  /* Contratos: esconde CPF(3), E-mail(4), Celular(5) */
+  /* Contratos assinados: esconde CPF(3), E-mail(4), Celular(5) */
   #section-contratos table th:nth-child(3),
   #section-contratos table th:nth-child(4),
   #section-contratos table th:nth-child(5),
@@ -806,6 +809,16 @@ tbody tr:hover { background: var(--rose-pale); }
   #contratos-tbody td:nth-child(5) { display: none; }
   .only-mobile { display: block; }
   #cont-search { width: 100% !important; }
+
+  /* Convites: esconde "Enviado em"(2) e "Expira em"(3) */
+  #convites-pendentes th:nth-child(2),
+  #convites-pendentes th:nth-child(3),
+  #convites-pendentes td:nth-child(2),
+  #convites-pendentes td:nth-child(3) { display: none; }
+
+  /* Botão copiar: mostra só ícone no mobile */
+  #convites-pendentes .btn-copiar-label { display: none; }
+  #convites-pendentes .btn-copiar-icon  { display: inline !important; }
 
   /* Config */
   .config-section-title { font-size: 12px; }
