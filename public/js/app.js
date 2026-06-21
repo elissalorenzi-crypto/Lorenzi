@@ -1251,13 +1251,22 @@ async function deleteProntuarioItem(id, pacId) {
 let _finAno = new Date().getFullYear();
 let _finMes = new Date().getMonth() + 1;
 
-let _previsaoPgto = null;
-let _tabPgtoAtiva = 'semanal';
+let _previsaoPgto  = null;
+let _tabPgtoAtiva  = 'semanal';
+let _semPgtoOffset = 0;
 
 function switchTabPgto(tab) {
   _tabPgtoAtiva = tab;
   document.getElementById('tab-pgto-sem').className = `btn btn-sm ${tab==='semanal' ? 'btn-primary' : 'btn-outline'}`;
   document.getElementById('tab-pgto-mes').className = `btn btn-sm ${tab==='mensal'  ? 'btn-primary' : 'btn-outline'}`;
+  renderTabPgto();
+}
+
+async function navSemPgto(delta) {
+  _semPgtoOffset += delta;
+  const ref = new Date(HOJE() + 'T12:00:00');
+  ref.setDate(ref.getDate() + _semPgtoOffset * 7);
+  _previsaoPgto = await api('GET', `/financeiro/previsao-pgto?hoje=${ref.toISOString().slice(0,10)}`);
   renderTabPgto();
 }
 
@@ -1269,15 +1278,25 @@ function renderTabPgto() {
   const label = isSem
     ? `${fmtData(_previsaoPgto.semDe)} – ${fmtData(_previsaoPgto.semAte)}`
     : `${fmtData(_previsaoPgto.mesDe)} – ${fmtData(_previsaoPgto.mesAte)}`;
-  const freqLabel = { 'fp-semanal':'Semanal', 'por-sessao':'Por sessão', 'fp-mensal':'Mensal', 'cada4':'A cada 4' };
-  const totalEl = document.getElementById('tab-pgto-total');
-  if (totalEl) totalEl.textContent = d.sessoes.length ? `Total: ${BRL(d.total)}` : '';
+
+  const hojeBtnHtml = (_semPgtoOffset !== 0)
+    ? `<button class="btn btn-ghost btn-sm" onclick="_semPgtoOffset=0;navSemPgto(0)" style="font-size:11px;padding:1px 7px;margin-left:4px">hoje</button>`
+    : '';
+
+  const navBar = isSem
+    ? `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px 4px">
+         <button class="btn btn-ghost btn-sm" onclick="navSemPgto(-1)" style="font-size:18px;line-height:1;padding:0 8px">&#8249;</button>
+         <span style="font-size:12px;color:var(--muted);font-weight:600">${label}${hojeBtnHtml}</span>
+         <button class="btn btn-ghost btn-sm" onclick="navSemPgto(1)" style="font-size:18px;line-height:1;padding:0 8px">&#8250;</button>
+       </div>`
+    : `<div style="padding:8px 16px 4px;font-size:12px;color:var(--muted);font-weight:600">${label}</div>`;
+
   if (!d.sessoes.length) {
-    body.innerHTML = `<p class="text-muted" style="text-align:center;padding:20px 0">Nenhuma sessão agendada · ${label}</p>`;
+    body.innerHTML = navBar + `<p class="text-muted" style="text-align:center;padding:12px 0 20px">Nenhuma sessão agendada</p>`;
     return;
   }
-  body.innerHTML = `
-    <div style="text-align:right;padding:4px 16px 0;font-size:12px;color:var(--muted)">${label} · ${d.sessoes.length} sessão(ões) · <strong style="color:var(--plum)">${BRL(d.total)}</strong></div>
+  body.innerHTML = navBar + `
+    <div style="text-align:right;padding:0 16px 4px;font-size:12px;color:var(--muted)">${d.sessoes.length} sessão(ões) · <strong style="color:var(--plum)">${BRL(d.total)}</strong></div>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Data</th><th>Hora</th><th>Cliente</th><th class="text-right">Valor</th></tr></thead>
