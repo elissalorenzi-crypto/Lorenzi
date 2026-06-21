@@ -125,6 +125,11 @@ app.get('/api/financeiro', (req, res) => {
   res.json(db.getFinanceiro(ano, mes));
 });
 
+app.get('/api/financeiro/previsao-pgto', (req, res) => {
+  const hoje = req.query.hoje || new Date().toISOString().slice(0,10);
+  res.json(db.getPrevisaoPgto(hoje));
+});
+
 // ── LINKS AGENDAMENTO ────────────────────────────────────────
 app.get('/api/agendamento-links', (req, res) => res.json(db.getLinksAgendamento()));
 

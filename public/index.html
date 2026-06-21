@@ -273,6 +273,18 @@
 
       <div class="stats-row" id="fin-stats"></div>
 
+      <!-- Previsão por frequência de pagamento -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header">
+          <span class="card-title">💳 Previsão por Frequência de Pgto</span>
+          <div style="display:flex;gap:6px">
+            <button id="tab-pgto-sem" class="btn btn-primary btn-sm" onclick="switchTabPgto('semanal')">📅 Esta Semana</button>
+            <button id="tab-pgto-mes" class="btn btn-outline btn-sm" onclick="switchTabPgto('mensal')">📆 Este Mês</button>
+          </div>
+        </div>
+        <div class="card-body" id="fin-previsao-pgto-body" style="padding-top:0"></div>
+      </div>
+
       <div class="grid-2col">
         <!-- Receita por dia -->
         <div class="card">

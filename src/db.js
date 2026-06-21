@@ -468,11 +468,42 @@ const createContrato = (data) =>
 const deleteContrato = (id) =>
   db.prepare('DELETE FROM contratos WHERE id=?').run(id);
 
+const getPrevisaoPgto = (hoje) => {
+  const d   = new Date(hoje + 'T12:00:00');
+  const dow = d.getDay() || 7;
+  const seg = new Date(d); seg.setDate(d.getDate() - dow + 1);
+  const dom = new Date(seg); dom.setDate(seg.getDate() + 6);
+  const semDe  = seg.toISOString().slice(0,10);
+  const semAte = dom.toISOString().slice(0,10);
+  const ano = d.getFullYear(), mes = d.getMonth() + 1;
+  const mesDe  = `${ano}-${String(mes).padStart(2,'0')}-01`;
+  const mesAte = `${ano}-${String(mes).padStart(2,'0')}-31`;
+
+  const query = (de, ate, freqs) => db.prepare(`
+    SELECT a.data, a.hora, a.valor, a.status, p.nome as paciente_nome, p.freq_pgto
+    FROM agendamentos a
+    JOIN pacientes p ON p.id = a.paciente_id
+    WHERE a.data >= ? AND a.data <= ?
+      AND a.status IN ('agendado','confirmado')
+      AND p.freq_pgto IN (${freqs.map(()=>'?').join(',')})
+    ORDER BY a.data, a.hora
+  `).all(de, ate, ...freqs);
+
+  const semanal = query(semDe, semAte, ['fp-semanal','por-sessao']);
+  const mensal  = query(mesDe, mesAte, ['fp-mensal','cada4']);
+
+  return {
+    semDe, semAte, mesDe, mesAte,
+    semanal: { total: semanal.reduce((s,a) => s + (a.valor||0), 0), sessoes: semanal },
+    mensal:  { total: mensal.reduce((s,a)  => s + (a.valor||0), 0), sessoes: mensal  },
+  };
+};
+
 module.exports = {
   getPacientes, getPacienteById, getPacienteByCpf, createPaciente, updatePaciente, deletePaciente,
   getAgendamentos, getAgendamentoById, createAgendamento, updateAgendamento, deleteAgendamento,
   getProntuarios, createProntuario, updateProntuario, deleteProntuario,
-  getDashboard, getFinanceiro, getConfig, setConfig,
+  getDashboard, getFinanceiro, getPrevisaoPgto, getConfig, setConfig,
   getContratos, createContrato, deleteContrato, getContratosNovos, marcarContratosVistos,
   createLinkAgendamento, getLinkAgendamento, getLinksAgendamento, desativarLinkAgendamento,
   createConvite, getConvites, getConviteByToken, usarConvite, deleteConvite

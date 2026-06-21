@@ -1251,9 +1251,59 @@ async function deleteProntuarioItem(id, pacId) {
 let _finAno = new Date().getFullYear();
 let _finMes = new Date().getMonth() + 1;
 
+let _previsaoPgto = null;
+let _tabPgtoAtiva = 'semanal';
+
+function switchTabPgto(tab) {
+  _tabPgtoAtiva = tab;
+  document.getElementById('tab-pgto-sem').className = `btn btn-sm ${tab==='semanal' ? 'btn-primary' : 'btn-outline'}`;
+  document.getElementById('tab-pgto-mes').className = `btn btn-sm ${tab==='mensal'  ? 'btn-primary' : 'btn-outline'}`;
+  renderTabPgto();
+}
+
+function renderTabPgto() {
+  const body = document.getElementById('fin-previsao-pgto-body');
+  if (!body || !_previsaoPgto) return;
+  const isSem = _tabPgtoAtiva === 'semanal';
+  const d     = isSem ? _previsaoPgto.semanal : _previsaoPgto.mensal;
+  const label = isSem
+    ? `${fmtData(_previsaoPgto.semDe)} – ${fmtData(_previsaoPgto.semAte)}`
+    : `${fmtData(_previsaoPgto.mesDe)} – ${fmtData(_previsaoPgto.mesAte)}`;
+  const freqLabel = { 'fp-semanal':'Semanal', 'por-sessao':'Por sessão', 'fp-mensal':'Mensal', 'cada4':'A cada 4' };
+  if (!d.sessoes.length) {
+    body.innerHTML = `<p class="text-muted" style="text-align:center;padding:20px 0">Nenhuma sessão agendada (${label})</p>`;
+    return;
+  }
+  body.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0 8px">
+      <span style="font-size:12px;color:var(--muted)">${label} · ${d.sessoes.length} sessão(ões)</span>
+      <span style="font-size:16px;font-weight:800;color:var(--plum)">${BRL(d.total)}</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Data</th><th>Hora</th><th>Cliente</th><th>Freq. Pgto</th><th class="text-right">Valor</th></tr></thead>
+        <tbody>
+          ${d.sessoes.map(a => `
+            <tr>
+              <td>${fmtData(a.data)}</td>
+              <td>${a.hora}</td>
+              <td>${a.paciente_nome || '—'}</td>
+              <td><span style="font-size:11px;color:var(--muted)">${freqLabel[a.freq_pgto] || a.freq_pgto}</span></td>
+              <td class="text-right fw-bold" style="color:var(--plum)">${BRL(a.valor)}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
 async function loadFinanceiro() {
   updateFinMesLabel();
-  const data = await api('GET', `/financeiro?ano=${_finAno}&mes=${_finMes}`);
+  const [data, prevPgto] = await Promise.all([
+    api('GET', `/financeiro?ano=${_finAno}&mes=${_finMes}`),
+    api('GET', `/financeiro/previsao-pgto?hoje=${HOJE()}`)
+  ]);
+  _previsaoPgto = prevPgto;
+  renderTabPgto();
 
   // Stats
   document.getElementById('fin-stats').innerHTML = `
