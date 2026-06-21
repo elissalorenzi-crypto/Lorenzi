@@ -2286,13 +2286,40 @@ function abrirAtividade(areaId, pastaId, atvId) {
     <div class="bib-atv-view">
       <div class="bib-atv-header ${card.cor || 'bib-op'}">
         <span style="font-size:36px">${atv.icone || '📄'}</span>
-        <div>
+        <div style="flex:1">
           <h2 class="bib-atv-titulo">${atv.titulo}</h2>
           <p class="bib-atv-sub">${atv.subtitulo || ''}</p>
         </div>
+        <button class="bib-btn-copiar" onclick="copiarAtividade()" title="Copiar conteúdo">
+          📋 Copiar
+        </button>
       </div>
-      <div class="bib-atv-corpo">${atv.conteudo}</div>
+      <div class="bib-atv-corpo" id="bib-atv-corpo-atual">${atv.conteudo}</div>
     </div>`;
+}
+
+function copiarAtividade() {
+  const corpo = document.getElementById('bib-atv-corpo-atual');
+  if (!corpo) return;
+  // Extrai texto limpo preservando quebras de linha e listas
+  const clone = corpo.cloneNode(true);
+  clone.querySelectorAll('h3').forEach(h => { h.textContent = '\n' + h.textContent.toUpperCase() + '\n'; });
+  clone.querySelectorAll('li').forEach(li => { li.textContent = '• ' + li.textContent; });
+  clone.querySelectorAll('p, li, h3, div').forEach(el => {
+    if (!el.textContent.endsWith('\n')) el.insertAdjacentText('afterend', '\n');
+  });
+  const texto = clone.innerText || clone.textContent;
+  navigator.clipboard.writeText(texto.replace(/\n{3,}/g, '\n\n').trim())
+    .then(() => showToast('Atividade copiada!', 'success'))
+    .catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = texto;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('Atividade copiada!', 'success');
+    });
 }
 
 function bibNovoCard() {
