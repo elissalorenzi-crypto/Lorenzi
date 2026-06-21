@@ -878,8 +878,22 @@ function togglePront(id) {
   chev.style.transform = open ? 'rotate(0deg)' : '';
 }
 
-function prontuarioFormHtml(r = {}, pacId) {
+function prontuarioFormHtml(r = {}, agendamentos = []) {
+  const agSelect = agendamentos.length ? `
+    <div class="form-group" style="margin-bottom:14px">
+      <label>Sessão vinculada</label>
+      <select id="pr-agendamento" onchange="syncDataPront()">
+        <option value="">— Sem vínculo —</option>
+        ${agendamentos.slice(0, 30).map(a =>
+          `<option value="${a.id}" data-data="${a.data}" ${r.agendamento_id == a.id ? 'selected' : ''}>
+            ${fmtData(a.data)} ${a.hora} — ${TIPO_LABEL[a.tipo]||a.tipo} (${STATUS_LABEL[a.status]||a.status})
+          </option>`
+        ).join('')}
+      </select>
+    </div>` : `<input type="hidden" id="pr-agendamento" value="${r.agendamento_id||''}">`;
+
   return `
+    ${agSelect}
     <div class="form-group" style="margin-bottom:14px">
       <label>Data da Sessão</label>
       <input type="date" id="pr-data" value="${r.data || HOJE()}">
@@ -903,17 +917,38 @@ function prontuarioFormHtml(r = {}, pacId) {
   `;
 }
 
-function openModalProntuario(r = {}) {
+function syncDataPront() {
+  const sel = document.getElementById('pr-agendamento');
+  const data = sel?.options[sel.selectedIndex]?.dataset?.data;
+  if (data) document.getElementById('pr-data').value = data;
+}
+
+async function openModalProntuario(r = {}) {
   const pacId = document.getElementById('pront-paciente-select')?.value;
   if (!pacId) return toast('Selecione uma paciente primeiro', 'error');
-  openModal(r.id ? 'Editar Anotação' : 'Nova Anotação de Sessão', prontuarioFormHtml(r, pacId), async () => {
+
+  let agendamentos = [];
+  if (!r.id) {
+    try {
+      const todos = await api('GET', `/agendamentos?paciente_id=${pacId}`);
+      agendamentos = todos.sort((a, b) => (b.data + b.hora).localeCompare(a.data + a.hora));
+      // pré-seleciona a sessão realizada mais recente
+      const ultima = agendamentos.find(a => a.status === 'realizado') || agendamentos[0];
+      if (ultima && !r.data) {
+        r = { ...r, data: ultima.data, agendamento_id: ultima.id };
+      }
+    } catch(e) {}
+  }
+
+  openModal(r.id ? 'Editar Anotação' : 'Nova Anotação de Sessão', prontuarioFormHtml(r, agendamentos), async () => {
     const body = {
-      paciente_id: pacId,
-      data:        document.getElementById('pr-data').value,
-      conteudo:    document.getElementById('pr-conteudo').value.trim(),
-      humor:       document.getElementById('pr-humor').value.trim(),
-      tecnicas:    document.getElementById('pr-tecnicas').value.trim(),
-      tarefas:     document.getElementById('pr-tarefas').value.trim()
+      paciente_id:    pacId,
+      agendamento_id: document.getElementById('pr-agendamento')?.value || null,
+      data:           document.getElementById('pr-data').value,
+      conteudo:       document.getElementById('pr-conteudo').value.trim(),
+      humor:          document.getElementById('pr-humor').value.trim(),
+      tecnicas:       document.getElementById('pr-tecnicas').value.trim(),
+      tarefas:        document.getElementById('pr-tarefas').value.trim()
     };
     if (!body.data) return toast('Data é obrigatória', 'error');
     try {
