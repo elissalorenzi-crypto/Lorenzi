@@ -465,8 +465,13 @@ function renderAgendaHorario() {
 
   // Cabeçalho
   const headers = dias.map(d => {
-    const dt = new Date(d + 'T12:00:00');
-    return `<th class="${d === hoje ? 'hoje' : ''}">${DIAS_S[dt.getDay()]} <span style="font-weight:500;opacity:.75">${dt.getDate()}/${String(dt.getMonth()+1).padStart(2,'0')}</span></th>`;
+    const dt  = new Date(d + 'T12:00:00');
+    const dom = dt.getDay() === 0;
+    const cls = [d === hoje ? 'hoje' : '', dom ? 'dom' : ''].filter(Boolean).join(' ');
+    const label = dom
+      ? `Dom`
+      : `${DIAS_S[dt.getDay()]} <span style="font-weight:500;opacity:.75">${dt.getDate()}/${String(dt.getMonth()+1).padStart(2,'0')}</span>`;
+    return `<th class="${cls}">${label}</th>`;
   }).join('');
 
   let html = `<thead><tr><th class="hora-th">Hora</th>${headers}</tr></thead><tbody>`;
@@ -482,9 +487,11 @@ function renderAgendaHorario() {
     }
 
     const cells = dias.map(d => {
+      const dom   = new Date(d + 'T12:00:00').getDay() === 0;
+      const domCl = dom ? ' dom' : '';
       const lista = idx[`${d}|${t}`] || [];
       if (!lista.length) {
-        return `<td class="hor-cell" onclick="openModalAgendamento(null,'${d}',null,'${t}')"><span class="hor-add">+</span></td>`;
+        return `<td class="hor-cell${domCl}" onclick="openModalAgendamento(null,'${d}',null,'${t}')"><span class="hor-add">+</span></td>`;
       }
       const blocos = lista.map(a => {
         const sc = a.status || 'agendado';
@@ -508,7 +515,7 @@ function renderAgendaHorario() {
           </div>
         </div>`;
       }).join('');
-      return `<td class="hor-cell has-appt">${blocos}</td>`;
+      return `<td class="hor-cell has-appt${domCl}">${blocos}</td>`;
     }).join('');
 
     html += `<tr class="${isHour ? 'hor-row-h' : 'hor-row-m'}"><td class="hor-hora">${t}</td>${cells}</tr>`;

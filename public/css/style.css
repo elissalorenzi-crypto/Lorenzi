@@ -794,6 +794,9 @@ tbody tr:hover { background: var(--rose-pale); }
 }
 .hor-table thead th.hoje { background: linear-gradient(135deg, #75553C, #14392F); color: #fff; }
 .hor-table thead th.hora-th { width: 54px; min-width: 54px; background: var(--bg); }
+.hor-table th.dom, .hor-table td.dom { width: 40px; min-width: 40px; max-width: 40px; text-align: center; }
+.hor-table td.dom .hor-add { font-size: 14px; }
+.hor-table td.dom:not(.has-appt) { background: var(--bg); }
 
 .hor-hora {
   font-size: 11px; font-weight: 700; color: var(--muted);
