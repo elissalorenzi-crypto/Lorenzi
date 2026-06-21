@@ -31,7 +31,7 @@
       <span class="nav-badge" id="badge-contratos" style="display:none"></span>
     </a>
     <a href="#" class="nav-link" data-section="pacientes">
-      <span class="icon">👤</span> Pacientes
+      <span class="icon">👤</span> Clientes
     </a>
 
     <div class="nav-group-label">Atendimento</div>
@@ -189,7 +189,7 @@
           <table>
             <thead>
               <tr>
-                <th>Data</th><th>Hora</th><th>Paciente</th><th>Tipo</th>
+                <th>Data</th><th>Hora</th><th>Cliente</th><th>Tipo</th>
                 <th>Status</th><th class="text-right">Valor</th><th>Pago</th><th>Ações</th>
               </tr>
             </thead>
@@ -205,8 +205,8 @@
       <div id="pacientes-list-view">
         <div class="card">
           <div class="card-header">
-            <span class="card-title">Pacientes Ativos</span>
-            <button class="btn btn-primary btn-sm" onclick="openModalPaciente()">+ Nova Paciente</button>
+            <span class="card-title">Clientes Ativos</span>
+            <button class="btn btn-primary btn-sm" onclick="openModalPaciente()">+ Novo Cliente</button>
           </div>
           <div class="card-body" style="padding-bottom:0">
             <div class="search-wrap" style="margin-bottom:14px">
@@ -241,9 +241,9 @@
     <div class="section" id="section-prontuarios">
       <div class="card" style="margin-bottom:16px">
         <div class="card-body" style="display:flex;gap:12px;align-items:center">
-          <label style="font-weight:700;color:var(--plum);font-size:13px;white-space:nowrap">Paciente:</label>
+          <label style="font-weight:700;color:var(--plum);font-size:13px;white-space:nowrap">Cliente:</label>
           <select id="pront-paciente-select" onchange="loadProntuariosSection()" style="flex:1;max-width:360px">
-            <option value="">Selecione uma paciente...</option>
+            <option value="">Selecione um cliente...</option>
           </select>
           <button class="btn btn-primary btn-sm" id="btn-novo-pront" onclick="openModalProntuario()" style="display:none">
             + Nova Anotação
@@ -253,7 +253,7 @@
       <div id="pront-content">
         <div class="empty-state">
           <span class="empty-icon">📋</span>
-          <p>Selecione uma paciente para ver os prontuários</p>
+          <p>Selecione um cliente para ver os prontuários</p>
         </div>
       </div>
     </div>
@@ -285,7 +285,7 @@
           <div id="fin-pendentes-wrap">
             <div class="table-wrap">
               <table>
-                <thead><tr><th>Data</th><th>Paciente</th><th class="text-right">Valor</th><th>Ação</th></tr></thead>
+                <thead><tr><th>Data</th><th>Cliente</th><th class="text-right">Valor</th><th>Ação</th></tr></thead>
                 <tbody id="fin-pendentes-tbody"></tbody>
               </table>
             </div>
@@ -299,7 +299,7 @@
         <div class="table-wrap">
           <table>
             <thead>
-              <tr><th>Data</th><th>Hora</th><th>Paciente</th><th class="text-right">Valor</th><th>Pago</th><th>Forma</th></tr>
+              <tr><th>Data</th><th>Hora</th><th>Cliente</th><th class="text-right">Valor</th><th>Pago</th><th>Forma</th></tr>
             </thead>
             <tbody id="fin-lista-tbody"></tbody>
           </table>

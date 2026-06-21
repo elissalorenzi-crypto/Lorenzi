@@ -79,7 +79,7 @@ function navigate(name) {
 
   const titles = {
     dashboard: 'Dashboard', contratos: 'Contratos Assinados', agenda: 'Agenda',
-    pacientes: 'Pacientes', prontuarios: 'Prontuários',
+    pacientes: 'Clientes', prontuarios: 'Prontuários',
     financeiro: 'Financeiro', configuracoes: 'Configurações'
   };
   document.getElementById('topbar-title').textContent = titles[name] || name;
@@ -191,9 +191,9 @@ async function loadDashboard() {
       <div class="stat-sub">${MESES[new Date().getMonth()]}</div>
       <div class="stat-arrow">›</div>
     </div>
-    <div class="stat-card sage stat-clickable" onclick="navigate('pacientes')" title="Ver pacientes">
+    <div class="stat-card sage stat-clickable" onclick="navigate('pacientes')" title="Ver clientes">
       <span class="stat-icon">👤</span>
-      <div class="stat-label">Pacientes Ativos</div>
+      <div class="stat-label">Clientes Ativos</div>
       <div class="stat-value">${data.totalPacientes}</div>
       <div class="stat-sub">em atendimento</div>
       <div class="stat-arrow">›</div>
@@ -217,7 +217,7 @@ async function loadDashboard() {
         <div class="timeline-hora">${a.hora}</div>
         <div class="timeline-dot ${a.status}"></div>
         <div class="timeline-info">
-          <div class="timeline-nome">${a.paciente_nome || 'Sem paciente'}</div>
+          <div class="timeline-nome">${a.paciente_nome || 'Sem cliente'}</div>
           <div class="timeline-sub">${TIPO_LABEL[a.tipo]||a.tipo} · ${badgeStatus(a.status)} · ${BRL(a.valor)}</div>
         </div>
         <button class="btn btn-ghost btn-xs" onclick="editAgendamento(${a.id})">✏️</button>
@@ -235,7 +235,7 @@ async function loadDashboard() {
         <div class="timeline-hora" style="color:var(--lavender);width:80px;font-size:12px">${fmtData(a.data)}<br>${a.hora}</div>
         <div class="timeline-dot ${a.status}"></div>
         <div class="timeline-info">
-          <div class="timeline-nome">${a.paciente_nome || 'Sem paciente'}</div>
+          <div class="timeline-nome">${a.paciente_nome || 'Sem cliente'}</div>
           <div class="timeline-sub">${TIPO_LABEL[a.tipo]||a.tipo} · ${badgeStatus(a.status)}</div>
         </div>
       </div>
@@ -341,7 +341,7 @@ function renderAgendaGrid() {
             ? appts.map(a => `
                 <div class="appt-chip ${a.status}" onclick="editAgendamento(${a.id})" title="${a.paciente_nome||''}">
                   <div class="appt-hora">${a.hora}</div>
-                  <div class="appt-nome">${a.paciente_nome || 'Sem paciente'}</div>
+                  <div class="appt-nome">${a.paciente_nome || 'Sem cliente'}</div>
                   <div class="appt-tipo">${TIPO_LABEL[a.tipo]||a.tipo}</div>
                 </div>
               `).join('')
@@ -405,9 +405,9 @@ async function openModalAgendamento(ag = null, dataPreset = null, pacienteIdPres
   const html = `
     <div class="form-grid">
       <div class="form-group full">
-        <label>Paciente</label>
+        <label>Cliente</label>
         <select id="ag-paciente" onchange="autoPreencherAgendamento()">
-          <option value="">Sem paciente (bloquear horário)</option>
+          <option value="">Sem cliente (bloquear horário)</option>
           ${pacOptions}
         </select>
       </div>
@@ -544,7 +544,7 @@ async function openModalGerenciarAgenda() {
       ? `<div class="empty-state"><span class="empty-icon">📅</span><p>Nenhuma sessão nos próximos 28 dias</p></div>`
       : `<div class="table-wrap">
           <table>
-            <thead><tr><th>Paciente</th><th>Data</th><th>Hora</th><th>Status</th><th></th></tr></thead>
+            <thead><tr><th>Cliente</th><th>Data</th><th>Hora</th><th>Status</th><th></th></tr></thead>
             <tbody id="ger-tbody">${linhas()}</tbody>
           </table>
         </div>`
@@ -629,7 +629,7 @@ function filtrarPacientes() {
 function renderPacientesTable(data) {
   const tbody = document.getElementById('pacientes-tbody');
   if (!data.length) {
-    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><span class="empty-icon">👤</span><p>Nenhuma paciente encontrada</p></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><span class="empty-icon">👤</span><p>Nenhum cliente encontrado</p></div></td></tr>`;
     return;
   }
   tbody.innerHTML = data.map(p => `
@@ -791,7 +791,7 @@ function pacienteFormHtml(p = {}) {
     <div class="form-grid">
       <div class="form-group full">
         <label>Nome completo *</label>
-        <input type="text" id="fp-nome" value="${p.nome||''}" placeholder="Nome da paciente">
+        <input type="text" id="fp-nome" value="${p.nome||''}" placeholder="Nome do cliente">
       </div>
       <div class="form-group">
         <label>CPF</label>
@@ -862,7 +862,7 @@ function pacienteFormHtml(p = {}) {
 }
 
 function openModalPaciente(p = {}) {
-  openModal(p.id ? 'Editar Paciente' : 'Nova Paciente', pacienteFormHtml(p), async () => {
+  openModal(p.id ? 'Editar Cliente' : 'Novo Cliente', pacienteFormHtml(p), async () => {
     const body = {
       nome:            document.getElementById('fp-nome').value.trim(),
       cpf:             document.getElementById('fp-cpf').value.trim(),
@@ -883,8 +883,8 @@ function openModalPaciente(p = {}) {
     };
     if (!body.nome) return toast('Nome é obrigatório', 'error');
     try {
-      if (p.id) { await api('PUT', `/pacientes/${p.id}`, body); toast('Paciente atualizada! 🌸'); }
-      else      { await api('POST', '/pacientes', body);         toast('Paciente cadastrada! 🌸'); }
+      if (p.id) { await api('PUT', `/pacientes/${p.id}`, body); toast('Cliente atualizado! 🌸'); }
+      else      { await api('POST', '/pacientes', body);         toast('Cliente cadastrado! 🌸'); }
       closeModal();
       loadPacientes();
     } catch(e) { toast(e.message, 'error'); }
@@ -897,9 +897,9 @@ async function editPaciente(id) {
 }
 
 async function deletePacienteItem(id) {
-  if (!confirm('Desativar esta paciente? Seus dados serão mantidos.')) return;
+  if (!confirm('Desativar este cliente? Seus dados serão mantidos.')) return;
   await api('DELETE', `/pacientes/${id}`);
-  toast('Paciente desativada');
+  toast('Cliente desativado');
   loadPacientes();
 }
 
@@ -917,7 +917,7 @@ function populateProntSelect(pacs) {
   if (!sel) return;
   const pList = pacs || _pacientesCache || [];
   const current = sel.value;
-  sel.innerHTML = '<option value="">Selecione uma paciente...</option>' +
+  sel.innerHTML = '<option value="">Selecione um cliente...</option>' +
     pList.map(p => `<option value="${p.id}" ${p.id == current ? 'selected' : ''}>${p.nome}</option>`).join('');
 }
 
@@ -927,7 +927,7 @@ async function loadProntuariosSection() {
   if (!pacId) {
     btnNovo.style.display = 'none';
     document.getElementById('pront-content').innerHTML = `
-      <div class="empty-state"><span class="empty-icon">📋</span><p>Selecione uma paciente para ver os prontuários</p></div>`;
+      <div class="empty-state"><span class="empty-icon">📋</span><p>Selecione um cliente para ver os prontuários</p></div>`;
     return;
   }
   btnNovo.style.display = '';
@@ -1001,7 +1001,7 @@ function prontuarioFormHtml(r = {}, agendamentos = []) {
       <textarea id="pr-conteudo" rows="5" spellcheck="true" lang="pt-BR" placeholder="Descreva os principais temas abordados na sessão...">${r.conteudo||''}</textarea>
     </div>
     <div class="form-group" style="margin-bottom:14px">
-      <label>Humor / Estado Emocional da Paciente</label>
+      <label>Humor / Estado Emocional do Cliente</label>
       <input type="text" id="pr-humor" spellcheck="true" lang="pt-BR" value="${r.humor||''}" placeholder="Ex: Ansiosa, reflexiva, mais tranquila...">
     </div>
     <div class="form-group" style="margin-bottom:14px">
@@ -1023,7 +1023,7 @@ function syncDataPront() {
 
 async function openModalProntuario(r = {}) {
   const pacId = document.getElementById('pront-paciente-select')?.value;
-  if (!pacId) return toast('Selecione uma paciente primeiro', 'error');
+  if (!pacId) return toast('Selecione um cliente primeiro', 'error');
 
   let agendamentos = [];
   if (!r.id) {
@@ -1168,7 +1168,7 @@ async function marcarPago(id) {
   const html = `
     <div style="margin-bottom:16px">
       <div style="font-size:14px;color:var(--text-mid);margin-bottom:14px">
-        <strong>${ag.paciente_nome || 'Paciente'}</strong> — ${fmtData(ag.data)} às ${ag.hora}<br>
+        <strong>${ag.paciente_nome || 'Cliente'}</strong> — ${fmtData(ag.data)} às ${ag.hora}<br>
         <span style="font-size:13px;color:var(--muted)">Valor: <strong style="color:var(--plum)">${BRL(ag.valor)}</strong></span>
       </div>
       <div class="form-group">
@@ -1258,9 +1258,9 @@ async function salvarConfiguracoes() {
       const pacientes = await api('GET', '/pacientes');
       const desatualizadas = pacientes.filter(p => parseFloat(p.valor_sessao) === valorAntigo);
       if (desatualizadas.length > 0) {
-        openModal('Atualizar Valor das Pacientes', `
+        openModal('Atualizar Valor dos Clientes', `
           <p style="margin-bottom:14px">O valor padrão mudou de <strong>${BRL(valorAntigo)}</strong> para <strong>${BRL(novoValor)}</strong>.</p>
-          <p style="margin-bottom:10px"><strong>${desatualizadas.length}</strong> paciente(s) ainda usam o valor antigo:</p>
+          <p style="margin-bottom:10px"><strong>${desatualizadas.length}</strong> cliente(s) ainda usam o valor antigo:</p>
           <ul style="margin:0 0 14px 18px;line-height:2;font-size:13.5px">
             ${desatualizadas.map(p => `<li>${p.nome}</li>`).join('')}
           </ul>
@@ -1269,9 +1269,9 @@ async function salvarConfiguracoes() {
           for (const p of desatualizadas) {
             await api('PUT', `/pacientes/${p.id}`, { ...p, valor_sessao: novoValor });
           }
-          toast(`${desatualizadas.length} paciente(s) atualizada(s)! 🌸`);
+          toast(`${desatualizadas.length} cliente(s) atualizado(s)! 🌸`);
           closeModal();
-        }, { saveLabel: 'Sim, atualizar pacientes' });
+        }, { saveLabel: 'Sim, atualizar clientes' });
       }
     }
   } catch(e) { toast(e.message, 'error'); }
@@ -1290,7 +1290,7 @@ let _contratos = [];
 
 async function novoLinkAgenda() {
   openModal('Link de Agendamento', `
-    <p style="font-size:12.5px;color:var(--muted);margin-bottom:14px">Gere um link público onde o paciente escolhe o horário e assina o contrato em seguida.</p>
+    <p style="font-size:12.5px;color:var(--muted);margin-bottom:14px">Gere um link público onde o cliente escolhe o horário e assina o contrato em seguida.</p>
     <div class="form-group" style="margin-bottom:14px">
       <label>Dias disponíveis</label>
       <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px" id="dias-btns">
@@ -1463,7 +1463,7 @@ function renderConvitesPendentes(convites) {
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Paciente</th><th>Enviado em</th><th>Expira em</th><th>Status</th><th>Link</th><th></th></tr></thead>
+          <thead><tr><th>Cliente</th><th>Enviado em</th><th>Expira em</th><th>Status</th><th>Link</th><th></th></tr></thead>
           <tbody>
             ${[...pendentes, ...expirados].map(c => {
               const exp = new Date(c.expires_at);
@@ -1520,7 +1520,7 @@ function calcularDatas(inicio, diaSemana, qtd) {
 async function novoConvite() {
   openModal('Novo Contrato', `
     <div class="form-group" style="margin-bottom:12px">
-      <label>Nome do Paciente</label>
+      <label>Nome do Cliente</label>
       <input type="text" id="conv-nome" placeholder="Nome completo" autofocus>
     </div>
     <hr style="border:none;border-top:1px solid var(--border);margin:14px 0 12px">
@@ -1561,7 +1561,7 @@ async function novoConvite() {
     </div>
   `, async () => {
     const nome   = document.getElementById('conv-nome')?.value.trim();
-    if (!nome) return toast('Informe o nome do paciente', 'error');
+    if (!nome) return toast('Informe o nome do cliente', 'error');
 
     const dia    = parseInt(document.getElementById('conv-dia')?.value) || 0;
     const hora   = document.getElementById('conv-hora')?.value;
