@@ -273,6 +273,30 @@
 
       <div class="stats-row" id="fin-stats"></div>
 
+      <!-- Projeção recorrente baseada em clientes -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header">
+          <span class="card-title">📊 Receita Recorrente Estimada</span>
+          <span id="fin-proj-totais" style="font-size:12px;color:var(--muted);font-weight:600"></span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Frequência</th>
+                <th>Freq. Pgto</th>
+                <th>Forma Pgto</th>
+                <th class="text-right">Valor Sessão</th>
+                <th class="text-right">Est. Semana</th>
+                <th class="text-right">Est. Mês</th>
+              </tr>
+            </thead>
+            <tbody id="fin-proj-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
       <div class="grid-2col">
         <!-- Receita por dia -->
         <div class="card">

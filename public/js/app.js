@@ -1321,12 +1321,39 @@ function renderTabPgto() {
 
 async function loadFinanceiro() {
   updateFinMesLabel();
-  const [data, prevPgto] = await Promise.all([
+  const [data, prevPgto, proj] = await Promise.all([
     api('GET', `/financeiro?ano=${_finAno}&mes=${_finMes}`),
-    api('GET', `/financeiro/previsao-pgto?hoje=${HOJE()}`)
+    api('GET', `/financeiro/previsao-pgto?hoje=${HOJE()}`),
+    api('GET', `/financeiro/projecao-recorrente`)
   ]);
   _previsaoPgto = prevPgto;
   renderTabPgto();
+
+  // Projeção recorrente baseada em clientes
+  const projTbody  = document.getElementById('fin-proj-tbody');
+  const projTotais = document.getElementById('fin-proj-totais');
+  const freqLabel  = { semanal:'Semanal', quinzenal:'Quinzenal', mensal:'Mensal' };
+  const fpLabel    = { 'fp-semanal':'Semanal', 'fp-mensal':'Mensal', 'cada4':'A cada 4', 'por-sessao':'Por sessão' };
+  const fmLabel    = { pix:'PIX', credito:'Crédito', debito:'Débito', dinheiro:'Dinheiro', transferencia:'Transf.' };
+  if (projTbody) {
+    projTbody.innerHTML = (proj.itens || []).map(c => `
+      <tr>
+        <td style="font-weight:600">${c.nome}</td>
+        <td><span style="font-size:11.5px">${freqLabel[c.frequencia] || c.frequencia || '—'}</span></td>
+        <td><span style="font-size:11.5px">${fpLabel[c.freq_pgto] || c.freq_pgto || '—'}</span></td>
+        <td><span style="font-size:11.5px">${fmLabel[c.forma_pgto] || c.forma_pgto || '—'}</span></td>
+        <td class="text-right">${BRL(c.valor_sessao)}</td>
+        <td class="text-right" style="color:var(--sage);font-weight:700">${BRL(c.receita_semana)}</td>
+        <td class="text-right" style="color:var(--plum);font-weight:700">${BRL(c.receita_mes)}</td>
+      </tr>`).join('') +
+      `<tr style="border-top:2px solid var(--border);background:var(--bg-alt)">
+        <td colspan="4" style="font-weight:700;font-size:12.5px">Total estimado (${proj.itens?.length || 0} clientes)</td>
+        <td></td>
+        <td class="text-right fw-bold" style="color:var(--sage)">${BRL(proj.totalSemana)}</td>
+        <td class="text-right fw-bold" style="color:var(--plum)">${BRL(proj.totalMes)}</td>
+      </tr>`;
+  }
+  if (projTotais) projTotais.textContent = `Semana: ${BRL(proj.totalSemana)} · Mês: ${BRL(proj.totalMes)}`;
 
   // Stats
   document.getElementById('fin-stats').innerHTML = `
@@ -1355,13 +1382,13 @@ async function loadFinanceiro() {
       <span class="stat-icon">📅</span>
       <div class="stat-label">Previsão do Mês</div>
       <div class="stat-value" style="font-size:18px">${BRL(data.resumo.faturado + data.resumo.previsao)}</div>
-      <div class="stat-sub">${BRL(data.resumo.previsao)} em ${data.resumo.total_agendadas} sessões agendadas</div>
+      <div class="stat-sub">${data.resumo.total_agendadas} sessões agendadas · potencial ${BRL(proj.totalMes)}</div>
     </div>
     <div class="stat-card teal">
       <span class="stat-icon">📆</span>
       <div class="stat-label">Previsão da Semana</div>
       <div class="stat-value" style="font-size:18px">${BRL(prevPgto.semanal.total)}</div>
-      <div class="stat-sub">${prevPgto.semanal.sessoes.length} sessão(ões) · pgto semanal</div>
+      <div class="stat-sub">${prevPgto.semanal.sessoes.length} agendadas · potencial ${BRL(proj.totalSemana)}</div>
     </div>
   `;
 

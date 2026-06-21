@@ -499,11 +499,46 @@ const getPrevisaoPgto = (hoje) => {
   };
 };
 
+const getProjecaoRecorrente = () => {
+  const clientes = db.prepare(`
+    SELECT id, nome, frequencia, freq_pgto, valor_sessao, forma_pgto
+    FROM pacientes
+    WHERE ativo = 1 AND valor_sessao > 0
+    ORDER BY frequencia, nome
+  `).all();
+
+  const sessMes = { semanal: 4, quinzenal: 2, mensal: 1 };
+
+  let totalSemana = 0, totalMes = 0;
+  const itens = [];
+
+  for (const c of clientes) {
+    const nm = sessMes[c.frequencia] || 0;
+    if (!nm) continue;
+    const recMes = nm * c.valor_sessao;
+    const recSem = recMes / 4;
+    totalMes    += recMes;
+    totalSemana += recSem;
+    itens.push({
+      nome:          c.nome,
+      frequencia:    c.frequencia,
+      freq_pgto:     c.freq_pgto,
+      forma_pgto:    c.forma_pgto,
+      valor_sessao:  c.valor_sessao,
+      sessoes_mes:   nm,
+      receita_semana: recSem,
+      receita_mes:    recMes,
+    });
+  }
+
+  return { totalSemana, totalMes, itens };
+};
+
 module.exports = {
   getPacientes, getPacienteById, getPacienteByCpf, createPaciente, updatePaciente, deletePaciente,
   getAgendamentos, getAgendamentoById, createAgendamento, updateAgendamento, deleteAgendamento,
   getProntuarios, createProntuario, updateProntuario, deleteProntuario,
-  getDashboard, getFinanceiro, getPrevisaoPgto, getConfig, setConfig,
+  getDashboard, getFinanceiro, getPrevisaoPgto, getProjecaoRecorrente, getConfig, setConfig,
   getContratos, createContrato, deleteContrato, getContratosNovos, marcarContratosVistos,
   createLinkAgendamento, getLinkAgendamento, getLinksAgendamento, desativarLinkAgendamento,
   createConvite, getConvites, getConviteByToken, usarConvite, deleteConvite

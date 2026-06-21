@@ -130,6 +130,10 @@ app.get('/api/financeiro/previsao-pgto', (req, res) => {
   res.json(db.getPrevisaoPgto(hoje));
 });
 
+app.get('/api/financeiro/projecao-recorrente', (req, res) => {
+  res.json(db.getProjecaoRecorrente());
+});
+
 // ── LINKS AGENDAMENTO ────────────────────────────────────────
 app.get('/api/agendamento-links', (req, res) => res.json(db.getLinksAgendamento()));
 
