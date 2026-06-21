@@ -726,6 +726,10 @@ tbody tr:hover { background: var(--rose-pale); }
 .status-select.semanal      { border-color: var(--lavender); color: var(--lavender); background-color: #f3eeff; }
 .status-select.quinzenal    { border-color: var(--peach); color: var(--peach); background-color: #fef3e8; }
 .status-select.mensal       { border-color: var(--muted); color: var(--muted); background-color: var(--bg); }
+.status-select.por-sessao   { border-color: var(--sage); color: var(--sage); background-color: var(--sage-pale); }
+.status-select.cada4        { border-color: var(--lavender); color: var(--lavender); background-color: #f3eeff; }
+.status-select.fp-semanal   { border-color: var(--peach); color: var(--peach); background-color: #fef3e8; }
+.status-select.fp-mensal    { border-color: var(--muted); color: var(--muted); background-color: var(--bg); }
 .status-select.pix          { border-color: var(--sage); color: var(--sage); background-color: var(--sage-pale); }
 .status-select.credito      { border-color: var(--lavender); color: var(--lavender); background-color: #f3eeff; }
 .status-select.debito       { border-color: var(--peach); color: var(--peach); background-color: #fef3e8; }

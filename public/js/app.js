@@ -656,7 +656,7 @@ function filtrarPacientes() {
 function renderPacientesTable(data) {
   const tbody = document.getElementById('pacientes-tbody');
   if (!data.length) {
-    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><span class="empty-icon">👤</span><p>Nenhum cliente encontrado</p></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><span class="empty-icon">👤</span><p>Nenhum cliente encontrado</p></div></td></tr>`;
     return;
   }
   const contadorEl = document.getElementById('pac-contador');
@@ -687,6 +687,24 @@ function renderPacientesTable(data) {
           <option value="semanal">Semanal</option>
           <option value="quinzenal">Quinzenal</option>
           <option value="mensal">Mensal</option>
+        </select>`}
+      </td>
+      <td>
+        ${p.freq_pgto ? `
+        <select class="status-select ${p.freq_pgto}"
+                onchange="this.className='status-select '+this.value;alterarFreqPgto(${p.id},this.value)">
+          <option value="por-sessao" ${p.freq_pgto==='por-sessao'?'selected':''}>Por sessão</option>
+          <option value="cada4"      ${p.freq_pgto==='cada4'     ?'selected':''}>A cada 4</option>
+          <option value="fp-semanal" ${p.freq_pgto==='fp-semanal'?'selected':''}>Semanal</option>
+          <option value="fp-mensal"  ${p.freq_pgto==='fp-mensal' ?'selected':''}>Mensal</option>
+        </select>` : `
+        <select class="status-select fp-mensal" style="opacity:.5"
+                onchange="this.className='status-select '+this.value;this.style.opacity=1;alterarFreqPgto(${p.id},this.value)">
+          <option value="" disabled selected>—</option>
+          <option value="por-sessao">Por sessão</option>
+          <option value="cada4">A cada 4</option>
+          <option value="fp-semanal">Semanal</option>
+          <option value="fp-mensal">Mensal</option>
         </select>`}
       </td>
       <td>
@@ -912,6 +930,16 @@ function pacienteFormHtml(p = {}) {
         </select>
       </div>
       <div class="form-group">
+        <label>Freq. de Pagamento</label>
+        <select id="fp-freqpgto">
+          <option value="">—</option>
+          <option value="por-sessao" ${p.freq_pgto==='por-sessao'?'selected':''}>Por sessão</option>
+          <option value="cada4"      ${p.freq_pgto==='cada4'     ?'selected':''}>A cada 4 sessões</option>
+          <option value="fp-semanal" ${p.freq_pgto==='fp-semanal'?'selected':''}>Semanal</option>
+          <option value="fp-mensal"  ${p.freq_pgto==='fp-mensal' ?'selected':''}>Mensal</option>
+        </select>
+      </div>
+      <div class="form-group">
         <label>Forma de Pagamento</label>
         <select id="fp-forma">
           <option value="">—</option>
@@ -965,8 +993,9 @@ function openModalPaciente(p = {}) {
       tel_responsavel: document.getElementById('fp-telresp').value.trim(),
       queixa_principal:document.getElementById('fp-queixa').value.trim(),
       obs:             document.getElementById('fp-obs').value.trim(),
-      forma_pgto:      document.getElementById('fp-forma').value || null,
-      frequencia:      document.getElementById('fp-freq').value  || null
+      forma_pgto:      document.getElementById('fp-forma').value     || null,
+      frequencia:      document.getElementById('fp-freq').value      || null,
+      freq_pgto:       document.getElementById('fp-freqpgto').value  || null
     };
     if (!body.nome) return toast('Nome é obrigatório', 'error');
     try {
@@ -988,6 +1017,14 @@ async function deletePacienteItem(id) {
   await api('DELETE', `/pacientes/${id}`);
   toast('Cliente desativado');
   loadPacientes();
+}
+
+async function alterarFreqPgto(id, valor) {
+  const p = await api('GET', `/pacientes/${id}`);
+  if (!p?.id) return;
+  await api('PUT', `/pacientes/${id}`, { ...p, freq_pgto: valor });
+  const label = { 'por-sessao':'Por sessão', 'cada4':'A cada 4', 'fp-semanal':'Semanal', 'fp-mensal':'Mensal' }[valor] || valor;
+  toast(`Freq. pagamento: ${label}`);
 }
 
 async function alterarFormaPgto(id, valor) {

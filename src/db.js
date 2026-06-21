@@ -118,6 +118,7 @@ try { db.prepare('ALTER TABLE contratos ADD COLUMN visto INTEGER DEFAULT 0').run
 try { db.prepare("ALTER TABLE pacientes ADD COLUMN nota_fiscal TEXT DEFAULT 'nao'").run(); } catch(e) {}
 try { db.prepare("ALTER TABLE pacientes ADD COLUMN forma_pgto TEXT").run(); } catch(e) {}
 try { db.prepare("ALTER TABLE pacientes ADD COLUMN frequencia TEXT").run(); } catch(e) {}
+try { db.prepare("ALTER TABLE pacientes ADD COLUMN freq_pgto TEXT").run(); } catch(e) {}
 
 // Seed configurações padrão
 const cfgCount = db.prepare('SELECT COUNT(*) as n FROM configuracoes').get().n;
@@ -168,7 +169,7 @@ const updatePaciente = (id, data) =>
       nome=?, cpf=?, data_nascimento=?, sexo=?, telefone=?, whatsapp=?, email=?,
       endereco=?, ocupacao=?, convenio=?, num_convenio=?, responsavel=?,
       tel_responsavel=?, queixa_principal=?, encaminhamento=?, valor_sessao=?, obs=?,
-      ativo=?, nota_fiscal=?, forma_pgto=?, frequencia=?
+      ativo=?, nota_fiscal=?, forma_pgto=?, frequencia=?, freq_pgto=?
     WHERE id=?
   `).run(
     data.nome, data.cpf || null, data.data_nascimento || null, data.sexo || 'F',
@@ -177,7 +178,7 @@ const updatePaciente = (id, data) =>
     data.responsavel || null, data.tel_responsavel || null,
     data.queixa_principal || null, data.encaminhamento || null,
     data.valor_sessao || 0, data.obs || null,
-    data.ativo ?? 1, data.nota_fiscal || 'nao', data.forma_pgto || null, data.frequencia || null, id
+    data.ativo ?? 1, data.nota_fiscal || 'nao', data.forma_pgto || null, data.frequencia || null, data.freq_pgto || null, id
   );
 
 const deletePaciente = (id) =>
