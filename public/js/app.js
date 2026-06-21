@@ -1357,6 +1357,12 @@ async function loadFinanceiro() {
       <div class="stat-value" style="font-size:18px">${BRL(data.resumo.faturado + data.resumo.previsao)}</div>
       <div class="stat-sub">${BRL(data.resumo.previsao)} em ${data.resumo.total_agendadas} sessões agendadas</div>
     </div>
+    <div class="stat-card teal">
+      <span class="stat-icon">📆</span>
+      <div class="stat-label">Previsão da Semana</div>
+      <div class="stat-value" style="font-size:18px">${BRL(prevPgto.semanal.total)}</div>
+      <div class="stat-sub">${prevPgto.semanal.sessoes.length} sessão(ões) · pgto semanal</div>
+    </div>
   `;
 
   // Previsão — lista de sessões agendadas/confirmadas do mês
