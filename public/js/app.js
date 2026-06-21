@@ -1138,11 +1138,14 @@ async function loadConfiguracoes() {
 }
 
 async function salvarConfiguracoes() {
+  const valorAntigo = parseFloat(_config.valor_sessao_padrao) || 0;
+  const novoValor   = parseFloat(document.getElementById('cfg-valor').value) || 0;
+
   const body = {
     nome_psicologa:       document.getElementById('cfg-nome').value.trim(),
     crp:                  document.getElementById('cfg-crp').value.trim(),
     especialidade:        document.getElementById('cfg-especialidade').value.trim(),
-    valor_sessao_padrao:  document.getElementById('cfg-valor').value,
+    valor_sessao_padrao:  novoValor,
     duracao_sessao:       document.getElementById('cfg-duracao').value,
     horario_inicio:       document.getElementById('cfg-inicio').value,
     horario_fim:          document.getElementById('cfg-fim').value
@@ -1152,6 +1155,28 @@ async function salvarConfiguracoes() {
     _config = { ..._config, ...body };
     atualizarBrand();
     toast('Configurações salvas! 🌸');
+
+    // Se o valor padrão mudou, oferece atualizar pacientes que ainda usam o valor antigo
+    if (novoValor !== valorAntigo && valorAntigo > 0) {
+      const pacientes = await api('GET', '/pacientes');
+      const desatualizadas = pacientes.filter(p => parseFloat(p.valor_sessao) === valorAntigo);
+      if (desatualizadas.length > 0) {
+        openModal('Atualizar Valor das Pacientes', `
+          <p style="margin-bottom:14px">O valor padrão mudou de <strong>${BRL(valorAntigo)}</strong> para <strong>${BRL(novoValor)}</strong>.</p>
+          <p style="margin-bottom:10px"><strong>${desatualizadas.length}</strong> paciente(s) ainda usam o valor antigo:</p>
+          <ul style="margin:0 0 14px 18px;line-height:2;font-size:13.5px">
+            ${desatualizadas.map(p => `<li>${p.nome}</li>`).join('')}
+          </ul>
+          <p style="color:var(--muted);font-size:13px">Deseja atualizar todas para ${BRL(novoValor)}?</p>
+        `, async () => {
+          for (const p of desatualizadas) {
+            await api('PUT', `/pacientes/${p.id}`, { ...p, valor_sessao: novoValor });
+          }
+          toast(`${desatualizadas.length} paciente(s) atualizada(s)! 🌸`);
+          closeModal();
+        }, { saveLabel: 'Sim, atualizar pacientes' });
+      }
+    }
   } catch(e) { toast(e.message, 'error'); }
 }
 
