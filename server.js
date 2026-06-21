@@ -81,9 +81,21 @@ app.get('/api/agendamentos/:id', (req, res) => {
   res.json(a);
 });
 
-app.post('/api/agendamentos', (req, res) => {
-  try { res.json({ id: db.createAgendamento(req.body), success: true }); }
-  catch(e) { erro(res, e); }
+app.post('/api/agendamentos', async (req, res) => {
+  try {
+    const id = db.createAgendamento(req.body);
+    // Gera link Zoom automaticamente (não bloqueia resposta em caso de falha)
+    try {
+      const ag  = db.getAgendamentoById(id);
+      const cfg = db.getConfig();
+      if (cfg.zoom_account_id && ag) {
+        const nome = ag.paciente_nome || 'Consulta';
+        const link = await criarReuniaozoom(cfg, `Sessão — ${nome}`, `${ag.data}T${ag.hora}:00`, ag.duracao || cfg.duracao_sessao || 50);
+        db.updateAgendamento(id, { ...ag, zoom_link: link });
+      }
+    } catch(ze) { console.warn('Zoom (auto):', ze.message); }
+    res.json({ id, success: true });
+  } catch(e) { erro(res, e); }
 });
 
 app.put('/api/agendamentos/:id', (req, res) => {
