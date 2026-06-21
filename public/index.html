@@ -351,16 +351,24 @@
             </div>
           </div>
           <div class="config-section">
-            <div class="config-section-title">Horário Bloqueado</div>
-            <p style="font-size:12.5px;color:var(--muted);margin-bottom:12px">Horários neste intervalo não aparecerão no link de agendamento (ex: almoço).</p>
+            <div class="config-section-title">Horários Bloqueados</div>
+            <p style="font-size:12.5px;color:var(--muted);margin-bottom:12px">Intervalos bloqueados não aparecerão no link de agendamento. Deixe em branco para ignorar.</p>
             <div class="form-grid">
               <div class="form-group">
-                <label>Início do bloqueio</label>
+                <label>Intervalo 1 — início</label>
                 <input type="time" id="cfg-bloqueio-inicio">
               </div>
               <div class="form-group">
-                <label>Fim do bloqueio</label>
+                <label>Intervalo 1 — fim</label>
                 <input type="time" id="cfg-bloqueio-fim">
+              </div>
+              <div class="form-group">
+                <label>Intervalo 2 — início</label>
+                <input type="time" id="cfg-bloqueio2-inicio">
+              </div>
+              <div class="form-group">
+                <label>Intervalo 2 — fim</label>
+                <input type="time" id="cfg-bloqueio2-fim">
               </div>
             </div>
           </div>

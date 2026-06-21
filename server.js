@@ -174,12 +174,14 @@ app.get('/api/agendamento-links/:token/slots', (req, res) => {
 
   const cfg = db.getConfig();
 
-  // Remove horários dentro do intervalo bloqueado (ex: 11:00–14:00)
-  const bIni = cfg.bloqueio_inicio || '';
-  const bFim = cfg.bloqueio_fim    || '';
-  const slotsFinais = (bIni && bFim)
-    ? slots.filter(s => !(s.hora >= bIni && s.hora < bFim))
-    : slots;
+  // Remove horários dentro dos intervalos bloqueados
+  const bloqueios = [
+    [cfg.bloqueio_inicio  || '', cfg.bloqueio_fim   || ''],
+    [cfg.bloqueio2_inicio || '', cfg.bloqueio2_fim  || ''],
+  ].filter(([i, f]) => i && f);
+  const slotsFinais = slots.filter(s =>
+    !bloqueios.some(([i, f]) => s.hora >= i && s.hora < f)
+  );
 
   res.json({ slots: slotsFinais, nome_psicologa: cfg.nome_psicologa, crp: cfg.crp });
 });

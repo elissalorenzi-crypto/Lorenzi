@@ -1224,8 +1224,10 @@ async function loadConfiguracoes() {
   document.getElementById('cfg-duracao').value      = cfg.duracao_sessao || 50;
   document.getElementById('cfg-inicio').value          = cfg.horario_inicio    || '08:00';
   document.getElementById('cfg-fim').value             = cfg.horario_fim       || '18:00';
-  document.getElementById('cfg-bloqueio-inicio').value = cfg.bloqueio_inicio   || '';
-  document.getElementById('cfg-bloqueio-fim').value    = cfg.bloqueio_fim      || '';
+  document.getElementById('cfg-bloqueio-inicio').value  = cfg.bloqueio_inicio  || '';
+  document.getElementById('cfg-bloqueio-fim').value     = cfg.bloqueio_fim     || '';
+  document.getElementById('cfg-bloqueio2-inicio').value = cfg.bloqueio2_inicio || '';
+  document.getElementById('cfg-bloqueio2-fim').value    = cfg.bloqueio2_fim    || '';
 }
 
 async function salvarConfiguracoes() {
@@ -1240,8 +1242,10 @@ async function salvarConfiguracoes() {
     duracao_sessao:       document.getElementById('cfg-duracao').value,
     horario_inicio:       document.getElementById('cfg-inicio').value,
     horario_fim:          document.getElementById('cfg-fim').value,
-    bloqueio_inicio:      document.getElementById('cfg-bloqueio-inicio').value || '',
-    bloqueio_fim:         document.getElementById('cfg-bloqueio-fim').value    || ''
+    bloqueio_inicio:      document.getElementById('cfg-bloqueio-inicio').value  || '',
+    bloqueio_fim:         document.getElementById('cfg-bloqueio-fim').value     || '',
+    bloqueio2_inicio:     document.getElementById('cfg-bloqueio2-inicio').value || '',
+    bloqueio2_fim:        document.getElementById('cfg-bloqueio2-fim').value    || ''
   };
   try {
     await api('POST', '/configuracoes', body);
