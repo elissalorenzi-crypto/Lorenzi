@@ -97,6 +97,16 @@ function navigate(name) {
   loaders[name]?.();
 }
 
+async function refreshAll() {
+  await Promise.all([
+    loadDashboard(),
+    loadPacientes(),
+    loadFinanceiro(),
+    fetchAgendaSemana(),
+    loadContratos(),
+  ]);
+}
+
 document.querySelectorAll('.nav-link').forEach(a => {
   a.addEventListener('click', e => {
     e.preventDefault();
@@ -498,9 +508,7 @@ async function openModalAgendamento(ag = null, dataPreset = null, pacienteIdPres
       if (isEdit) { await api('PUT', `/agendamentos/${ag.id}`, body); toast('Agendamento atualizado!'); }
       else        { await api('POST', '/agendamentos', body);          toast('Sessão agendada! 🌸'); }
       closeModal();
-      if (_currentSection === 'agenda')    fetchAgendaSemana();
-      if (_currentSection === 'dashboard') loadDashboard();
-      loadFinanceiro();
+      refreshAll();
     } catch(e) { toast(e.message, 'error'); }
   });
 }
@@ -520,8 +528,7 @@ async function deleteAgendamentoItem(id) {
   if (!confirm('Remover este agendamento?')) return;
   await api('DELETE', `/agendamentos/${id}`);
   toast('Agendamento removido');
-  fetchAgendaSemana();
-  loadFinanceiro();
+  refreshAll();
 }
 
 async function marcarRealizado(id) {
@@ -530,8 +537,7 @@ async function marcarRealizado(id) {
   if (ag.status === 'realizado') { toast('Sessão já finalizada', 'info'); return; }
   await api('PUT', `/agendamentos/${id}`, { ...ag, status: 'realizado' });
   toast('Sessão finalizada ✓');
-  fetchAgendaSemana();
-  loadFinanceiro();
+  refreshAll();
 }
 
 async function openModalGerenciarAgenda() {
@@ -587,8 +593,7 @@ async function openModalGerenciarAgenda() {
     }
     toast(`${salvos} sessão(ões) atualizada(s)! 🌸`);
     closeModal();
-    fetchAgendaSemana();
-    loadFinanceiro();
+    refreshAll();
   }, { saveLabel: '💾 Salvar Alterações' });
 }
 
@@ -620,8 +625,7 @@ async function gerExcluir(i, id) {
       `).join('');
     }
     toast('Sessão excluída');
-    fetchAgendaSemana();
-    loadFinanceiro();
+    refreshAll();
   } catch(e) { toast(e.message, 'error'); }
 }
 
@@ -1002,7 +1006,7 @@ function openModalPaciente(p = {}) {
       if (p.id) { await api('PUT', `/pacientes/${p.id}`, body); toast('Cliente atualizado! 🌸'); }
       else      { await api('POST', '/pacientes', body);         toast('Cliente cadastrado! 🌸'); }
       closeModal();
-      loadPacientes();
+      refreshAll();
     } catch(e) { toast(e.message, 'error'); }
   }, { large: true });
 }
@@ -1016,7 +1020,7 @@ async function deletePacienteItem(id) {
   if (!confirm('Desativar este cliente? Seus dados serão mantidos.')) return;
   await api('DELETE', `/pacientes/${id}`);
   toast('Cliente desativado');
-  loadPacientes();
+  refreshAll();
 }
 
 async function alterarFreqPgto(id, valor) {
@@ -1025,6 +1029,7 @@ async function alterarFreqPgto(id, valor) {
   await api('PUT', `/pacientes/${id}`, { ...p, freq_pgto: valor });
   const label = { 'por-sessao':'Por sessão', 'cada4':'A cada 4', 'fp-semanal':'Semanal', 'fp-mensal':'Mensal' }[valor] || valor;
   toast(`Freq. pagamento: ${label}`);
+  loadFinanceiro();
 }
 
 async function alterarFormaPgto(id, valor) {
@@ -1033,6 +1038,7 @@ async function alterarFormaPgto(id, valor) {
   await api('PUT', `/pacientes/${id}`, { ...p, forma_pgto: valor });
   const label = { pix:'PIX', credito:'Crédito', debito:'Débito', dinheiro:'Dinheiro', transferencia:'Transferência' }[valor] || valor;
   toast(`Forma de pagamento: ${label}`);
+  loadFinanceiro();
 }
 
 async function alterarFrequencia(id, valor) {
@@ -1041,6 +1047,7 @@ async function alterarFrequencia(id, valor) {
   await api('PUT', `/pacientes/${id}`, { ...p, frequencia: valor });
   const label = { semanal:'Semanal', quinzenal:'Quinzenal', mensal:'Mensal' }[valor] || valor;
   toast(`Frequência: ${label}`);
+  loadFinanceiro();
 }
 
 async function alterarNotaFiscal(id, valor) {
@@ -1048,6 +1055,7 @@ async function alterarNotaFiscal(id, valor) {
   if (!p?.id) return;
   await api('PUT', `/pacientes/${id}`, { ...p, nota_fiscal: valor });
   toast(valor === 'sim' ? 'Nota fiscal: Sim ✓' : 'Nota fiscal: Não');
+  loadFinanceiro();
 }
 
 async function alterarStatusCliente(id, novoAtivoStr, selectEl) {
@@ -1072,9 +1080,7 @@ async function alterarStatusCliente(id, novoAtivoStr, selectEl) {
     toast(`${p.nome} reativado`);
   }
 
-  loadPacientes();
-  fetchAgendaSemana();
-  loadFinanceiro();
+  refreshAll();
 }
 
 // ============================================================
@@ -1457,7 +1463,7 @@ async function marcarPago(id) {
     await api('PUT', `/agendamentos/${id}`, { ...ag, pago: 1, forma_pgto: forma });
     toast('Pagamento registrado! 💰');
     closeModal();
-    loadFinanceiro();
+    refreshAll();
   }, { saveLabel: '💰 Confirmar Recebimento' });
 }
 
@@ -1968,8 +1974,8 @@ async function loadNotificacoes() {
 async function init() {
   _config = await api('GET', '/configuracoes');
   atualizarBrand();
-  loadDashboard();
   loadNotificacoes();
+  refreshAll();
 }
 
 init();
