@@ -666,7 +666,13 @@ function renderPacientesTable(data) {
       <td>
         ${p.whatsapp ? `<a href="https://wa.me/55${p.whatsapp.replace(/\D/g,'')}" target="_blank" style="color:var(--sage);font-size:12px">💬 ${p.whatsapp}</a>` : '—'}
       </td>
-      <td>${p.convenio || '<span class="text-muted">Particular</span>'}</td>
+      <td>
+        <select class="status-select ${p.nota_fiscal === 'sim' ? 'sim' : 'nao'}"
+                onchange="this.className='status-select '+this.value;alterarNotaFiscal(${p.id},this.value)">
+          <option value="sim" ${p.nota_fiscal === 'sim' ? 'selected' : ''}>Sim</option>
+          <option value="nao" ${p.nota_fiscal !== 'sim' ? 'selected' : ''}>Não</option>
+        </select>
+      </td>
       <td class="text-right fw-bold">${BRL(p.valor_sessao)}</td>
       <td>
         <select class="status-select ${p.ativo ? 'ativo' : 'finalizado'}"
@@ -927,6 +933,13 @@ async function deletePacienteItem(id) {
   await api('DELETE', `/pacientes/${id}`);
   toast('Cliente desativado');
   loadPacientes();
+}
+
+async function alterarNotaFiscal(id, valor) {
+  const p = await api('GET', `/pacientes/${id}`);
+  if (!p?.id) return;
+  await api('PUT', `/pacientes/${id}`, { ...p, nota_fiscal: valor });
+  toast(valor === 'sim' ? 'Nota fiscal: Sim ✓' : 'Nota fiscal: Não');
 }
 
 async function alterarStatusCliente(id, novoAtivoStr, selectEl) {
