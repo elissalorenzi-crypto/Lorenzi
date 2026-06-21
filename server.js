@@ -178,6 +178,21 @@ app.post('/api/contratos/upload', upload.single('arquivo'), (req, res) => {
       origem:     'whatsapp',
       aceite: 1
     });
+
+    // Cria ou atualiza paciente automaticamente (upload não tem CPF — busca por nome)
+    try {
+      const celular = req.body.celular || null;
+      const email   = req.body.email   || null;
+      const porNome = db.getPacientes().find(p => p.nome.toLowerCase() === nome.toLowerCase());
+      if (porNome) {
+        db.updatePaciente(porNome.id, { ...porNome, whatsapp: celular || porNome.whatsapp, email: email || porNome.email });
+      } else {
+        db.createPaciente({ nome, whatsapp: celular, email });
+      }
+    } catch(e) {
+      console.warn('Aviso: não foi possível criar paciente via upload:', e.message);
+    }
+
     res.json({ id, success: true, arquivo: `/uploads/contratos/${filename}` });
   } catch(e) { erro(res, e); }
 });
