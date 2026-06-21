@@ -266,15 +266,13 @@ function renderGrade(data) {
 
   const dias = data.semana.map(d => d.data);
 
-  // Slots base 08:00–11:00 e 14:00–21:00 a cada 30 min
+  // Slots base 08:00–11:00 e 14:00–21:00 somente horas cheias
   const toMin = t => { const [h,m] = t.split(':').map(Number); return h*60+m; };
   const toStr = n => `${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`;
   const baseSet = new Set();
-  for (let m = 480; m <= 660; m += 30) baseSet.add(toStr(m));
-  for (let m = 840; m <= 1260; m += 30) baseSet.add(toStr(m));
-  // Adiciona horários reais fora do range
-  for (const dia of data.semana) for (const s of dia.slots) baseSet.add(s.hora);
-  const slots = [...baseSet].sort().map(t => ({ t, isHour: t.endsWith(':00') }));
+  for (let m = 480; m <= 660; m += 60) baseSet.add(toStr(m));   // 08:00–11:00
+  for (let m = 840; m <= 1260; m += 60) baseSet.add(toStr(m));  // 14:00–21:00
+  const slots = [...baseSet].sort().map(t => ({ t }));
 
   // Cabeçalho
   const ths = dias.map(d => {
@@ -291,7 +289,7 @@ function renderGrade(data) {
   let html = `<thead><tr><th class="hora-th">Hora</th>${ths}</tr></thead><tbody>`;
 
   let almocoDone = false;
-  for (const { t, isHour } of slots) {
+  for (const { t } of slots) {
     const min = toMin(t);
     if (!almocoDone && min >= 840) {
       almocoDone = true;
@@ -315,7 +313,7 @@ function renderGrade(data) {
       </td>`;
     }).join('');
 
-    html += `<tr class="${isHour ? 'grade-row-h' : 'grade-row-m'}">
+    html += `<tr class="grade-row-h">
       <td class="grade-hora">${t}</td>${cells}
     </tr>`;
   }
