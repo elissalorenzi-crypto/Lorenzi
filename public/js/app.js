@@ -2170,6 +2170,11 @@ async function loadNotificacoes() {
   } catch(e) {}
 }
 
+// ── BIBLIOTECA DE ATIVIDADES ─────────────────────────────────
+function abrirBiblioteca(area) {
+  showToast(`Em breve: atividades de "${area}"`, 'info');
+}
+
 async function init() {
   _config = await api('GET', '/configuracoes');
   atualizarBrand();

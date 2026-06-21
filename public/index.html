@@ -38,6 +38,9 @@
     <a href="#" class="nav-link" data-section="prontuarios">
       <span class="icon">📋</span> Prontuários
     </a>
+    <a href="#" class="nav-link" data-section="biblioteca">
+      <span class="icon">📚</span> Biblioteca de Atividades
+    </a>
     <a href="#" class="nav-link" data-section="financeiro">
       <span class="icon">💰</span> Financeiro
     </a>
@@ -271,6 +274,51 @@
           <span class="empty-icon">📋</span>
           <p>Selecione um cliente para ver os prontuários</p>
         </div>
+      </div>
+    </div>
+
+    <!-- ── BIBLIOTECA DE ATIVIDADES ── -->
+    <div class="section" id="section-biblioteca">
+      <div style="margin-bottom:24px">
+        <h2 style="font-size:20px;font-weight:700;color:var(--plum);margin-bottom:4px">Biblioteca de Atividades</h2>
+        <p style="font-size:13px;color:var(--muted)">Materiais e atividades organizados por área de atuação</p>
+      </div>
+      <div class="bib-grid">
+
+        <!-- Card: Orientação Profissional Primeira Escolha -->
+        <div class="bib-card">
+          <div class="bib-card-header bib-op">
+            <span class="bib-icon">🎯</span>
+            <div>
+              <div class="bib-titulo">Orientação Profissional</div>
+              <div class="bib-subtitulo">Primeira Escolha</div>
+            </div>
+          </div>
+          <div class="bib-card-body">
+            <p class="bib-desc">Atividades e recursos voltados para jovens em processo de escolha da primeira carreira ou curso superior.</p>
+            <div class="bib-acoes">
+              <button class="btn btn-primary btn-sm" onclick="abrirBiblioteca('op-primeira-escolha')">Ver Atividades</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card: Orientação de Carreira Adulto -->
+        <div class="bib-card">
+          <div class="bib-card-header bib-oc">
+            <span class="bib-icon">💼</span>
+            <div>
+              <div class="bib-titulo">Orientação de Carreira</div>
+              <div class="bib-subtitulo">Adulto</div>
+            </div>
+          </div>
+          <div class="bib-card-body">
+            <p class="bib-desc">Materiais de apoio para adultos em transição de carreira, reposicionamento profissional e desenvolvimento pessoal.</p>
+            <div class="bib-acoes">
+              <button class="btn btn-primary btn-sm" onclick="abrirBiblioteca('oc-adulto')">Ver Atividades</button>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
