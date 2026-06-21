@@ -308,6 +308,7 @@ async function fetchAgendaSemana() {
   _agendaData = await api('GET', `/agendamentos?data_de=${de}&data_ate=${ate}`);
   renderAgendaGrid();
   renderAgendaLista();
+  renderAgendaHorario();
 }
 
 function agendaNavSemana(delta) {
@@ -426,10 +427,88 @@ function renderAgendaLista() {
   `).join('');
 }
 
+function renderAgendaHorario() {
+  const table = document.getElementById('agenda-hor-table');
+  if (!table) return;
+
+  const DIAS_S = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const hoje   = HOJE();
+
+  // Seg a Sáb da semana atual
+  const dias = Array.from({ length: 6 }, (_, i) => addDays(_agendaSemana, i));
+
+  // Slots 08:00–11:00 e 14:00–21:00 em intervalos de 30 min
+  const slots = [];
+  for (let h = 8; h <= 10; h++) {
+    slots.push({ t: `${String(h).padStart(2,'0')}:00`, isHour: true  });
+    slots.push({ t: `${String(h).padStart(2,'0')}:30`, isHour: false });
+  }
+  slots.push({ t: '11:00', isHour: true });
+  for (let h = 14; h <= 20; h++) {
+    slots.push({ t: `${String(h).padStart(2,'0')}:00`, isHour: true  });
+    slots.push({ t: `${String(h).padStart(2,'0')}:30`, isHour: false });
+  }
+  slots.push({ t: '21:00', isHour: true });
+
+  // Indexa por "data|hora"
+  const idx = {};
+  for (const a of _agendaData) idx[`${a.data}|${a.hora}`] = a;
+
+  // Cabeçalho dos dias
+  const headers = dias.map(d => {
+    const dt = new Date(d + 'T12:00:00');
+    return `<th class="${d === hoje ? 'hoje' : ''}">${DIAS_S[dt.getDay()]} <span style="font-weight:500;opacity:.75">${dt.getDate()}/${String(dt.getMonth()+1).padStart(2,'0')}</span></th>`;
+  }).join('');
+
+  let html = `<thead><tr><th class="hora-th">Hora</th>${headers}</tr></thead><tbody>`;
+
+  let almocoDone = false;
+  for (const { t, isHour } of slots) {
+    if (!almocoDone && t === '14:00') {
+      almocoDone = true;
+      html += `<tr class="hor-break"><td colspan="${dias.length + 1}">— Intervalo 11:00 – 14:00 —</td></tr>`;
+    }
+
+    const cells = dias.map(d => {
+      const a = idx[`${d}|${t}`];
+      if (!a) {
+        return `<td class="hor-cell" onclick="openModalAgendamento(null,'${d}',null,'${t}')"><span class="hor-add">+</span></td>`;
+      }
+      const sc = a.status || 'agendado';
+      const zoomBtn = a.zoom_link
+        ? `<div class="zoom-menu-wrap">
+             <button class="appt-btn appt-btn-zoom appt-btn-zoom-ok" onclick="toggleZoomMenu(event,${a.id})" title="Zoom">🎥</button>
+             <div class="zoom-menu" id="zmenu-${a.id}">
+               <button onclick="copiarZoom('${a.zoom_link}')">📋 Copiar link</button>
+               <a href="${a.zoom_link}" target="_blank" onclick="fecharZoomMenus()">🚀 Abrir sessão</a>
+               ${a.paciente_whatsapp ? `<a href="${zoomWaUrl(a.paciente_nome,a.zoom_link,a.paciente_whatsapp)}" target="_blank" onclick="fecharZoomMenus()" style="color:#25d366">💬 WhatsApp</a>` : ''}
+             </div>
+           </div>`
+        : `<button class="appt-btn appt-btn-zoom" onclick="gerarZoom(${a.id})" title="Zoom">📹</button>`;
+      return `<td class="hor-cell has-appt">
+        <div class="hor-appt ${sc}">
+          <span class="hor-nome">${a.paciente_nome || '—'}</span>
+          <div class="hor-actions">
+            ${zoomBtn}
+            <button class="appt-btn appt-btn-ok"   onclick="marcarRealizado(${a.id})"        title="Finalizar">✓</button>
+            <button class="appt-btn appt-btn-edit"  onclick="editAgendamento(${a.id})"        title="Alterar">✏</button>
+            <button class="appt-btn appt-btn-del"   onclick="deleteAgendamentoItem(${a.id})"  title="Excluir">✕</button>
+          </div>
+        </div>
+      </td>`;
+    }).join('');
+
+    html += `<tr class="${isHour ? 'hor-row-h' : 'hor-row-m'}"><td class="hor-hora">${t}</td>${cells}</tr>`;
+  }
+
+  html += '</tbody>';
+  table.innerHTML = html;
+}
+
 // ── Modal Agendamento ─────────────────────────────────────────
 let _pacientesCache = [];
 
-async function openModalAgendamento(ag = null, dataPreset = null, pacienteIdPreset = null) {
+async function openModalAgendamento(ag = null, dataPreset = null, pacienteIdPreset = null, horaPreset = null) {
   _pacientesCache = await api('GET', '/pacientes');
   const cfg = _config;
   const isEdit = !!ag?.id;
@@ -459,7 +538,7 @@ async function openModalAgendamento(ag = null, dataPreset = null, pacienteIdPres
       </div>
       <div class="form-group">
         <label>Hora</label>
-        <input type="time" id="ag-hora" value="${ag?.hora || '09:00'}">
+        <input type="time" id="ag-hora" value="${ag?.hora || horaPreset || '09:00'}">
       </div>
       <div class="form-group">
         <label>Duração (min)</label>
