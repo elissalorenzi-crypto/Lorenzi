@@ -656,7 +656,7 @@ function filtrarPacientes() {
 function renderPacientesTable(data) {
   const tbody = document.getElementById('pacientes-tbody');
   if (!data.length) {
-    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><span class="empty-icon">👤</span><p>Nenhum cliente encontrado</p></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><span class="empty-icon">👤</span><p>Nenhum cliente encontrado</p></div></td></tr>`;
     return;
   }
   const contadorEl = document.getElementById('pac-contador');
@@ -676,6 +676,22 @@ function renderPacientesTable(data) {
       <td>${fmtNascimento(p.data_nascimento)}</td>
       <td>
         ${p.whatsapp ? `<a href="https://wa.me/55${p.whatsapp.replace(/\D/g,'')}" target="_blank" style="color:var(--sage);font-size:12px">💬 ${p.whatsapp}</a>` : '—'}
+      </td>
+      <td>
+        ${p.frequencia ? `
+        <select class="status-select ${p.frequencia}"
+                onchange="this.className='status-select '+this.value;alterarFrequencia(${p.id},this.value)">
+          <option value="semanal"   ${p.frequencia==='semanal'  ?'selected':''}>Semanal</option>
+          <option value="quinzenal" ${p.frequencia==='quinzenal'?'selected':''}>Quinzenal</option>
+          <option value="mensal"    ${p.frequencia==='mensal'   ?'selected':''}>Mensal</option>
+        </select>` : `
+        <select class="status-select mensal" style="opacity:.5"
+                onchange="this.className='status-select '+this.value;this.style.opacity=1;alterarFrequencia(${p.id},this.value)">
+          <option value="" disabled selected>—</option>
+          <option value="semanal">Semanal</option>
+          <option value="quinzenal">Quinzenal</option>
+          <option value="mensal">Mensal</option>
+        </select>`}
       </td>
       <td style="font-size:12px;color:var(--muted)">${{pix:'PIX',credito:'Crédito',debito:'Débito',dinheiro:'Dinheiro',transferencia:'Transf.'}[p.forma_pgto] || '—'}</td>
       <td>
@@ -882,6 +898,15 @@ function pacienteFormHtml(p = {}) {
         <input type="number" id="fp-valor" value="${p.valor_sessao||_config.valor_sessao_padrao||180}" min="0" step="10">
       </div>
       <div class="form-group">
+        <label>Frequência</label>
+        <select id="fp-freq">
+          <option value="">—</option>
+          <option value="semanal"   ${p.frequencia==='semanal'  ?'selected':''}>Semanal</option>
+          <option value="quinzenal" ${p.frequencia==='quinzenal'?'selected':''}>Quinzenal</option>
+          <option value="mensal"    ${p.frequencia==='mensal'   ?'selected':''}>Mensal</option>
+        </select>
+      </div>
+      <div class="form-group">
         <label>Forma de Pagamento</label>
         <select id="fp-forma">
           <option value="">—</option>
@@ -935,7 +960,8 @@ function openModalPaciente(p = {}) {
       tel_responsavel: document.getElementById('fp-telresp').value.trim(),
       queixa_principal:document.getElementById('fp-queixa').value.trim(),
       obs:             document.getElementById('fp-obs').value.trim(),
-      forma_pgto:      document.getElementById('fp-forma').value || null
+      forma_pgto:      document.getElementById('fp-forma').value || null,
+      frequencia:      document.getElementById('fp-freq').value  || null
     };
     if (!body.nome) return toast('Nome é obrigatório', 'error');
     try {
@@ -957,6 +983,14 @@ async function deletePacienteItem(id) {
   await api('DELETE', `/pacientes/${id}`);
   toast('Cliente desativado');
   loadPacientes();
+}
+
+async function alterarFrequencia(id, valor) {
+  const p = await api('GET', `/pacientes/${id}`);
+  if (!p?.id) return;
+  await api('PUT', `/pacientes/${id}`, { ...p, frequencia: valor });
+  const label = { semanal:'Semanal', quinzenal:'Quinzenal', mensal:'Mensal' }[valor] || valor;
+  toast(`Frequência: ${label}`);
 }
 
 async function alterarNotaFiscal(id, valor) {
