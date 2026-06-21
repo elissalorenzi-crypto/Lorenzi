@@ -347,9 +347,11 @@ const getFinanceiro = (ano, mes) => {
       COUNT(CASE WHEN status='realizado' THEN 1 END) as total_realizadas,
       COUNT(CASE WHEN status='cancelado' THEN 1 END) as total_canceladas,
       COUNT(CASE WHEN status='falta' THEN 1 END) as total_faltas,
+      COUNT(CASE WHEN status IN ('agendado','confirmado') THEN 1 END) as total_agendadas,
       COALESCE(SUM(CASE WHEN status='realizado' THEN valor ELSE 0 END),0) as faturado,
       COALESCE(SUM(CASE WHEN status='realizado' AND pago=1 THEN valor ELSE 0 END),0) as recebido,
-      COALESCE(SUM(CASE WHEN status='realizado' AND pago=0 THEN valor ELSE 0 END),0) as pendente
+      COALESCE(SUM(CASE WHEN status='realizado' AND pago=0 THEN valor ELSE 0 END),0) as pendente,
+      COALESCE(SUM(CASE WHEN status IN ('agendado','confirmado') THEN valor ELSE 0 END),0) as previsao
     FROM agendamentos WHERE data >= ? AND data <= ?
   `).get(de, ate);
 
@@ -378,7 +380,15 @@ const getFinanceiro = (ano, mes) => {
     ORDER BY a.data, a.hora
   `).all(de, ate);
 
-  return { resumo, porDia, lista, pendentes };
+  const previsaoLista = db.prepare(`
+    SELECT a.*, p.nome as paciente_nome
+    FROM agendamentos a
+    LEFT JOIN pacientes p ON p.id = a.paciente_id
+    WHERE a.data >= ? AND a.data <= ? AND a.status IN ('agendado','confirmado')
+    ORDER BY a.data, a.hora
+  `).all(de, ate);
+
+  return { resumo, porDia, lista, pendentes, previsaoLista };
 };
 
 // ============================================================

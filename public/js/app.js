@@ -1169,7 +1169,33 @@ async function loadFinanceiro() {
       <div class="stat-value" style="font-size:18px">${BRL(data.resumo.pendente)}</div>
       <div class="stat-sub">${data.resumo.total_faltas} faltas · ${data.resumo.total_canceladas} canceladas</div>
     </div>
+    <div class="stat-card plum">
+      <span class="stat-icon">📅</span>
+      <div class="stat-label">Previsão do Mês</div>
+      <div class="stat-value" style="font-size:18px">${BRL(data.resumo.faturado + data.resumo.previsao)}</div>
+      <div class="stat-sub">${BRL(data.resumo.previsao)} em ${data.resumo.total_agendadas} sessões agendadas</div>
+    </div>
   `;
+
+  // Previsão — lista de sessões agendadas/confirmadas do mês
+  const prevTbody = document.getElementById('fin-previsao-tbody');
+  const prevTotal = document.getElementById('fin-previsao-total');
+  if (!data.previsaoLista?.length) {
+    prevTbody.innerHTML = `<tr><td colspan="5" class="text-muted" style="text-align:center;padding:20px">Nenhuma sessão agendada neste mês</td></tr>`;
+    prevTotal.textContent = '';
+  } else {
+    prevTotal.textContent = `Total esperado: ${BRL(data.resumo.faturado + data.resumo.previsao)}`;
+    const statusLabel = { agendado: 'Agendado', confirmado: 'Confirmado ✓' };
+    prevTbody.innerHTML = data.previsaoLista.map(a => `
+      <tr>
+        <td>${fmtData(a.data)}</td>
+        <td>${a.hora}</td>
+        <td>${a.paciente_nome || '—'}</td>
+        <td class="text-right fw-bold" style="color:var(--plum)">${BRL(a.valor)}</td>
+        <td><span style="color:var(--muted);font-size:12px">${statusLabel[a.status] || a.status}</span></td>
+      </tr>
+    `).join('');
+  }
 
   // Gráfico por dia
   const chartEl = document.getElementById('fin-chart');

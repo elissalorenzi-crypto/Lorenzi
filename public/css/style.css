@@ -233,6 +233,7 @@ nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
 .stat-card.lavender::before{ background: linear-gradient(90deg, var(--lavender), #c4b0e0); }
 .stat-card.sage::before   { background: linear-gradient(90deg, var(--sage), #9fdcc4); }
 .stat-card.peach::before  { background: linear-gradient(90deg, var(--peach), #f0c99a); }
+.stat-card.plum::before   { background: linear-gradient(90deg, var(--plum), #9b7dbf); }
 
 .stat-icon {
   font-size: 24px;
