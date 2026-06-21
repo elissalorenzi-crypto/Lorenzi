@@ -367,6 +367,7 @@ function renderAgendaGrid() {
                            <div class="zoom-menu" id="zmenu-${a.id}">
                              <button onclick="copiarZoom('${a.zoom_link}')">📋 Copiar link</button>
                              <a href="${a.zoom_link}" target="_blank" onclick="fecharZoomMenus()">🚀 Abrir sessão</a>
+                             ${a.paciente_whatsapp ? `<a href="${zoomWaUrl(a.paciente_nome, a.zoom_link, a.paciente_whatsapp)}" target="_blank" onclick="fecharZoomMenus()" style="color:#25d366">💬 Enviar no WhatsApp</a>` : ''}
                            </div>
                          </div>`
                       : `<button class="appt-btn appt-btn-zoom" onclick="gerarZoom(${a.id})" title="Gerar link Zoom">📹</button>`
@@ -414,6 +415,7 @@ function renderAgendaLista() {
                  <div class="zoom-menu" id="zmenu-${a.id}">
                    <button onclick="copiarZoom('${a.zoom_link}')">📋 Copiar link</button>
                    <a href="${a.zoom_link}" target="_blank" onclick="fecharZoomMenus()">🚀 Abrir sessão</a>
+                   ${a.paciente_whatsapp ? `<a href="${zoomWaUrl(a.paciente_nome, a.zoom_link, a.paciente_whatsapp)}" target="_blank" onclick="fecharZoomMenus()" style="color:#25d366">💬 Enviar no WhatsApp</a>` : ''}
                  </div>
                </div>`
             : `<button class="btn btn-outline btn-xs" style="color:#1a6ff4;border-color:#1a6ff4" onclick="gerarZoom(${a.id})" title="Gerar link Zoom">📹</button>`
@@ -559,6 +561,13 @@ function toggleZoomMenu(e, id) {
 function copiarZoom(link) {
   navigator.clipboard.writeText(link).then(() => toast('Link copiado! 📋'));
   fecharZoomMenus();
+}
+
+function zoomWaUrl(nome, link, fone) {
+  const primeiroNome = (nome || '').split(' ')[0];
+  const msg = `Olá, bom dia ${primeiroNome}! 😊\nSegue o link da nossa sessão de hoje:\n${link}`;
+  const num = '55' + (fone || '').replace(/\D/g, '');
+  return `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
 }
 
 document.addEventListener('click', fecharZoomMenus);
