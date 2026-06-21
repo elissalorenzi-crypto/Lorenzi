@@ -513,6 +513,95 @@ async function deleteAgendamentoItem(id) {
   fetchAgendaSemana();
 }
 
+async function openModalGerenciarAgenda() {
+  const hoje = HOJE();
+  const ate  = addDays(hoje, 28);
+  let sessoes = await api('GET', `/agendamentos?data_de=${hoje}&data_ate=${ate}`);
+  sessoes = sessoes
+    .filter(a => a.status !== 'cancelado')
+    .sort((a, b) => (a.data + a.hora).localeCompare(b.data + b.hora));
+
+  const linhas = () => sessoes.map((a, i) => `
+    <tr id="ger-row-${i}">
+      <td style="font-size:13px;font-weight:600">${a.paciente_nome || '—'}</td>
+      <td><input type="date"  class="ger-data" data-i="${i}" data-id="${a.id}" value="${a.data}"
+            style="font-size:12.5px;padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;width:130px"
+            onchange="gerMarcarAlterado(${i})"></td>
+      <td><input type="time"  class="ger-hora" data-i="${i}" value="${a.hora}"
+            style="font-size:12.5px;padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;width:90px"
+            onchange="gerMarcarAlterado(${i})"></td>
+      <td>${badgeStatus(a.status)}</td>
+      <td><button class="btn btn-ghost btn-xs" style="color:var(--red)"
+            onclick="gerExcluir(${i},${a.id})">🗑</button></td>
+    </tr>
+  `).join('');
+
+  window._gerSessoes = sessoes;
+
+  openModal('Gerenciar Sessões', `
+    <p style="font-size:12.5px;color:var(--muted);margin-bottom:12px">Próximos 28 dias · ${sessoes.length} sessão(ões)</p>
+    ${sessoes.length === 0
+      ? `<div class="empty-state"><span class="empty-icon">📅</span><p>Nenhuma sessão nos próximos 28 dias</p></div>`
+      : `<div class="table-wrap">
+          <table>
+            <thead><tr><th>Paciente</th><th>Data</th><th>Hora</th><th>Status</th><th></th></tr></thead>
+            <tbody id="ger-tbody">${linhas()}</tbody>
+          </table>
+        </div>`
+    }
+  `, async () => {
+    const rows = document.querySelectorAll('#ger-tbody tr[data-changed]');
+    if (!rows.length) { closeModal(); return; }
+    let salvos = 0;
+    for (const row of rows) {
+      const i   = parseInt(row.dataset.i);
+      const ag  = window._gerSessoes[i];
+      if (!ag) continue;
+      const novaData = row.querySelector('.ger-data')?.value;
+      const novaHora = row.querySelector('.ger-hora')?.value;
+      try {
+        await api('PUT', `/agendamentos/${ag.id}`, { ...ag, data: novaData, hora: novaHora });
+        salvos++;
+      } catch(e) {}
+    }
+    toast(`${salvos} sessão(ões) atualizada(s)! 🌸`);
+    closeModal();
+    fetchAgendaSemana();
+  }, { saveLabel: '💾 Salvar Alterações' });
+}
+
+function gerMarcarAlterado(i) {
+  const row = document.querySelector(`#ger-tbody tr:nth-child(${i + 1})`);
+  if (row) { row.dataset.changed = '1'; row.dataset.i = i; }
+}
+
+async function gerExcluir(i, id) {
+  if (!confirm('Excluir esta sessão?')) return;
+  try {
+    await api('DELETE', `/agendamentos/${id}`);
+    window._gerSessoes.splice(i, 1);
+    const tbody = document.getElementById('ger-tbody');
+    if (tbody) {
+      tbody.innerHTML = window._gerSessoes.map((a, idx) => `
+        <tr id="ger-row-${idx}">
+          <td style="font-size:13px;font-weight:600">${a.paciente_nome || '—'}</td>
+          <td><input type="date"  class="ger-data" data-i="${idx}" data-id="${a.id}" value="${a.data}"
+                style="font-size:12.5px;padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;width:130px"
+                onchange="gerMarcarAlterado(${idx})"></td>
+          <td><input type="time"  class="ger-hora" data-i="${idx}" value="${a.hora}"
+                style="font-size:12.5px;padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;width:90px"
+                onchange="gerMarcarAlterado(${idx})"></td>
+          <td>${badgeStatus(a.status)}</td>
+          <td><button class="btn btn-ghost btn-xs" style="color:var(--red)"
+                onclick="gerExcluir(${idx},${a.id})">🗑</button></td>
+        </tr>
+      `).join('');
+    }
+    toast('Sessão excluída');
+    fetchAgendaSemana();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
 // ============================================================
 // ── PACIENTES ────────────────────────────────────────────────
 // ============================================================
