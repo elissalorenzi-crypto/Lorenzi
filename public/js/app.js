@@ -998,19 +998,19 @@ function prontuarioFormHtml(r = {}, agendamentos = []) {
     </div>
     <div class="form-group" style="margin-bottom:14px">
       <label>Relato / Conteúdo da Sessão</label>
-      <textarea id="pr-conteudo" rows="5" placeholder="Descreva os principais temas abordados na sessão...">${r.conteudo||''}</textarea>
+      <textarea id="pr-conteudo" rows="5" spellcheck="true" lang="pt-BR" placeholder="Descreva os principais temas abordados na sessão...">${r.conteudo||''}</textarea>
     </div>
     <div class="form-group" style="margin-bottom:14px">
       <label>Humor / Estado Emocional da Paciente</label>
-      <input type="text" id="pr-humor" value="${r.humor||''}" placeholder="Ex: Ansiosa, reflexiva, mais tranquila...">
+      <input type="text" id="pr-humor" spellcheck="true" lang="pt-BR" value="${r.humor||''}" placeholder="Ex: Ansiosa, reflexiva, mais tranquila...">
     </div>
     <div class="form-group" style="margin-bottom:14px">
       <label>Técnicas / Intervenções Utilizadas</label>
-      <textarea id="pr-tecnicas" rows="2" placeholder="Ex: TCC, reestruturação cognitiva, mindfulness...">${r.tecnicas||''}</textarea>
+      <textarea id="pr-tecnicas" rows="2" spellcheck="true" lang="pt-BR" placeholder="Ex: TCC, reestruturação cognitiva, mindfulness...">${r.tecnicas||''}</textarea>
     </div>
     <div class="form-group">
       <label>Tarefas / Homework</label>
-      <textarea id="pr-tarefas" rows="2" placeholder="Atividades propostas para a próxima semana...">${r.tarefas||''}</textarea>
+      <textarea id="pr-tarefas" rows="2" spellcheck="true" lang="pt-BR" placeholder="Atividades propostas para a próxima semana...">${r.tarefas||''}</textarea>
     </div>
   `;
 }
