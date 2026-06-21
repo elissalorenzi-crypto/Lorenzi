@@ -500,7 +500,7 @@ async function openModalAgendamento(ag = null, dataPreset = null, pacienteIdPres
       closeModal();
       if (_currentSection === 'agenda')    fetchAgendaSemana();
       if (_currentSection === 'dashboard') loadDashboard();
-      if (_currentSection === 'financeiro') loadFinanceiro();
+      loadFinanceiro();
     } catch(e) { toast(e.message, 'error'); }
   });
 }
@@ -521,6 +521,7 @@ async function deleteAgendamentoItem(id) {
   await api('DELETE', `/agendamentos/${id}`);
   toast('Agendamento removido');
   fetchAgendaSemana();
+  loadFinanceiro();
 }
 
 async function marcarRealizado(id) {
@@ -530,6 +531,7 @@ async function marcarRealizado(id) {
   await api('PUT', `/agendamentos/${id}`, { ...ag, status: 'realizado' });
   toast('Sessão finalizada ✓');
   fetchAgendaSemana();
+  loadFinanceiro();
 }
 
 async function openModalGerenciarAgenda() {
@@ -586,6 +588,7 @@ async function openModalGerenciarAgenda() {
     toast(`${salvos} sessão(ões) atualizada(s)! 🌸`);
     closeModal();
     fetchAgendaSemana();
+    loadFinanceiro();
   }, { saveLabel: '💾 Salvar Alterações' });
 }
 
@@ -618,6 +621,7 @@ async function gerExcluir(i, id) {
     }
     toast('Sessão excluída');
     fetchAgendaSemana();
+    loadFinanceiro();
   } catch(e) { toast(e.message, 'error'); }
 }
 
@@ -966,6 +970,7 @@ async function alterarStatusCliente(id, novoAtivoStr, selectEl) {
 
   loadPacientes();
   fetchAgendaSemana();
+  loadFinanceiro();
 }
 
 // ============================================================
