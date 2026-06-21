@@ -387,7 +387,7 @@ tbody tr:hover { background: var(--rose-pale); }
 .day-col {
   border-radius: var(--radius);
   border: 1.5px solid var(--border);
-  overflow: hidden;
+  overflow: visible;
   transition: box-shadow .15s;
   background: var(--card);
 }
@@ -397,6 +397,8 @@ tbody tr:hover { background: var(--rose-pale); }
   text-align: center;
   border-bottom: 1px solid var(--border);
   background: #faf5fb;
+  border-radius: var(--radius) var(--radius) 0 0;
+  overflow: hidden;
 }
 .day-col.today .day-header { background: linear-gradient(135deg, var(--rose), var(--lavender)); color: #fff; }
 .day-name { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); }
@@ -455,7 +457,7 @@ tbody tr:hover { background: var(--rose-pale); }
 .appt-btn-zoom:hover { color: #1a6ff4; background: #e8f0fe; }
 .appt-btn-zoom-ok   { color: #fff !important; background: #1a6ff4 !important; }
 
-.zoom-menu-wrap { position: relative; display: inline-flex; }
+.zoom-menu-wrap { position: relative; display: inline-flex; vertical-align: middle; }
 .zoom-menu {
   display: none;
   position: absolute;
@@ -464,9 +466,9 @@ tbody tr:hover { background: var(--rose-pale); }
   background: #fff;
   border: 1.5px solid var(--border);
   border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0,0,0,.13);
-  min-width: 148px;
-  z-index: 999;
+  box-shadow: 0 8px 24px rgba(0,0,0,.18);
+  min-width: 172px;
+  z-index: 1200;
   overflow: hidden;
 }
 .zoom-menu.open { display: block; }
