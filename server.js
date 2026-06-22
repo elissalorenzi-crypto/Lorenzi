@@ -394,7 +394,8 @@ app.get('/api/convites', (req, res) => res.json(db.getConvites()));
 
 app.post('/api/convites', (req, res) => {
   try {
-    const token = db.createConvite(req.body.nome_paciente);
+    const { nome_paciente, valor, data_inicio } = req.body;
+    const token = db.createConvite(nome_paciente, valor, data_inicio);
     const base  = `${req.protocol}://${req.get('host')}`;
     res.json({ token, link: `${base}/contratos/?token=${token}`, success: true });
   } catch(e) { erro(res, e); }

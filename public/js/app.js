@@ -2242,6 +2242,7 @@ async function loadContratos() {
   renderLinksAgenda(linksAgenda);
   renderConvitesPendentes(convites);
   filtrarContratos();
+  renderModeloPreview();
   // Marca todos como vistos e limpa badge/dashboard
   try {
     await api('POST', '/contratos/marcar-vistos');
@@ -2329,40 +2330,22 @@ function calcularDatas(inicio, diaSemana, qtd) {
 
 async function novoConvite() {
   openModal('Novo Contrato', `
-    <div class="form-group" style="margin-bottom:12px">
-      <label>Nome do Cliente</label>
+    <div class="form-group" style="margin-bottom:14px">
+      <label>Nome completo do cliente</label>
       <input type="text" id="conv-nome" placeholder="Nome completo" autofocus>
     </div>
-    <hr style="border:none;border-top:1px solid var(--border);margin:14px 0 12px">
-    <div style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:10px">📅 Sessões na agenda (opcional)</div>
     <div class="form-grid">
-      <div class="form-group">
-        <label>Dia da semana</label>
-        <select id="conv-dia">
-          <option value="">— Não agendar —</option>
-          <option value="1">Segunda-feira</option>
-          <option value="2">Terça-feira</option>
-          <option value="3">Quarta-feira</option>
-          <option value="4">Quinta-feira</option>
-          <option value="5">Sexta-feira</option>
-          <option value="6">Sábado</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Horário</label>
-        <input type="time" id="conv-hora" value="09:00">
-      </div>
       <div class="form-group">
         <label>Data de início</label>
         <input type="date" id="conv-inicio" value="${HOJE()}">
       </div>
       <div class="form-group">
-        <label>Qtd. de sessões</label>
-        <input type="number" id="conv-qtd" min="1" max="30" placeholder="Ex: 8">
+        <label>Valor da sessão (R$)</label>
+        <input type="number" id="conv-valor" placeholder="Ex: 350,00" min="0" step="0.01">
       </div>
     </div>
-    <div id="conv-link-box" style="display:none;margin-top:16px">
-      <div style="font-size:12px;font-weight:700;color:var(--text-mid);margin-bottom:6px">Link gerado:</div>
+    <div id="conv-link-box" style="display:none;margin-top:18px">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px">Link gerado (envie ao cliente):</div>
       <div style="display:flex;gap:8px;align-items:center">
         <input type="text" id="conv-link-input" readonly style="flex:1;font-size:12px;background:#f5f0fa">
         <button class="btn btn-primary btn-sm" onclick="copiarLinkGerado()">📋 Copiar</button>
@@ -2370,23 +2353,28 @@ async function novoConvite() {
       <p style="font-size:12px;color:var(--muted);margin-top:8px">⏱ Válido por 7 dias · uso único</p>
     </div>
   `, async () => {
-    const nome   = document.getElementById('conv-nome')?.value.trim();
+    const nome  = document.getElementById('conv-nome')?.value.trim();
     if (!nome) return toast('Informe o nome do cliente', 'error');
-
-    const dia    = parseInt(document.getElementById('conv-dia')?.value) || 0;
-    const hora   = document.getElementById('conv-hora')?.value;
-    const inicio = document.getElementById('conv-inicio')?.value;
-    const qtd    = parseInt(document.getElementById('conv-qtd')?.value) || 0;
-    const agendarSessoes = dia && hora && inicio && qtd > 0;
+    const valor      = parseFloat(document.getElementById('conv-valor')?.value) || 0;
+    const data_inicio = document.getElementById('conv-inicio')?.value;
 
     try {
-      const res = await api('POST', '/convites', { nome_paciente: nome });
+      const res = await api('POST', '/convites', { nome_paciente: nome, valor, data_inicio });
       document.getElementById('conv-link-input').value = res.link;
       document.getElementById('conv-link-box').style.display = 'block';
       document.getElementById('modal-save-btn').style.display = 'none';
       navigator.clipboard.writeText(res.link).catch(() => {});
+      toast('Link gerado e copiado! 📋');
+      loadContratos();
+    } catch(e) { toast(e.message, 'error'); }
+  }, { saveLabel: 'Gerar Link' });
+}
 
-      if (agendarSessoes) {
+// ── versão antiga do corpo que tinha agendamento automático (mantida para referência) ──
+async function _novoConviteLegado_agendarSessoes(nome, inicio, dia, hora, qtd) {
+    try {
+        const agendarSessoes = dia && hora && inicio && qtd > 0;
+        if (agendarSessoes) {
         // Cria ou localiza o paciente
         const todos = await api('GET', '/pacientes');
         let pac = todos.find(p => p.nome.toLowerCase() === nome.toLowerCase());
@@ -2408,19 +2396,189 @@ async function novoConvite() {
             criadas++;
           } catch(e) {}
         }
-        toast(`Link gerado + ${criadas} sessão(ões) agendada(s)!`);
-      } else {
-        toast('Link gerado e copiado! 📋');
+        toast(`${criadas} sessão(ões) agendada(s)!`);
       }
-
-      loadContratos();
     } catch(e) { toast(e.message, 'error'); }
-  }, { saveLabel: 'Gerar Link' });
 }
 
 function copiarLinkGerado() {
   const link = document.getElementById('conv-link-input')?.value;
   if (link) navigator.clipboard.writeText(link).then(() => toast('Link copiado! 📋'));
+}
+
+// ── Modelo do contrato ────────────────────────────────────────
+const MODELO_DEFAULT = {
+  intro: `Seja bem-vindo(a)!\n\nApresento aqui algumas informações importantes para darmos início ao seu processo de Orientação Profissional e de Carreira.\n\nEssas informações têm como objetivo auxiliar o processo, deixando claros os acordos necessários para um bom funcionamento do nosso trabalho em conjunto.\n\nPeço que leia com atenção cada ponto e sinalize com "ciente" caso esteja de acordo. Caso tenha alguma dúvida, fique à vontade para entrar em contato.\n\nAo final deste termo você encontrará algumas perguntas sobre seus dados pessoais. Essas informações são importantes para o seu prontuário, bem como para emissão de notas fiscais referentes aos serviços prestados.`,
+  secoes: [
+    { titulo: "Sobre o Processo de Orientação Profissional e de Carreira", itens: [
+      "O foco específico do processo de orientação profissional e de carreira será definido durante a primeira sessão, a partir da compreensão das necessidades, expectativas, momento profissional e objetivos apresentados pelo(a) cliente. A partir desse levantamento inicial, será elaborado um plano de trabalho personalizado, que poderá ser ajustado ao longo do acompanhamento conforme a evolução do processo e o surgimento de novas demandas.",
+      "Por se tratar de um serviço psicológico, não há garantia ou promessa de resultados específicos. O resultado do processo está diretamente relacionado ao comprometimento e à participação ativa do contratante nas reflexões e atividades propostas."
+    ]},
+    { titulo: "Sobre as Sessões", itens: [
+      "A frequência do processo será acordada entre as partes, preferencialmente acontecerá semanal, uma vez por semana.",
+      "Havendo necessidade, a frequência dos encontros semanais poderá ser aumentada ou espaçada, sendo isso previamente combinado entre as partes.",
+      "Cada sessão terá duração de 50 minutos, sendo realizada em horário previamente combinado.",
+      "O número de sessões pode variar de acordo com a necessidade do cliente, o nível de maturidade em relação ao objetivo trabalhado e a evolução do cliente ao longo das etapas."
+    ]},
+    { titulo: "Sigilo e Confidencialidade", itens: [
+      "Todas as informações compartilhadas durante o processo são protegidas pelo sigilo profissional, conforme o Código de Ética Profissional do Psicólogo.",
+      "O sigilo poderá ser quebrado apenas nas situações previstas legalmente e pelo Código de Ética Profissional do Psicólogo.",
+      "Caso seja necessário contato com familiares, responsáveis ou outros profissionais, ocorrerá somente com consentimento do cliente, exceto nas situações previstas em lei."
+    ]},
+    { titulo: "Horários, Desmarcações e Remarcações", itens: [
+      "O horário das sessões será previamente combinado entre as partes.",
+      "Cancelamentos ou pedidos de alteração deverão ocorrer com antecedência mínima de 24 horas.",
+      "Quando avisadas dentro desse prazo, as sessões poderão ser remarcadas conforme disponibilidade de agenda.",
+      "Mudanças de horário estarão sujeitas à disponibilidade da agenda."
+    ]},
+    { titulo: "Faltas", itens: [
+      "Sessões canceladas com menos de 24 horas de antecedência serão cobradas normalmente.",
+      "Sessões em que houver ausência sem aviso prévio serão cobradas normalmente.",
+      "Situações excepcionais, como problemas de saúde, instabilidade de internet ou outras intercorrências relevantes, serão avaliadas individualmente."
+    ]},
+    { titulo: "Honorários", itens: [
+      "O valor da sessão será definido no momento da contratação e informado no link enviado ao cliente.",
+      "O pagamento poderá ocorrer por sessão — realizado no mesmo dia da sessão — ou de forma mensal, em parcela única até o 5º dia útil do mês em que ocorrerão as sessões.",
+      "O pagamento deverá ser realizado via Pix, transferência ou depósito bancário.",
+      "Os dados para pagamento serão disponibilizados pela psicóloga."
+    ]},
+    { titulo: "Atividades Entre Sessões", itens: [
+      "Algumas etapas do processo poderão incluir pesquisas, leituras, exercícios, entrevistas com profissionais ou outras atividades relacionadas à construção do projeto profissional.",
+      "A qualidade das reflexões e decisões construídas durante o processo depende também da realização dessas atividades.",
+      "O comprometimento com as atividades propostas contribui para um melhor aproveitamento do processo."
+    ]},
+    { titulo: "Encerramento do Processo", itens: [
+      "O processo poderá ser encerrado por qualquer das partes mediante comunicação prévia.",
+      "Caso o encerramento seja realizado por iniciativa do cliente, não haverá devolução de valores referentes a sessões já realizadas ou pagamentos já efetuados.",
+      "Sempre que possível, o encerramento será realizado de forma planejada e discutido durante os encontros."
+    ]}
+  ]
+};
+
+function _getModelo() {
+  const raw = _config?.modelo_contrato;
+  if (!raw) return MODELO_DEFAULT;
+  try { return JSON.parse(raw); } catch(_) { return MODELO_DEFAULT; }
+}
+
+function renderModeloPreview() {
+  const el = document.getElementById('contrato-modelo-preview');
+  if (!el) return;
+  const m = _getModelo();
+  const introHtml = (m.intro || '').split('\n\n').map(p =>
+    `<p style="margin-bottom:12px;font-size:14px;color:#5a3a5a;line-height:1.75">${p.replace(/\n/g,'<br>')}</p>`
+  ).join('');
+  const secoesHtml = (m.secoes || []).map((s, si) => `
+    <div style="margin-bottom:22px">
+      <div style="font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:var(--rose,#c2657a);background:linear-gradient(90deg,#fce8f2,#fff);padding:7px 12px;border-left:3px solid var(--rose,#c2657a);border-radius:4px;margin-bottom:10px">
+        ${s.titulo}
+      </div>
+      <ol type="a" style="padding-left:20px">
+        ${(s.itens||[]).map(it => `<li style="font-size:13.5px;color:#3d2b3d;margin-bottom:8px;line-height:1.65">${it}</li>`).join('')}
+      </ol>
+    </div>
+  `).join('');
+  el.innerHTML = `
+    <div style="background:#fdf6fb;border-left:4px solid #d4869b;border-radius:0 8px 8px 0;padding:16px 20px;margin-bottom:22px">
+      ${introHtml}
+    </div>
+    ${secoesHtml}
+  `;
+}
+
+function editarModeloContrato() {
+  const m = _getModelo();
+  const renderSecaoEditor = (s, si) => `
+    <div class="secao-bloco" data-si="${si}" style="background:#fafafa;border:1.5px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <input class="sec-titulo-inp" type="text" value="${s.titulo.replace(/"/g,'&quot;')}"
+          style="flex:1;font-weight:700;font-size:13px;padding:7px 10px;border:1.5px solid var(--border);border-radius:7px">
+        <button class="btn btn-ghost btn-xs" style="color:var(--red,#c0425d)" onclick="removerSecao(this)" title="Remover seção">🗑</button>
+      </div>
+      <div class="itens-lista">
+        ${(s.itens||[]).map((it,ii) => renderItemEditor(it, si, ii)).join('')}
+      </div>
+      <button class="btn btn-outline btn-xs" style="margin-top:8px" onclick="addItem(this)">+ Adicionar item</button>
+    </div>
+  `;
+  const renderItemEditor = (txt, si, ii) => `
+    <div class="item-bloco" style="display:flex;gap:6px;margin-bottom:8px;align-items:flex-start">
+      <textarea class="item-txt" rows="3"
+        style="flex:1;font-size:13px;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;resize:vertical;line-height:1.6"
+      >${txt.replace(/</g,'&lt;')}</textarea>
+      <button class="btn btn-ghost btn-xs" style="color:var(--red,#c0425d);margin-top:4px" onclick="removerItem(this)">×</button>
+    </div>
+  `;
+  const html = `
+    <div style="max-height:65vh;overflow-y:auto;padding-right:4px">
+      <div style="margin-bottom:16px">
+        <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);display:block;margin-bottom:6px">Texto de introdução</label>
+        <textarea id="mod-intro" rows="8" style="width:100%;font-size:13px;padding:10px;border:1.5px solid var(--border);border-radius:8px;resize:vertical;line-height:1.65">${m.intro||''}</textarea>
+      </div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:10px">Cláusulas</div>
+      <div id="secoes-editor">
+        ${(m.secoes||[]).map((s,si) => renderSecaoEditor(s,si)).join('')}
+      </div>
+      <button class="btn btn-outline btn-sm" style="width:100%;margin-top:4px" onclick="addSecao()">+ Nova seção</button>
+    </div>
+  `;
+  openModal('✏️ Editar Modelo do Contrato', html, salvarModeloContrato, { saveLabel: 'Salvar Modelo', wide: true });
+}
+
+function addSecao() {
+  const ed = document.getElementById('secoes-editor');
+  const si = ed.querySelectorAll('.secao-bloco').length;
+  const div = document.createElement('div');
+  div.className = 'secao-bloco';
+  div.dataset.si = si;
+  div.style.cssText = 'background:#fafafa;border:1.5px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px';
+  div.innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <input class="sec-titulo-inp" type="text" value="Nova Seção"
+        style="flex:1;font-weight:700;font-size:13px;padding:7px 10px;border:1.5px solid var(--border);border-radius:7px">
+      <button class="btn btn-ghost btn-xs" style="color:var(--red,#c0425d)" onclick="removerSecao(this)">🗑</button>
+    </div>
+    <div class="itens-lista"></div>
+    <button class="btn btn-outline btn-xs" style="margin-top:8px" onclick="addItem(this)">+ Adicionar item</button>
+  `;
+  ed.appendChild(div);
+}
+
+function addItem(btn) {
+  const lista = btn.closest('.secao-bloco').querySelector('.itens-lista');
+  const div = document.createElement('div');
+  div.className = 'item-bloco';
+  div.style.cssText = 'display:flex;gap:6px;margin-bottom:8px;align-items:flex-start';
+  div.innerHTML = `
+    <textarea class="item-txt" rows="2"
+      style="flex:1;font-size:13px;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;resize:vertical;line-height:1.6"
+    ></textarea>
+    <button class="btn btn-ghost btn-xs" style="color:var(--red,#c0425d);margin-top:4px" onclick="removerItem(this)">×</button>
+  `;
+  lista.appendChild(div);
+  div.querySelector('textarea').focus();
+}
+
+function removerItem(btn) {
+  btn.closest('.item-bloco').remove();
+}
+
+function removerSecao(btn) {
+  if (!confirm('Remover esta seção?')) return;
+  btn.closest('.secao-bloco').remove();
+}
+
+async function salvarModeloContrato() {
+  const intro = document.getElementById('mod-intro')?.value || '';
+  const secoes = [...document.querySelectorAll('#secoes-editor .secao-bloco')].map(bloco => ({
+    titulo: bloco.querySelector('.sec-titulo-inp')?.value.trim() || '',
+    itens: [...bloco.querySelectorAll('.item-txt')].map(t => t.value.trim()).filter(Boolean)
+  }));
+  const modelo = { intro, secoes };
+  await api('POST', '/configuracoes', { modelo_contrato: JSON.stringify(modelo) });
+  if (_config) _config.modelo_contrato = JSON.stringify(modelo);
+  toast('Modelo salvo!');
+  renderModeloPreview();
 }
 
 function filtrarContratos() {

@@ -13,6 +13,8 @@ const rid = (r) => Number(r.lastInsertRowid);
 const migrations = [
   "ALTER TABLE pacientes ADD COLUMN apelido TEXT",
   "ALTER TABLE contratos ADD COLUMN valor_sessao REAL DEFAULT 0",
+  "ALTER TABLE convites ADD COLUMN valor REAL DEFAULT 0",
+  "ALTER TABLE convites ADD COLUMN data_inicio TEXT",
 ];
 for (const m of migrations) {
   try { db.exec(m); } catch(_) {}
@@ -439,12 +441,12 @@ const marcarContratosVistos = () => db.prepare('UPDATE contratos SET visto=1 WHE
 // ============================================================
 const crypto = require('crypto');
 
-const createConvite = (nome_paciente) => {
+const createConvite = (nome_paciente, valor = 0, data_inicio = null) => {
   const token = crypto.randomBytes(16).toString('hex');
   rid(db.prepare(`
-    INSERT INTO convites (token, nome_paciente, expires_at)
-    VALUES (?, ?, datetime('now', '+7 days', 'localtime'))
-  `).run(token, nome_paciente || null));
+    INSERT INTO convites (token, nome_paciente, valor, data_inicio, expires_at)
+    VALUES (?, ?, ?, ?, datetime('now', '+7 days', 'localtime'))
+  `).run(token, nome_paciente || null, valor || 0, data_inicio || null));
   return token;
 };
 
