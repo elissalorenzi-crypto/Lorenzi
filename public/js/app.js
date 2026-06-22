@@ -1687,12 +1687,134 @@ function exportarRelatorioCSV() {
       Number(r.total_sessoes ? r.receita_total / r.total_sessoes : 0).toFixed(2).replace('.', ',')
     ])
   ];
-  const csv = linhas.map(l => l.join(';')).join('\n');
+  _downloadCSV(linhas, 'relatorio_geral');
+}
+
+// ── Filtros ───────────────────────────────────────────────────
+let _relFiltradoData = null;
+
+function _downloadCSV(linhas, nome) {
+  const csv = linhas.map(l => l.map(c => `"${String(c).replace(/"/g, '""')}"`).join(';')).join('\n');
   const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href = url;
-  a.download = `relatorio_sessoes_${new Date().toISOString().slice(0,10)}.csv`;
+  a.download = `${nome}_${new Date().toISOString().slice(0,10)}.csv`;
   a.click(); URL.revokeObjectURL(url);
+}
+
+function toggleFiltroRel() {
+  const p = document.getElementById('rel-filtro-painel');
+  const aberto = p.style.display !== 'none';
+  p.style.display = aberto ? 'none' : 'block';
+  if (!aberto) preencherSelectClientes();
+}
+
+async function preencherSelectClientes() {
+  const sel = document.getElementById('fil-cliente');
+  if (sel.options.length > 1) return;
+  const pacs = await api('GET', '/pacientes');
+  pacs.filter(p => p.ativo).sort((a,b) => a.nome.localeCompare(b.nome)).forEach(p => {
+    const o = document.createElement('option');
+    o.value = p.id;
+    o.textContent = p.nome + (p.apelido ? ` (${p.apelido})` : '');
+    sel.appendChild(o);
+  });
+}
+
+function limparFiltroRel() {
+  document.getElementById('fil-cliente').value = '';
+  document.getElementById('fil-data-ini').value = '';
+  document.getElementById('fil-data-fim').value = '';
+  document.getElementById('fil-status').value = '';
+  document.getElementById('rel-filtrado-resultado').style.display = 'none';
+  document.getElementById('btn-export-filtrado').style.display = 'none';
+  _relFiltradoData = null;
+}
+
+async function gerarRelatorioFiltrado() {
+  const paciente_id = document.getElementById('fil-cliente').value;
+  const data_ini    = document.getElementById('fil-data-ini').value;
+  const data_fim    = document.getElementById('fil-data-fim').value;
+  const status      = document.getElementById('fil-status').value;
+
+  const params = new URLSearchParams();
+  if (paciente_id) params.set('paciente_id', paciente_id);
+  if (data_ini)    params.set('data_ini', data_ini);
+  if (data_fim)    params.set('data_fim', data_fim);
+  if (status)      params.set('status', status);
+
+  const d = await api('GET', `/relatorios/filtrado?${params}`);
+  _relFiltradoData = d;
+
+  const resultado = document.getElementById('rel-filtrado-resultado');
+  resultado.style.display = 'block';
+  document.getElementById('btn-export-filtrado').style.display = '';
+  resultado.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // Título dinâmico
+  const nomePac = document.getElementById('fil-cliente').selectedOptions[0]?.text || 'Todos os clientes';
+  const periodoTxt = data_ini || data_fim
+    ? ` | ${data_ini ? data_ini.split('-').reverse().join('/') : '...'} → ${data_fim ? data_fim.split('-').reverse().join('/') : '...'}`
+    : '';
+  const statusTxt = status ? ` | ${status}` : '';
+  document.getElementById('rel-filtrado-titulo').textContent =
+    `📋 ${nomePac}${periodoTxt}${statusTxt}`;
+
+  // Cards de resumo
+  const t = d.totais;
+  document.getElementById('rel-filtrado-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-value">${t.total}</div><div class="stat-label">Total de Sessões</div></div>
+    <div class="stat-card"><div class="stat-value">${t.realizadas}</div><div class="stat-label">Realizadas</div></div>
+    <div class="stat-card"><div class="stat-value">${t.canceladas}</div><div class="stat-label">Canceladas</div></div>
+    <div class="stat-card"><div class="stat-value">${brl(t.receita_total)}</div><div class="stat-label">Receita Total</div></div>
+    <div class="stat-card"><div class="stat-value">${brl(t.receita_paga)}</div><div class="stat-label">Receita Paga</div></div>
+  `;
+
+  const statusBadge = {
+    realizado: 'badge-confirmado', agendado: 'badge-agendado',
+    cancelado: 'badge-cancelado',  remarcado: 'badge-remarcado'
+  };
+
+  // Tabela detalhada
+  document.getElementById('rel-filtrado-tbody').innerHTML = d.sessoes.length
+    ? d.sessoes.map(s => {
+        const [a,m,di] = (s.data || '').split('-');
+        const dataFmt = di ? `${di}/${m}/${a}` : '—';
+        return `
+          <tr>
+            <td style="white-space:nowrap"><strong>${dataFmt}</strong></td>
+            <td>${s.hora || '—'}</td>
+            <td>${s.paciente_apelido || s.paciente_nome}</td>
+            <td>${s.tipo || '—'}</td>
+            <td><span class="badge ${statusBadge[s.status] || ''}">${s.status || '—'}</span></td>
+            <td class="text-right">${s.valor ? brl(s.valor) : '—'}</td>
+            <td style="text-align:center">${s.pago ? '✅' : '—'}</td>
+          </tr>`;
+      }).join('')
+    : `<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">Nenhuma sessão encontrada com esses filtros.</td></tr>`;
+
+  document.getElementById('rel-filtrado-rodape').textContent =
+    `${d.sessoes.length} registro(s) encontrado(s)`;
+}
+
+function exportarFiltradoCSV() {
+  if (!_relFiltradoData) return;
+  const linhas = [
+    ['Data', 'Hora', 'Cliente', 'Tipo', 'Status', 'Valor (R$)', 'Pago'],
+    ..._relFiltradoData.sessoes.map(s => {
+      const [a,m,d] = (s.data || '').split('-');
+      return [
+        d ? `${d}/${m}/${a}` : '',
+        s.hora || '',
+        s.paciente_nome,
+        s.tipo || '',
+        s.status || '',
+        Number(s.valor || 0).toFixed(2).replace('.', ','),
+        s.pago ? 'Sim' : 'Não'
+      ];
+    })
+  ];
+  _downloadCSV(linhas, 'relatorio_filtrado');
 }
 
 async function loadFinanceiro() {

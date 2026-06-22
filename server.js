@@ -135,6 +135,11 @@ app.get('/api/relatorios', (req, res) => {
   catch(e) { erro(res, e); }
 });
 
+app.get('/api/relatorios/filtrado', (req, res) => {
+  try { res.json(db.getRelatorioFiltrado(req.query)); }
+  catch(e) { erro(res, e); }
+});
+
 // ── FINANCEIRO ───────────────────────────────────────────────
 app.get('/api/financeiro', (req, res) => {
   const now = new Date();

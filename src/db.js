@@ -553,6 +553,34 @@ const getProjecaoRecorrente = () => {
 // ============================================================
 // RELATÓRIOS
 // ============================================================
+const getRelatorioFiltrado = ({ paciente_id, data_ini, data_fim, status } = {}) => {
+  const conds = [];
+  const params = [];
+  if (paciente_id) { conds.push('a.paciente_id = ?'); params.push(paciente_id); }
+  if (data_ini)    { conds.push('a.data >= ?');        params.push(data_ini); }
+  if (data_fim)    { conds.push('a.data <= ?');        params.push(data_fim); }
+  if (status)      { conds.push('a.status = ?');       params.push(status); }
+
+  const where = conds.length ? 'WHERE ' + conds.join(' AND ') : '';
+
+  const sessoes = db.prepare(`
+    SELECT a.id, a.data, a.hora, a.tipo, a.status, a.valor, a.pago, a.forma_pgto, a.obs,
+           p.id as paciente_id, p.nome as paciente_nome, p.apelido as paciente_apelido
+    FROM agendamentos a JOIN pacientes p ON a.paciente_id = p.id
+    ${where}
+    ORDER BY a.data DESC, a.hora DESC
+  `).all(...params);
+
+  const totais = {
+    total: sessoes.length,
+    realizadas: sessoes.filter(s => s.status === 'realizado').length,
+    canceladas: sessoes.filter(s => s.status === 'cancelado').length,
+    receita_total: sessoes.filter(s => s.status === 'realizado').reduce((s, r) => s + (r.valor || 0), 0),
+    receita_paga:  sessoes.filter(s => s.pago).reduce((s, r) => s + (r.valor || 0), 0),
+  };
+
+  return { sessoes, totais };
+};
 const getRelatorios = () => {
   // Sessões por mês (últimos 12)
   const sessoesPorMes = db.prepare(`
@@ -659,7 +687,7 @@ module.exports = {
   getPacientes, getPacienteById, getPacienteByCpf, createPaciente, updatePaciente, deletePaciente,
   getAgendamentos, getAgendamentoById, createAgendamento, updateAgendamento, deleteAgendamento,
   getProntuarios, createProntuario, updateProntuario, deleteProntuario,
-  getDashboard, getFinanceiro, getPrevisaoPgto, getProjecaoRecorrente, getRelatorios, getConfig, setConfig,
+  getDashboard, getFinanceiro, getPrevisaoPgto, getProjecaoRecorrente, getRelatorios, getRelatorioFiltrado, getConfig, setConfig,
   getContratos, createContrato, updateContrato, deleteContrato, getContratosNovos, marcarContratosVistos,
   createLinkAgendamento, getLinkAgendamento, getLinksAgendamento, desativarLinkAgendamento,
   createConvite, getConvites, getConviteByToken, usarConvite, deleteConvite

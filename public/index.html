@@ -348,7 +348,79 @@
           <h2 style="font-size:20px;font-weight:700;color:var(--plum);margin-bottom:2px">📊 Relatórios e Indicadores</h2>
           <p style="font-size:13px;color:var(--muted)">Análise do consultório com gráficos e planilhas</p>
         </div>
-        <button class="btn btn-outline btn-sm" onclick="exportarRelatorioCSV()">⬇ Exportar CSV</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary btn-sm" onclick="toggleFiltroRel()">🔍 Filtrar</button>
+          <button class="btn btn-outline btn-sm" onclick="exportarRelatorioCSV()">⬇ Exportar CSV</button>
+        </div>
+      </div>
+
+      <!-- Painel de filtros -->
+      <div id="rel-filtro-painel" style="display:none;margin-bottom:20px">
+        <div class="card" style="border:2px solid var(--plum)">
+          <div class="card-header" style="background:linear-gradient(135deg,var(--plum)11,var(--lavender)22)">
+            <span class="card-title">🔍 Filtros do Relatório</span>
+            <button class="btn btn-ghost btn-xs" onclick="limparFiltroRel()" style="color:var(--muted)">✕ Limpar</button>
+          </div>
+          <div class="card-body">
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:16px;align-items:end;flex-wrap:wrap">
+              <div>
+                <label class="form-label">Cliente</label>
+                <select id="fil-cliente" style="width:100%">
+                  <option value="">Todos os clientes</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Data início</label>
+                <input type="date" id="fil-data-ini" style="width:100%">
+              </div>
+              <div>
+                <label class="form-label">Data fim</label>
+                <input type="date" id="fil-data-fim" style="width:100%">
+              </div>
+              <div>
+                <label class="form-label">Status</label>
+                <select id="fil-status" style="width:100%">
+                  <option value="">Todos</option>
+                  <option value="realizado">Realizado</option>
+                  <option value="agendado">Agendado</option>
+                  <option value="cancelado">Cancelado</option>
+                  <option value="remarcado">Remarcado</option>
+                </select>
+              </div>
+            </div>
+            <div style="margin-top:14px;display:flex;gap:8px">
+              <button class="btn btn-primary btn-sm" onclick="gerarRelatorioFiltrado()">▶ Gerar Relatório</button>
+              <button class="btn btn-outline btn-sm" onclick="exportarFiltradoCSV()" id="btn-export-filtrado" style="display:none">⬇ Exportar CSV</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resultado filtrado -->
+      <div id="rel-filtrado-resultado" style="display:none;margin-bottom:24px">
+        <div class="card" style="border-left:4px solid var(--plum)">
+          <div class="card-header">
+            <span class="card-title" id="rel-filtrado-titulo">Resultado do Filtro</span>
+          </div>
+          <div class="stats-row" id="rel-filtrado-stats" style="padding:16px 20px 0"></div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Hora</th>
+                  <th>Cliente</th>
+                  <th>Tipo</th>
+                  <th>Status</th>
+                  <th class="text-right">Valor</th>
+                  <th>Pago</th>
+                </tr>
+              </thead>
+              <tbody id="rel-filtrado-tbody"></tbody>
+            </table>
+          </div>
+          <div style="padding:10px 20px;font-size:12px;color:var(--muted)" id="rel-filtrado-rodape"></div>
+        </div>
       </div>
 
       <!-- Cards de resumo -->
