@@ -2172,59 +2172,12 @@ function renderContratosTable(data) {
         <td>${c.email || '—'}</td>
         <td>${c.celular || '—'}</td>
         <td>${c.forma_pgto ? `<span class="badge badge-confirmado">${pgtoLabel[c.forma_pgto] || c.forma_pgto}</span>` : '—'}</td>
-        <td style="white-space:nowrap">
-          <button class="btn btn-ghost btn-xs" onclick="editarContrato(${c.id})" title="Editar">✏️</button>
-          <button class="btn btn-ghost btn-xs" style="color:var(--red)" onclick="deleteContratoItem(${c.id})" title="Excluir">🗑</button>
+        <td>
+          <button class="btn btn-ghost btn-xs" style="color:var(--red)" onclick="deleteContratoItem(${c.id})">🗑</button>
         </td>
       </tr>
     `;
   }).join('');
-}
-
-function editarContrato(id) {
-  const c = _contratos.find(x => x.id === id);
-  if (!c) return;
-  const pgtoOpts = ['por sessão','mensal'].map(v =>
-    `<option value="${v}" ${c.forma_pgto === v ? 'selected' : ''}>${v === 'por sessão' ? 'Por Sessão' : 'Mensal'}</option>`
-  ).join('');
-  openModal('Editar Contrato', `
-    <div class="form-grid">
-      <div class="form-group full"><label>Nome completo *</label>
-        <input type="text" id="ec-nome" value="${c.nome||''}"></div>
-      <div class="form-group"><label>Data de Nascimento</label>
-        <input type="date" id="ec-nasc" value="${c.data_nascimento||''}"></div>
-      <div class="form-group"><label>CPF</label>
-        <input type="text" id="ec-cpf" value="${c.cpf||''}" placeholder="000.000.000-00"></div>
-      <div class="form-group"><label>E-mail</label>
-        <input type="email" id="ec-email" value="${c.email||''}"></div>
-      <div class="form-group"><label>Celular</label>
-        <input type="tel" id="ec-cel" value="${c.celular||''}"></div>
-      <div class="form-group full"><label>Endereço</label>
-        <input type="text" id="ec-end" value="${c.endereco||''}"></div>
-      <div class="form-group"><label>Forma de Pagamento</label>
-        <select id="ec-pgto"><option value="">—</option>${pgtoOpts}</select></div>
-      <div class="form-group"><label>Nome do Responsável</label>
-        <input type="text" id="ec-resp" value="${c.nome_responsavel||''}"></div>
-      <div class="form-group"><label>CPF do Responsável</label>
-        <input type="text" id="ec-cpfresp" value="${c.cpf_responsavel||''}"></div>
-    </div>
-  `, async () => {
-    const nome = document.getElementById('ec-nome').value.trim();
-    if (!nome) { toast('Nome obrigatório', 'error'); return; }
-    await api('PUT', `/contratos/${id}`, {
-      nome,
-      data_nascimento: document.getElementById('ec-nasc').value || null,
-      cpf:             document.getElementById('ec-cpf').value.trim() || null,
-      email:           document.getElementById('ec-email').value.trim() || null,
-      celular:         document.getElementById('ec-cel').value.trim() || null,
-      endereco:        document.getElementById('ec-end').value.trim() || null,
-      forma_pgto:      document.getElementById('ec-pgto').value || null,
-      nome_responsavel:document.getElementById('ec-resp').value.trim() || null,
-      cpf_responsavel: document.getElementById('ec-cpfresp').value.trim() || null,
-    });
-    toast('Contrato atualizado');
-    loadContratos();
-  });
 }
 
 async function deleteContratoItem(id) {

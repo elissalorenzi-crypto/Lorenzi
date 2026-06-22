@@ -495,11 +495,6 @@ app.post('/api/contratos/upload', upload.single('arquivo'), (req, res) => {
   } catch(e) { erro(res, e); }
 });
 
-app.put('/api/contratos/:id', (req, res) => {
-  try { db.updateContrato(req.params.id, req.body); res.json({ success: true }); }
-  catch(e) { erro(res, e); }
-});
-
 app.delete('/api/contratos/:id', (req, res) => {
   try { db.deleteContrato(req.params.id); res.json({ success: true }); }
   catch(e) { erro(res, e); }
