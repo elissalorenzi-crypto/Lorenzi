@@ -1045,6 +1045,7 @@ tbody tr:hover { background: var(--rose-pale); }
 
   /* Grids helpers: 1 coluna */
   .grid-2col, .grid-dash-main, .grid-fin { grid-template-columns: 1fr; gap: 14px; }
+  #section-relatorios [style*="grid-template-columns:1fr 2fr 1fr"] { grid-template-columns: 1fr !important; }
   .grid-3col-stats { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
 
   /* Formulários */

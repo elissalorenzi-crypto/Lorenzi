@@ -550,11 +550,116 @@ const getProjecaoRecorrente = () => {
   return { totalSemana, totalMes, itens };
 };
 
+// ============================================================
+// RELATÓRIOS
+// ============================================================
+const getRelatorios = () => {
+  // Sessões por mês (últimos 12)
+  const sessoesPorMes = db.prepare(`
+    SELECT strftime('%Y-%m', data) as mes, COUNT(*) as total
+    FROM agendamentos WHERE status='realizado'
+    GROUP BY mes ORDER BY mes DESC LIMIT 12
+  `).all().reverse();
+
+  // Receita por mês (últimos 12)
+  const receitaPorMes = db.prepare(`
+    SELECT strftime('%Y-%m', data) as mes, ROUND(SUM(COALESCE(valor,0)),2) as receita
+    FROM agendamentos WHERE pago=1
+    GROUP BY strftime('%Y-%m', data) ORDER BY mes DESC LIMIT 12
+  `).all().reverse();
+
+  // Sessões por dia da semana (0=dom ... 6=sab)
+  const sessoesPorDia = db.prepare(`
+    SELECT CAST(strftime('%w', data) AS INTEGER) as dia, COUNT(*) as total
+    FROM agendamentos WHERE status='realizado'
+    GROUP BY dia ORDER BY dia
+  `).all();
+
+  // Sessões por hora
+  const sessoesPorHora = db.prepare(`
+    SELECT substr(hora,1,2) as hora_n, COUNT(*) as total
+    FROM agendamentos WHERE status='realizado' AND hora IS NOT NULL
+    GROUP BY hora_n ORDER BY hora_n
+  `).all();
+
+  // Status das sessões
+  const statusSessoes = db.prepare(`
+    SELECT COALESCE(status,'sem status') as status, COUNT(*) as total
+    FROM agendamentos GROUP BY status
+  `).all();
+
+  // Clientes por gênero
+  const porGenero = db.prepare(`
+    SELECT COALESCE(sexo,'Não informado') as sexo, COUNT(*) as total
+    FROM pacientes WHERE ativo=1 GROUP BY sexo
+  `).all();
+
+  // Clientes por faixa etária (baseado em data_nascimento)
+  const nascimentos = db.prepare(`
+    SELECT data_nascimento FROM pacientes WHERE ativo=1 AND data_nascimento IS NOT NULL AND data_nascimento != ''
+  `).all();
+  const anoAtual = new Date().getFullYear();
+  const faixas = { '0-12': 0, '13-17': 0, '18-29': 0, '30-49': 0, '50-64': 0, '65+': 0 };
+  for (const { data_nascimento } of nascimentos) {
+    const ano = parseInt((data_nascimento || '').split('-')[0]);
+    if (!ano) continue;
+    const idade = anoAtual - ano;
+    if (idade <= 12) faixas['0-12']++;
+    else if (idade <= 17) faixas['13-17']++;
+    else if (idade <= 29) faixas['18-29']++;
+    else if (idade <= 49) faixas['30-49']++;
+    else if (idade <= 64) faixas['50-64']++;
+    else faixas['65+']++;
+  }
+  const porIdade = Object.entries(faixas).map(([faixa, total]) => ({ faixa, total }));
+
+  // Top clientes por sessões (top 10)
+  const topClientes = db.prepare(`
+    SELECT p.nome, p.apelido, COUNT(a.id) as total_sessoes,
+           ROUND(SUM(COALESCE(a.valor,0)),2) as receita_total
+    FROM agendamentos a JOIN pacientes p ON a.paciente_id=p.id
+    WHERE a.status='realizado'
+    GROUP BY a.paciente_id ORDER BY total_sessoes DESC LIMIT 10
+  `).all();
+
+  // Sessões por semana (últimas 8)
+  const sessoesPorSemana = db.prepare(`
+    SELECT strftime('%Y-W%W', data) as semana, COUNT(*) as total,
+           ROUND(SUM(COALESCE(valor,0)),2) as receita
+    FROM agendamentos WHERE status='realizado'
+    GROUP BY semana ORDER BY semana DESC LIMIT 8
+  `).all().reverse();
+
+  // Totais gerais
+  const totais = db.prepare(`
+    SELECT
+      COUNT(*) as total_sessoes,
+      ROUND(SUM(CASE WHEN pago=1 THEN COALESCE(valor,0) ELSE 0 END),2) as receita_total,
+      ROUND(SUM(COALESCE(valor,0)),2) as receita_prevista
+    FROM agendamentos WHERE status='realizado'
+  `).get();
+
+  const totalClientes = db.prepare(`SELECT COUNT(*) as total FROM pacientes WHERE ativo=1`).get();
+
+  const mediaSemana = db.prepare(`
+    SELECT ROUND(AVG(c),2) as media FROM (
+      SELECT COUNT(*) as c FROM agendamentos WHERE status='realizado'
+      GROUP BY strftime('%Y-%W', data)
+    )
+  `).get();
+
+  return {
+    sessoesPorMes, receitaPorMes, sessoesPorDia, sessoesPorHora,
+    statusSessoes, porGenero, porIdade, topClientes, sessoesPorSemana,
+    totais, totalClientes: totalClientes.total, mediaSemana: mediaSemana?.media || 0,
+  };
+};
+
 module.exports = {
   getPacientes, getPacienteById, getPacienteByCpf, createPaciente, updatePaciente, deletePaciente,
   getAgendamentos, getAgendamentoById, createAgendamento, updateAgendamento, deleteAgendamento,
   getProntuarios, createProntuario, updateProntuario, deleteProntuario,
-  getDashboard, getFinanceiro, getPrevisaoPgto, getProjecaoRecorrente, getConfig, setConfig,
+  getDashboard, getFinanceiro, getPrevisaoPgto, getProjecaoRecorrente, getRelatorios, getConfig, setConfig,
   getContratos, createContrato, updateContrato, deleteContrato, getContratosNovos, marcarContratosVistos,
   createLinkAgendamento, getLinkAgendamento, getLinksAgendamento, desativarLinkAgendamento,
   createConvite, getConvites, getConviteByToken, usarConvite, deleteConvite

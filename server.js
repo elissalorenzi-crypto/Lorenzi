@@ -129,6 +129,12 @@ app.delete('/api/prontuarios/:id', (req, res) => {
   catch(e) { erro(res, e); }
 });
 
+// ── RELATÓRIOS ───────────────────────────────────────────────
+app.get('/api/relatorios', (req, res) => {
+  try { res.json(db.getRelatorios()); }
+  catch(e) { erro(res, e); }
+});
+
 // ── FINANCEIRO ───────────────────────────────────────────────
 app.get('/api/financeiro', (req, res) => {
   const now = new Date();

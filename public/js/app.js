@@ -92,6 +92,7 @@ function navigate(name) {
     pacientes:    loadPacientes,
     prontuarios:  loadProntuariosPage,
     biblioteca:   bibRenderHome,
+    relatorios:   loadRelatorios,
     financeiro:   loadFinanceiro,
     configuracoes:loadConfiguracoes
   };
@@ -1530,6 +1531,168 @@ function renderTabPgto() {
         </tbody>
       </table>
     </div>`;
+}
+
+// ─── RELATÓRIOS ──────────────────────────────────────────────
+const _relCharts = {};
+
+function relDestroyChart(id) {
+  if (_relCharts[id]) { _relCharts[id].destroy(); delete _relCharts[id]; }
+}
+
+function relMkChart(id, type, labels, datasets, opts = {}) {
+  relDestroyChart(id);
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  _relCharts[id] = new Chart(ctx, {
+    type,
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: opts.legend ?? (type === 'pie' || type === 'doughnut') } },
+      scales: (type === 'pie' || type === 'doughnut') ? {} : {
+        x: { ticks: { font: { size: 11 } } },
+        y: { beginAtZero: true, ticks: { font: { size: 11 } } }
+      },
+      ...opts.extra
+    }
+  });
+}
+
+function brl(v) { return 'R$ ' + Number(v || 0).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+
+let _relData = null;
+
+async function loadRelatorios() {
+  _relData = await api('GET', '/relatorios');
+  const d = _relData;
+  const PLUM = '#7b5ea7', ROSE = '#d4869b', SAGE = '#8aab8e', LAVENDER = '#a9b4d8';
+  const COLORS6 = [PLUM, ROSE, SAGE, LAVENDER, '#c4945a', '#e8c8a0'];
+
+  // ── Cards de resumo ────────────────────────────────────────
+  document.getElementById('rel-stats').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-value">${d.totais?.total_sessoes ?? 0}</div>
+      <div class="stat-label">Sessões Realizadas</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">${d.totalClientes}</div>
+      <div class="stat-label">Clientes Ativos</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">${brl(d.totais?.receita_total)}</div>
+      <div class="stat-label">Receita Confirmada</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">${Number(d.mediaSemana || 0).toFixed(1)}</div>
+      <div class="stat-label">Média Sessões/Semana</div>
+    </div>
+  `;
+
+  // ── Sessões por mês ────────────────────────────────────────
+  const meses = d.sessoesPorMes.map(r => {
+    const [ano, mes] = r.mes.split('-');
+    return ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][parseInt(mes)-1] + '/' + ano.slice(2);
+  });
+  relMkChart('chart-sessoes-mes', 'line', meses,
+    [{ label: 'Sessões', data: d.sessoesPorMes.map(r => r.total),
+       borderColor: PLUM, backgroundColor: PLUM + '22', tension: 0.3, fill: true, pointRadius: 4 }]);
+
+  // ── Receita por mês ────────────────────────────────────────
+  const mesesRec = d.receitaPorMes.map(r => {
+    const [ano, mes] = r.mes.split('-');
+    return ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][parseInt(mes)-1] + '/' + ano.slice(2);
+  });
+  relMkChart('chart-receita-mes', 'bar', mesesRec,
+    [{ label: 'Receita (R$)', data: d.receitaPorMes.map(r => r.receita),
+       backgroundColor: SAGE + 'cc', borderRadius: 6 }]);
+
+  // ── Sessões por dia da semana ──────────────────────────────
+  const diasNome = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const diaMap = Object.fromEntries(d.sessoesPorDia.map(r => [r.dia, r.total]));
+  relMkChart('chart-dia-semana', 'bar',
+    diasNome,
+    [{ label: 'Sessões', data: diasNome.map((_, i) => diaMap[i] || 0),
+       backgroundColor: [PLUM+'44',PLUM+'aa',PLUM+'cc',PLUM+'ff',PLUM+'cc',PLUM+'aa',PLUM+'44'],
+       borderRadius: 6 }],
+    { legend: false });
+
+  // ── Sessões por hora ───────────────────────────────────────
+  relMkChart('chart-hora', 'bar',
+    d.sessoesPorHora.map(r => r.hora_n + ':00'),
+    [{ label: 'Sessões', data: d.sessoesPorHora.map(r => r.total),
+       backgroundColor: ROSE + 'bb', borderRadius: 6 }],
+    { legend: false });
+
+  // ── Gênero ─────────────────────────────────────────────────
+  const genLabel = { F: 'Feminino', M: 'Masculino', O: 'Outro' };
+  relMkChart('chart-genero', 'doughnut',
+    d.porGenero.map(r => genLabel[r.sexo] || r.sexo),
+    [{ data: d.porGenero.map(r => r.total), backgroundColor: COLORS6 }],
+    { legend: true });
+
+  // ── Faixa etária ───────────────────────────────────────────
+  relMkChart('chart-idade', 'bar',
+    d.porIdade.map(r => r.faixa),
+    [{ label: 'Clientes', data: d.porIdade.map(r => r.total),
+       backgroundColor: LAVENDER + 'cc', borderRadius: 6 }],
+    { legend: false });
+
+  // ── Status sessões ─────────────────────────────────────────
+  const statusCor = { realizado: SAGE, agendado: LAVENDER, cancelado: '#e07070', remarcado: '#e8c8a0' };
+  relMkChart('chart-status', 'doughnut',
+    d.statusSessoes.map(r => r.status),
+    [{ data: d.statusSessoes.map(r => r.total),
+       backgroundColor: d.statusSessoes.map(r => statusCor[r.status] || COLORS6[3]) }],
+    { legend: true });
+
+  // ── Top clientes (gráfico horizontal) ─────────────────────
+  const topNomes = d.topClientes.map(r => (r.apelido || r.nome.split(' ')[0]));
+  relMkChart('chart-top-clientes', 'bar',
+    topNomes,
+    [{ label: 'Sessões', data: d.topClientes.map(r => r.total_sessoes),
+       backgroundColor: PLUM + 'bb', borderRadius: 6 }],
+    { legend: false, extra: { indexAxis: 'y' } });
+
+  // ── Tabela top clientes ────────────────────────────────────
+  document.getElementById('rel-top-tbody').innerHTML = d.topClientes.map((r, i) => `
+    <tr>
+      <td><strong style="color:var(--plum)">#${i+1}</strong></td>
+      <td>${r.nome}</td>
+      <td class="text-right">${r.total_sessoes}</td>
+      <td class="text-right">${brl(r.receita_total)}</td>
+      <td class="text-right">${brl(r.total_sessoes ? r.receita_total / r.total_sessoes : 0)}</td>
+    </tr>
+  `).join('') || `<tr><td colspan="5" style="text-align:center;color:var(--muted)">Nenhuma sessão realizada ainda</td></tr>`;
+
+  // ── Tabela semanas ─────────────────────────────────────────
+  document.getElementById('rel-semana-tbody').innerHTML = d.sessoesPorSemana.map(r => `
+    <tr>
+      <td>${r.semana}</td>
+      <td class="text-right">${r.total}</td>
+      <td class="text-right">${brl(r.receita)}</td>
+    </tr>
+  `).join('') || `<tr><td colspan="3" style="text-align:center;color:var(--muted)">Sem dados</td></tr>`;
+}
+
+function exportarRelatorioCSV() {
+  if (!_relData) return;
+  const d = _relData;
+  const linhas = [
+    ['Cliente', 'Sessões Realizadas', 'Receita Total (R$)', 'Média por Sessão (R$)'],
+    ...d.topClientes.map(r => [
+      r.nome,
+      r.total_sessoes,
+      Number(r.receita_total || 0).toFixed(2).replace('.', ','),
+      Number(r.total_sessoes ? r.receita_total / r.total_sessoes : 0).toFixed(2).replace('.', ',')
+    ])
+  ];
+  const csv = linhas.map(l => l.join(';')).join('\n');
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url;
+  a.download = `relatorio_sessoes_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click(); URL.revokeObjectURL(url);
 }
 
 async function loadFinanceiro() {

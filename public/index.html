@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Consultório — Gestão Psicológica</title>
   <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -40,6 +41,9 @@
     </a>
     <a href="#" class="nav-link" data-section="biblioteca">
       <span class="icon">📚</span> Biblioteca de Atividades
+    </a>
+    <a href="#" class="nav-link" data-section="relatorios">
+      <span class="icon">📊</span> Relatórios
     </a>
     <a href="#" class="nav-link" data-section="financeiro">
       <span class="icon">💰</span> Financeiro
@@ -333,6 +337,88 @@
         <div class="modal-footer">
           <button class="btn btn-outline" onclick="fecharModalBibCard()">Cancelar</button>
           <button class="btn btn-primary" onclick="salvarNovoBibCard()">Criar Card</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── RELATÓRIOS ── -->
+    <div class="section" id="section-relatorios">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+        <div>
+          <h2 style="font-size:20px;font-weight:700;color:var(--plum);margin-bottom:2px">📊 Relatórios e Indicadores</h2>
+          <p style="font-size:13px;color:var(--muted)">Análise do consultório com gráficos e planilhas</p>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="exportarRelatorioCSV()">⬇ Exportar CSV</button>
+      </div>
+
+      <!-- Cards de resumo -->
+      <div class="stats-row" id="rel-stats"></div>
+
+      <!-- Gráficos linha 1: sessões/mês + receita/mês -->
+      <div class="grid-2col" style="margin-bottom:20px">
+        <div class="card">
+          <div class="card-header"><span class="card-title">📅 Sessões por Mês</span></div>
+          <div class="card-body"><canvas id="chart-sessoes-mes" height="220"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">💰 Receita por Mês (R$)</span></div>
+          <div class="card-body"><canvas id="chart-receita-mes" height="220"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Gráficos linha 2: dia da semana + hora -->
+      <div class="grid-2col" style="margin-bottom:20px">
+        <div class="card">
+          <div class="card-header"><span class="card-title">📆 Sessões por Dia da Semana</span></div>
+          <div class="card-body"><canvas id="chart-dia-semana" height="220"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">🕐 Sessões por Horário</span></div>
+          <div class="card-body"><canvas id="chart-hora" height="220"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Gráficos linha 3: gênero + faixa etária + status -->
+      <div style="display:grid;grid-template-columns:1fr 2fr 1fr;gap:20px;margin-bottom:20px">
+        <div class="card">
+          <div class="card-header"><span class="card-title">👤 Gênero</span></div>
+          <div class="card-body"><canvas id="chart-genero" height="220"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">🎂 Faixa Etária dos Clientes</span></div>
+          <div class="card-body"><canvas id="chart-idade" height="220"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">✅ Status das Sessões</span></div>
+          <div class="card-body"><canvas id="chart-status" height="220"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Top clientes -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header"><span class="card-title">🏆 Top Clientes por Sessões</span></div>
+        <div class="card-body" style="padding-bottom:0"><canvas id="chart-top-clientes" height="160"></canvas></div>
+      </div>
+
+      <!-- Tabela top clientes -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header"><span class="card-title">📋 Planilha: Sessões por Cliente</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Cliente</th><th class="text-right">Sessões</th><th class="text-right">Receita Total</th><th class="text-right">Média por Sessão</th></tr></thead>
+            <tbody id="rel-top-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tabela semanas -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">📋 Planilha: Sessões por Semana</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Semana</th><th class="text-right">Sessões</th><th class="text-right">Receita</th></tr></thead>
+            <tbody id="rel-semana-tbody"></tbody>
+          </table>
         </div>
       </div>
     </div>
