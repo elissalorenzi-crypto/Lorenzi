@@ -477,6 +477,19 @@ const createContrato = (data) =>
     data.origem || 'online', data.aceite || 0
   ));
 
+const updateContrato = (id, data) =>
+  db.prepare(`
+    UPDATE contratos SET
+      nome=?, data_nascimento=?, cpf=?, email=?, celular=?, endereco=?,
+      forma_pgto=?, nome_responsavel=?, cpf_responsavel=?
+    WHERE id=?
+  `).run(
+    data.nome, data.data_nascimento || null, data.cpf || null,
+    data.email || null, data.celular || null, data.endereco || null,
+    data.forma_pgto || null, data.nome_responsavel || null,
+    data.cpf_responsavel || null, id
+  );
+
 const deleteContrato = (id) =>
   db.prepare('DELETE FROM contratos WHERE id=?').run(id);
 
@@ -551,7 +564,7 @@ module.exports = {
   getAgendamentos, getAgendamentoById, createAgendamento, updateAgendamento, deleteAgendamento,
   getProntuarios, createProntuario, updateProntuario, deleteProntuario,
   getDashboard, getFinanceiro, getPrevisaoPgto, getProjecaoRecorrente, getConfig, setConfig,
-  getContratos, createContrato, deleteContrato, getContratosNovos, marcarContratosVistos,
+  getContratos, createContrato, updateContrato, deleteContrato, getContratosNovos, marcarContratosVistos,
   createLinkAgendamento, getLinkAgendamento, getLinksAgendamento, desativarLinkAgendamento,
   createConvite, getConvites, getConviteByToken, usarConvite, deleteConvite
 };
