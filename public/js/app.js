@@ -370,7 +370,7 @@ function renderAgendaGrid() {
                            <div class="zoom-menu" id="zmenu-${a.id}">
                              <button onclick="copiarZoom('${a.zoom_link}')">📋 Copiar link</button>
                              <a href="${a.zoom_link}" target="_blank" onclick="fecharZoomMenus()">🚀 Abrir sessão</a>
-                             ${a.paciente_whatsapp ? `<a href="${zoomWaUrl(a.paciente_nome, a.zoom_link, a.paciente_whatsapp)}" target="_blank" onclick="fecharZoomMenus()" style="color:#25d366">💬 Enviar no WhatsApp</a>` : ''}
+                             ${a.paciente_whatsapp ? `<a href="${zoomWaUrl(a.paciente_nome, a.zoom_link, a.paciente_whatsapp, a.data, a.hora)}" target="_blank" onclick="fecharZoomMenus()" style="color:#25d366">💬 Enviar no WhatsApp</a>` : ''}
                            </div>
                          </div>`
                       : `<button class="appt-btn appt-btn-zoom" onclick="gerarZoom(${a.id})" title="Gerar link Zoom">📹</button>`
@@ -418,7 +418,7 @@ function renderAgendaLista() {
                  <div class="zoom-menu" id="zmenu-${a.id}">
                    <button onclick="copiarZoom('${a.zoom_link}')">📋 Copiar link</button>
                    <a href="${a.zoom_link}" target="_blank" onclick="fecharZoomMenus()">🚀 Abrir sessão</a>
-                   ${a.paciente_whatsapp ? `<a href="${zoomWaUrl(a.paciente_nome, a.zoom_link, a.paciente_whatsapp)}" target="_blank" onclick="fecharZoomMenus()" style="color:#25d366">💬 Enviar no WhatsApp</a>` : ''}
+                   ${a.paciente_whatsapp ? `<a href="${zoomWaUrl(a.paciente_nome, a.zoom_link, a.paciente_whatsapp, a.data, a.hora)}" target="_blank" onclick="fecharZoomMenus()" style="color:#25d366">💬 Enviar no WhatsApp</a>` : ''}
                  </div>
                </div>`
             : `<button class="btn btn-outline btn-xs" style="color:#1a6ff4;border-color:#1a6ff4" onclick="gerarZoom(${a.id})" title="Gerar link Zoom">📹</button>`
@@ -506,7 +506,7 @@ function renderAgendaHorario() {
              <div class="zoom-menu" id="zmenu-${a.id}">
                <button onclick="copiarZoom('${a.zoom_link}')">📋 Copiar link</button>
                <a href="${a.zoom_link}" target="_blank" onclick="fecharZoomMenus()">🚀 Abrir sessão</a>
-               ${a.paciente_whatsapp ? `<a href="${zoomWaUrl(a.paciente_nome,a.zoom_link,a.paciente_whatsapp)}" target="_blank" onclick="fecharZoomMenus()" style="color:#25d366">💬 WhatsApp</a>` : ''}
+               ${a.paciente_whatsapp ? `<a href="${zoomWaUrl(a.paciente_nome,a.zoom_link,a.paciente_whatsapp,a.data,a.hora)}" target="_blank" onclick="fecharZoomMenus()" style="color:#25d366">💬 WhatsApp</a>` : ''}
              </div>
            </div>`
         : `<button class="appt-btn appt-btn-zoom" onclick="gerarZoom(${a.id})" title="Zoom">📹</button>`;
@@ -666,9 +666,17 @@ function copiarZoom(link) {
   fecharZoomMenus();
 }
 
-function zoomWaUrl(nome, link, fone) {
+function zoomWaUrl(nome, link, fone, data, hora) {
   const primeiroNome = (nome || '').split(' ')[0];
-  const msg = `Olá, bom dia ${primeiroNome}! 😊\nSegue o link da nossa sessão de hoje:\n${link}`;
+  const DIAS  = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+  const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  let dataFmt = '';
+  if (data) {
+    const d = new Date(data + 'T12:00:00');
+    dataFmt = `${DIAS[d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]}`;
+  }
+  const horaFmt = hora ? ` às ${hora}` : '';
+  const msg = `Bom dia, ${primeiroNome}! Segue lembrete da nossa sessão ${dataFmt}${horaFmt} e link para acesso:\n${link}\nAté lá!`;
   const num = '55' + (fone || '').replace(/\D/g, '');
   return `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
 }
