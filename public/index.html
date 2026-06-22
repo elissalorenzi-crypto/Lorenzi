@@ -48,6 +48,9 @@
     <a href="#" class="nav-link" data-section="financeiro">
       <span class="icon">💰</span> Financeiro
     </a>
+    <a href="#" class="nav-link" data-section="pagamentos">
+      <span class="icon">💳</span> Pagamentos
+    </a>
     <a href="#" class="nav-link" data-section="configuracoes">
       <span class="icon">⚙️</span> Configurações
     </a>
@@ -603,6 +606,53 @@
               <tr><th>Data</th><th>Hora</th><th>Cliente</th><th class="text-right">Valor</th><th>Pago</th><th>Forma</th></tr>
             </thead>
             <tbody id="fin-lista-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PAGAMENTOS ── -->
+    <div class="section" id="section-pagamentos">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+        <div>
+          <h2 style="font-size:20px;font-weight:700;color:var(--plum);margin-bottom:2px">💳 Pagamentos</h2>
+          <p style="font-size:13px;color:var(--muted)">Controle de contas pessoais e da empresa</p>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="novoPagamento()">+ Novo Pagamento</button>
+      </div>
+
+      <!-- Tabs -->
+      <div style="display:flex;gap:0;margin-bottom:20px;border-bottom:2px solid var(--border)">
+        <button id="tab-pgto-pessoal" class="tab-btn tab-btn-active" onclick="switchAbaPgto('pessoal')">👤 Pessoal</button>
+        <button id="tab-pgto-empresa" class="tab-btn" onclick="switchAbaPgto('empresa')">🏢 Empresa</button>
+      </div>
+
+      <!-- Resumo -->
+      <div class="stats-row" id="pgto-stats"></div>
+
+      <!-- Filtro mês -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <button class="btn btn-outline btn-sm" onclick="pgtoNavMes(-1)">‹</button>
+        <span id="pgto-mes-label" style="font-weight:800;color:var(--plum);min-width:130px;text-align:center"></span>
+        <button class="btn btn-outline btn-sm" onclick="pgtoNavMes(1)">›</button>
+        <button class="btn btn-ghost btn-sm" onclick="pgtoMesAtual()">Mês atual</button>
+      </div>
+
+      <!-- Tabela -->
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Vencimento</th>
+                <th>Descrição</th>
+                <th>Categoria</th>
+                <th class="text-right">Valor</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="pgto-tbody"></tbody>
           </table>
         </div>
       </div>

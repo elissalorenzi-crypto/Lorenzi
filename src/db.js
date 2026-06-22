@@ -100,6 +100,20 @@ db.exec(`
     created_at       TEXT DEFAULT (datetime('now','localtime'))
   );
 
+  CREATE TABLE IF NOT EXISTS pagamentos (
+    id               INTEGER PRIMARY KEY AUTOINCREMENT,
+    tipo             TEXT NOT NULL DEFAULT 'pessoal',
+    descricao        TEXT NOT NULL,
+    categoria        TEXT,
+    valor            REAL DEFAULT 0,
+    data_vencimento  TEXT,
+    data_pagamento   TEXT,
+    pago             INTEGER DEFAULT 0,
+    recorrente       INTEGER DEFAULT 0,
+    obs              TEXT,
+    created_at       TEXT DEFAULT (datetime('now','localtime'))
+  );
+
   CREATE TABLE IF NOT EXISTS convites (
     id             INTEGER PRIMARY KEY AUTOINCREMENT,
     token          TEXT NOT NULL UNIQUE,
@@ -553,6 +567,42 @@ const getProjecaoRecorrente = () => {
 };
 
 // ============================================================
+// PAGAMENTOS
+// ============================================================
+const getPagamentos = ({ tipo, ano, mes } = {}) => {
+  const conds = [];
+  const params = [];
+  if (tipo) { conds.push("tipo = ?"); params.push(tipo); }
+  if (ano && mes) {
+    const mm = String(mes).padStart(2,'0');
+    conds.push("data_vencimento >= ? AND data_vencimento <= ?");
+    params.push(`${ano}-${mm}-01`, `${ano}-${mm}-31`);
+  }
+  const where = conds.length ? 'WHERE ' + conds.join(' AND ') : '';
+  return db.prepare(`SELECT * FROM pagamentos ${where} ORDER BY data_vencimento ASC, id DESC`).all(...params);
+};
+
+const createPagamento = (d) =>
+  rid(db.prepare(`
+    INSERT INTO pagamentos (tipo,descricao,categoria,valor,data_vencimento,data_pagamento,pago,recorrente,obs)
+    VALUES (?,?,?,?,?,?,?,?,?)
+  `).run(d.tipo||'pessoal', d.descricao||'', d.categoria||null,
+         d.valor||0, d.data_vencimento||null, d.data_pagamento||null,
+         d.pago?1:0, d.recorrente?1:0, d.obs||null));
+
+const updatePagamento = (id, d) =>
+  db.prepare(`
+    UPDATE pagamentos SET tipo=?,descricao=?,categoria=?,valor=?,
+    data_vencimento=?,data_pagamento=?,pago=?,recorrente=?,obs=?
+    WHERE id=?
+  `).run(d.tipo||'pessoal', d.descricao||'', d.categoria||null,
+         d.valor||0, d.data_vencimento||null, d.data_pagamento||null,
+         d.pago?1:0, d.recorrente?1:0, d.obs||null, id);
+
+const deletePagamento = (id) =>
+  db.prepare('DELETE FROM pagamentos WHERE id=?').run(id);
+
+// ============================================================
 // RELATÓRIOS
 // ============================================================
 const getRelatorioFiltrado = ({ paciente_id, data_ini, data_fim, status } = {}) => {
@@ -690,6 +740,7 @@ module.exports = {
   getAgendamentos, getAgendamentoById, createAgendamento, updateAgendamento, deleteAgendamento,
   getProntuarios, createProntuario, updateProntuario, deleteProntuario,
   getDashboard, getFinanceiro, getPrevisaoPgto, getProjecaoRecorrente, getRelatorios, getRelatorioFiltrado, getConfig, setConfig,
+  getPagamentos, createPagamento, updatePagamento, deletePagamento,
   getContratos, createContrato, updateContrato, deleteContrato, getContratosNovos, marcarContratosVistos,
   createLinkAgendamento, getLinkAgendamento, getLinksAgendamento, desativarLinkAgendamento,
   createConvite, getConvites, getConviteByToken, usarConvite, deleteConvite

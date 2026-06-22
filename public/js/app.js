@@ -94,6 +94,7 @@ function navigate(name) {
     biblioteca:   bibRenderHome,
     relatorios:   loadRelatorios,
     financeiro:   loadFinanceiro,
+    pagamentos:   loadPagamentos,
     configuracoes:loadConfiguracoes
   };
   loaders[name]?.();
@@ -1531,6 +1532,182 @@ function renderTabPgto() {
         </tbody>
       </table>
     </div>`;
+}
+
+// ─── PAGAMENTOS ──────────────────────────────────────────────
+let _pgtoAba  = 'pessoal';
+let _pgtoAno  = new Date().getFullYear();
+let _pgtoMes  = new Date().getMonth() + 1;
+let _pgtoData = [];
+
+const CATS_PESSOAL = ['Moradia','Alimentação','Saúde','Transporte','Educação','Lazer','Assinaturas','Outros'];
+const CATS_EMPRESA = ['Aluguel/Espaço','Software/Assinaturas','Material','Contador','Marketing','Telefone/Internet','Impostos','Outros'];
+
+function pgtoNavMes(d) { _pgtoMes += d; if (_pgtoMes > 12) { _pgtoMes = 1; _pgtoAno++; } if (_pgtoMes < 1) { _pgtoMes = 12; _pgtoAno--; } loadPagamentos(); }
+function pgtoMesAtual() { _pgtoAno = new Date().getFullYear(); _pgtoMes = new Date().getMonth()+1; loadPagamentos(); }
+
+function switchAbaPgto(aba) {
+  _pgtoAba = aba;
+  document.getElementById('tab-pgto-pessoal').className = 'tab-btn' + (aba==='pessoal' ? ' tab-btn-active' : '');
+  document.getElementById('tab-pgto-empresa').className = 'tab-btn' + (aba==='empresa'  ? ' tab-btn-active' : '');
+  renderPagamentosTabela();
+}
+
+async function loadPagamentos() {
+  const mLabel = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  document.getElementById('pgto-mes-label').textContent = `${mLabel[_pgtoMes-1]} ${_pgtoAno}`;
+  const params = new URLSearchParams({ ano: _pgtoAno, mes: _pgtoMes });
+  _pgtoData = await api('GET', `/pagamentos?${params}`);
+  renderPagamentosTabela();
+}
+
+function renderPagamentosTabela() {
+  const lista = _pgtoData.filter(p => p.tipo === _pgtoAba);
+  const total   = lista.reduce((s,p) => s + (p.valor||0), 0);
+  const pago    = lista.filter(p => p.pago).reduce((s,p) => s + (p.valor||0), 0);
+  const pendente = total - pago;
+  const vencidos = lista.filter(p => !p.pago && p.data_vencimento && p.data_vencimento < HOJE()).length;
+
+  document.getElementById('pgto-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-value">${brl(total)}</div><div class="stat-label">Total do Mês</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--sage)">${brl(pago)}</div><div class="stat-label">Pago</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:${pendente>0?'var(--rose)':'inherit'}">${brl(pendente)}</div><div class="stat-label">Pendente</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:${vencidos>0?'#c0425d':'inherit'}">${vencidos}</div><div class="stat-label">Vencidos</div></div>
+  `;
+
+  const tbody = document.getElementById('pgto-tbody');
+  if (!lista.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><span class="empty-icon">💳</span><p>Nenhum pagamento em ${['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][_pgtoMes-1]}.<br>Clique em <strong>+ Novo Pagamento</strong> para adicionar.</p></div></td></tr>`;
+    return;
+  }
+
+  const hoje = HOJE();
+  tbody.innerHTML = lista.map(p => {
+    const [a,m,d] = (p.data_vencimento||'').split('-');
+    const vencFmt = d ? `${d}/${m}/${a}` : '—';
+    const vencido = !p.pago && p.data_vencimento && p.data_vencimento < hoje;
+    const statusHtml = p.pago
+      ? `<span class="badge badge-confirmado">✅ Pago</span>`
+      : vencido
+        ? `<span class="badge badge-cancelado">⚠️ Vencido</span>`
+        : `<span class="badge badge-agendado">⏳ Pendente</span>`;
+    return `
+      <tr>
+        <td style="white-space:nowrap;${vencido?'color:#c0425d;font-weight:700':''}">${vencFmt}</td>
+        <td>
+          <strong>${p.descricao}</strong>
+          ${p.recorrente ? '<span style="font-size:10px;color:var(--muted);margin-left:4px">🔄 recorrente</span>' : ''}
+          ${p.obs ? `<br><span style="font-size:11px;color:var(--muted)">${p.obs}</span>` : ''}
+        </td>
+        <td><span class="badge" style="background:#f0ebfa;color:var(--plum)">${p.categoria||'—'}</span></td>
+        <td class="text-right" style="font-weight:700">${brl(p.valor)}</td>
+        <td>${statusHtml}</td>
+        <td style="white-space:nowrap">
+          ${!p.pago ? `<button class="btn btn-ghost btn-xs" style="color:var(--sage)" onclick="marcarPago(${p.id})" title="Marcar como pago">✅</button>` : ''}
+          <button class="btn btn-ghost btn-xs" onclick="editarPagamento(${p.id})" title="Editar">✏️</button>
+          <button class="btn btn-ghost btn-xs" style="color:var(--red,#c0425d)" onclick="deletarPagamento(${p.id})" title="Excluir">🗑</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function _formPagamento(p = {}) {
+  const cats = _pgtoAba === 'empresa' ? CATS_EMPRESA : CATS_PESSOAL;
+  const catOpts = cats.map(c => `<option value="${c}" ${p.categoria===c?'selected':''}>${c}</option>`).join('');
+  return `
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Descrição *</label>
+        <input type="text" id="fp-desc" value="${p.descricao||''}" placeholder="Ex: Conta de luz" autofocus>
+      </div>
+      <div class="form-group">
+        <label>Categoria</label>
+        <select id="fp-cat">
+          <option value="">Selecione…</option>
+          ${catOpts}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Valor (R$)</label>
+        <input type="number" id="fp-valor" value="${p.valor||''}" placeholder="0,00" min="0" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>Vencimento</label>
+        <input type="date" id="fp-venc" value="${p.data_vencimento||HOJE()}">
+      </div>
+      <div class="form-group">
+        <label>Data de pagamento</label>
+        <input type="date" id="fp-pgto-data" value="${p.data_pagamento||''}">
+      </div>
+    </div>
+    <div style="display:flex;gap:24px;margin-top:14px">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+        <input type="checkbox" id="fp-pago" ${p.pago?'checked':''} style="accent-color:var(--sage);width:15px;height:15px">
+        Pago
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+        <input type="checkbox" id="fp-recorrente" ${p.recorrente?'checked':''} style="accent-color:var(--plum);width:15px;height:15px">
+        🔄 Recorrente (mensal)
+      </label>
+    </div>
+    <div class="form-group" style="margin-top:12px">
+      <label>Observação</label>
+      <input type="text" id="fp-obs" value="${p.obs||''}" placeholder="Opcional">
+    </div>
+  `;
+}
+
+function _coletarPagamento() {
+  return {
+    tipo:            _pgtoAba,
+    descricao:       document.getElementById('fp-desc').value.trim(),
+    categoria:       document.getElementById('fp-cat').value,
+    valor:           parseFloat(document.getElementById('fp-valor').value) || 0,
+    data_vencimento: document.getElementById('fp-venc').value || null,
+    data_pagamento:  document.getElementById('fp-pgto-data').value || null,
+    pago:            document.getElementById('fp-pago').checked ? 1 : 0,
+    recorrente:      document.getElementById('fp-recorrente').checked ? 1 : 0,
+    obs:             document.getElementById('fp-obs').value.trim() || null,
+  };
+}
+
+function novoPagamento() {
+  const abaLabel = _pgtoAba === 'empresa' ? '🏢 Empresa' : '👤 Pessoal';
+  openModal(`+ Novo Pagamento — ${abaLabel}`, _formPagamento(), async () => {
+    const d = _coletarPagamento();
+    if (!d.descricao) return toast('Informe a descrição', 'error');
+    await api('POST', '/pagamentos', d);
+    toast('Pagamento adicionado!');
+    loadPagamentos();
+  });
+}
+
+function editarPagamento(id) {
+  const p = _pgtoData.find(x => x.id === id);
+  if (!p) return;
+  openModal('✏️ Editar Pagamento', _formPagamento(p), async () => {
+    const d = _coletarPagamento();
+    if (!d.descricao) return toast('Informe a descrição', 'error');
+    await api('PUT', `/pagamentos/${id}`, d);
+    toast('Pagamento atualizado!');
+    loadPagamentos();
+  });
+}
+
+async function marcarPago(id) {
+  const p = _pgtoData.find(x => x.id === id);
+  if (!p) return;
+  await api('PUT', `/pagamentos/${id}`, { ...p, pago: 1, data_pagamento: HOJE() });
+  toast('Marcado como pago ✅');
+  loadPagamentos();
+}
+
+async function deletarPagamento(id) {
+  if (!confirm('Excluir este pagamento?')) return;
+  await api('DELETE', `/pagamentos/${id}`);
+  toast('Pagamento excluído');
+  loadPagamentos();
 }
 
 // ─── RELATÓRIOS ──────────────────────────────────────────────

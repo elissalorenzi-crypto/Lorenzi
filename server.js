@@ -129,6 +129,27 @@ app.delete('/api/prontuarios/:id', (req, res) => {
   catch(e) { erro(res, e); }
 });
 
+// ── PAGAMENTOS ───────────────────────────────────────────────
+app.get('/api/pagamentos', (req, res) => {
+  try { res.json(db.getPagamentos(req.query)); }
+  catch(e) { erro(res, e); }
+});
+
+app.post('/api/pagamentos', (req, res) => {
+  try { res.json({ id: db.createPagamento(req.body), success: true }); }
+  catch(e) { erro(res, e); }
+});
+
+app.put('/api/pagamentos/:id', (req, res) => {
+  try { db.updatePagamento(req.params.id, req.body); res.json({ success: true }); }
+  catch(e) { erro(res, e); }
+});
+
+app.delete('/api/pagamentos/:id', (req, res) => {
+  try { db.deletePagamento(req.params.id); res.json({ success: true }); }
+  catch(e) { erro(res, e); }
+});
+
 // ── RELATÓRIOS ───────────────────────────────────────────────
 app.get('/api/relatorios', (req, res) => {
   try { res.json(db.getRelatorios()); }

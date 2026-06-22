@@ -670,7 +670,8 @@ tbody tr:hover { background: var(--rose-pale); }
   background: transparent;
   transition: all .15s;
 }
-.tab-btn.active { background: #fff; color: var(--rose); box-shadow: var(--shadow-sm); }
+.tab-btn.active, .tab-btn.tab-btn-active { background: #fff; color: var(--rose); box-shadow: var(--shadow-sm); }
+.tab-btn-active { background: #fff; color: var(--plum) !important; border-bottom: 2px solid var(--plum) !important; border-radius: 0 !important; font-weight: 700 !important; }
 
 /* ── EMPTY STATE ─────────────────────────────────────────── */
 .empty-state {
