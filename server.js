@@ -2,6 +2,16 @@ const express = require('express');
 const path    = require('path');
 const multer  = require('multer');
 const db      = require('./src/db');
+const fs      = require('fs');
+
+// Carrega .env local se existir (desenvolvimento)
+try {
+  const env = fs.readFileSync(path.join(__dirname, '.env'), 'utf8');
+  for (const line of env.split('\n')) {
+    const m = line.match(/^([^#=]+)=(.*)$/);
+    if (m) process.env[m[1].trim()] = m[2].trim();
+  }
+} catch(_) {}
 
 const upload = multer({
   dest: path.join(__dirname, 'public/uploads/contratos/'),
