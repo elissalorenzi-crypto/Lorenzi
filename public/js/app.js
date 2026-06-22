@@ -516,7 +516,7 @@ function renderAgendaHorario() {
              <div class="zoom-menu" id="zmenu-${a.id}">
                <button onclick="copiarZoom('${a.zoom_link}')">📋 Copiar link</button>
                <a href="${a.zoom_link}" target="_blank" onclick="fecharZoomMenus()">🚀 Abrir sessão</a>
-               ${a.paciente_whatsapp ? `<a href="${zoomWaUrl(a.paciente_nome,a.zoom_link,a.paciente_whatsapp,a.data,a.hora)}" target="_blank" onclick="fecharZoomMenus()" style="color:#25d366">💬 WhatsApp <span style="font-size:10px;opacity:.7">${exibirFone(a.paciente_whatsapp)}</span></a>` : ''}
+               ${a.paciente_whatsapp ? `<a href="${zoomWaUrl(a.paciente_nome,a.zoom_link,a.paciente_whatsapp,a.data,a.hora,a.paciente_apelido)}" target="_blank" onclick="fecharZoomMenus()" style="color:#25d366">💬 WhatsApp <span style="font-size:10px;opacity:.7">${exibirFone(a.paciente_whatsapp)}</span></a>` : ''}
              </div>
            </div>`
         : `<button class="appt-btn appt-btn-zoom" onclick="gerarZoom(${a.id})" title="Zoom">📹</button>`;
