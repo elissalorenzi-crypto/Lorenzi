@@ -150,33 +150,33 @@
 
     <!-- ── AGENDA ── -->
     <div class="section" id="section-agenda">
+      <!-- Grade de Horários -->
       <div class="card">
         <div class="card-header">
-          <span class="card-title">Próximos 7 Dias</span>
+          <span class="card-title">Grade de Horários</span>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn btn-outline btn-sm" onclick="openModalGerenciarAgenda()">✏️ Gerenciar</button>
             <button class="btn btn-outline btn-sm" onclick="novoLinkAgenda()">🗓 Enviar Agenda</button>
             <button class="btn btn-primary btn-sm" onclick="openModalAgendamento()">+ Nova Sessão</button>
           </div>
         </div>
-        <div class="card-body">
-          <div class="week-nav">
-            <button class="btn btn-outline btn-sm" onclick="agendaNavSemana(-1)">&#8249; Anterior</button>
-            <span class="week-label" id="agenda-week-label"></span>
-            <button class="btn btn-outline btn-sm" onclick="agendaNavSemana(1)">Próxima &#8250;</button>
-            <button class="btn btn-ghost btn-sm" onclick="agendaIrHoje()">Hoje</button>
-          </div>
-          <div class="week-grid" id="agenda-week-grid"></div>
-        </div>
-      </div>
-
-      <!-- Grade de Horários -->
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Grade de Horários</span>
+        <div class="week-nav" style="padding:0 16px 12px">
+          <button class="btn btn-outline btn-sm" onclick="agendaNavSemana(-1)">&#8249; Anterior</button>
+          <span class="week-label" id="agenda-week-label"></span>
+          <button class="btn btn-outline btn-sm" onclick="agendaNavSemana(1)">Próxima &#8250;</button>
+          <button class="btn btn-ghost btn-sm" onclick="agendaIrHoje()">Hoje</button>
         </div>
         <div class="agenda-hor-wrap">
           <table class="hor-table" id="agenda-hor-table"></table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Próximos 7 Dias</span>
+        </div>
+        <div class="card-body">
+          <div class="week-grid" id="agenda-week-grid"></div>
         </div>
       </div>
 
