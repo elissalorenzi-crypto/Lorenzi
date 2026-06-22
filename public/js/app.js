@@ -370,7 +370,7 @@ function renderAgendaGrid() {
                            <div class="zoom-menu" id="zmenu-${a.id}">
                              <button onclick="copiarZoom('${a.zoom_link}')">📋 Copiar link</button>
                              <a href="${a.zoom_link}" target="_blank" onclick="fecharZoomMenus()">🚀 Abrir sessão</a>
-                             ${a.paciente_whatsapp ? `<a href="${zoomWaUrl(a.paciente_nome, a.zoom_link, a.paciente_whatsapp, a.data, a.hora)}" target="_blank" onclick="fecharZoomMenus()" style="color:#25d366">💬 Enviar no WhatsApp</a>` : ''}
+                             ${a.paciente_whatsapp ? `<a href="${zoomWaUrl(a.paciente_nome, a.zoom_link, a.paciente_whatsapp, a.data, a.hora)}" target="_blank" onclick="fecharZoomMenus()" style="color:#25d366">💬 Enviar no WhatsApp <span style="font-size:10px;opacity:.7">${exibirFone(a.paciente_whatsapp)}</span></a>` : ''}
                            </div>
                          </div>`
                       : `<button class="appt-btn appt-btn-zoom" onclick="gerarZoom(${a.id})" title="Gerar link Zoom">📹</button>`
@@ -506,7 +506,7 @@ function renderAgendaHorario() {
              <div class="zoom-menu" id="zmenu-${a.id}">
                <button onclick="copiarZoom('${a.zoom_link}')">📋 Copiar link</button>
                <a href="${a.zoom_link}" target="_blank" onclick="fecharZoomMenus()">🚀 Abrir sessão</a>
-               ${a.paciente_whatsapp ? `<a href="${zoomWaUrl(a.paciente_nome,a.zoom_link,a.paciente_whatsapp,a.data,a.hora)}" target="_blank" onclick="fecharZoomMenus()" style="color:#25d366">💬 WhatsApp</a>` : ''}
+               ${a.paciente_whatsapp ? `<a href="${zoomWaUrl(a.paciente_nome,a.zoom_link,a.paciente_whatsapp,a.data,a.hora)}" target="_blank" onclick="fecharZoomMenus()" style="color:#25d366">💬 WhatsApp <span style="font-size:10px;opacity:.7">${exibirFone(a.paciente_whatsapp)}</span></a>` : ''}
              </div>
            </div>`
         : `<button class="appt-btn appt-btn-zoom" onclick="gerarZoom(${a.id})" title="Zoom">📹</button>`;
@@ -679,9 +679,18 @@ function normalizarFone(fone) {
 // Constrói número internacional para wa.me a partir de qualquer formato armazenado
 function toWaNum(fone) {
   let d = (fone || '').replace(/\D/g, '');
-  if (d.startsWith('55') && d.length >= 12) d = d.slice(2);
-  if (d.length === 10) d = d.slice(0, 2) + '9' + d.slice(2);
+  if (d.startsWith('55') && d.length >= 12) d = d.slice(2); // remove código país duplicado
+  if (d.startsWith('0')) d = d.slice(1);                    // remove zero discagem antiga
+  if (d.length === 10) d = d.slice(0, 2) + '9' + d.slice(2); // adiciona 9 em celular antigo
   return '55' + d;
+}
+
+// Formata número para exibição: +55 (11) 99999-9999
+function exibirFone(fone) {
+  const d = toWaNum(fone).slice(2); // remove o 55
+  if (d.length === 11) return `+55 (${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
+  if (d.length === 10) return `+55 (${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;
+  return '+55 ' + d;
 }
 
 function zoomWaUrl(nome, link, fone, data, hora) {
