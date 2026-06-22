@@ -618,6 +618,60 @@ app.post('/api/corrigir-texto', async (req, res) => {
   }
 });
 
+// ─── ANÁLISE CLÍNICA IA ──────────────────────────────────────
+app.post('/api/analisar-prontuario', async (req, res) => {
+  const { conteudo, humor, tecnicas, tarefas, nome_paciente } = req.body || {};
+  const partes = [
+    conteudo  && `Relato da sessão:\n${conteudo}`,
+    humor     && `Humor / estado emocional: ${humor}`,
+    tecnicas  && `Técnicas utilizadas: ${tecnicas}`,
+    tarefas   && `Tarefas propostas: ${tarefas}`,
+  ].filter(Boolean);
+
+  if (!partes.length) return res.status(400).json({ error: 'Sem conteúdo para analisar' });
+
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return res.status(503).json({ error: 'ANTHROPIC_API_KEY não configurada' });
+
+  const prompt = `Você é um assistente de apoio clínico para psicólogos. Com base nas anotações da sessão${nome_paciente ? ` de ${nome_paciente}` : ''} abaixo, forneça uma análise clínica estruturada em três partes:
+
+**1. Padrões Observados**
+Identifique padrões emocionais, cognitivos ou comportamentais relevantes presentes na sessão.
+
+**2. Sugestões Terapêuticas**
+Sugira abordagens, técnicas ou intervenções baseadas em evidências adequadas ao contexto descrito (TCC, ACT, psicanálise, etc.).
+
+**3. Pontos de Atenção**
+Destaque aspectos importantes a monitorar ou aprofundar nas próximas sessões.
+
+Use linguagem profissional e objetiva, adequada para registro clínico. Seja conciso (máximo 3 itens por seção).
+
+---
+${partes.join('\n\n')}`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1024,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data?.error?.message || 'Erro na API');
+    res.json({ analise: data.content?.[0]?.text || '' });
+  } catch(e) {
+    console.error('analisar-prontuario:', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ─────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log('\n╔══════════════════════════════════════════════╗');

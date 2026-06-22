@@ -1378,9 +1378,66 @@ function renderProntuarios(pronts, pacId) {
         <div style="padding:12px 0 4px;border-top:1px solid var(--border);margin-top:12px;display:flex;gap:8px">
           <button class="btn btn-primary btn-sm" onclick="editProntuario(${r.id},${pacId})">✏️ Editar anotação</button>
         </div>
+        <div class="pront-analise-box" id="analise-box-${r.id}">
+          <div class="pront-analise-header">
+            <span>🧠 Análise & Conselhos Clínicos</span>
+            <button class="btn btn-sm btn-analise" id="btn-analise-${r.id}" onclick="gerarAnalise(${r.id})">Gerar análise</button>
+          </div>
+          <div class="pront-analise-content" id="analise-content-${r.id}">
+            <span class="pront-analise-placeholder">Clique em <strong>Gerar análise</strong> para obter insights clínicos baseados nas anotações desta sessão.</span>
+          </div>
+        </div>
       </div>
     </div>
   `).join('');
+}
+
+async function gerarAnalise(id) {
+  const btn = document.getElementById(`btn-analise-${id}`);
+  const box = document.getElementById(`analise-content-${id}`);
+  if (!btn || !box) return;
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Analisando…';
+  box.innerHTML = '<span class="pront-analise-placeholder">Gerando análise com IA…</span>';
+
+  // Coleta dados do card já renderizado
+  const item = document.getElementById(`pront-${id}`);
+  const campos = item ? item.querySelectorAll('.pront-field-value') : [];
+  const labels = item ? item.querySelectorAll('.pront-field-label') : [];
+  const dados = {};
+  labels.forEach((l, i) => {
+    const label = l.textContent.replace(/✏️.*/, '').trim();
+    const val = campos[i]?.innerText?.trim() || '';
+    if (label.includes('Relato'))   dados.conteudo = val;
+    if (label.includes('Humor'))    dados.humor    = val;
+    if (label.includes('Técnicas')) dados.tecnicas = val;
+    if (label.includes('Tarefas'))  dados.tarefas  = val;
+  });
+
+  const nomePaciente = document.getElementById('pront-paciente-select');
+  const nomeOpt = nomePaciente?.options[nomePaciente.selectedIndex]?.text || '';
+  if (nomeOpt) dados.nome_paciente = nomeOpt.split(' — ')[0];
+
+  try {
+    const r = await api('POST', '/analisar-prontuario', dados);
+    box.innerHTML = _mdParaHtml(r.analise || 'Sem análise gerada.');
+    btn.textContent = '🔄 Regerar';
+  } catch(e) {
+    box.innerHTML = `<span style="color:var(--red)">Erro: ${e.message}</span>`;
+    btn.textContent = 'Tentar novamente';
+  }
+  btn.disabled = false;
+}
+
+function _mdParaHtml(md) {
+  return md
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/^#{1,3}\s+(.+)$/gm, '<h4 style="margin:14px 0 6px;color:var(--plum);font-size:13px">$1</h4>')
+    .replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>.*<\/li>)/gs, '<ul style="margin:4px 0 10px;padding-left:18px;font-size:13px">$1</ul>')
+    .replace(/\n{2,}/g, '</p><p style="margin:6px 0">')
+    .replace(/^(?!<[hul])(.+)$/gm, (m) => m.startsWith('<') ? m : `<p style="margin:6px 0">${m}</p>`);
 }
 
 function togglePront(id) {

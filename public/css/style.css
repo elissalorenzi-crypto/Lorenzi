@@ -530,6 +530,15 @@ tbody tr:hover { background: var(--rose-pale); }
 .pront-edit-hint { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: none; letter-spacing: 0; opacity: 0; transition: opacity .15s; }
 .pront-field-edit:hover .pront-edit-hint { opacity: 1; }
 
+/* ── ANÁLISE IA ──────────────────────────────────────────── */
+.pront-analise-box { margin-top: 18px; border: 1.5px solid var(--lavender); border-radius: 12px; overflow: hidden; background: #faf8ff; }
+.pront-analise-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: linear-gradient(90deg, #ede9fa, #f3eeff); border-bottom: 1px solid var(--lavender); font-size: 13px; font-weight: 700; color: var(--plum); }
+.btn-analise { background: var(--plum); color: #fff; border: none; border-radius: 7px; padding: 5px 14px; font-size: 12px; font-weight: 600; cursor: pointer; transition: opacity .15s; }
+.btn-analise:hover { opacity: .85; }
+.btn-analise:disabled { opacity: .55; cursor: not-allowed; }
+.pront-analise-content { padding: 14px 16px; font-size: 13px; line-height: 1.65; color: var(--text); min-height: 48px; }
+.pront-analise-placeholder { color: var(--muted); font-style: italic; font-size: 12.5px; }
+
 /* ── FINANCEIRO ──────────────────────────────────────────── */
 .fin-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
 .fin-bar-label { font-size: 12px; color: var(--text-mid); width: 60px; text-align: right; flex-shrink: 0; }
