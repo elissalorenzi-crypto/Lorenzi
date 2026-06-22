@@ -22,11 +22,76 @@ const upload = multer({
   }
 });
 
+const crypto = require('crypto');
+
 const app  = express();
 const PORT = process.env.PORT || 3001;
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// ── AUTENTICAÇÃO ──────────────────────────────────────────────
+const _sessions = new Map(); // token → expiry
+
+function gerarToken() { return crypto.randomBytes(32).toString('hex'); }
+function hashSenha(s) { return crypto.createHash('sha256').update(s + 'psi_salt_2024').digest('hex'); }
+
+// Rotas públicas — não exigem token
+const ROTAS_PUBLICAS = [
+  /^\/api\/auth\//,
+  /^\/api\/agenda-publica/,
+  /^\/api\/contratos\/[^/]+\/download/,
+  /^\/api\/contratos\/[^/]+\/link/,
+  /^\/api\/convites\//,
+];
+
+function authMiddleware(req, res, next) {
+  const publica = ROTAS_PUBLICAS.some(r => r.test(req.path));
+  if (publica) return next();
+
+  const token = (req.headers.authorization || '').replace('Bearer ', '');
+  const expiry = _sessions.get(token);
+  if (!token || !expiry || Date.now() > expiry) {
+    return res.status(401).json({ error: 'Não autenticado' });
+  }
+  // Renova sessão a cada request
+  _sessions.set(token, Date.now() + 8 * 60 * 60 * 1000);
+  next();
+}
+
+app.use('/api', authMiddleware);
+
+// Login
+app.post('/api/auth/login', (req, res) => {
+  const { senha } = req.body || {};
+  const cfg = db.getConfig();
+  const senhaHash = cfg.senha_admin || hashSenha('1234'); // senha padrão: 1234
+  if (hashSenha(senha) !== senhaHash) {
+    return res.status(401).json({ error: 'Senha incorreta' });
+  }
+  const token = gerarToken();
+  _sessions.set(token, Date.now() + 8 * 60 * 60 * 1000); // 8h
+  res.json({ token });
+});
+
+// Logout
+app.post('/api/auth/logout', (req, res) => {
+  const token = (req.headers.authorization || '').replace('Bearer ', '');
+  _sessions.delete(token);
+  res.json({ ok: true });
+});
+
+// Alterar senha (requer auth via middleware acima)
+app.post('/api/auth/senha', (req, res) => {
+  const { senha_atual, senha_nova } = req.body || {};
+  const cfg = db.getConfig();
+  const senhaHashAtual = cfg.senha_admin || hashSenha('1234');
+  if (hashSenha(senha_atual) !== senhaHashAtual) {
+    return res.status(401).json({ error: 'Senha atual incorreta' });
+  }
+  db.setConfig('senha_admin', hashSenha(senha_nova));
+  res.json({ ok: true });
+});
 
 // Traduz mensagens de erro técnicas do SQLite para português
 function traduzErro(msg) {

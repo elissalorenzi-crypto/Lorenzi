@@ -17,11 +17,49 @@ const TIPO_LABEL = {
   sessao: 'Sessão', avaliacao: 'Avaliação', retorno: 'Retorno', outro: 'Outro'
 };
 
+// ── AUTH ─────────────────────────────────────────────────────
+function getToken() { return localStorage.getItem('psi_token') || ''; }
+function setToken(t) { localStorage.setItem('psi_token', t); }
+function clearToken() { localStorage.removeItem('psi_token'); }
+
+async function doLogin() {
+  const senha = document.getElementById('login-senha').value;
+  const btn   = document.getElementById('btn-login');
+  const erro  = document.getElementById('login-erro');
+  if (!senha) return;
+  btn.disabled = true; btn.textContent = 'Entrando…';
+  erro.style.display = 'none';
+  try {
+    const r = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ senha })
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error();
+    setToken(d.token);
+    document.getElementById('login-screen').style.display = 'none';
+    iniciarApp();
+  } catch(_) {
+    erro.style.display = 'block';
+  }
+  btn.disabled = false; btn.textContent = 'Entrar';
+}
+
+async function fazerLogout() {
+  try { await api('POST', '/auth/logout'); } catch(_) {}
+  clearToken();
+  document.getElementById('login-senha').value = '';
+  document.getElementById('login-erro').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
 // ── API ──────────────────────────────────────────────────────
 async function api(method, path, body = null) {
-  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  const opts = { method, headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() } };
   if (body) opts.body = JSON.stringify(body);
   const res = await fetch('/api' + path, opts);
+  if (res.status === 401) { clearToken(); location.reload(); return; }
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Ocorreu um erro. Tente novamente.');
   return data;
@@ -3294,13 +3332,24 @@ function salvarNovoBibCard() {
   showToast('Card criado com sucesso!', 'success');
 }
 
-async function init() {
+async function iniciarApp() {
   _config = await api('GET', '/configuracoes');
   atualizarBrand();
   loadNotificacoes();
   refreshAll();
-  // Normaliza telefones existentes no banco (remove código de país duplicado etc.)
   fetch('/api/admin/normalizar-fones', { method: 'POST' }).catch(() => {});
 }
 
-init();
+// Bootstrap: verifica token salvo ou exibe login
+(async () => {
+  if (getToken()) {
+    try {
+      // Valida token fazendo um request leve
+      await api('GET', '/configuracoes');
+      iniciarApp();
+      return;
+    } catch(_) { clearToken(); }
+  }
+  document.getElementById('login-screen').style.display = 'flex';
+  setTimeout(() => document.getElementById('login-senha')?.focus(), 100);
+})();
