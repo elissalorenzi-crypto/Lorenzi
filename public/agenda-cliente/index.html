@@ -22,11 +22,9 @@
     .header h1 { font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:rgba(255,255,255,.7); margin-bottom:4px; }
     .header .nome { font-size:18px; font-weight:800; }
     .header .crp  { font-size:12px; color:rgba(255,255,255,.6); margin-top:2px; }
-
     .hero { background:linear-gradient(90deg,#F5EDE7,#EDE5DC); padding:14px 32px; border-bottom:2px solid var(--border); text-align:center; }
     .hero p { font-size:13.5px; color:var(--muted); }
 
-    /* Container */
     .container { max-width:1060px; margin:0 auto; padding:24px 16px; }
 
     /* Week nav */
@@ -36,30 +34,17 @@
     .nav-btn:disabled { opacity:.3; cursor:default; }
     .sem-label { font-size:14px; font-weight:700; color:var(--plum); text-align:center; flex:1; }
 
-    /* Toggle de visão */
-    .view-toggle { display:flex; gap:6px; background:#fff; border:1.5px solid var(--border); border-radius:10px; padding:4px; margin-bottom:16px; width:fit-content; }
-    .view-btn { padding:6px 16px; border-radius:7px; border:none; background:none; cursor:pointer; font-size:13px; font-weight:600; color:var(--muted); transition:all .15s; }
-    .view-btn.active { background:linear-gradient(135deg,#75553C,#5a3f2a); color:#fff; }
+    /* Legenda */
+    .legenda { display:flex; gap:16px; align-items:center; margin-bottom:14px; flex-wrap:wrap; }
+    .leg-item { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); font-weight:600; }
+    .leg-dot { width:14px; height:14px; border-radius:4px; }
+    .leg-dot.livre   { background:linear-gradient(135deg,#27ae60,#1e8449); }
+    .leg-dot.ocupado { background:#c8bfb9; border:1.5px solid var(--border); }
 
-    /* ─── VISÃO CARDS (original) ─────────────────────────── */
-    .semana-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:8px; }
-    .dia-col { background:#fff; border-radius:12px; border:1.5px solid var(--border); overflow:visible; }
-    .dia-col.passado { opacity:.5; }
-    .dia-col.hoje { border-color:var(--rose); box-shadow:0 0 0 2px rgba(117,85,60,.15); }
-    .dia-header { border-radius:12px 12px 0 0; overflow:hidden; padding:10px 6px 8px; text-align:center; border-bottom:1px solid var(--border); background:#F0E8E0; }
-    .dia-col.hoje .dia-header { background:linear-gradient(135deg,#75553C,#14392F); }
-    .dia-header .dow { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); }
-    .dia-col.hoje .dia-header .dow,
-    .dia-col.hoje .dia-header .data-num,
-    .dia-col.hoje .dia-header .data-mes { color:#fff; }
-    .dia-header .data-num { font-size:18px; font-weight:800; color:var(--plum); line-height:1.2; margin-top:3px; }
-    .dia-header .data-mes { font-size:10px; color:var(--muted); }
-    .dia-slots { padding:8px 6px; display:flex; flex-direction:column; gap:5px; min-height:60px; }
-    .dia-vazio { padding:20px 4px; text-align:center; color:var(--muted); font-size:12px; }
-
-    /* ─── VISÃO GRADE ────────────────────────────────────── */
+    /* Grade */
     .grade-wrap { overflow-x:auto; background:#fff; border-radius:14px; border:1.5px solid var(--border); box-shadow:0 2px 8px rgba(20,57,47,.05); }
-    .grade-table { width:100%; border-collapse:collapse; min-width:560px; table-layout:fixed; font-size:13px; }
+    .grade-table { width:100%; border-collapse:collapse; min-width:560px; font-size:13px; }
+
     .grade-table thead th {
       background:linear-gradient(90deg,#F5EDE7,#EDE0D5);
       padding:10px 6px; font-size:10.5px; font-weight:700;
@@ -68,6 +53,7 @@
     }
     .grade-table thead th.hoje { background:linear-gradient(135deg,#75553C,#14392F); color:#fff; }
     .grade-table thead th.hora-th { width:52px; background:var(--bg); }
+
     .grade-hora {
       font-size:11px; font-weight:700; color:var(--muted);
       padding:3px 8px 0; text-align:right; white-space:nowrap;
@@ -75,30 +61,46 @@
       border-right:2px solid var(--border);
     }
     .grade-row-h td { border-top:1.5px solid var(--border); }
-    .grade-row-m td { border-top:1px dashed rgba(212,200,190,.55); }
+    .grade-row-m td { border-top:1px dashed rgba(212,200,190,.45); }
     .grade-cell { padding:3px; height:44px; vertical-align:middle; text-align:center; }
     .grade-break td {
       background:var(--bg); padding:5px 10px; text-align:center;
       font-size:10.5px; font-weight:700; color:var(--muted); letter-spacing:.8px;
       border-top:2px solid var(--border); border-bottom:2px solid var(--border);
     }
-    .grade-table thead th.dom-th { width:38px; background:var(--bg); font-size:9px; }
 
-    /* Slot buttons na grade */
+    /* Slot disponível */
     .slot-livre {
-      display:block; width:100%; padding:6px 2px; text-align:center;
-      background:linear-gradient(135deg,#dff0e7,#c5e4d2);
-      color:#1e4d36; border:1.5px solid #9fcfb4; border-radius:7px;
-      font-size:12px; font-weight:700; cursor:pointer; transition:all .15s;
+      display:block; width:100%; height:38px;
+      background:linear-gradient(135deg,#27ae60,#1e8449);
+      color:#fff; border:none; border-radius:8px;
+      font-size:12px; font-weight:700; cursor:pointer;
+      transition:all .15s; box-shadow:0 2px 6px rgba(39,174,96,.3);
     }
-    .slot-livre:hover { background:linear-gradient(135deg,#c5e4d2,#9fcfb4); transform:scale(1.03); }
-    .slot-ocupado {
-      display:block; width:100%; padding:6px 2px; text-align:center;
-      background:#F0E8E0; color:#C0A898; border:1.5px solid var(--border);
-      border-radius:7px; font-size:10.5px; font-weight:600; cursor:default;
+    .slot-livre:hover { transform:scale(1.05); box-shadow:0 4px 12px rgba(39,174,96,.45); }
+
+    /* Slot ocupado — bloco borrado */
+    .slot-ocupado-wrap {
+      display:block; width:100%; height:38px;
+      background:linear-gradient(135deg,#b8d4c8,#9fc5b5);
+      border:1.5px solid #8ab5a5; border-radius:8px;
+      overflow:hidden; position:relative; cursor:default;
     }
-    .grade-cell.passado .slot-livre,
-    .grade-cell.passado { opacity:.35; pointer-events:none; }
+    .slot-ocupado-inner {
+      position:absolute; inset:0;
+      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;
+      filter:blur(5px); user-select:none; pointer-events:none;
+      padding:3px 6px;
+    }
+    .blur-nome { font-size:11px; font-weight:800; color:#1a4d38; white-space:nowrap; overflow:hidden; }
+    .blur-hora { font-size:9px; color:#2a6b4a; font-weight:600; }
+    .slot-ocupado-wrap::after {
+      content:''; position:absolute; inset:0;
+      background:rgba(255,255,255,.15);
+    }
+
+    /* Passado */
+    .grade-cell.passado { opacity:.3; pointer-events:none; }
 
     /* Loading */
     .loading { text-align:center; padding:64px 20px; color:var(--muted); font-size:15px; }
@@ -125,16 +127,12 @@
     .modal-footer { display:flex; gap:10px; margin-top:6px; }
     .btn-cancel { flex:1; padding:12px; border:1.5px solid var(--border); border-radius:10px; background:#fff; color:var(--muted); font-size:14px; font-weight:600; cursor:pointer; transition:all .15s; }
     .btn-cancel:hover { border-color:var(--rose); color:var(--rose); }
-    .btn-confirmar { flex:2; padding:12px; background:linear-gradient(135deg,#75553C,#5a3f2a); color:#fff; border:none; border-radius:10px; font-size:14.5px; font-weight:700; cursor:pointer; box-shadow:0 4px 16px rgba(117,85,60,.35); transition:all .15s; }
+    .btn-confirmar { flex:2; padding:12px; background:linear-gradient(135deg,#27ae60,#1e8449); color:#fff; border:none; border-radius:10px; font-size:14.5px; font-weight:700; cursor:pointer; box-shadow:0 4px 16px rgba(39,174,96,.35); transition:all .15s; }
     .btn-confirmar:hover:not(:disabled) { transform:translateY(-1px); }
     .btn-confirmar:disabled { opacity:.6; cursor:not-allowed; transform:none; }
 
-    @media(max-width:760px) {
-      .semana-grid { grid-template-columns:repeat(3,1fr); }
+    @media(max-width:600px) {
       .header { padding:20px 16px 16px; }
-    }
-    @media(max-width:440px) {
-      .semana-grid { grid-template-columns:repeat(2,1fr); }
       .container { padding:16px 10px; }
     }
   </style>
@@ -146,7 +144,6 @@
   <div class="nome" id="h-nome">Carregando...</div>
   <div class="crp"  id="h-crp"></div>
 </div>
-
 <div class="hero">
   <p>Selecione um horário disponível para agendar sua sessão.</p>
 </div>
@@ -161,27 +158,18 @@
       <button class="nav-btn" id="btn-prox" onclick="navSem(1)">Próxima &#8250;</button>
     </div>
 
-    <!-- Toggle de visão -->
-    <div class="view-toggle">
-      <button class="view-btn active" id="btn-view-grade" onclick="setView('grade')">📅 Grade</button>
-      <button class="view-btn"        id="btn-view-cards" onclick="setView('cards')">🗂️ Cards</button>
+    <div class="legenda">
+      <div class="leg-item"><div class="leg-dot livre"></div> Disponível — clique para reservar</div>
+      <div class="leg-item"><div class="leg-dot ocupado"></div> Ocupado</div>
     </div>
 
-    <!-- Visão Grade -->
-    <div id="view-grade">
-      <div class="grade-wrap">
-        <table class="grade-table" id="grade-table"></table>
-      </div>
-    </div>
-
-    <!-- Visão Cards (original) -->
-    <div id="view-cards" style="display:none">
-      <div class="semana-grid" id="semana-grid"></div>
+    <div class="grade-wrap">
+      <table class="grade-table" id="grade-table"></table>
     </div>
   </div>
 </div>
 
-<!-- Modal de confirmação -->
+<!-- Modal -->
 <div class="modal-overlay" id="modal" onclick="if(event.target===this)fecharModal()">
   <div class="modal-box">
     <div class="modal-head">
@@ -208,17 +196,20 @@
 </div>
 
 <script>
-const DIAS_SHORT  = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-const DIAS_FULL   = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
-const MESES_GEN   = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const DIAS_SHORT = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const DIAS_FULL  = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+const MESES_GEN  = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 const MESES_CURTO = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
 const _hojeDate = new Date(); _hojeDate.setHours(0,0,0,0);
 const HOJE_STR  = _hojeDate.toISOString().slice(0, 10);
 let _semana     = HOJE_STR;
 let _slotSel    = null;
-let _view       = 'grade';
 let _dadosAtual = null;
+
+// Nomes fictícios para o efeito blur (não revela o paciente real)
+const NOMES_BLUR = ['Ana M.','Carlos S.','Julia R.','Pedro A.','Mariana L.','Rafael B.','Camila F.','Thiago N.'];
+function nomeBlur(seed) { return NOMES_BLUR[seed % NOMES_BLUR.length]; }
 
 function semDeslocar(delta) {
   const d = new Date(_semana + 'T12:00:00');
@@ -241,79 +232,86 @@ function fmtResumo(dataStr, hora) {
   return `📅 ${DIAS_FULL[d.getDay()]}, ${d.getDate()} de ${MESES_GEN[d.getMonth()]} às ${hora}`;
 }
 
-function setView(v) {
-  _view = v;
-  document.getElementById('view-grade').style.display = v === 'grade' ? 'block' : 'none';
-  document.getElementById('view-cards').style.display = v === 'cards' ? 'block' : 'none';
-  document.getElementById('btn-view-grade').classList.toggle('active', v === 'grade');
-  document.getElementById('btn-view-cards').classList.toggle('active', v === 'cards');
-  if (_dadosAtual) {
-    if (v === 'grade') renderGrade(_dadosAtual);
-    else renderCards(_dadosAtual);
-  }
-}
-
-// ── Visão Grade ───────────────────────────────────────────────
 function renderGrade(data) {
   const table = document.getElementById('grade-table');
-  if (!table) return;
 
-  // Índice slot: data|hora → {livre}
+  // Índice: data|hora → slot
   const idx = {};
+  let seedCnt = 0;
   for (const dia of data.semana) {
-    for (const s of dia.slots) idx[`${dia.data}|${s.hora}`] = s;
+    for (const s of dia.slots) {
+      idx[`${dia.data}|${s.hora}`] = { ...s, seed: seedCnt++ };
+    }
   }
 
   const dias = data.semana.map(d => d.data);
 
-  // Slots base 08:00–11:00 e 14:00–21:00 somente horas cheias
   const toMin = t => { const [h,m] = t.split(':').map(Number); return h*60+m; };
   const toStr = n => `${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`;
-  const baseSet = new Set();
-  for (let m = 480; m <= 660; m += 60) baseSet.add(toStr(m));   // 08:00–11:00
-  for (let m = 840; m <= 1260; m += 60) baseSet.add(toStr(m));  // 14:00–21:00
-  const slots = [...baseSet].sort().map(t => ({ t }));
+
+  // Mesma grade do admin: manhã 30min, tarde 60min
+  const slots = [];
+  for (let m = 480; m <= 660; m += 30) slots.push({ t: toStr(m), isHour: m % 60 === 0 });
+  for (let m = 840; m <= 1260; m += 60) slots.push({ t: toStr(m), isHour: true });
 
   // Cabeçalho
   const ths = dias.map(d => {
-    const dt  = new Date(d + 'T12:00:00');
-    const dom = dt.getDay() === 0;
-    const hj  = d === HOJE_STR;
-    const cls = [hj ? 'hoje' : '', dom ? 'dom-th' : ''].filter(Boolean).join(' ');
-    const label = dom
-      ? `Dom`
-      : `${DIAS_SHORT[dt.getDay()]} <span style="font-weight:500;opacity:.75">${dt.getDate()}/${String(dt.getMonth()+1).padStart(2,'0')}</span>`;
+    const dt = new Date(d + 'T12:00:00');
+    const hj = d === HOJE_STR;
+    const cls = hj ? 'hoje' : '';
+    const label = `${DIAS_SHORT[dt.getDay()]} <span style="font-weight:500;opacity:.75">${dt.getDate()}/${String(dt.getMonth()+1).padStart(2,'0')}</span>`;
     return `<th class="${cls}">${label}</th>`;
   }).join('');
 
   let html = `<thead><tr><th class="hora-th">Hora</th>${ths}</tr></thead><tbody>`;
-
   let almocoDone = false;
-  for (const { t } of slots) {
+
+  for (const { t, isHour } of slots) {
     const min = toMin(t);
+
     if (!almocoDone && min >= 840) {
       almocoDone = true;
       html += `<tr class="grade-break"><td colspan="${dias.length + 1}">— Intervalo —</td></tr>`;
+      // Repete cabeçalho dos dias após o separador
+      const ths2 = dias.map(d => {
+        const dt = new Date(d + 'T12:00:00');
+        const hj = d === HOJE_STR;
+        const label = `${DIAS_SHORT[dt.getDay()]} <span style="font-weight:500;opacity:.75">${dt.getDate()}/${String(dt.getMonth()+1).padStart(2,'0')}</span>`;
+        return `<th class="${hj?'hoje':''}">${label}</th>`;
+      }).join('');
+      html += `<tr class="grade-row-h"><th class="hora-th" style="background:var(--bg)"></th>${ths2}</tr>`;
     }
 
     const cells = dias.map(d => {
-      const s = idx[`${d}|${t}`];
       const past = isPast(d, t);
-      const dom  = new Date(d + 'T12:00:00').getDay() === 0;
-      const extra = dom ? ' style="width:38px"' : '';
+      const s    = idx[`${d}|${t}`];
 
-      if (!s) return `<td class="grade-cell"${extra}></td>`;
-      if (!s.livre || past) {
-        return `<td class="grade-cell${past ? ' passado' : ''}"${extra}>
-          <span class="slot-ocupado">${s.livre && past ? '' : '🔒'}</span>
-        </td>`;
+      if (!s) return `<td class="grade-cell"></td>`;
+
+      if (past) {
+        return `<td class="grade-cell passado"><div class="slot-ocupado-wrap">
+          <div class="slot-ocupado-inner">
+            <span class="blur-nome">${nomeBlur(s.seed)}</span>
+            <span class="blur-hora">${t}</span>
+          </div>
+        </div></td>`;
       }
-      return `<td class="grade-cell"${extra}>
-        <button class="slot-livre" onclick="abrirModal('${d}','${t}')">${t}</button>
+
+      if (!s.livre) {
+        return `<td class="grade-cell"><div class="slot-ocupado-wrap">
+          <div class="slot-ocupado-inner">
+            <span class="blur-nome">${nomeBlur(s.seed)}</span>
+            <span class="blur-hora">${t}</span>
+          </div>
+        </div></td>`;
+      }
+
+      return `<td class="grade-cell">
+        <button class="slot-livre" onclick="abrirModal('${d}','${t}')">✓ ${t}</button>
       </td>`;
     }).join('');
 
-    html += `<tr class="grade-row-h">
+    html += `<tr class="${isHour ? 'grade-row-h' : 'grade-row-m'}">
       <td class="grade-hora">${t}</td>${cells}
     </tr>`;
   }
@@ -322,48 +320,14 @@ function renderGrade(data) {
   table.innerHTML = html;
 }
 
-// ── Visão Cards ───────────────────────────────────────────────
-function renderCards(data) {
-  document.getElementById('semana-grid').innerHTML = data.semana.map(dia => {
-    const d = new Date(dia.data + 'T12:00:00');
-    const passado = dia.data < HOJE_STR;
-    const isHoje  = dia.data === HOJE_STR;
-
-    let slotsHtml;
-    if (passado) {
-      slotsHtml = `<div class="dia-vazio">—</div>`;
-    } else {
-      const itens = dia.slots.map(s => {
-        if (!s.livre || isPast(dia.data, s.hora)) {
-          return s.livre ? '' : `<span class="slot-ocupado">🔒 Ocupado</span>`;
-        }
-        return `<button class="slot-livre" onclick="abrirModal('${dia.data}','${s.hora}')">${s.hora}</button>`;
-      }).filter(Boolean);
-      slotsHtml = itens.length ? itens.join('') : `<div class="dia-vazio">Sem horários</div>`;
-    }
-
-    return `
-      <div class="dia-col${isHoje ? ' hoje' : ''}${passado ? ' passado' : ''}">
-        <div class="dia-header">
-          <div class="dow">${DIAS_SHORT[d.getDay()]}</div>
-          <div class="data-num">${d.getDate()}</div>
-          <div class="data-mes">${MESES_CURTO[d.getMonth()]}</div>
-        </div>
-        <div class="dia-slots">${slotsHtml}</div>
-      </div>`;
-  }).join('');
-}
-
 function renderSemana(data) {
   const de  = new Date(data.semDe  + 'T12:00:00');
   const ate = new Date(data.semAte + 'T12:00:00');
   document.getElementById('sem-label').textContent =
     `${de.getDate()} ${MESES_CURTO[de.getMonth()]} – ${ate.getDate()} ${MESES_CURTO[ate.getMonth()]} ${ate.getFullYear()}`;
   document.getElementById('btn-ant').disabled = new Date(data.semDe + 'T12:00:00') <= _hojeDate;
-
   _dadosAtual = data;
-  if (_view === 'grade') renderGrade(data);
-  else renderCards(data);
+  renderGrade(data);
 }
 
 async function carregar(autoAvancar = true) {
@@ -372,7 +336,6 @@ async function carregar(autoAvancar = true) {
     if (!r.ok) throw new Error();
     const data = await r.json();
 
-    // Semana inteira já passou (ex: domingo) → avança automaticamente
     if (autoAvancar && data.semAte < HOJE_STR) {
       _semana = semDeslocar(1);
       return carregar(false);

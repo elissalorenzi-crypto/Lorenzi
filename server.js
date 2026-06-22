@@ -355,13 +355,13 @@ app.get('/api/agenda-publica', (req, res) => {
   const toMin   = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
   const fromMin = n => `${String(Math.floor(n / 60)).padStart(2, '0')}:${String(n % 60).padStart(2, '0')}`;
 
-  const inicioMin = toMin(inicio);
-  const fimMin    = toMin(fim);
+  // Mesma grade do admin: manhã 08:00-11:00 a cada 30min, tarde 14:00-21:00 a cada 60min
   const todosSlots = [];
-  for (let m = inicioMin; m + duracao <= fimMin; m += 60) todosSlots.push(fromMin(m));
+  for (let m = 480; m <= 660; m += 30) todosSlots.push(fromMin(m));  // 08:00–11:00
+  for (let m = 840; m <= 1260; m += 60) todosSlots.push(fromMin(m)); // 14:00–21:00
 
   const existentes = db.getAgendamentos({ data_de: dias[0], data_ate: dias[dias.length - 1] })
-    .filter(a => ['agendado', 'confirmado'].includes(a.status));
+    .filter(a => ['agendado', 'confirmado', 'realizado'].includes(a.status));
 
   const bloqueios = [
     [cfg.bloqueio_inicio  || '', cfg.bloqueio_fim  || ''],
