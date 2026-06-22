@@ -79,21 +79,22 @@ function navigate(name) {
 
   const titles = {
     dashboard: 'Dashboard', contratos: 'Contratos Assinados', agenda: 'Agenda',
-    pacientes: 'Clientes', prontuarios: 'Prontuários', biblioteca: 'Biblioteca de Atividades',
-    financeiro: 'Financeiro', configuracoes: 'Configurações'
+    'agenda-cliente': 'Agenda Cliente', pacientes: 'Clientes', prontuarios: 'Prontuários',
+    biblioteca: 'Biblioteca de Atividades', financeiro: 'Financeiro', configuracoes: 'Configurações'
   };
   document.getElementById('topbar-title').textContent = titles[name] || name;
   _currentSection = name;
 
   const loaders = {
-    dashboard:    loadDashboard,
-    contratos:    loadContratos,
-    agenda:       loadAgenda,
-    pacientes:    loadPacientes,
-    prontuarios:  loadProntuariosPage,
-    biblioteca:   bibRenderHome,
-    financeiro:   loadFinanceiro,
-    configuracoes:loadConfiguracoes
+    dashboard:       loadDashboard,
+    contratos:       loadContratos,
+    agenda:          loadAgenda,
+    'agenda-cliente':loadAgendaCliente,
+    pacientes:       loadPacientes,
+    prontuarios:     loadProntuariosPage,
+    biblioteca:      bibRenderHome,
+    financeiro:      loadFinanceiro,
+    configuracoes:   loadConfiguracoes
   };
   loaders[name]?.();
 }
@@ -320,6 +321,103 @@ function agendaNavSemana(delta) {
 function agendaIrHoje() {
   _agendaSemana = HOJE();
   fetchAgendaSemana();
+}
+
+// ── Agenda Cliente (visão pública dentro do admin) ────────────
+let _acSemana = HOJE();
+
+async function loadAgendaCliente() {
+  await fetchAgendaCliente();
+}
+
+async function fetchAgendaCliente() {
+  const table = document.getElementById('ac-hor-table');
+  if (!table) return;
+  try {
+    const data = await fetch(`/api/agenda-publica?semana=${_acSemana}`).then(r => r.json());
+
+    // label de semana
+    const de  = new Date(data.semDe  + 'T12:00:00');
+    const ate = new Date(data.semAte + 'T12:00:00');
+    const MESES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    document.getElementById('ac-week-label').textContent =
+      `${de.getDate()} ${MESES[de.getMonth()]} – ${ate.getDate()} ${MESES[ate.getMonth()]} ${ate.getFullYear()}`;
+
+    renderAcGrade(data, table);
+  } catch(e) {
+    table.innerHTML = '<tr><td>Erro ao carregar</td></tr>';
+  }
+}
+
+function renderAcGrade(data, table) {
+  const DIAS_S = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const hoje   = HOJE();
+  const toMin  = t => { const [h,m] = t.split(':').map(Number); return h*60+m; };
+  const toStr  = n => `${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`;
+
+  const idx = {};
+  for (const dia of data.semana) {
+    for (const s of dia.slots) idx[`${dia.data}|${s.hora}`] = s;
+  }
+  const dias = data.semana.map(d => d.data);
+
+  const baseSet = new Set();
+  for (let m = 480; m <= 660; m += 60) baseSet.add(toStr(m));
+  for (let m = 840; m <= 1260; m += 60) baseSet.add(toStr(m));
+  const slots = [...baseSet].sort();
+
+  const ths = dias.map(d => {
+    const dt  = new Date(d + 'T12:00:00');
+    const dom = dt.getDay() === 0;
+    const hj  = d === hoje;
+    const cls = [hj ? 'hor-hoje' : '', dom ? 'dom' : ''].filter(Boolean).join(' ');
+    const label = dom ? 'Dom'
+      : `${DIAS_S[dt.getDay()]} <span style="font-weight:500;opacity:.75">${dt.getDate()}/${String(dt.getMonth()+1).padStart(2,'0')}</span>`;
+    return `<th class="${cls}">${label}</th>`;
+  }).join('');
+
+  let html = `<thead><tr><th class="hora-th">Hora</th>${ths}</tr></thead><tbody>`;
+
+  let almocoDone = false;
+  for (const t of slots) {
+    const min = toMin(t);
+    if (!almocoDone && min >= 840) {
+      almocoDone = true;
+      html += `<tr class="hor-break"><td colspan="${dias.length + 1}">— Intervalo —</td></tr>`;
+    }
+
+    const cells = dias.map(d => {
+      const s   = idx[`${d}|${t}`];
+      const dom = new Date(d + 'T12:00:00').getDay() === 0;
+      const domCl = dom ? ' dom' : '';
+
+      if (!s) return `<td class="hor-cell${domCl}"></td>`;
+      if (!s.livre) {
+        return `<td class="hor-cell has-appt${domCl}">
+          <div class="hor-appt agendado" style="justify-content:center;align-items:center">
+            <span class="hor-nome" style="text-align:center">🔒 Ocupado</span>
+          </div></td>`;
+      }
+      return `<td class="hor-cell${domCl}" style="background:rgba(42,107,74,.07)">
+        <span style="font-size:12px;font-weight:700;color:var(--green);display:block;text-align:center">✓ Livre</span>
+      </td>`;
+    }).join('');
+
+    html += `<tr class="hor-row-h"><td class="hor-hora">${t}</td>${cells}</tr>`;
+  }
+
+  html += '</tbody>';
+  table.innerHTML = html;
+}
+
+function agendaClienteNav(delta) {
+  _acSemana = addDays(_acSemana, delta * 7);
+  fetchAgendaCliente();
+}
+
+function agendaClienteHoje() {
+  _acSemana = HOJE();
+  fetchAgendaCliente();
 }
 
 function renderAgendaGrid() {
