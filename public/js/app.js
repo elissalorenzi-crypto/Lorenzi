@@ -56,8 +56,10 @@ function closeModal() {
   _modalSaveFn = null;
 }
 
-function modalSave() {
-  if (_modalSaveFn) _modalSaveFn();
+async function modalSave() {
+  if (!_modalSaveFn) return;
+  const result = await _modalSaveFn();
+  if (result !== false) closeModal();
 }
 
 // fechar ao clicar no overlay
@@ -640,7 +642,7 @@ async function openModalAgendamento(ag = null, dataPreset = null, pacienteIdPres
       forma_pgto:  document.getElementById('ag-forma').value || null,
       obs:         document.getElementById('ag-obs').value.trim()
     };
-    if (!body.data || !body.hora) return toast('Data e hora são obrigatórios', 'error');
+    if (!body.data || !body.hora) return toast('Data e hora são obrigatórios', 'error') || false;
     try {
       if (isEdit) { await api('PUT', `/agendamentos/${ag.id}`, body); toast('Agendamento atualizado!'); }
       else        { await api('POST', '/agendamentos', body);          toast('Sessão agendada!'); }
@@ -1216,7 +1218,7 @@ function openModalPaciente(p = {}) {
       frequencia:      document.getElementById('fp-freq').value      || null,
       freq_pgto:       document.getElementById('fp-freqpgto').value  || null
     };
-    if (!body.nome) return toast('Nome é obrigatório', 'error');
+    if (!body.nome) return toast('Nome é obrigatório', 'error') || false;
     try {
       if (p.id) { await api('PUT', `/pacientes/${p.id}`, body); toast('Cliente atualizado!'); }
       else      { await api('POST', '/pacientes', body);         toast('Cliente cadastrado!'); }
@@ -1418,7 +1420,7 @@ function syncDataPront() {
 
 async function openModalProntuario(r = {}) {
   const pacId = document.getElementById('pront-paciente-select')?.value;
-  if (!pacId) return toast('Selecione um cliente primeiro', 'error');
+  if (!pacId) return toast('Selecione um cliente primeiro', 'error') || false;
 
   let agendamentos = [];
   if (!r.id) {
@@ -1443,7 +1445,7 @@ async function openModalProntuario(r = {}) {
       tecnicas:       document.getElementById('pr-tecnicas').value.trim(),
       tarefas:        document.getElementById('pr-tarefas').value.trim()
     };
-    if (!body.data) return toast('Data é obrigatória', 'error');
+    if (!body.data) return toast('Data é obrigatória', 'error') || false;
     try {
       if (r.id) { await api('PUT', `/prontuarios/${r.id}`, body); toast('Anotação atualizada!'); }
       else      { await api('POST', '/prontuarios', body);         toast('Anotação salva! 📋'); }
@@ -1704,7 +1706,7 @@ function novoPagamento() {
   const abaLabel = _pgtoAba === 'empresa' ? '🏢 Empresa' : '👤 Pessoal';
   openModal(`+ Novo Pagamento — ${abaLabel}`, _formPagamento(), async () => {
     const d = _coletarPagamento();
-    if (!d.descricao) return toast('Informe a descrição', 'error');
+    if (!d.descricao) return toast('Informe a descrição', 'error') || false;
     await api('POST', '/pagamentos', d);
     toast('Pagamento adicionado!');
     loadPagamentos();
@@ -1716,7 +1718,7 @@ function editarPagamento(id) {
   if (!p) return;
   openModal('✏️ Editar Pagamento', _formPagamento(p), async () => {
     const d = _coletarPagamento();
-    if (!d.descricao) return toast('Informe a descrição', 'error');
+    if (!d.descricao) return toast('Informe a descrição', 'error') || false;
     await api('PUT', `/pagamentos/${id}`, d);
     toast('Pagamento atualizado!');
     loadPagamentos();
@@ -2348,9 +2350,9 @@ async function novoLinkAgenda() {
     </div>
   `, async () => {
     const dias = [...document.querySelectorAll('.dia-toggle.ativo')].map(b => parseInt(b.dataset.dia));
-    if (!dias.length) return toast('Selecione ao menos um dia', 'error');
+    if (!dias.length) return toast('Selecione ao menos um dia', 'error') || false;
     const horarios = [...document.querySelectorAll('.horario-link-input')].map(i => i.value).filter(Boolean);
-    if (!horarios.length) return toast('Adicione ao menos um horário', 'error');
+    if (!horarios.length) return toast('Adicione ao menos um horário', 'error') || false;
     const semanas = parseInt(document.getElementById('ag-semanas').value);
     try {
       const res = await api('POST', '/agendamento-links', { dias, horarios, semanas });
@@ -2568,7 +2570,7 @@ async function novoConvite() {
     </div>
   `, async () => {
     const nome  = document.getElementById('conv-nome')?.value.trim();
-    if (!nome) return toast('Informe o nome do cliente', 'error');
+    if (!nome) return toast('Informe o nome do cliente', 'error') || false;
     const valor      = parseFloat(document.getElementById('conv-valor')?.value) || 0;
     const data_inicio = document.getElementById('conv-inicio')?.value;
 
