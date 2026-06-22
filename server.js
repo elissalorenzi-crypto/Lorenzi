@@ -125,8 +125,18 @@ app.get('/api/prontuarios', (req, res) => {
 });
 
 app.post('/api/prontuarios', (req, res) => {
-  try { res.json({ id: db.createProntuario(req.body), success: true }); }
-  catch(e) { erro(res, e); }
+  try {
+    const id = db.createProntuario(req.body);
+    // Marca a sessão vinculada como realizada automaticamente
+    const agId = req.body.agendamento_id;
+    if (agId) {
+      const ag = db.getAgendamentoById(agId);
+      if (ag && ag.status !== 'realizado') {
+        db.updateAgendamento(agId, { ...ag, status: 'realizado' });
+      }
+    }
+    res.json({ id, success: true });
+  } catch(e) { erro(res, e); }
 });
 
 app.put('/api/prontuarios/:id', (req, res) => {
