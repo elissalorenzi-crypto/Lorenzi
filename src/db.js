@@ -198,7 +198,7 @@ const deletePaciente = (id) =>
 // ============================================================
 const getAgendamentos = (filtros = {}) => {
   let sql = `
-    SELECT a.*, p.nome as paciente_nome, p.whatsapp as paciente_whatsapp
+    SELECT a.*, p.nome as paciente_nome, p.apelido as paciente_apelido, p.whatsapp as paciente_whatsapp
     FROM agendamentos a
     LEFT JOIN pacientes p ON p.id = a.paciente_id
     WHERE 1=1
@@ -215,7 +215,7 @@ const getAgendamentos = (filtros = {}) => {
 
 const getAgendamentoById = (id) =>
   db.prepare(`
-    SELECT a.*, p.nome as paciente_nome, p.whatsapp as paciente_whatsapp
+    SELECT a.*, p.nome as paciente_nome, p.apelido as paciente_apelido, p.whatsapp as paciente_whatsapp
     FROM agendamentos a LEFT JOIN pacientes p ON p.id = a.paciente_id
     WHERE a.id=?
   `).get(id);
@@ -307,7 +307,7 @@ const getDashboard = (hoje) => {
   `).get(primeiroDia, ultimoDia).total;
 
   const agendaHoje = db.prepare(`
-    SELECT a.*, p.nome as paciente_nome, p.whatsapp as paciente_whatsapp
+    SELECT a.*, p.nome as paciente_nome, p.apelido as paciente_apelido, p.whatsapp as paciente_whatsapp
     FROM agendamentos a
     LEFT JOIN pacientes p ON p.id = a.paciente_id
     WHERE a.data = ?
