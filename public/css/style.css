@@ -844,7 +844,7 @@ tbody tr:hover { background: var(--rose-pale); }
 }
 .hor-appt.agendado   { border-color: var(--rose);  background: var(--rose-pale); }
 .hor-appt.confirmado { border-color: #2a6090;       background: #ddeef8; }
-.hor-appt.realizado  { border-color: var(--sage);   background: var(--sage-pale); }
+.hor-appt.realizado  { border-color: #1a7a40;  background: #27ae60; }
 .hor-appt.cancelado  { border-color: var(--red);    background: var(--red-pale);   opacity: .7; }
 .hor-appt.falta      { border-color: var(--peach);  background: var(--peach-pale); opacity: .7; }
 
@@ -853,7 +853,9 @@ tbody tr:hover { background: var(--rose-pale); }
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   width: 100%;
 }
-.hor-appt.realizado  .hor-nome { color: var(--sage); }
+.hor-appt.realizado  .hor-nome { color: #fff; font-weight: 700; }
+.hor-appt.realizado  .hor-actions .appt-btn { color: #fff; opacity: .85; }
+.hor-appt.realizado  .hor-actions .appt-btn:hover { opacity: 1; }
 .hor-appt.confirmado .hor-nome { color: #2a6090; }
 .hor-actions { display: flex; gap: 2px; flex-wrap: wrap; }
 
