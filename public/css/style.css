@@ -331,6 +331,9 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
 /* ── TABLES ──────────────────────────────────────────────── */
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.table-compact { font-size: 12px; }
+.table-compact th { padding: 7px 8px; }
+.table-compact td { padding: 6px 8px; }
 thead tr { background: linear-gradient(90deg, #F5EDE7, #EDE0D5); }
 th {
   text-align: left;
