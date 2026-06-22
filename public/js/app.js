@@ -1561,16 +1561,43 @@ async function loadPagamentos() {
   renderPagamentosTabela();
 }
 
+function _pgtoMesRef() {
+  return `${_pgtoAno}-${String(_pgtoMes).padStart(2,'0')}`;
+}
+
+function _pgtoEstaPago(p) {
+  if (!p.recorrente) return !!p.pago;
+  try { return JSON.parse(p.pago_meses || '[]').includes(_pgtoMesRef()); } catch(_) { return false; }
+}
+
+function _pgtoVencimentoExibido(p) {
+  // Para recorrentes: usa o dia original mas no mês/ano consultado
+  if (!p.data_vencimento) return null;
+  const dia = p.data_vencimento.split('-')[2];
+  if (p.recorrente) {
+    const mm = String(_pgtoMes).padStart(2,'0');
+    return `${_pgtoAno}-${mm}-${dia}`;
+  }
+  return p.data_vencimento;
+}
+
 function renderPagamentosTabela() {
   const lista = _pgtoData.filter(p => p.tipo === _pgtoAba);
-  const total   = lista.reduce((s,p) => s + (p.valor||0), 0);
-  const pago    = lista.filter(p => p.pago).reduce((s,p) => s + (p.valor||0), 0);
-  const pendente = total - pago;
-  const vencidos = lista.filter(p => !p.pago && p.data_vencimento && p.data_vencimento < HOJE()).length;
+  const mesRef = _pgtoMesRef();
+  const hoje   = HOJE();
+
+  const total    = lista.reduce((s,p) => s + (p.valor||0), 0);
+  const pagoVal  = lista.filter(p => _pgtoEstaPago(p)).reduce((s,p) => s + (p.valor||0), 0);
+  const pendente = total - pagoVal;
+  const vencidos = lista.filter(p => {
+    if (_pgtoEstaPago(p)) return false;
+    const venc = _pgtoVencimentoExibido(p);
+    return venc && venc < hoje;
+  }).length;
 
   document.getElementById('pgto-stats').innerHTML = `
     <div class="stat-card"><div class="stat-value">${brl(total)}</div><div class="stat-label">Total do Mês</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--sage)">${brl(pago)}</div><div class="stat-label">Pago</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--sage)">${brl(pagoVal)}</div><div class="stat-label">Pago</div></div>
     <div class="stat-card"><div class="stat-value" style="color:${pendente>0?'var(--rose)':'inherit'}">${brl(pendente)}</div><div class="stat-label">Pendente</div></div>
     <div class="stat-card"><div class="stat-value" style="color:${vencidos>0?'#c0425d':'inherit'}">${vencidos}</div><div class="stat-label">Vencidos</div></div>
   `;
@@ -1581,12 +1608,13 @@ function renderPagamentosTabela() {
     return;
   }
 
-  const hoje = HOJE();
   tbody.innerHTML = lista.map(p => {
-    const [a,m,d] = (p.data_vencimento||'').split('-');
-    const vencFmt = d ? `${d}/${m}/${a}` : '—';
-    const vencido = !p.pago && p.data_vencimento && p.data_vencimento < hoje;
-    const statusHtml = p.pago
+    const vencDate = _pgtoVencimentoExibido(p);
+    const [a,m,d]  = (vencDate||'').split('-');
+    const vencFmt  = d ? `${d}/${m}/${a}` : '—';
+    const pago     = _pgtoEstaPago(p);
+    const vencido  = !pago && vencDate && vencDate < hoje;
+    const statusHtml = pago
       ? `<span class="badge badge-confirmado">✅ Pago</span>`
       : vencido
         ? `<span class="badge badge-cancelado">⚠️ Vencido</span>`
@@ -1596,14 +1624,14 @@ function renderPagamentosTabela() {
         <td style="white-space:nowrap;${vencido?'color:#c0425d;font-weight:700':''}">${vencFmt}</td>
         <td>
           <strong>${p.descricao}</strong>
-          ${p.recorrente ? '<span style="font-size:10px;color:var(--muted);margin-left:4px">🔄 recorrente</span>' : ''}
+          ${p.recorrente ? '<span style="font-size:10px;color:var(--muted);margin-left:6px">🔄 recorrente</span>' : ''}
           ${p.obs ? `<br><span style="font-size:11px;color:var(--muted)">${p.obs}</span>` : ''}
         </td>
         <td><span class="badge" style="background:#f0ebfa;color:var(--plum)">${p.categoria||'—'}</span></td>
         <td class="text-right" style="font-weight:700">${brl(p.valor)}</td>
         <td>${statusHtml}</td>
         <td style="white-space:nowrap">
-          ${!p.pago ? `<button class="btn btn-ghost btn-xs" style="color:var(--sage)" onclick="marcarPago(${p.id})" title="Marcar como pago">✅</button>` : ''}
+          ${!pago ? `<button class="btn btn-ghost btn-xs" style="color:var(--sage)" onclick="marcarPago(${p.id})" title="Marcar como pago">✅</button>` : ''}
           <button class="btn btn-ghost btn-xs" onclick="editarPagamento(${p.id})" title="Editar">✏️</button>
           <button class="btn btn-ghost btn-xs" style="color:var(--red,#c0425d)" onclick="deletarPagamento(${p.id})" title="Excluir">🗑</button>
         </td>
@@ -1698,7 +1726,16 @@ function editarPagamento(id) {
 async function marcarPago(id) {
   const p = _pgtoData.find(x => x.id === id);
   if (!p) return;
-  await api('PUT', `/pagamentos/${id}`, { ...p, pago: 1, data_pagamento: HOJE() });
+  if (p.recorrente) {
+    // Registra pagamento deste mês específico no array pago_meses
+    const mesRef = _pgtoMesRef();
+    let meses = [];
+    try { meses = JSON.parse(p.pago_meses || '[]'); } catch(_) {}
+    if (!meses.includes(mesRef)) meses.push(mesRef);
+    await api('PUT', `/pagamentos/${id}`, { ...p, pago_meses: JSON.stringify(meses), data_pagamento: HOJE() });
+  } else {
+    await api('PUT', `/pagamentos/${id}`, { ...p, pago: 1, data_pagamento: HOJE() });
+  }
   toast('Marcado como pago ✅');
   loadPagamentos();
 }

@@ -15,6 +15,7 @@ const migrations = [
   "ALTER TABLE contratos ADD COLUMN valor_sessao REAL DEFAULT 0",
   "ALTER TABLE convites ADD COLUMN valor REAL DEFAULT 0",
   "ALTER TABLE convites ADD COLUMN data_inicio TEXT",
+  "ALTER TABLE pagamentos ADD COLUMN pago_meses TEXT DEFAULT '[]'",
 ];
 for (const m of migrations) {
   try { db.exec(m); } catch(_) {}
@@ -570,34 +571,48 @@ const getProjecaoRecorrente = () => {
 // PAGAMENTOS
 // ============================================================
 const getPagamentos = ({ tipo, ano, mes } = {}) => {
-  const conds = [];
-  const params = [];
-  if (tipo) { conds.push("tipo = ?"); params.push(tipo); }
-  if (ano && mes) {
-    const mm = String(mes).padStart(2,'0');
-    conds.push("data_vencimento >= ? AND data_vencimento <= ?");
-    params.push(`${ano}-${mm}-01`, `${ano}-${mm}-31`);
+  const tipoFilter = tipo ? "AND tipo = ?" : "";
+  const tipoParam  = tipo ? [tipo] : [];
+
+  if (!ano || !mes) {
+    const where = tipo ? "WHERE tipo = ?" : "";
+    return db.prepare(`SELECT * FROM pagamentos ${where} ORDER BY data_vencimento ASC, id DESC`).all(...tipoParam);
   }
-  const where = conds.length ? 'WHERE ' + conds.join(' AND ') : '';
-  return db.prepare(`SELECT * FROM pagamentos ${where} ORDER BY data_vencimento ASC, id DESC`).all(...params);
+
+  const mm     = String(mes).padStart(2,'0');
+  const mesRef = `${ano}-${mm}`;
+
+  // Pagamentos normais do mês + recorrentes cuja data_vencimento <= último dia do mês consultado
+  return db.prepare(`
+    SELECT * FROM pagamentos
+    WHERE (
+      (recorrente = 0 AND strftime('%Y-%m', data_vencimento) = ?)
+      OR
+      (recorrente = 1 AND (data_vencimento IS NULL OR strftime('%Y-%m', data_vencimento) <= ?))
+    )
+    ${tipoFilter}
+    ORDER BY
+      CAST(strftime('%d', data_vencimento) AS INTEGER) ASC,
+      id DESC
+  `).all(mesRef, mesRef, ...tipoParam);
 };
 
 const createPagamento = (d) =>
   rid(db.prepare(`
-    INSERT INTO pagamentos (tipo,descricao,categoria,valor,data_vencimento,data_pagamento,pago,recorrente,obs)
-    VALUES (?,?,?,?,?,?,?,?,?)
+    INSERT INTO pagamentos (tipo,descricao,categoria,valor,data_vencimento,data_pagamento,pago,recorrente,obs,pago_meses)
+    VALUES (?,?,?,?,?,?,?,?,?,?)
   `).run(d.tipo||'pessoal', d.descricao||'', d.categoria||null,
          d.valor||0, d.data_vencimento||null, d.data_pagamento||null,
-         d.pago?1:0, d.recorrente?1:0, d.obs||null));
+         d.pago?1:0, d.recorrente?1:0, d.obs||null, d.pago_meses||'[]'));
 
 const updatePagamento = (id, d) =>
   db.prepare(`
     UPDATE pagamentos SET tipo=?,descricao=?,categoria=?,valor=?,
-    data_vencimento=?,data_pagamento=?,pago=?,recorrente=?,obs=?
+    data_vencimento=?,data_pagamento=?,pago=?,recorrente=?,obs=?,pago_meses=?
     WHERE id=?
   `).run(d.tipo||'pessoal', d.descricao||'', d.categoria||null,
          d.valor||0, d.data_vencimento||null, d.data_pagamento||null,
-         d.pago?1:0, d.recorrente?1:0, d.obs||null, id);
+         d.pago?1:0, d.recorrente?1:0, d.obs||null, d.pago_meses||'[]', id);
 
 const deletePagamento = (id) =>
   db.prepare('DELETE FROM pagamentos WHERE id=?').run(id);
