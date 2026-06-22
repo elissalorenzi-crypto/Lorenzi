@@ -193,7 +193,7 @@ async function criarReuniaozoom(cfg, topic, startLocal, durationMin) {
       start_time: startLocal,
       duration: durationMin,
       timezone: 'America/Sao_Paulo',
-      settings: { join_before_host: true, waiting_room: false }
+      settings: { join_before_host: true, waiting_room: false, auto_recording: 'none' }
     })
   });
   const meet = await meetRes.json();
