@@ -1446,6 +1446,12 @@ function togglePront(id) {
   const open = body.classList.toggle('open');
   chev.textContent = open ? '˅' : '›';
   chev.style.transform = open ? 'rotate(0deg)' : '';
+  // Gera análise automaticamente na primeira abertura
+  if (open) {
+    const content = document.getElementById(`analise-content-${id}`);
+    const jaGerou = content && !content.querySelector('.pront-analise-placeholder');
+    if (!jaGerou) gerarAnalise(id);
+  }
 }
 
 function prontuarioFormHtml(r = {}, agendamentos = []) {
