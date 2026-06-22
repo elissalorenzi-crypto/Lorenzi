@@ -79,6 +79,7 @@ for (const m of migrations) {
 | 👥 Clientes | `section-pacientes` | `loadPacientes()` |
 | 📋 Prontuários | `section-prontuarios` | `loadProntuariosPage()` |
 | 📚 Biblioteca | `section-biblioteca` | `bibRenderHome()` |
+| 📊 Relatórios | `section-relatorios` | `loadRelatorios()` |
 | 💰 Financeiro | `section-financeiro` | `loadFinanceiro()` |
 | ⚙ Configurações | `section-configuracoes` | `loadConfiguracoes()` |
 
@@ -133,6 +134,47 @@ Mensagem enviada:
 - **Auto-avanço:** se a semana retornada já passou toda (domingos), avança automaticamente
 - API: `GET /api/agenda-publica?semana=YYYY-MM-DD`
 - Reserva: `POST /api/agenda-publica/reservar` → redireciona para contrato
+
+## Relatórios (`section-relatorios`)
+
+- API: `GET /api/relatorios` → retorna todas as agregações em uma chamada (`db.getRelatorios()` em `src/db.js`)
+- Gráficos via **Chart.js 4.4** (CDN no `<head>` de `index.html`)
+- Instâncias de Chart armazenadas em `_relCharts{}` — destruídas antes de re-renderizar (`relDestroyChart(id)`)
+- Dados cacheados em `_relData` para o botão de exportação CSV
+
+### Gráficos disponíveis
+
+| canvas id | tipo | dado |
+|---|---|---|
+| `chart-sessoes-mes` | linha | sessões realizadas por mês (últimos 12) |
+| `chart-receita-mes` | barras | receita paga por mês (últimos 12) |
+| `chart-dia-semana` | barras | sessões por dia da semana |
+| `chart-hora` | barras | sessões por horário |
+| `chart-genero` | rosca | clientes ativos por gênero |
+| `chart-idade` | barras | clientes por faixa etária (0-12, 13-17, 18-29, 30-49, 50-64, 65+) |
+| `chart-status` | rosca | agendamentos por status |
+| `chart-top-clientes` | barras horizontais | top 10 clientes por nº de sessões |
+
+### Tabelas e exportação
+
+- `#rel-top-tbody` — ranking de clientes: sessões, receita total, média por sessão
+- `#rel-semana-tbody` — sessões e receita agrupados por semana (últimas 8)
+- `exportarRelatorioCSV()` — gera `.csv` com BOM UTF-8 (compatível com Excel)
+
+### Queries SQLite relevantes (em `getRelatorios()`)
+
+```sql
+-- Sessões por mês
+SELECT strftime('%Y-%m', data) as mes, COUNT(*) as total
+FROM agendamentos WHERE status='realizado'
+GROUP BY mes ORDER BY mes DESC LIMIT 12
+
+-- Top clientes
+SELECT p.nome, p.apelido, COUNT(a.id) as total_sessoes, SUM(a.valor) as receita_total
+FROM agendamentos a JOIN pacientes p ON a.paciente_id=p.id
+WHERE a.status='realizado'
+GROUP BY a.paciente_id ORDER BY total_sessoes DESC LIMIT 10
+```
 
 ## Contratos
 
