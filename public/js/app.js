@@ -1411,6 +1411,11 @@ function prontuarioFormHtml(r = {}, agendamentos = []) {
       <label>Data da Sessão</label>
       <input type="date" id="pr-data" value="${r.data || HOJE()}">
     </div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+      <button type="button" class="btn btn-sm btn-outline" id="btn-corrigir-pront" onclick="corrigirProntuario()" title="Corrige ortografia e gramática automaticamente com IA">
+        ✨ Corrigir texto com IA
+      </button>
+    </div>
     <div class="form-group" style="margin-bottom:14px">
       <label>Relato / Conteúdo da Sessão</label>
       <textarea id="pr-conteudo" rows="5" spellcheck="true" lang="pt-BR" placeholder="Descreva os principais temas abordados na sessão...">${r.conteudo||''}</textarea>
@@ -1428,6 +1433,39 @@ function prontuarioFormHtml(r = {}, agendamentos = []) {
       <textarea id="pr-tarefas" rows="2" spellcheck="true" lang="pt-BR" placeholder="Atividades propostas para a próxima semana...">${r.tarefas||''}</textarea>
     </div>
   `;
+}
+
+async function corrigirProntuario() {
+  const btn = document.getElementById('btn-corrigir-pront');
+  const ids = ['pr-conteudo', 'pr-humor', 'pr-tecnicas', 'pr-tarefas'];
+  const originais = ids.map(id => document.getElementById(id)?.value || '');
+  if (originais.every(t => !t.trim())) return toast('Nenhum texto para corrigir', 'error');
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Corrigindo…';
+
+  let corrigidos = 0;
+  for (let i = 0; i < ids.length; i++) {
+    const el = document.getElementById(ids[i]);
+    if (!el || !originais[i].trim()) continue;
+    try {
+      const r = await api('POST', '/corrigir-texto', { texto: originais[i] });
+      if (r.corrigido && r.corrigido !== originais[i]) {
+        el.value = r.corrigido;
+        el.style.background = '#f0fdf4';
+        setTimeout(() => el.style.background = '', 2000);
+        corrigidos++;
+      }
+    } catch(e) {
+      toast('Erro ao corrigir: ' + e.message, 'error');
+      break;
+    }
+  }
+
+  btn.disabled = false;
+  btn.textContent = '✨ Corrigir texto com IA';
+  if (corrigidos > 0) toast(`✅ ${corrigidos} campo(s) corrigido(s)!`);
+  else toast('Nenhuma correção necessária 👍');
 }
 
 function syncDataPront() {
