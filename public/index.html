@@ -21,7 +21,7 @@
     <a href="#" class="nav-link active" data-section="dashboard">
       <span class="icon">🏠</span> Dashboard
     </a>
-    <a href="#" class="nav-link" data-section="agenda-cliente">
+    <a href="/agenda-cliente/" target="_blank" class="nav-link nav-link-ext">
       <span class="icon">🌐</span> Agenda Cliente
     </a>
     <a href="#" class="nav-link" data-section="agenda">
@@ -144,25 +144,6 @@
             </thead>
             <tbody id="contratos-tbody"></tbody>
           </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── AGENDA CLIENTE ── -->
-    <div class="section" id="section-agenda-cliente">
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Agenda Cliente</span>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn btn-outline btn-sm" onclick="agendaClienteNav(-1)">&#8249; Anterior</button>
-            <span class="week-label" id="ac-week-label" style="font-size:13px;font-weight:600;align-self:center"></span>
-            <button class="btn btn-outline btn-sm" onclick="agendaClienteNav(1)">Próxima &#8250;</button>
-            <button class="btn btn-ghost btn-sm" onclick="agendaClienteHoje()">Hoje</button>
-            <a href="/agenda-cliente/" target="_blank" class="btn btn-outline btn-sm" style="text-decoration:none">↗ Abrir site</a>
-          </div>
-        </div>
-        <div class="agenda-hor-wrap">
-          <table class="hor-table" id="ac-hor-table"></table>
         </div>
       </div>
     </div>
