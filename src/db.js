@@ -9,6 +9,14 @@ db.exec("PRAGMA foreign_keys = ON");
 
 const rid = (r) => Number(r.lastInsertRowid);
 
+// Migrações: adiciona colunas novas sem quebrar bancos existentes
+const migrations = [
+  "ALTER TABLE pacientes ADD COLUMN apelido TEXT",
+];
+for (const m of migrations) {
+  try { db.exec(m); } catch(_) {}
+}
+
 // ============================================================
 // SCHEMA
 // ============================================================
@@ -32,6 +40,7 @@ db.exec(`
     encaminhamento    TEXT,
     valor_sessao      REAL DEFAULT 0,
     obs               TEXT,
+    apelido           TEXT,
     ativo             INTEGER DEFAULT 1,
     created_at        TEXT DEFAULT (datetime('now','localtime'))
   );
@@ -150,12 +159,12 @@ const getPacienteByCpf = (cpf) =>
 const createPaciente = (data) =>
   rid(db.prepare(`
     INSERT INTO pacientes
-      (nome, cpf, data_nascimento, sexo, telefone, whatsapp, email, endereco,
+      (nome, apelido, cpf, data_nascimento, sexo, telefone, whatsapp, email, endereco,
        ocupacao, convenio, num_convenio, responsavel, tel_responsavel,
        queixa_principal, encaminhamento, valor_sessao, obs)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
   `).run(
-    data.nome, data.cpf || null, data.data_nascimento || null, data.sexo || 'F',
+    data.nome, data.apelido || null, data.cpf || null, data.data_nascimento || null, data.sexo || 'F',
     data.telefone || null, data.whatsapp || null, data.email || null, data.endereco || null,
     data.ocupacao || null, data.convenio || null, data.num_convenio || null,
     data.responsavel || null, data.tel_responsavel || null,
@@ -166,13 +175,13 @@ const createPaciente = (data) =>
 const updatePaciente = (id, data) =>
   db.prepare(`
     UPDATE pacientes SET
-      nome=?, cpf=?, data_nascimento=?, sexo=?, telefone=?, whatsapp=?, email=?,
+      nome=?, apelido=?, cpf=?, data_nascimento=?, sexo=?, telefone=?, whatsapp=?, email=?,
       endereco=?, ocupacao=?, convenio=?, num_convenio=?, responsavel=?,
       tel_responsavel=?, queixa_principal=?, encaminhamento=?, valor_sessao=?, obs=?,
       ativo=?, nota_fiscal=?, forma_pgto=?, frequencia=?, freq_pgto=?
     WHERE id=?
   `).run(
-    data.nome, data.cpf || null, data.data_nascimento || null, data.sexo || 'F',
+    data.nome, data.apelido || null, data.cpf || null, data.data_nascimento || null, data.sexo || 'F',
     data.telefone || null, data.whatsapp || null, data.email || null, data.endereco || null,
     data.ocupacao || null, data.convenio || null, data.num_convenio || null,
     data.responsavel || null, data.tel_responsavel || null,

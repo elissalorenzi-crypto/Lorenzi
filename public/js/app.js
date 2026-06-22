@@ -1084,9 +1084,13 @@ function voltarListaPacientes() {
 function pacienteFormHtml(p = {}) {
   return `
     <div class="form-grid">
-      <div class="form-group full">
+      <div class="form-group" style="flex:2">
         <label>Nome completo *</label>
         <input type="text" id="fp-nome" value="${p.nome||''}" placeholder="Nome do cliente">
+      </div>
+      <div class="form-group" style="flex:1">
+        <label>Apelido</label>
+        <input type="text" id="fp-apelido" value="${p.apelido||''}" placeholder="Como prefere ser chamado(a)">
       </div>
       <div class="form-group">
         <label>CPF</label>
@@ -1190,6 +1194,7 @@ function openModalPaciente(p = {}) {
   openModal(p.id ? 'Editar Cliente' : 'Novo Cliente', pacienteFormHtml(p), async () => {
     const body = {
       nome:            document.getElementById('fp-nome').value.trim(),
+      apelido:         document.getElementById('fp-apelido').value.trim(),
       cpf:             document.getElementById('fp-cpf').value.trim(),
       data_nascimento: document.getElementById('fp-nasc').value,
       sexo:            document.getElementById('fp-sexo').value,
