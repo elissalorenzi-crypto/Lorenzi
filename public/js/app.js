@@ -1588,6 +1588,17 @@ async function openModalProntuario(r = {}) {
         closeModal();
         loadProntuariosSection();
       }
+      // Atualiza grade da agenda se o agendamento vinculado mudou para realizado
+      if (body.agendamento_id) {
+        const agId = parseInt(body.agendamento_id);
+        const idx  = _agendaData.findIndex(a => a.id === agId);
+        if (idx !== -1 && _agendaData[idx].status !== 'realizado') {
+          _agendaData[idx] = { ..._agendaData[idx], status: 'realizado' };
+          renderAgendaHorario();
+          renderAgendaGrid();
+          renderAgendaLista();
+        }
+      }
     } catch(e) { toast(e.message, 'error'); }
   });
 }
