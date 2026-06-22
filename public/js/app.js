@@ -482,10 +482,20 @@ function renderAgendaHorario() {
   for (const { t, isHour } of slots) {
     const min = toMin(t);
 
-    // Separador antes de 14:00
+    // Separador + barra de dias antes de 14:00
     if (!almocoDone && min >= 840) {
       almocoDone = true;
       html += `<tr class="hor-break"><td colspan="${dias.length + 1}">— Intervalo —</td></tr>`;
+      const diaHeaders = dias.map(d => {
+        const dt  = new Date(d + 'T12:00:00');
+        const dom = dt.getDay() === 0;
+        const hj  = d === hoje;
+        const cls = [hj ? 'hoje' : '', dom ? 'dom' : ''].filter(Boolean).join(' ');
+        const label = dom ? 'Dom'
+          : `${DIAS_S[dt.getDay()]} <span style="font-weight:500;opacity:.75">${dt.getDate()}/${String(dt.getMonth()+1).padStart(2,'0')}</span>`;
+        return `<th class="${cls}">${label}</th>`;
+      }).join('');
+      html += `<tr class="hor-dias-sub"><th class="hora-th"></th>${diaHeaders}</tr>`;
     }
 
     const cells = dias.map(d => {
