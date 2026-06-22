@@ -1350,16 +1350,34 @@ function renderProntuarios(pronts, pacId) {
           <div class="pront-tipo">${r.sessao_tipo ? TIPO_LABEL[r.sessao_tipo] || r.sessao_tipo : 'Anotação'}</div>
         </div>
         <div style="display:flex;gap:6px;align-items:center">
-          <button class="btn btn-outline btn-xs" onclick="event.stopPropagation();editProntuario(${r.id},${pacId})">✏️</button>
           <button class="btn btn-ghost btn-xs" style="color:var(--red)" onclick="event.stopPropagation();deleteProntuarioItem(${r.id},${pacId})">🗑</button>
           <span style="color:var(--muted);font-size:18px" id="pront-chevron-${r.id}">›</span>
         </div>
       </div>
       <div class="pront-body" id="pront-body-${r.id}">
-        ${r.conteudo ? `<div class="pront-field"><div class="pront-field-label">Relato da Sessão</div><div class="pront-field-value">${r.conteudo}</div></div>` : ''}
-        ${r.humor ? `<div class="pront-field"><div class="pront-field-label">Humor / Estado Emocional</div><div class="pront-field-value">${r.humor}</div></div>` : ''}
-        ${r.tecnicas ? `<div class="pront-field"><div class="pront-field-label">Técnicas Utilizadas</div><div class="pront-field-value">${r.tecnicas}</div></div>` : ''}
-        ${r.tarefas ? `<div class="pront-field"><div class="pront-field-label">Tarefas / Homework</div><div class="pront-field-value">${r.tarefas}</div></div>` : ''}
+        ${r.conteudo ? `
+          <div class="pront-field pront-field-edit" onclick="editProntuario(${r.id},${pacId})" title="Clique para editar">
+            <div class="pront-field-label">Relato da Sessão <span class="pront-edit-hint">✏️ clique para editar</span></div>
+            <div class="pront-field-value">${r.conteudo.replace(/\n/g,'<br>')}</div>
+          </div>` : ''}
+        ${r.humor ? `
+          <div class="pront-field pront-field-edit" onclick="editProntuario(${r.id},${pacId})" title="Clique para editar">
+            <div class="pront-field-label">Humor / Estado Emocional <span class="pront-edit-hint">✏️ clique para editar</span></div>
+            <div class="pront-field-value">${r.humor}</div>
+          </div>` : ''}
+        ${r.tecnicas ? `
+          <div class="pront-field pront-field-edit" onclick="editProntuario(${r.id},${pacId})" title="Clique para editar">
+            <div class="pront-field-label">Técnicas Utilizadas <span class="pront-edit-hint">✏️ clique para editar</span></div>
+            <div class="pront-field-value">${r.tecnicas}</div>
+          </div>` : ''}
+        ${r.tarefas ? `
+          <div class="pront-field pront-field-edit" onclick="editProntuario(${r.id},${pacId})" title="Clique para editar">
+            <div class="pront-field-label">Tarefas / Homework <span class="pront-edit-hint">✏️ clique para editar</span></div>
+            <div class="pront-field-value">${r.tarefas}</div>
+          </div>` : ''}
+        <div style="padding:12px 0 4px;border-top:1px solid var(--border);margin-top:12px;display:flex;gap:8px">
+          <button class="btn btn-primary btn-sm" onclick="editProntuario(${r.id},${pacId})">✏️ Editar anotação</button>
+        </div>
       </div>
     </div>
   `).join('');

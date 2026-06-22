@@ -525,6 +525,10 @@ tbody tr:hover { background: var(--rose-pale); }
 .pront-field { margin-bottom: 14px; }
 .pront-field-label { font-size: 11px; font-weight: 700; color: var(--rose); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
 .pront-field-value { font-size: 13.5px; color: var(--text); white-space: pre-wrap; line-height: 1.6; }
+.pront-field-edit { cursor: pointer; border-radius: 8px; padding: 8px 10px; margin: 0 -10px 10px; transition: background .15s; }
+.pront-field-edit:hover { background: #fdf0f5; }
+.pront-edit-hint { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: none; letter-spacing: 0; opacity: 0; transition: opacity .15s; }
+.pront-field-edit:hover .pront-edit-hint { opacity: 1; }
 
 /* ── FINANCEIRO ──────────────────────────────────────────── */
 .fin-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
