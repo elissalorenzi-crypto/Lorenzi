@@ -286,7 +286,7 @@ async function loadDashboard() {
             <div class="bday-nome">${p.nome}</div>
             <div class="bday-dia">Dia ${parseInt(dia)} — ${calcIdade(p.data_nascimento)} anos</div>
           </div>
-          ${p.whatsapp ? `<a href="https://wa.me/55${p.whatsapp.replace(/\D/g,'')}" target="_blank" class="btn btn-sage btn-xs" style="margin-left:auto">💬</a>` : ''}
+          ${p.whatsapp ? `<a href="https://wa.me/${toWaNum(p.whatsapp)}" target="_blank" class="btn btn-sage btn-xs" style="margin-left:auto">💬</a>` : ''}
         </div>
       `;
     }).join('');
@@ -666,6 +666,24 @@ function copiarZoom(link) {
   fecharZoomMenus();
 }
 
+// Remove código de país e formata como (DDD) NNNNN-NNNN para armazenamento
+function normalizarFone(fone) {
+  if (!fone) return '';
+  let d = fone.replace(/\D/g, '');
+  if (d.startsWith('55') && d.length >= 12) d = d.slice(2);
+  if (d.length === 10) d = d.slice(0, 2) + '9' + d.slice(2);
+  if (d.length === 11) return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
+  return fone; // retorna original se não reconhecido
+}
+
+// Constrói número internacional para wa.me a partir de qualquer formato armazenado
+function toWaNum(fone) {
+  let d = (fone || '').replace(/\D/g, '');
+  if (d.startsWith('55') && d.length >= 12) d = d.slice(2);
+  if (d.length === 10) d = d.slice(0, 2) + '9' + d.slice(2);
+  return '55' + d;
+}
+
 function zoomWaUrl(nome, link, fone, data, hora) {
   const primeiroNome = (nome || '').split(' ')[0];
   const DIAS  = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
@@ -677,8 +695,7 @@ function zoomWaUrl(nome, link, fone, data, hora) {
   }
   const horaFmt = hora ? ` às ${hora}` : '';
   const msg = `Bom dia, ${primeiroNome}! Segue lembrete da nossa sessão ${dataFmt}${horaFmt} e link para acesso:\n${link}\nAté lá!`;
-  const num = '55' + (fone || '').replace(/\D/g, '');
-  return `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
+  return `https://wa.me/${toWaNum(fone)}?text=${encodeURIComponent(msg)}`;
 }
 
 document.addEventListener('click', fecharZoomMenus);
@@ -847,7 +864,7 @@ function renderPacientesTable(data) {
         </div>
       </td>
       <td>
-        ${p.whatsapp ? `<a href="https://wa.me/55${p.whatsapp.replace(/\D/g,'')}" target="_blank" style="color:var(--sage);font-size:12px">💬 ${p.whatsapp}</a>` : '—'}
+        ${p.whatsapp ? `<a href="https://wa.me/${toWaNum(p.whatsapp)}" target="_blank" style="color:var(--sage);font-size:12px">💬 ${p.whatsapp}</a>` : '—'}
       </td>
       <td>
         ${p.frequencia ? `
@@ -949,7 +966,7 @@ async function verDetalhePaciente(id) {
           <div class="info-grid">
             <div class="info-item">
               <div class="info-label">WhatsApp</div>
-              <div class="info-value">${p.whatsapp ? `<a href="https://wa.me/55${p.whatsapp.replace(/\D/g,'')}" target="_blank" style="color:var(--sage)">💬 ${p.whatsapp}</a>` : '—'}</div>
+              <div class="info-value">${p.whatsapp ? `<a href="https://wa.me/${toWaNum(p.whatsapp)}" target="_blank" style="color:var(--sage)">💬 ${p.whatsapp}</a>` : '—'}</div>
             </div>
             <div class="info-item">
               <div class="info-label">E-mail</div>
@@ -1157,7 +1174,7 @@ function openModalPaciente(p = {}) {
       cpf:             document.getElementById('fp-cpf').value.trim(),
       data_nascimento: document.getElementById('fp-nasc').value,
       sexo:            document.getElementById('fp-sexo').value,
-      whatsapp:        document.getElementById('fp-wpp').value.trim(),
+      whatsapp:        normalizarFone(document.getElementById('fp-wpp').value.trim()),
       email:           document.getElementById('fp-email').value.trim(),
       endereco:        document.getElementById('fp-end').value.trim(),
       ocupacao:        document.getElementById('fp-ocup').value.trim(),
@@ -2402,6 +2419,8 @@ async function init() {
   atualizarBrand();
   loadNotificacoes();
   refreshAll();
+  // Normaliza telefones existentes no banco (remove código de país duplicado etc.)
+  fetch('/api/admin/normalizar-fones', { method: 'POST' }).catch(() => {});
 }
 
 init();

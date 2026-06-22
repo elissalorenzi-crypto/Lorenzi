@@ -501,6 +501,31 @@ app.delete('/api/contratos/:id', (req, res) => {
 });
 
 // ── CONFIGURAÇÕES ────────────────────────────────────────────
+// Normaliza telefones/whatsapp de todos os clientes (remove código de país duplicado, adiciona 9º dígito)
+app.post('/api/admin/normalizar-fones', (req, res) => {
+  try {
+    const normalize = (fone) => {
+      if (!fone) return null;
+      let d = fone.replace(/\D/g, '');
+      if (d.startsWith('55') && d.length >= 12) d = d.slice(2);
+      if (d.length === 10) d = d.slice(0, 2) + '9' + d.slice(2);
+      if (d.length === 11) return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
+      return fone;
+    };
+    const pacientes = db.getPacientes('todos');
+    let atualizados = 0;
+    for (const p of pacientes) {
+      const wpp = normalize(p.whatsapp);
+      const tel = normalize(p.telefone);
+      if (wpp !== p.whatsapp || tel !== p.telefone) {
+        db.updatePaciente(p.id, { ...p, whatsapp: wpp, telefone: tel });
+        atualizados++;
+      }
+    }
+    res.json({ success: true, atualizados });
+  } catch(e) { erro(res, e); }
+});
+
 app.get('/api/configuracoes', (req, res) => res.json(db.getConfig()));
 
 app.post('/api/configuracoes', (req, res) => {
