@@ -1645,6 +1645,7 @@ function renderPagamentosTabela() {
 function _formPagamento(p = {}) {
   const cats = _pgtoAba === 'empresa' ? CATS_EMPRESA : CATS_PESSOAL;
   const catOpts = cats.map(c => `<option value="${c}" ${p.categoria===c?'selected':''}>${c}</option>`).join('');
+  const pagoChecked = p.id ? _pgtoEstaPago(p) : !!p.pago;
   return `
     <div class="form-grid">
       <div class="form-group full">
@@ -1673,7 +1674,7 @@ function _formPagamento(p = {}) {
     </div>
     <div style="display:flex;gap:24px;margin-top:14px">
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
-        <input type="checkbox" id="fp-pago" ${p.pago?'checked':''} style="accent-color:var(--sage);width:15px;height:15px">
+        <input type="checkbox" id="fp-pago" ${pagoChecked?'checked':''} style="accent-color:var(--sage);width:15px;height:15px">
         Pago
       </label>
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
@@ -1688,17 +1689,34 @@ function _formPagamento(p = {}) {
   `;
 }
 
-function _coletarPagamento() {
+function _coletarPagamento(original = {}) {
+  const recorrente = document.getElementById('fp-recorrente').checked;
+  const pagoChecked = document.getElementById('fp-pago').checked;
+
+  let pago_meses = original.pago_meses || '[]';
+  let pago = pagoChecked ? 1 : 0;
+
+  if (recorrente) {
+    const mesRef = _pgtoMesRef();
+    let meses = [];
+    try { meses = JSON.parse(pago_meses); } catch(_) {}
+    if (pagoChecked && !meses.includes(mesRef)) meses.push(mesRef);
+    if (!pagoChecked) meses = meses.filter(m => m !== mesRef);
+    pago_meses = JSON.stringify(meses);
+    pago = 0; // recorrente usa pago_meses
+  }
+
   return {
     tipo:            _pgtoAba,
     descricao:       document.getElementById('fp-desc').value.trim(),
     categoria:       document.getElementById('fp-cat').value,
     valor:           parseFloat(document.getElementById('fp-valor').value) || 0,
     data_vencimento: document.getElementById('fp-venc').value || null,
-    data_pagamento:  document.getElementById('fp-pgto-data').value || null,
-    pago:            document.getElementById('fp-pago').checked ? 1 : 0,
-    recorrente:      document.getElementById('fp-recorrente').checked ? 1 : 0,
+    data_pagamento:  pagoChecked ? (document.getElementById('fp-pgto-data').value || HOJE()) : null,
+    pago,
+    recorrente:      recorrente ? 1 : 0,
     obs:             document.getElementById('fp-obs').value.trim() || null,
+    pago_meses,
   };
 }
 
@@ -1717,7 +1735,7 @@ function editarPagamento(id) {
   const p = _pgtoData.find(x => x.id === id);
   if (!p) return;
   openModal('✏️ Editar Pagamento', _formPagamento(p), async () => {
-    const d = _coletarPagamento();
+    const d = _coletarPagamento(p);
     if (!d.descricao) return toast('Informe a descrição', 'error') || false;
     await api('PUT', `/pagamentos/${id}`, d);
     toast('Pagamento atualizado!');
