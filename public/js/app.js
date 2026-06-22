@@ -1566,10 +1566,28 @@ async function openModalProntuario(r = {}) {
     };
     if (!body.data) return toast('Data é obrigatória', 'error') || false;
     try {
-      if (r.id) { await api('PUT', `/prontuarios/${r.id}`, body); toast('Anotação atualizada!'); }
-      else      { await api('POST', '/prontuarios', body);         toast('Anotação salva! 📋'); }
-      closeModal();
-      loadProntuariosSection();
+      if (r.id) {
+        await api('PUT', `/prontuarios/${r.id}`, body);
+        toast('Anotação atualizada!');
+        closeModal();
+        await loadProntuariosSection();
+        // Reabre o card e regera a análise com o conteúdo atualizado
+        const card = document.getElementById(`pront-${r.id}`);
+        if (card) {
+          const body2 = document.getElementById(`pront-body-${r.id}`);
+          const chev  = document.getElementById(`pront-chevron-${r.id}`);
+          if (body2 && !body2.classList.contains('open')) {
+            body2.classList.add('open');
+            if (chev) { chev.textContent = '˅'; }
+          }
+          gerarAnalise(r.id);
+        }
+      } else {
+        await api('POST', '/prontuarios', body);
+        toast('Anotação salva! 📋');
+        closeModal();
+        loadProntuariosSection();
+      }
     } catch(e) { toast(e.message, 'error'); }
   });
 }
