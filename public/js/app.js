@@ -2152,32 +2152,63 @@ function filtrarContratos() {
 function renderContratosTable(data) {
   const tbody = document.getElementById('contratos-tbody');
   if (!data.length) {
-    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="empty-icon">📝</span><p>Nenhum contrato assinado ainda.<br>Clique em <strong>+ Novo Contrato</strong> para enviar o link ao cliente.</p></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="empty-icon">📝</span><p>Nenhum contrato assinado ainda.<br>Clique em <strong>+ Novo Contrato</strong> para enviar o link ao cliente.</p></div></td></tr>`;
     return;
   }
   const pgtoLabel = { mensal: 'Mensal', 'por sessão': 'Por Sessão', Mensal: 'Mensal', 'Por sessão': 'Por Sessão' };
   tbody.innerHTML = data.map(c => {
     const [a, m, d] = (c.created_at || '').split(' ')[0]?.split('-') || [];
     const dataFmt = d ? `${d}/${m}/${a}` : '—';
+    const valorFmt = c.valor_sessao ? `R$ ${Number(c.valor_sessao).toFixed(2).replace('.',',')}` : '—';
+    const arquivoHtml = c.arquivo
+      ? `<a href="/uploads/contratos/${c.arquivo}" target="_blank" class="btn btn-outline btn-sm" style="margin-right:8px">📄 Ver contrato assinado</a>`
+      : `<span style="color:var(--muted);font-size:12px">Sem arquivo anexo</span>`;
     return `
-      <tr>
+      <tr style="cursor:pointer" onclick="toggleContratoDetalhe(${c.id})">
         <td style="white-space:nowrap">${dataFmt}</td>
         <td>
           <strong>${c.nome}</strong>
           ${c.nome_responsavel ? `<br><span style="font-size:11px;color:var(--muted)">Resp: ${c.nome_responsavel}</span>` : ''}
-          ${c.celular ? `<span class="only-mobile" style="font-size:11px;color:var(--muted)">📞 ${c.celular}</span>` : ''}
-          ${c.email ? `<span class="only-mobile" style="font-size:11px;color:var(--muted)">✉ ${c.email}</span>` : ''}
         </td>
         <td>${c.cpf || '—'}</td>
         <td>${c.email || '—'}</td>
         <td>${c.celular || '—'}</td>
         <td>${c.forma_pgto ? `<span class="badge badge-confirmado">${pgtoLabel[c.forma_pgto] || c.forma_pgto}</span>` : '—'}</td>
-        <td>
+        <td style="white-space:nowrap">${valorFmt}</td>
+        <td style="white-space:nowrap" onclick="event.stopPropagation()">
           <button class="btn btn-ghost btn-xs" style="color:var(--red)" onclick="deleteContratoItem(${c.id})">🗑</button>
+        </td>
+      </tr>
+      <tr id="detalhe-contrato-${c.id}" style="display:none">
+        <td colspan="8" style="background:#faf7f4;padding:16px 20px;border-bottom:2px solid var(--border)">
+          <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+            ${arquivoHtml}
+            <div style="display:flex;align-items:center;gap:8px">
+              <label style="font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap">Valor da Sessão:</label>
+              <input type="number" id="valor-contrato-${c.id}" value="${c.valor_sessao || ''}"
+                placeholder="0,00" min="0" step="0.01"
+                style="width:110px;padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
+              <button class="btn btn-primary btn-sm" onclick="salvarValorContrato(${c.id})">Salvar</button>
+            </div>
+          </div>
         </td>
       </tr>
     `;
   }).join('');
+}
+
+function toggleContratoDetalhe(id) {
+  const row = document.getElementById(`detalhe-contrato-${id}`);
+  if (!row) return;
+  row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+}
+
+async function salvarValorContrato(id) {
+  const input = document.getElementById(`valor-contrato-${id}`);
+  const valor = parseFloat(input.value) || 0;
+  await api('PUT', `/contratos/${id}`, { valor_sessao: valor });
+  toast('Valor atualizado');
+  loadContratos();
 }
 
 async function deleteContratoItem(id) {

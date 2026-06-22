@@ -12,6 +12,7 @@ const rid = (r) => Number(r.lastInsertRowid);
 // Migrações: adiciona colunas novas sem quebrar bancos existentes
 const migrations = [
   "ALTER TABLE pacientes ADD COLUMN apelido TEXT",
+  "ALTER TABLE contratos ADD COLUMN valor_sessao REAL DEFAULT 0",
 ];
 for (const m of migrations) {
   try { db.exec(m); } catch(_) {}
@@ -477,6 +478,9 @@ const createContrato = (data) =>
     data.origem || 'online', data.aceite || 0
   ));
 
+const updateContrato = (id, data) =>
+  db.prepare('UPDATE contratos SET valor_sessao=? WHERE id=?').run(data.valor_sessao ?? 0, id);
+
 const deleteContrato = (id) =>
   db.prepare('DELETE FROM contratos WHERE id=?').run(id);
 
@@ -551,7 +555,7 @@ module.exports = {
   getAgendamentos, getAgendamentoById, createAgendamento, updateAgendamento, deleteAgendamento,
   getProntuarios, createProntuario, updateProntuario, deleteProntuario,
   getDashboard, getFinanceiro, getPrevisaoPgto, getProjecaoRecorrente, getConfig, setConfig,
-  getContratos, createContrato, deleteContrato, getContratosNovos, marcarContratosVistos,
+  getContratos, createContrato, updateContrato, deleteContrato, getContratosNovos, marcarContratosVistos,
   createLinkAgendamento, getLinkAgendamento, getLinksAgendamento, desativarLinkAgendamento,
   createConvite, getConvites, getConviteByToken, usarConvite, deleteConvite
 };
