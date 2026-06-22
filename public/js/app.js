@@ -445,12 +445,12 @@ function renderAgendaHorario() {
     idx[k].push(a);
   }
 
-  // Slots base: 08:00–11:00 e 14:00–21:00 a cada 30 min
+  // Slots base: 08:00–11:00 a cada 30 min; 14:00–21:00 somente horas cheias
   const toMin  = t => { const [h,m] = t.split(':').map(Number); return h*60+m; };
   const toStr  = n => `${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`;
   const baseSet = new Set();
   for (let m = 480; m <= 660; m += 30) baseSet.add(toStr(m));   // 08:00–11:00
-  for (let m = 840; m <= 1260; m += 30) baseSet.add(toStr(m));  // 14:00–21:00
+  for (let m = 840; m <= 1260; m += 60) baseSet.add(toStr(m));  // 14:00–21:00
 
   // Adiciona horários reais que estejam fora do range base
   for (const a of _agendaData) baseSet.add(a.hora);
