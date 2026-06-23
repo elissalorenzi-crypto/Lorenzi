@@ -94,6 +94,7 @@ function openModal(title, bodyHtml, saveFn, opts = {}) {
 
 function closeModal() {
   if (_ditadoAtivo) pararDitado();
+  _salvarDitadoLocal();
   document.getElementById('modal-overlay').classList.remove('open');
   _modalSaveFn = null;
 }
@@ -1615,6 +1616,38 @@ let _ditadoRec   = null;
 let _ditadoAtivo = false;
 let _ditadoAcumulado = ''; // texto confirmado entre reinícios
 
+const _DITADO_KEY = 'ditado_transcricao_v1';
+const _DITADO_TTL = 24 * 60 * 60 * 1000; // 24 horas em ms
+
+function _salvarDitadoLocal() {
+  const texto = document.getElementById('ditado-transcricao')?.value?.trim();
+  if (texto) localStorage.setItem(_DITADO_KEY, JSON.stringify({ texto, ts: Date.now() }));
+  else       localStorage.removeItem(_DITADO_KEY);
+}
+
+function _restaurarDitadoLocal() {
+  try {
+    const raw = localStorage.getItem(_DITADO_KEY);
+    if (!raw) return;
+    const { texto, ts } = JSON.parse(raw);
+    if (!texto || Date.now() - ts > _DITADO_TTL) { localStorage.removeItem(_DITADO_KEY); return; }
+    const ta = document.getElementById('ditado-transcricao');
+    if (!ta) return;
+    ta.value = texto;
+    ta.style.display = 'block';
+    _ditadoAcumulado = texto;
+    const horas = Math.round((Date.now() - ts) / 3600000);
+    const label = horas < 1 ? 'há menos de 1h' : `há ${horas}h`;
+    document.getElementById('ditado-status').innerHTML =
+      `📝 Transcrição restaurada (${label}) — revise e clique em <strong>Estruturar com IA</strong>`;
+    document.getElementById('btn-estruturar').style.display = 'inline-flex';
+  } catch(_) {}
+}
+
+function _limparDitadoLocal() {
+  localStorage.removeItem(_DITADO_KEY);
+}
+
 function toggleDitado() {
   if (_ditadoAtivo) pararDitado();
   else iniciarDitado();
@@ -1774,10 +1807,10 @@ async function openModalProntuario(r = {}) {
     try {
       if (r.id) {
         await api('PUT', `/prontuarios/${r.id}`, body);
+        _limparDitadoLocal();
         toast('Anotação atualizada!');
         closeModal();
         await loadProntuariosSection();
-        // Reabre o card e regera a análise com o conteúdo atualizado
         const card = document.getElementById(`pront-${r.id}`);
         if (card) {
           const body2 = document.getElementById(`pront-body-${r.id}`);
@@ -1790,11 +1823,11 @@ async function openModalProntuario(r = {}) {
         }
       } else {
         await api('POST', '/prontuarios', body);
+        _limparDitadoLocal();
         toast('Anotação salva! 📋');
         closeModal();
         loadProntuariosSection();
       }
-      // Atualiza grade da agenda se o agendamento vinculado mudou para realizado
       if (body.agendamento_id) {
         const agId = parseInt(body.agendamento_id);
         const idx  = _agendaData.findIndex(a => a.id === agId);
@@ -1807,6 +1840,8 @@ async function openModalProntuario(r = {}) {
       }
     } catch(e) { toast(e.message, 'error'); }
   });
+  // openModal insere o HTML de forma síncrona — DOM pronto aqui
+  if (!r.id) _restaurarDitadoLocal();
 }
 
 async function editProntuario(id, pacId) {
