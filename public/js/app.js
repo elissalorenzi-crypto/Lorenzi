@@ -2479,9 +2479,10 @@ async function loadConfiguracoes() {
   document.getElementById('cfg-bloqueio-fim').value     = cfg.bloqueio_fim     || '';
   document.getElementById('cfg-bloqueio2-inicio').value = cfg.bloqueio2_inicio || '';
   document.getElementById('cfg-bloqueio2-fim').value    = cfg.bloqueio2_fim    || '';
-  document.getElementById('cfg-zoom-account').value        = cfg.zoom_account_id     || '';
-  document.getElementById('cfg-zoom-client-id').value      = cfg.zoom_client_id      || '';
-  document.getElementById('cfg-zoom-client-secret').value  = cfg.zoom_client_secret  || '';
+  document.getElementById('cfg-zoom-account').value        = cfg.zoom_account_id      || '';
+  document.getElementById('cfg-zoom-client-id').value      = cfg.zoom_client_id       || '';
+  document.getElementById('cfg-zoom-client-secret').value  = cfg.zoom_client_secret   || '';
+  document.getElementById('cfg-zoom-webhook-secret').value = cfg.zoom_webhook_secret  || '';
 }
 
 async function salvarConfiguracoes() {
@@ -2503,6 +2504,7 @@ async function salvarConfiguracoes() {
     zoom_account_id:      document.getElementById('cfg-zoom-account').value.trim(),
     zoom_client_id:       document.getElementById('cfg-zoom-client-id').value.trim(),
     zoom_client_secret:   document.getElementById('cfg-zoom-client-secret').value.trim(),
+    zoom_webhook_secret:  document.getElementById('cfg-zoom-webhook-secret').value.trim(),
   };
   try {
     await api('POST', '/configuracoes', body);
@@ -3365,6 +3367,55 @@ async function iniciarApp() {
   loadNotificacoes();
   refreshAll();
   fetch('/api/admin/normalizar-fones', { method: 'POST' }).catch(() => {});
+  iniciarPollingZoom();
+}
+
+// ── NOTIFICAÇÕES ZOOM ─────────────────────────────────────────
+const _notifsMostradas = new Set();
+
+function iniciarPollingZoom() {
+  verificarNotifsZoom();
+  setInterval(verificarNotifsZoom, 30000);
+}
+
+async function verificarNotifsZoom() {
+  try {
+    const lista = await api('GET', '/notificacoes?nao_lidas=1');
+    lista.filter(n => n.tipo === 'zoom_ended' && !_notifsMostradas.has(n.id))
+         .forEach(n => { _notifsMostradas.add(n.id); mostrarBannerZoom(n); });
+  } catch(_) {}
+}
+
+function mostrarBannerZoom(notif) {
+  if (document.getElementById('notif-zoom-' + notif.id)) return;
+  const d = document.createElement('div');
+  d.id = 'notif-zoom-' + notif.id;
+  d.className = 'notif-zoom-banner';
+  d.innerHTML = `
+    <span style="font-size:18px">📋</span>
+    <span style="flex:1">${notif.mensagem}</span>
+    ${notif.dados?.paciente_id
+      ? `<button class="notif-zoom-btn notif-zoom-btn-primary" onclick="abrirProntuarioZoom(${notif.dados.paciente_id},${notif.id})">Abrir Prontuário</button>`
+      : ''}
+    <button class="notif-zoom-btn" onclick="fecharBannerZoom(${notif.id})">✕</button>
+  `;
+  document.body.appendChild(d);
+  setTimeout(() => fecharBannerZoom(notif.id), 120000);
+}
+
+async function abrirProntuarioZoom(pacienteId, notifId) {
+  fecharBannerZoom(notifId);
+  navigate('prontuarios');
+  await api('POST', `/notificacoes/${notifId}/lida`).catch(() => {});
+  setTimeout(() => {
+    const sel = document.getElementById('pront-paciente-select');
+    if (sel) { sel.value = pacienteId; loadProntuariosSection(); }
+  }, 150);
+}
+
+async function fecharBannerZoom(notifId) {
+  document.getElementById('notif-zoom-' + notifId)?.remove();
+  await api('POST', `/notificacoes/${notifId}/lida`).catch(() => {});
 }
 
 // Bootstrap: verifica token ou exibe login

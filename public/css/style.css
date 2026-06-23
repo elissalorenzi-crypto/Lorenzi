@@ -1136,4 +1136,44 @@ tbody tr:hover { background: var(--rose-pale); }
 
   /* Config */
   .config-section-title { font-size: 12px; }
+
+  /* Banner Zoom */
+  .notif-zoom-banner { bottom: 12px; right: 12px; left: 12px; flex-direction: column; align-items: flex-start; }
+}
+
+/* ── BANNER DE NOTIFICAÇÃO ZOOM ──────────────────────────── */
+.notif-zoom-banner {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9500;
+  background: #402952;
+  color: #fff;
+  padding: 16px 18px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 6px 28px rgba(64,41,82,.40);
+  max-width: 420px;
+  animation: zoomBannerIn .3s ease;
+  font-size: 14px;
+}
+.notif-zoom-btn {
+  background: rgba(255,255,255,.18);
+  border: none;
+  color: #fff;
+  padding: 7px 13px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  white-space: nowrap;
+  transition: background .15s;
+}
+.notif-zoom-btn:hover { background: rgba(255,255,255,.28); }
+.notif-zoom-btn-primary { background: var(--rose); }
+.notif-zoom-btn-primary:hover { background: var(--rose-soft); }
+@keyframes zoomBannerIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
 }

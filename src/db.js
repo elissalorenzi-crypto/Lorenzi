@@ -142,6 +142,17 @@ db.exec(`
   );
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS notificacoes (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    tipo        TEXT NOT NULL DEFAULT 'zoom_ended',
+    mensagem    TEXT,
+    dados_json  TEXT,
+    lida        INTEGER DEFAULT 0,
+    created_at  TEXT DEFAULT (datetime('now','localtime'))
+  );
+`);
+
 try { db.prepare('ALTER TABLE contratos ADD COLUMN visto INTEGER DEFAULT 0').run(); } catch(e) {}
 try { db.prepare("ALTER TABLE pacientes ADD COLUMN nota_fiscal TEXT DEFAULT 'nao'").run(); } catch(e) {}
 try { db.prepare("ALTER TABLE pacientes ADD COLUMN forma_pgto TEXT").run(); } catch(e) {}
@@ -756,6 +767,27 @@ function limparZoomLinks(id) {
   return db.prepare('UPDATE agendamentos SET zoom_link = NULL').run();
 }
 
+// ============================================================
+// NOTIFICAÇÕES
+// ============================================================
+const createNotificacao = (tipo, mensagem, dados) =>
+  rid(db.prepare('INSERT INTO notificacoes (tipo, mensagem, dados_json) VALUES (?,?,?)')
+    .run(tipo, mensagem || null, dados ? JSON.stringify(dados) : null));
+
+const getNotificacoes = (apenasNaoLidas = false) => {
+  const rows = apenasNaoLidas
+    ? db.prepare('SELECT * FROM notificacoes WHERE lida=0 ORDER BY created_at DESC').all()
+    : db.prepare('SELECT * FROM notificacoes ORDER BY created_at DESC LIMIT 50').all();
+  return rows.map(r => ({ ...r, dados: r.dados_json ? JSON.parse(r.dados_json) : null }));
+};
+
+const marcarNotificacaoLida = (id) =>
+  db.prepare('UPDATE notificacoes SET lida=1 WHERE id=?').run(id);
+
+const getAgendamentoByZoomMeetingId = (meetingId) =>
+  db.prepare("SELECT * FROM agendamentos WHERE zoom_link LIKE ? LIMIT 1")
+    .get(`%/j/${meetingId}%`);
+
 module.exports = {
   getPacientes, getPacienteById, getPacienteByCpf, createPaciente, updatePaciente, deletePaciente,
   getAgendamentos, getAgendamentoById, createAgendamento, updateAgendamento, deleteAgendamento,
@@ -765,5 +797,6 @@ module.exports = {
   getContratos, createContrato, updateContrato, deleteContrato, getContratosNovos, marcarContratosVistos,
   createLinkAgendamento, getLinkAgendamento, getLinksAgendamento, desativarLinkAgendamento,
   createConvite, getConvites, getConviteByToken, usarConvite, deleteConvite,
-  limparZoomLinks
+  limparZoomLinks,
+  createNotificacao, getNotificacoes, marcarNotificacaoLida, getAgendamentoByZoomMeetingId
 };

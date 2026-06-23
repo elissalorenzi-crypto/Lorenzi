@@ -706,6 +706,58 @@ app.post('/api/admin/normalizar-fones', (req, res) => {
   } catch(e) { erro(res, e); }
 });
 
+// ── NOTIFICAÇÕES ──────────────────────────────────────────────
+app.get('/api/notificacoes', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  res.json(db.getNotificacoes(req.query.nao_lidas === '1'));
+});
+
+app.post('/api/notificacoes/:id/lida', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  db.marcarNotificacaoLida(Number(req.params.id));
+  res.json({ ok: true });
+});
+
+// ── ZOOM WEBHOOK (sem auth — chamado diretamente pelo Zoom) ───
+app.post('/api/zoom/webhook', express.json(), (req, res) => {
+  const body = req.body || {};
+  const cfg    = db.getConfig();
+  const secret = cfg.zoom_webhook_secret || '';
+
+  // Validação de assinatura (obrigatória quando secret está configurado)
+  if (secret) {
+    const sig       = req.headers['x-zm-signature'] || '';
+    const timestamp = req.headers['x-zm-request-timestamp'] || '';
+    const msg       = `v0:${timestamp}:${JSON.stringify(body)}`;
+    const expected  = 'v0=' + crypto.createHmac('sha256', secret).update(msg).digest('hex');
+    if (sig !== expected) return res.status(401).json({ error: 'Assinatura inválida' });
+  }
+
+  // Desafio de validação de URL (Zoom chama ao cadastrar o webhook)
+  if (body.event === 'endpoint.url_validation') {
+    const hash = crypto.createHmac('sha256', secret).update(body.payload?.plainToken || '').digest('hex');
+    return res.json({ plainToken: body.payload?.plainToken, encryptedToken: hash });
+  }
+
+  // Sessão encerrada
+  if (body.event === 'meeting.ended') {
+    const meetingId = String(body.payload?.object?.id || '');
+    if (meetingId) {
+      try {
+        const ag  = db.getAgendamentoByZoomMeetingId(meetingId);
+        const pac = ag ? db.getPacienteById(ag.paciente_id) : null;
+        const nome = pac?.apelido || pac?.nome?.split(' ')[0] || 'cliente';
+        db.createNotificacao('zoom_ended',
+          `Sessão com ${nome} encerrada — abrir prontuário?`,
+          { agendamento_id: ag?.id || null, paciente_id: pac?.id || null, paciente_nome: pac?.nome || null }
+        );
+      } catch(e) { console.error('Webhook zoom_ended:', e.message); }
+    }
+  }
+
+  res.json({ ok: true });
+});
+
 app.get('/api/configuracoes', (req, res) => res.json(db.getConfig()));
 
 app.post('/api/configuracoes', (req, res) => {
