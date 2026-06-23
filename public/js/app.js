@@ -60,7 +60,7 @@ async function fazerLogout() {
 
 // ── API ──────────────────────────────────────────────────────
 async function api(method, path, body = null) {
-  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  const opts = { method, headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() } };
   if (body) opts.body = JSON.stringify(body);
   const res = await fetch('/api' + path, opts);
   const data = await res.json();
@@ -2819,7 +2819,12 @@ function _gerarDescricaoNfse(p, sessoes, cfg) {
 }
 
 async function abrirModalNfse(pacienteId, ano, mes) {
-  const dados = await api('GET', `/nfse/dados?paciente_id=${pacienteId}&ano=${ano}&mes=${mes}`);
+  let dados;
+  try {
+    dados = await api('GET', `/nfse/dados?paciente_id=${pacienteId}&ano=${ano}&mes=${mes}`);
+  } catch(e) {
+    return toast('Erro ao carregar dados NFS-e: ' + e.message, 'error');
+  }
   const { paciente: p, sessoes, config: cfg } = dados;
 
   const total     = sessoes.reduce((acc, s) => acc + (parseFloat(s.valor) || 0), 0);
