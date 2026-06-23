@@ -418,7 +418,7 @@ const getFinanceiro = (ano, mes) => {
   `).all(de, ate);
 
   const lista = db.prepare(`
-    SELECT a.*, p.nome as paciente_nome
+    SELECT a.*, p.nome as paciente_nome, p.nota_fiscal as paciente_nota_fiscal
     FROM agendamentos a
     LEFT JOIN pacientes p ON p.id = a.paciente_id
     WHERE a.data >= ? AND a.data <= ? AND a.status = 'realizado'

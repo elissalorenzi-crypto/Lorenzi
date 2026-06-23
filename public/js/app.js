@@ -2668,19 +2668,25 @@ async function loadFinanceiro() {
   // Lista completa
   const listaTbody = document.getElementById('fin-lista-tbody');
   if (!data.lista.length) {
-    listaTbody.innerHTML = `<tr><td colspan="6" class="text-muted" style="text-align:center;padding:20px">Nenhuma sessão realizada neste mês</td></tr>`;
+    listaTbody.innerHTML = `<tr><td colspan="7" class="text-muted" style="text-align:center;padding:20px">Nenhuma sessão realizada neste mês</td></tr>`;
   } else {
     const formaLabel = { dinheiro:'Dinheiro', pix:'PIX', credito:'Crédito', debito:'Débito', convenio:'Convênio', transferencia:'TED/PIX' };
-    listaTbody.innerHTML = data.lista.map(a => `
-      <tr>
-        <td>${fmtData(a.data)}</td>
-        <td>${a.hora}</td>
-        <td>${a.paciente_nome || '—'}</td>
-        <td class="text-right fw-bold">${BRL(a.valor)}</td>
-        <td>${a.pago ? '<span style="color:var(--sage);font-weight:700">Recebido ✓</span>' : '<span style="color:var(--peach)">Pendente</span>'}</td>
-        <td>${formaLabel[a.forma_pgto] || a.forma_pgto || '—'}</td>
-      </tr>
-    `).join('');
+    listaTbody.innerHTML = data.lista.map(a => {
+      const nfBtn = a.paciente_nota_fiscal === 'sim'
+        ? `<button class="btn-nfse" onclick="abrirModalNfse(${a.paciente_id},${_finAno},${_finMes})" title="Emitir NFS-e">📄 NFS-e</button>`
+        : '<span style="color:var(--muted);font-size:11px">—</span>';
+      return `
+        <tr>
+          <td>${fmtData(a.data)}</td>
+          <td>${a.hora}</td>
+          <td>${a.paciente_nome || '—'}</td>
+          <td class="text-right fw-bold">${BRL(a.valor)}</td>
+          <td>${a.pago ? '<span style="color:var(--sage);font-weight:700">Recebido ✓</span>' : '<span style="color:var(--peach)">Pendente</span>'}</td>
+          <td>${formaLabel[a.forma_pgto] || a.forma_pgto || '—'}</td>
+          <td>${nfBtn}</td>
+        </tr>
+      `;
+    }).join('');
   }
 
   _finIniciarDrag();
