@@ -1348,10 +1348,34 @@ function openModalPaciente(p = {}) {
     };
     if (!body.nome) return toast('Nome é obrigatório', 'error') || false;
     try {
-      if (p.id) { await api('PUT', `/pacientes/${p.id}`, body); toast('Cliente atualizado!'); }
-      else      { await api('POST', '/pacientes', body);         toast('Cliente cadastrado!'); }
+      let savedId;
+      if (p.id) { await api('PUT', `/pacientes/${p.id}`, body); savedId = p.id; toast('Cliente atualizado!'); }
+      else      { const r = await api('POST', '/pacientes', body); savedId = r.id; toast('Cliente cadastrado!'); }
       closeModal();
       refreshAll();
+      // Se não tem CEP estruturado mas o campo endereco contém um, preenche automaticamente
+      if (!body.nf_cep && savedId) {
+        const match = /\b(\d{5}-?\d{3})\b/.exec(body.endereco || '');
+        if (match) {
+          const cepRaw = match[1].replace('-', '');
+          try {
+            const vr = await fetch(`https://viacep.com.br/ws/${cepRaw}/json/`);
+            const vd = await vr.json();
+            if (!vd.erro) {
+              await api('PUT', `/pacientes/${savedId}`, {
+                ...body, id: savedId,
+                nf_logradouro: vd.logradouro || '',
+                nf_bairro:     vd.bairro     || '',
+                nf_cidade:     vd.localidade || '',
+                nf_uf:         vd.uf         || '',
+                nf_cep:        cepRaw.replace(/(\d{5})(\d{3})/, '$1-$2'),
+              });
+              toast('Endereço NF preenchido via CEP');
+              refreshAll();
+            }
+          } catch(_) {}
+        }
+      }
     } catch(e) { toast(e.message, 'error'); }
   }, { large: true });
 }
