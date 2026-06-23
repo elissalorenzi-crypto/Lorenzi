@@ -77,10 +77,11 @@ function authOk(req) {
 app.get('/api/admin/backup-db', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
   const dbPath = process.env.DATABASE_PATH || path.join(__dirname, 'psicologa.db');
-  const stamp  = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  if (!fs.existsSync(dbPath)) return res.status(404).json({ error: 'Banco não encontrado' });
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
   res.setHeader('Content-Disposition', `attachment; filename="psicologa_${stamp}.db"`);
   res.setHeader('Content-Type', 'application/octet-stream');
-  res.sendFile(dbPath);
+  fs.createReadStream(dbPath).pipe(res);
 });
 
 // Traduz mensagens de erro técnicas do SQLite para português
