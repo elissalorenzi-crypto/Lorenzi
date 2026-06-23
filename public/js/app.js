@@ -1432,7 +1432,7 @@ async function selecionarClienteHoje(pacId) {
   if (!sel) return;
   sel.value = pacId;
   await loadProntuariosSection();
-  sel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  openModalProntuario();
 }
 
 function populateProntSelect(pacs) {
