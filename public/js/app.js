@@ -1227,7 +1227,7 @@ function pacienteFormHtml(p = {}) {
         <label style="color:var(--muted);font-size:11px;letter-spacing:.5px;text-transform:uppercase;font-weight:700">Endereço estruturado para Nota Fiscal</label>
       </div>
       <div style="flex:1 1 100%;display:flex;gap:10px;align-items:flex-end">
-        <div class="form-group" style="flex:0 0 220px;min-width:0;margin:0">
+        <div class="form-group" style="flex:0 0 260px;min-width:0;margin:0">
           <label>Logradouro</label>
           <input type="text" id="fp-nf-logradouro" value="${p.nf_logradouro||''}" placeholder="Rua Exemplo">
         </div>
