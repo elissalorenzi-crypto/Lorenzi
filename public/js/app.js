@@ -2612,19 +2612,29 @@ async function loadFinanceiro() {
 
   // Pendentes
   const pendTbody = document.getElementById('fin-pendentes-tbody');
+  const pixKey    = _config?.chave_pix || '';
   if (!data.pendentes.length) {
-    pendTbody.innerHTML = `<tr><td colspan="4" class="text-muted" style="text-align:center;padding:20px">Sem pendências 🎉</td></tr>`;
+    pendTbody.innerHTML = `<tr><td colspan="5" class="text-muted" style="text-align:center;padding:20px">Sem pendências 🎉</td></tr>`;
   } else {
-    pendTbody.innerHTML = data.pendentes.map(a => `
-      <tr>
-        <td>${fmtData(a.data)}</td>
-        <td>${a.paciente_nome || '—'}</td>
-        <td class="text-right fw-bold" style="color:var(--peach)">${BRL(a.valor)}</td>
-        <td>
-          <button class="btn btn-sage btn-xs" onclick="marcarPago(${a.id})">✓ Recebido</button>
-        </td>
-      </tr>
-    `).join('');
+    pendTbody.innerHTML = data.pendentes.map(a => {
+      const nfBadge = a.paciente_nota_fiscal === 'sim'
+        ? `<span class="badge-nf" title="Cliente solicita Nota Fiscal">📄 NF</span>`
+        : '';
+      const pixBtn = pixKey
+        ? `<button class="btn-pix-copy" title="Copiar chave PIX" onclick="copiarPixKey()">${pixKey.length > 22 ? pixKey.slice(0,20)+'…' : pixKey} 📋</button>`
+        : '<span style="color:var(--muted);font-size:11px">—</span>';
+      return `
+        <tr>
+          <td>${fmtData(a.data)}</td>
+          <td>${a.paciente_nome || '—'}</td>
+          <td class="text-right fw-bold" style="color:var(--peach)">${BRL(a.valor)}</td>
+          <td style="white-space:nowrap">${nfBadge}${nfBadge && pixKey ? ' ' : ''}${pixBtn}</td>
+          <td>
+            <button class="btn btn-sage btn-xs" onclick="marcarPago(${a.id})">✓ Recebido</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
   }
 
   // Lista completa
@@ -2647,6 +2657,17 @@ async function loadFinanceiro() {
 
   _finIniciarDrag();
   _restaurarFinLayout();
+}
+
+async function copiarPixKey() {
+  const key = _config?.chave_pix || '';
+  if (!key) { toast('Chave PIX não configurada. Vá em ⚙ Configurações.', 'error'); return; }
+  try {
+    await navigator.clipboard.writeText(key);
+    toast('Chave PIX copiada! 📋');
+  } catch(e) {
+    toast('Não foi possível copiar. Chave: ' + key, 'error');
+  }
 }
 
 async function marcarPago(id) {
@@ -2826,6 +2847,7 @@ async function loadConfiguracoes() {
   document.getElementById('cfg-zoom-client-id').value      = cfg.zoom_client_id       || '';
   document.getElementById('cfg-zoom-client-secret').value  = cfg.zoom_client_secret   || '';
   document.getElementById('cfg-zoom-webhook-secret').value = cfg.zoom_webhook_secret  || '';
+  document.getElementById('cfg-chave-pix').value           = cfg.chave_pix            || '';
 }
 
 async function salvarConfiguracoes() {
@@ -2848,6 +2870,7 @@ async function salvarConfiguracoes() {
     zoom_client_id:       document.getElementById('cfg-zoom-client-id').value.trim(),
     zoom_client_secret:   document.getElementById('cfg-zoom-client-secret').value.trim(),
     zoom_webhook_secret:  document.getElementById('cfg-zoom-webhook-secret').value.trim(),
+    chave_pix:            document.getElementById('cfg-chave-pix').value.trim(),
   };
   try {
     await api('POST', '/configuracoes', body);

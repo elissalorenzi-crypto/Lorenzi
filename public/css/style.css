@@ -369,6 +369,19 @@ tbody tr:hover { background: var(--rose-pale); }
 .badge-realizado { background: var(--sage-pale);     color: var(--sage); }
 .badge-cancelado { background: var(--red-pale);      color: var(--red); }
 .badge-falta     { background: var(--peach-pale);    color: var(--peach); }
+.badge-nf {
+  display: inline-flex; align-items: center;
+  padding: 2px 7px; border-radius: 20px; font-size: 11px; font-weight: 700;
+  background: #ddeef8; color: #2a6090; vertical-align: middle;
+}
+.btn-pix-copy {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600;
+  background: var(--sage-pale); color: var(--sage);
+  border: 1px solid rgba(42,107,74,.25); cursor: pointer; transition: all .15s;
+  max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.btn-pix-copy:hover { background: #b8e4cc; }
 
 /* ── AGENDA / SEMANA ─────────────────────────────────────── */
 .week-nav {
