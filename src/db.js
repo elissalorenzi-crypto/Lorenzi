@@ -750,6 +750,10 @@ const getRelatorios = () => {
   };
 };
 
+function limparZoomLinks() {
+  return db.prepare('UPDATE agendamentos SET zoom_link = NULL').run();
+}
+
 module.exports = {
   getPacientes, getPacienteById, getPacienteByCpf, createPaciente, updatePaciente, deletePaciente,
   getAgendamentos, getAgendamentoById, createAgendamento, updateAgendamento, deleteAgendamento,
@@ -758,5 +762,6 @@ module.exports = {
   getPagamentos, createPagamento, updatePagamento, deletePagamento,
   getContratos, createContrato, updateContrato, deleteContrato, getContratosNovos, marcarContratosVistos,
   createLinkAgendamento, getLinkAgendamento, getLinksAgendamento, desativarLinkAgendamento,
-  createConvite, getConvites, getConviteByToken, usarConvite, deleteConvite
+  createConvite, getConvites, getConviteByToken, usarConvite, deleteConvite,
+  limparZoomLinks
 };
