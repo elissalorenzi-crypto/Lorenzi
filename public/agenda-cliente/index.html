@@ -55,6 +55,7 @@
     }
     .grade-table thead th.hoje { background:linear-gradient(135deg,#C4956A,#C4956A); color:#fff; }
     .grade-table thead th.hora-th { width:52px; background:var(--bg); }
+    .grade-table th.dom-th, .grade-table td.dom-td { width:44px; min-width:44px; max-width:44px; }
 
     .grade-hora {
       font-size:11px; font-weight:700; color:var(--muted);
@@ -291,10 +292,13 @@ function renderGrade(data) {
 
   // Cabeçalho
   const ths = dias.map(d => {
-    const dt = new Date(d + 'T12:00:00');
-    const hj = d === HOJE_STR;
-    const cls = hj ? 'hoje' : '';
-    const label = `${DIAS_SHORT[dt.getDay()]} <span style="font-weight:500;opacity:.75">${dt.getDate()}/${String(dt.getMonth()+1).padStart(2,'0')}</span>`;
+    const dt  = new Date(d + 'T12:00:00');
+    const dw  = dt.getDay();
+    const hj  = d === HOJE_STR;
+    const cls = [hj ? 'hoje' : '', dw === 0 ? 'dom-th' : ''].filter(Boolean).join(' ');
+    const label = dw === 0
+      ? `${DIAS_SHORT[dw]}<br><span style="font-weight:500;opacity:.75;font-size:10px">${dt.getDate()}/${String(dt.getMonth()+1).padStart(2,'0')}</span>`
+      : `${DIAS_SHORT[dw]} <span style="font-weight:500;opacity:.75">${dt.getDate()}/${String(dt.getMonth()+1).padStart(2,'0')}</span>`;
     return `<th class="${cls}">${label}</th>`;
   }).join('');
 
@@ -309,23 +313,29 @@ function renderGrade(data) {
       html += `<tr class="grade-break"><td colspan="${dias.length + 1}">— Intervalo —</td></tr>`;
       // Repete cabeçalho dos dias após o separador
       const ths2 = dias.map(d => {
-        const dt = new Date(d + 'T12:00:00');
-        const hj = d === HOJE_STR;
-        const label = `${DIAS_SHORT[dt.getDay()]} <span style="font-weight:500;opacity:.75">${dt.getDate()}/${String(dt.getMonth()+1).padStart(2,'0')}</span>`;
-        return `<th class="${hj?'hoje':''}">${label}</th>`;
+        const dt  = new Date(d + 'T12:00:00');
+        const dw  = dt.getDay();
+        const hj  = d === HOJE_STR;
+        const cls = [hj ? 'hoje' : '', dw === 0 ? 'dom-th' : ''].filter(Boolean).join(' ');
+        const label = dw === 0
+          ? `${DIAS_SHORT[dw]}<br><span style="font-weight:500;opacity:.75;font-size:10px">${dt.getDate()}/${String(dt.getMonth()+1).padStart(2,'0')}</span>`
+          : `${DIAS_SHORT[dw]} <span style="font-weight:500;opacity:.75">${dt.getDate()}/${String(dt.getMonth()+1).padStart(2,'0')}</span>`;
+        return `<th class="${cls}">${label}</th>`;
       }).join('');
       html += `<tr class="grade-sub-header"><th class="hora-th" style="background:var(--bg)"></th>${ths2}</tr>`;
     }
 
     const cells = dias.map(d => {
-      if (t === '20:00' && SEM_20H.has(new Date(d + 'T12:00:00').getDay())) return `<td class="grade-cell"></td>`;
+      const dw    = new Date(d + 'T12:00:00').getDay();
+      const domCl = dw === 0 ? ' dom-td' : '';
+      if (t === '20:00' && SEM_20H.has(dw)) return `<td class="grade-cell${domCl}"></td>`;
       const past = isPast(d, t);
       const s    = idx[`${d}|${t}`];
 
-      if (!s) return `<td class="grade-cell"></td>`;
+      if (!s) return `<td class="grade-cell${domCl}"></td>`;
 
       if (past) {
-        return `<td class="grade-cell passado"><div class="slot-ocupado-wrap">
+        return `<td class="grade-cell passado${domCl}"><div class="slot-ocupado-wrap">
           <div class="slot-ocupado-inner">
             <span class="blur-nome">${nomeBlur(s.seed)}</span>
             <span class="blur-hora">${t}</span>
@@ -334,7 +344,7 @@ function renderGrade(data) {
       }
 
       if (!s.livre) {
-        return `<td class="grade-cell"><div class="slot-ocupado-wrap">
+        return `<td class="grade-cell${domCl}"><div class="slot-ocupado-wrap">
           <div class="slot-ocupado-inner">
             <span class="blur-nome">${nomeBlur(s.seed)}</span>
             <span class="blur-hora">${t}</span>
@@ -342,7 +352,7 @@ function renderGrade(data) {
         </div></td>`;
       }
 
-      return `<td class="grade-cell">
+      return `<td class="grade-cell${domCl}">
         <button class="slot-livre" onclick="abrirModal('${d}','${t}')">✓ ${t}</button>
       </td>`;
     }).join('');
