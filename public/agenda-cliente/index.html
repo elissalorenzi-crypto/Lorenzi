@@ -244,7 +244,7 @@ function renderGrade(data) {
     }
   }
 
-  const dias = data.semana.map(d => d.data);
+  const dias = data.semana.map(d => d.data).filter(d => new Date(d + 'T12:00:00').getDay() !== 6);
 
   const toMin = t => { const [h,m] = t.split(':').map(Number); return h*60+m; };
   const toStr = n => `${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`;
