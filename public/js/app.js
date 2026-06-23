@@ -720,7 +720,17 @@ function toggleZoomMenu(e, id) {
   const menu = document.getElementById('zmenu-' + id);
   const isOpen = menu.classList.contains('open');
   fecharZoomMenus();
-  if (!isOpen) menu.classList.add('open');
+  if (!isOpen) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const menuW = 180;
+    let left = rect.right - menuW;
+    if (left < 4) left = rect.left;
+    let top = rect.bottom + 4;
+    if (top + 100 > window.innerHeight) top = rect.top - 110;
+    menu.style.top  = top + 'px';
+    menu.style.left = left + 'px';
+    menu.classList.add('open');
+  }
 }
 
 function copiarZoom(link) {
