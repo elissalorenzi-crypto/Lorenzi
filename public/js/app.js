@@ -2704,6 +2704,7 @@ function updateFinMesLabel() {
 const _FIN_LAYOUT_KEY = 'fin_layout_v1';
 let _finDrag = null;
 let _finDragInit = false;
+let _finPointerEl = null; // último elemento clicado — para checar se veio da alça
 
 function _finIniciarDrag() {
   if (_finDragInit) return;
@@ -2711,19 +2712,25 @@ function _finIniciarDrag() {
   const grid = document.getElementById('fin-grid');
   if (!grid) return;
 
+  // Rastreia de onde veio o clique
+  grid.addEventListener('pointerdown', e => { _finPointerEl = e.target; });
+
   grid.addEventListener('dragstart', e => {
+    // Só inicia drag se o clique foi na alça ⣿
+    if (!_finPointerEl?.closest('.fin-drag-handle')) {
+      e.preventDefault();
+      return;
+    }
     const card = e.target.closest('.fin-card');
-    if (!card || !card.getAttribute('draggable')) { e.preventDefault(); return; }
+    if (!card) { e.preventDefault(); return; }
     _finDrag = card;
     setTimeout(() => card.classList.add('fin-dragging'), 0);
     e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', card.dataset.finId);
   });
 
   grid.addEventListener('dragend', () => {
-    if (_finDrag) {
-      _finDrag.classList.remove('fin-dragging');
-      _finDrag.removeAttribute('draggable');
-    }
+    if (_finDrag) _finDrag.classList.remove('fin-dragging');
     grid.querySelectorAll('.fin-drop-over').forEach(el => el.classList.remove('fin-drop-over'));
     _finDrag = null;
     _salvarFinLayout();
@@ -2735,6 +2742,9 @@ function _finIniciarDrag() {
     if (!card || card === _finDrag) return;
     grid.querySelectorAll('.fin-drop-over').forEach(el => el.classList.remove('fin-drop-over'));
     card.classList.add('fin-drop-over');
+    // Determina se deve inserir antes ou depois baseado na posição do mouse
+    const rect = card.getBoundingClientRect();
+    card.dataset.dropBefore = (e.clientY < rect.top + rect.height / 2) ? '1' : '0';
   });
 
   grid.addEventListener('dragleave', e => {
@@ -2747,18 +2757,12 @@ function _finIniciarDrag() {
     const target = e.target.closest('.fin-card');
     if (!target || !_finDrag || target === _finDrag) return;
     target.classList.remove('fin-drop-over');
-    const cards = [...grid.querySelectorAll('.fin-card')];
-    if (cards.indexOf(_finDrag) < cards.indexOf(target)) {
-      grid.insertBefore(_finDrag, target.nextSibling);
-    } else {
+    if (target.dataset.dropBefore === '1') {
       grid.insertBefore(_finDrag, target);
+    } else {
+      grid.insertBefore(_finDrag, target.nextSibling);
     }
   });
-}
-
-function _finDragHandle(handle) {
-  const card = handle.closest('.fin-card');
-  if (card) card.setAttribute('draggable', 'true');
 }
 
 function finToggleExpand(id) {
