@@ -406,25 +406,20 @@
             <div style="flex:1">
               <label for="pgto-mensal">Mensal</label>
               <div class="pgto-desc">Pagamento único até o 5º dia útil do mês</div>
+              <!-- inputs ocultos — selecionados ao clicar no card -->
+              <input type="radio" name="freq_mensal" id="freq-semanal"   value="semanal"   style="display:none">
+              <input type="radio" name="freq_mensal" id="freq-quinzenal" value="quinzenal" style="display:none">
               <div id="pgto-mensal-valores" style="display:none;margin-top:10px">
                 <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Frequência das sessões *</div>
                 <div style="display:flex;gap:8px;flex-wrap:wrap">
-                  <label style="flex:1;min-width:120px;cursor:pointer">
-                    <input type="radio" name="freq_mensal" id="freq-semanal" value="semanal" style="accent-color:var(--rose);margin-right:6px">
-                    <span style="font-weight:700;color:#14392F">Semanal</span>
-                    <div style="background:#f0f7f4;border:1.5px solid #a8d5c2;border-radius:8px;padding:6px 12px;margin-top:6px;text-align:center">
-                      <div style="font-size:10px;font-weight:700;color:#2a6b4a;text-transform:uppercase;letter-spacing:.5px">×4 sessões/mês</div>
-                      <div id="val-semanal" style="font-size:16px;font-weight:800;color:#14392F;margin-top:2px"></div>
-                    </div>
-                  </label>
-                  <label style="flex:1;min-width:120px;cursor:pointer">
-                    <input type="radio" name="freq_mensal" id="freq-quinzenal" value="quinzenal" style="accent-color:var(--rose);margin-right:6px">
-                    <span style="font-weight:700;color:#14392F">Quinzenal</span>
-                    <div style="background:#f5f0f7;border:1.5px solid #c8a8d5;border-radius:8px;padding:6px 12px;margin-top:6px;text-align:center">
-                      <div style="font-size:10px;font-weight:700;color:#6a3a7a;text-transform:uppercase;letter-spacing:.5px">×2 sessões/mês</div>
-                      <div id="val-quinzenal" style="font-size:16px;font-weight:800;color:#14392F;margin-top:2px"></div>
-                    </div>
-                  </label>
+                  <div id="card-semanal" onclick="selecionarFreq('semanal')" style="flex:1;min-width:120px;cursor:pointer;background:#f0f7f4;border:2px solid #a8d5c2;border-radius:8px;padding:10px 12px;text-align:center;transition:all .15s">
+                    <div style="font-size:10px;font-weight:700;color:#2a6b4a;text-transform:uppercase;letter-spacing:.5px">Semanal · ×4/mês</div>
+                    <div id="val-semanal" style="font-size:16px;font-weight:800;color:#14392F;margin-top:4px"></div>
+                  </div>
+                  <div id="card-quinzenal" onclick="selecionarFreq('quinzenal')" style="flex:1;min-width:120px;cursor:pointer;background:#f5f0f7;border:2px solid #c8a8d5;border-radius:8px;padding:10px 12px;text-align:center;transition:all .15s">
+                    <div style="font-size:10px;font-weight:700;color:#6a3a7a;text-transform:uppercase;letter-spacing:.5px">Quinzenal · ×2/mês</div>
+                    <div id="val-quinzenal" style="font-size:16px;font-weight:800;color:#14392F;margin-top:4px"></div>
+                  </div>
                 </div>
                 <span class="erro-msg" id="erro-freq-mensal" style="display:none">Selecione a frequência das sessões</span>
               </div>
@@ -613,9 +608,19 @@
     const mensal = document.getElementById('pgto-mensal').checked;
     document.getElementById('pgto-mensal-valores').style.display = mensal ? 'block' : 'none';
     if (!mensal) {
-      document.getElementById('freq-semanal').checked  = false;
+      document.getElementById('freq-semanal').checked   = false;
       document.getElementById('freq-quinzenal').checked = false;
+      selecionarFreq(null);
     }
+  }
+
+  function selecionarFreq(val) {
+    const cs = document.getElementById('card-semanal');
+    const cq = document.getElementById('card-quinzenal');
+    cs.style.outline = val === 'semanal'   ? '3px solid #2a6b4a' : 'none';
+    cq.style.outline = val === 'quinzenal' ? '3px solid #6a3a7a' : 'none';
+    if (val) document.getElementById('freq-' + val).checked = true;
+    document.getElementById('erro-freq-mensal').style.display = 'none';
   }
 
   function toggleMenor() {
