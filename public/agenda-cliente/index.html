@@ -211,10 +211,14 @@
 <script>
 function compartilharWa(e) {
   e.preventDefault();
-  const url  = window.location.origin + '/agenda-cliente/';
-  const nome = document.getElementById('h-nome')?.textContent || 'Psicóloga';
+  const url  = window.location.origin + '/agenda-cliente/?ref=wa';
   const msg  = `Oi, segue link com os horarios disponíveis para voce agendar a sua sessão de orientação profissional:\n${url}`;
   window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+}
+
+// Oculta o botão de compartilhar quando a página foi aberta via link do WhatsApp
+if (new URLSearchParams(window.location.search).get('ref') === 'wa') {
+  document.getElementById('btn-wa-share')?.style && (document.getElementById('btn-wa-share').style.display = 'none');
 }
 
 const DIAS_SHORT = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
