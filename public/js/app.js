@@ -123,10 +123,17 @@ function navigate(name) {
   const titles = {
     dashboard: 'Dashboard', contratos: 'Contratos Assinados', agenda: 'Agenda',
     pacientes: 'Clientes', prontuarios: 'Prontuários', biblioteca: 'Biblioteca de Atividades',
-    financeiro: 'Financeiro', configuracoes: 'Configurações'
+    financeiro: 'Financeiro', configuracoes: 'Configurações',
+    'agenda-cliente': 'Agenda Cliente'
   };
   document.getElementById('topbar-title').textContent = titles[name] || name;
   _currentSection = name;
+
+  if (name === 'agenda-cliente') {
+    const fr = document.getElementById('iframe-agenda-cliente');
+    if (!fr.src || fr.src === window.location.href) fr.src = '/agenda-cliente/';
+    return;
+  }
 
   const loaders = {
     dashboard:    loadDashboard,
