@@ -61,6 +61,14 @@
       border-right:2px solid var(--border);
     }
     .grade-row-h td { border-top:1.5px solid var(--border); }
+    .grade-sub-header th {
+      background:linear-gradient(90deg,#F5EDE7,#EDE0D5);
+      padding:10px 6px; font-size:10.5px; font-weight:700;
+      text-transform:uppercase; letter-spacing:.6px; color:var(--muted);
+      border-bottom:2px solid var(--border); border-top:2px solid var(--border);
+      text-align:center; white-space:nowrap;
+    }
+    .grade-sub-header th.hoje { background:linear-gradient(135deg,#75553C,#14392F); color:#fff; }
     .grade-row-m td { border-top:1px dashed rgba(212,200,190,.45); }
     .grade-cell { padding:3px; height:44px; vertical-align:middle; text-align:center; }
     .grade-break td {
@@ -285,7 +293,7 @@ function renderGrade(data) {
         const label = `${DIAS_SHORT[dt.getDay()]} <span style="font-weight:500;opacity:.75">${dt.getDate()}/${String(dt.getMonth()+1).padStart(2,'0')}</span>`;
         return `<th class="${hj?'hoje':''}">${label}</th>`;
       }).join('');
-      html += `<tr class="grade-row-h"><th class="hora-th" style="background:var(--bg)"></th>${ths2}</tr>`;
+      html += `<tr class="grade-sub-header"><th class="hora-th" style="background:var(--bg)"></th>${ths2}</tr>`;
     }
 
     const cells = dias.map(d => {
