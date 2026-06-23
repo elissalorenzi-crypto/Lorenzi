@@ -66,6 +66,23 @@ app.post('/api/auth/senha', (req, res) => {
   res.json({ ok: true });
 });
 
+// Valida token em rotas individuais que precisam de proteção
+function authOk(req) {
+  const token  = (req.headers.authorization || '').replace('Bearer ', '');
+  const expiry = _tokens.get(token);
+  return !!(token && expiry && Date.now() <= expiry);
+}
+
+// Download do banco para backup
+app.get('/api/admin/backup-db', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  const dbPath = process.env.DATABASE_PATH || path.join(__dirname, 'psicologa.db');
+  const stamp  = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  res.setHeader('Content-Disposition', `attachment; filename="psicologa_${stamp}.db"`);
+  res.setHeader('Content-Type', 'application/octet-stream');
+  res.sendFile(dbPath);
+});
+
 // Traduz mensagens de erro técnicas do SQLite para português
 function traduzErro(msg) {
   if (!msg) return 'Erro desconhecido';
