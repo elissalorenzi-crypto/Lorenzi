@@ -530,22 +530,34 @@ app.post('/api/contratos', (req, res) => {
 
     // Cria ou atualiza paciente automaticamente com os dados do contrato
     try {
-      const { nome, data_nascimento, cpf, email, celular, endereco, nome_responsavel } = req.body;
+      const { nome, data_nascimento, cpf, email, celular, endereco, nome_responsavel, forma_pgto, token } = req.body;
       if (nome) {
+        // Busca valor_sessao do convite (se existir)
+        let valorSessao = 0;
+        if (token) {
+          try { const conv = db.getConviteByToken(token); valorSessao = conv?.valor || 0; } catch(_) {}
+        }
+
+        // Mapeia forma_pgto do contrato → campos do paciente
+        const freqPgtoMap = { 'mensal': 'fp-mensal', 'por sessão': 'por-sessao' };
+        const freqPgto = freqPgtoMap[forma_pgto] || null;
+
         const dadosPaciente = {
           nome,
-          data_nascimento: data_nascimento || null,
-          cpf:             cpf            || null,
-          email:           email          || null,
-          whatsapp:        celular        || null,
-          endereco:        endereco       || null,
-          responsavel:     nome_responsavel || null,
+          data_nascimento:  data_nascimento  || null,
+          cpf:              cpf              || null,
+          email:            email            || null,
+          whatsapp:         celular          || null,
+          endereco:         endereco         || null,
+          responsavel:      nome_responsavel || null,
+          freq_pgto:        freqPgto,
+          frequencia:       'semanal',
+          ...(valorSessao ? { valor_sessao: valorSessao } : {}),
         };
         const existente = cpf ? db.getPacienteByCpf(cpf) : null;
         if (existente) {
           db.updatePaciente(existente.id, { ...existente, ...dadosPaciente });
         } else {
-          // Verifica por nome (caso paciente tenha sido criado ao gerar o link)
           const porNome = db.getPacientes().find(p => p.nome.toLowerCase() === nome.toLowerCase());
           if (porNome) {
             db.updatePaciente(porNome.id, { ...porNome, ...dadosPaciente });
