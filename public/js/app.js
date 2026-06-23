@@ -1372,9 +1372,67 @@ async function alterarStatusCliente(id, novoAtivoStr, selectEl) {
 // ── PRONTUÁRIOS ──────────────────────────────────────────────
 // ============================================================
 async function loadProntuariosPage() {
-  const pacs = await api('GET', '/pacientes');
+  const [pacs, ags] = await Promise.all([
+    api('GET', '/pacientes'),
+    api('GET', `/agendamentos?data=${HOJE()}`),
+  ]);
   _pacientesCache = pacs;
   populateProntSelect(pacs);
+  renderClientesHoje(ags, pacs);
+}
+
+function renderClientesHoje(ags, pacs) {
+  const el = document.getElementById('pront-clientes-hoje');
+  if (!el) return;
+
+  const hoje = ags
+    .filter(a => ['agendado','confirmado','realizado'].includes(a.status))
+    .sort((a, b) => a.hora.localeCompare(b.hora));
+
+  if (!hoje.length) { el.innerHTML = ''; return; }
+
+  const STATUS_COR = {
+    agendado:   { bg: '#FBF3F9', border: '#E8D5E4', dot: '#CEBBAD',  label: 'Agendado'   },
+    confirmado: { bg: '#f0fdf4', border: '#a8d5c2', dot: '#2A6B4A',  label: 'Confirmado' },
+    realizado:  { bg: '#f5f0f7', border: '#c8a8d5', dot: '#5B4466',  label: 'Realizado'  },
+  };
+
+  el.innerHTML = `
+    <div style="margin-bottom:16px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">
+        📅 Clientes de hoje — ${fmtData(HOJE())}
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        ${hoje.map(ag => {
+          const pac = pacs.find(p => p.id === ag.paciente_id);
+          if (!pac) return '';
+          const nome = pac.apelido || pac.nome.split(' ')[0];
+          const c = STATUS_COR[ag.status] || STATUS_COR.agendado;
+          return `
+            <button onclick="selecionarClienteHoje(${pac.id})" style="
+              display:flex;align-items:center;gap:10px;
+              background:${c.bg};border:1.5px solid ${c.border};
+              border-radius:12px;padding:10px 14px;cursor:pointer;
+              text-align:left;transition:box-shadow .15s;min-width:140px;
+            " onmouseover="this.style.boxShadow='0 3px 12px rgba(64,41,82,.12)'"
+               onmouseout="this.style.boxShadow=''">
+              <div style="width:8px;height:8px;border-radius:50%;background:${c.dot};flex-shrink:0"></div>
+              <div>
+                <div style="font-weight:700;font-size:13.5px;color:var(--plum)">${nome}</div>
+                <div style="font-size:11.5px;color:var(--muted)">${ag.hora} · ${c.label}</div>
+              </div>
+            </button>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+async function selecionarClienteHoje(pacId) {
+  const sel = document.getElementById('pront-paciente-select');
+  if (!sel) return;
+  sel.value = pacId;
+  await loadProntuariosSection();
+  sel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function populateProntSelect(pacs) {
