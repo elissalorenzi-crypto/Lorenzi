@@ -128,10 +128,10 @@ nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
 }
 .nav-link.active .nav-badge { background: rgba(255,255,255,.30); color: #fff; }
 .nav-link.active {
-  background: linear-gradient(90deg, #C4956A 0%, #A07040 100%);
+  background: linear-gradient(90deg, #856952 0%, #6B4F38 100%);
   color: #fff;
   font-weight: 600;
-  box-shadow: 0 3px 12px rgba(117,85,60,.40);
+  box-shadow: 0 3px 12px rgba(100,70,45,.40);
 }
 
 .sidebar-footer {
