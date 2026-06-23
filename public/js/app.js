@@ -2774,7 +2774,7 @@ async function copiarPixKey() {
 }
 
 // ── NFS-e Helper ──────────────────────────────────────────────
-const _NFSE_PORTAL = 'https://webapp1-boituva.cidade360.cloud/NFSe.Portal/';
+const _NFSE_PORTAL = () => _config?.nfse_url || 'https://webapp1-boituva.cidade360.cloud/NFSe.Portal/';
 
 function _nfseCopiaBotao(label, valor) {
   const id = 'nfse_' + Math.random().toString(36).slice(2);
@@ -2831,8 +2831,8 @@ async function abrirModalNfse(pacienteId, ano, mes) {
   const html = `
     <div class="nfse-modal">
       <div class="nfse-portal-bar">
-        <a href="${_NFSE_PORTAL}" target="_blank" class="btn btn-primary btn-sm">🌐 Abrir Portal NFS-e</a>
-        <span style="font-size:12px;color:var(--muted)">Login: CPF <strong>31850592802</strong></span>
+        <a href="${_NFSE_PORTAL()}" target="_blank" class="btn btn-primary btn-sm">🌐 Abrir Portal NFS-e</a>
+        <span style="font-size:12px;color:var(--muted)">Login: CPF <strong>${_config?.nfse_cpf || '—'}</strong></span>
       </div>
 
       <div class="nfse-secao">
@@ -2870,7 +2870,7 @@ async function abrirModalNfse(pacienteId, ano, mes) {
         <div class="nfse-secao-titulo">📋 Passo a Passo</div>
         <ol class="nfse-passos">
           <li>Clique em <strong>Abrir Portal NFS-e</strong> acima</li>
-          <li>Login → CPF: <code>31850592802</code> / Senha: <code>8gMmHebL</code></li>
+          <li>Login → CPF: <code>${_config?.nfse_cpf || '—'}</code> / Senha: <code>${_config?.nfse_senha || '—'}</code>${_config?.nfse_ramal ? ` · Ramal: <code>${_config.nfse_ramal}</code>` : ''}</li>
           <li>Clique em <strong>Emitir NFS-e</strong></li>
           <li>Seção <em>Tomador do Serviço</em>: copie os dados acima (📋)</li>
           <li>Seção <em>Discriminação dos Serviços</em>: cole o texto gerado acima</li>
@@ -3064,6 +3064,12 @@ async function loadConfiguracoes() {
   document.getElementById('cfg-zoom-client-secret').value  = cfg.zoom_client_secret   || '';
   document.getElementById('cfg-zoom-webhook-secret').value = cfg.zoom_webhook_secret  || '';
   document.getElementById('cfg-chave-pix').value           = cfg.chave_pix            || '';
+  document.getElementById('cfg-nfse-url').value            = cfg.nfse_url             || 'https://webapp1-boituva.cidade360.cloud/NFSe.Portal/';
+  document.getElementById('cfg-nfse-solicitacao').value    = cfg.nfse_solicitacao      || '';
+  document.getElementById('cfg-nfse-cpf').value            = cfg.nfse_cpf             || '';
+  document.getElementById('cfg-nfse-senha').value          = cfg.nfse_senha           || '';
+  document.getElementById('cfg-nfse-contribuinte').value   = cfg.nfse_contribuinte    || '';
+  document.getElementById('cfg-nfse-ramal').value          = cfg.nfse_ramal           || '';
 }
 
 async function preencherEnderecosPorCep() {
@@ -3112,6 +3118,12 @@ async function salvarConfiguracoes() {
     zoom_client_secret:   document.getElementById('cfg-zoom-client-secret').value.trim(),
     zoom_webhook_secret:  document.getElementById('cfg-zoom-webhook-secret').value.trim(),
     chave_pix:            document.getElementById('cfg-chave-pix').value.trim(),
+    nfse_url:             document.getElementById('cfg-nfse-url').value.trim(),
+    nfse_solicitacao:     document.getElementById('cfg-nfse-solicitacao').value.trim(),
+    nfse_cpf:             document.getElementById('cfg-nfse-cpf').value.trim(),
+    nfse_senha:           document.getElementById('cfg-nfse-senha').value.trim(),
+    nfse_contribuinte:    document.getElementById('cfg-nfse-contribuinte').value.trim(),
+    nfse_ramal:           document.getElementById('cfg-nfse-ramal').value.trim(),
   };
   try {
     await api('POST', '/configuracoes', body);
