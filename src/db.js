@@ -221,7 +221,8 @@ const updatePaciente = (id, data) =>
       nome=?, apelido=?, cpf=?, data_nascimento=?, sexo=?, telefone=?, whatsapp=?, email=?,
       endereco=?, ocupacao=?, convenio=?, num_convenio=?, responsavel=?,
       tel_responsavel=?, queixa_principal=?, encaminhamento=?, valor_sessao=?, obs=?,
-      ativo=?, nota_fiscal=?, forma_pgto=?, frequencia=?, freq_pgto=?
+      ativo=?, nota_fiscal=?, forma_pgto=?, frequencia=?, freq_pgto=?,
+      nf_logradouro=?, nf_numero=?, nf_bairro=?, nf_cidade=?, nf_uf=?, nf_cep=?
     WHERE id=?
   `).run(
     data.nome, data.apelido || null, data.cpf || null, data.data_nascimento || null, data.sexo || 'F',
@@ -230,7 +231,10 @@ const updatePaciente = (id, data) =>
     data.responsavel || null, data.tel_responsavel || null,
     data.queixa_principal || null, data.encaminhamento || null,
     data.valor_sessao || 0, data.obs || null,
-    data.ativo ?? 1, data.nota_fiscal || 'nao', data.forma_pgto || null, data.frequencia || null, data.freq_pgto || null, id
+    data.ativo ?? 1, data.nota_fiscal || 'nao', data.forma_pgto || null, data.frequencia || null, data.freq_pgto || null,
+    data.nf_logradouro || null, data.nf_numero || null, data.nf_bairro || null,
+    data.nf_cidade || null, data.nf_uf || null, data.nf_cep || null,
+    id
   );
 
 const deletePaciente = (id) =>
