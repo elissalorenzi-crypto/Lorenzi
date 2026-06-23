@@ -1414,7 +1414,7 @@ function renderClientesHoje(ags, pacs) {
               background:${c.bg};border:1.5px solid ${c.border};
               border-radius:12px;padding:10px 14px;cursor:pointer;
               text-align:left;transition:box-shadow .15s;min-width:140px;
-            " onmouseover="this.style.boxShadow='0 3px 12px rgba(64,41,82,.12)'"
+            " onmouseover="this.style.boxShadow='0 3px 12px rgba(74,55,40,.12)'"
                onmouseout="this.style.boxShadow=''">
               <div style="width:8px;height:8px;border-radius:50%;background:${c.dot};flex-shrink:0"></div>
               <div>
