@@ -93,6 +93,7 @@ function openModal(title, bodyHtml, saveFn, opts = {}) {
 }
 
 function closeModal() {
+  if (_ditadoAtivo) pararDitado();
   document.getElementById('modal-overlay').classList.remove('open');
   _modalSaveFn = null;
 }
@@ -113,6 +114,7 @@ let _currentSection = 'dashboard';
 let _config = {};
 
 function navigate(name) {
+  if (_ditadoAtivo) pararDitado();
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-link').forEach(a => a.classList.remove('active'));
   const sec = document.getElementById('section-' + name);
