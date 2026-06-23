@@ -422,7 +422,7 @@ function renderAgendaGrid() {
                            <div class="zoom-menu" id="zmenu-${a.id}">
                              <button onclick="copiarZoom('${a.zoom_link}')">📋 Copiar link</button>
                              <a href="${a.zoom_link}" target="_blank" onclick="fecharZoomMenus()">🚀 Abrir sessão</a>
-                             <a href="${a.paciente_whatsapp ? zoomWaUrl(a.paciente_nome, a.zoom_link, a.paciente_whatsapp, a.data, a.hora, a.paciente_apelido) : 'https://wa.me/?text=' + encodeURIComponent('Segue o link para acessar nossa sessão:\n' + a.zoom_link)}" target="_blank" onclick="fecharZoomMenus()" style="color:#25d366">💬 Enviar no WhatsApp${a.paciente_whatsapp ? ` <span style="font-size:10px;opacity:.7">${exibirFone(a.paciente_whatsapp)}</span>` : ''}</a>
+                             <a href="${a.paciente_whatsapp ? zoomWaUrl(a.paciente_nome, a.zoom_link, a.paciente_whatsapp, a.data, a.hora, a.paciente_apelido) : zoomWaUrlSemFone(a.paciente_nome, a.zoom_link, a.data, a.hora, a.paciente_apelido)}" target="_blank" onclick="fecharZoomMenus()" style="color:#25d366">💬 Enviar no WhatsApp${a.paciente_whatsapp ? ` <span style="font-size:10px;opacity:.7">${exibirFone(a.paciente_whatsapp)}</span>` : ''}</a>
                            </div>
                          </div>`
                       : `<button class="appt-btn appt-btn-zoom" onclick="gerarZoom(${a.id})" title="Gerar link Zoom">📹</button>`
@@ -470,7 +470,7 @@ function renderAgendaLista() {
                  <div class="zoom-menu" id="zmenu-${a.id}">
                    <button onclick="copiarZoom('${a.zoom_link}')">📋 Copiar link</button>
                    <a href="${a.zoom_link}" target="_blank" onclick="fecharZoomMenus()">🚀 Abrir sessão</a>
-                   <a href="${a.paciente_whatsapp ? zoomWaUrl(a.paciente_nome, a.zoom_link, a.paciente_whatsapp, a.data, a.hora, a.paciente_apelido) : 'https://wa.me/?text=' + encodeURIComponent('Segue o link para acessar nossa sessão:\n' + a.zoom_link)}" target="_blank" onclick="fecharZoomMenus()" style="color:#25d366">💬 Enviar no WhatsApp${a.paciente_whatsapp ? ` <span style="font-size:10px;opacity:.7">${exibirFone(a.paciente_whatsapp)}</span>` : ''}</a>
+                   <a href="${a.paciente_whatsapp ? zoomWaUrl(a.paciente_nome, a.zoom_link, a.paciente_whatsapp, a.data, a.hora, a.paciente_apelido) : zoomWaUrlSemFone(a.paciente_nome, a.zoom_link, a.data, a.hora, a.paciente_apelido)}" target="_blank" onclick="fecharZoomMenus()" style="color:#25d366">💬 Enviar no WhatsApp${a.paciente_whatsapp ? ` <span style="font-size:10px;opacity:.7">${exibirFone(a.paciente_whatsapp)}</span>` : ''}</a>
                  </div>
                </div>`
             : `<button class="btn btn-outline btn-xs" style="color:#1a6ff4;border-color:#1a6ff4" onclick="gerarZoom(${a.id})" title="Gerar link Zoom">📹</button>`
@@ -568,7 +568,7 @@ function renderAgendaHorario() {
              <div class="zoom-menu" id="zmenu-${a.id}">
                <button onclick="copiarZoom('${a.zoom_link}')">📋 Copiar link</button>
                <a href="${a.zoom_link}" target="_blank" onclick="fecharZoomMenus()">🚀 Abrir sessão</a>
-               <a href="${a.paciente_whatsapp ? zoomWaUrl(a.paciente_nome,a.zoom_link,a.paciente_whatsapp,a.data,a.hora,a.paciente_apelido) : 'https://wa.me/?text=' + encodeURIComponent('Segue o link para acessar nossa sessão:\n' + a.zoom_link)}" target="_blank" onclick="fecharZoomMenus()" style="color:#25d366">💬 WhatsApp${a.paciente_whatsapp ? ` <span style="font-size:10px;opacity:.7">${exibirFone(a.paciente_whatsapp)}</span>` : ''}</a>
+               <a href="${a.paciente_whatsapp ? zoomWaUrl(a.paciente_nome,a.zoom_link,a.paciente_whatsapp,a.data,a.hora,a.paciente_apelido) : zoomWaUrlSemFone(a.paciente_nome, a.zoom_link, a.data, a.hora, a.paciente_apelido)}" target="_blank" onclick="fecharZoomMenus()" style="color:#25d366">💬 WhatsApp${a.paciente_whatsapp ? ` <span style="font-size:10px;opacity:.7">${exibirFone(a.paciente_whatsapp)}</span>` : ''}</a>
              </div>
            </div>`
         : `<button class="appt-btn appt-btn-zoom" onclick="gerarZoom(${a.id})" title="Zoom">📹</button>`;
@@ -765,7 +765,7 @@ function exibirFone(fone) {
   return '+55 ' + d;
 }
 
-function zoomWaUrl(nome, link, fone, data, hora, apelido) {
+function _zoomWaMsg(nome, link, data, hora, apelido) {
   const primeiroNome = (apelido || '').trim() || (nome || '').split(' ')[0];
   const DIAS  = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
   const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
@@ -775,8 +775,15 @@ function zoomWaUrl(nome, link, fone, data, hora, apelido) {
     dataFmt = `${DIAS[d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]}`;
   }
   const horaFmt = hora ? ` às ${hora}` : '';
-  const msg = `Bom dia, ${primeiroNome}! Segue lembrete da nossa sessão ${dataFmt}${horaFmt} e link para acesso:\n${link}\nAté lá!`;
-  return `https://wa.me/${toWaNum(fone)}?text=${encodeURIComponent(msg)}`;
+  return `Oi, ${primeiroNome}! Passo para lembrá-lo(a) da nossa sessão ${dataFmt}${horaFmt}. Segue o link para acesso:\n${link}`;
+}
+
+function zoomWaUrl(nome, link, fone, data, hora, apelido) {
+  return `https://wa.me/${toWaNum(fone)}?text=${encodeURIComponent(_zoomWaMsg(nome, link, data, hora, apelido))}`;
+}
+
+function zoomWaUrlSemFone(nome, link, data, hora, apelido) {
+  return `https://wa.me/?text=${encodeURIComponent(_zoomWaMsg(nome, link, data, hora, apelido))}`;
 }
 
 document.addEventListener('click', fecharZoomMenus);
