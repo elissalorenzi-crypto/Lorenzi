@@ -397,11 +397,35 @@
           <input type="tel" id="f-celular" placeholder="(00) 00000-0000" oninput="mascTel(this)">
           <span class="erro-msg">Campo obrigatório</span>
         </div>
-        <div class="form-group full">
-          <label>Endereço completo com CEP *</label>
-          <input type="text" id="f-endereco" placeholder="Rua, número, bairro, cidade — UF, CEP 00000-000">
+        <div class="form-group" style="flex:1;min-width:110px;max-width:140px">
+          <label>CEP *</label>
+          <input type="text" id="f-cep" placeholder="00000-000" maxlength="9" oninput="buscarCepContrato(this.value)">
           <span class="erro-msg">Campo obrigatório</span>
         </div>
+        <div class="form-group" style="flex:3">
+          <label>Logradouro *</label>
+          <input type="text" id="f-logradouro" placeholder="Rua / Avenida">
+          <span class="erro-msg">Campo obrigatório</span>
+        </div>
+        <div class="form-group" style="flex:1;min-width:80px;max-width:110px">
+          <label>Número *</label>
+          <input type="text" id="f-numero" placeholder="123">
+          <span class="erro-msg">Campo obrigatório</span>
+        </div>
+        <div class="form-group" style="flex:2">
+          <label>Bairro</label>
+          <input type="text" id="f-bairro" placeholder="Bairro">
+        </div>
+        <div class="form-group" style="flex:2">
+          <label>Cidade</label>
+          <input type="text" id="f-cidade" placeholder="Cidade">
+        </div>
+        <div class="form-group" style="flex:1;min-width:60px;max-width:80px">
+          <label>UF</label>
+          <input type="text" id="f-uf" placeholder="SP" maxlength="2">
+        </div>
+        <!-- Campo legado oculto — mantém compatibilidade com API -->
+        <input type="hidden" id="f-endereco">
       </div>
 
       <!-- Forma de pagamento -->
@@ -644,13 +668,33 @@
     el.value = v;
   }
 
+  async function buscarCepContrato(valor) {
+    const cep = valor.replace(/\D/g, '');
+    if (cep.length !== 8) return;
+    const cepEl = document.getElementById('f-cep');
+    try {
+      const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      const d = await r.json();
+      if (d.erro) { cepEl.style.borderColor = 'red'; return; }
+      const set = (id, v) => { const el = document.getElementById(id); if (el && v) el.value = v; };
+      set('f-logradouro', d.logradouro);
+      set('f-bairro',     d.bairro);
+      set('f-cidade',     d.localidade);
+      set('f-uf',         d.uf);
+      cepEl.style.borderColor = 'green';
+      cepEl.value = cep.replace(/(\d{5})(\d{3})/, '$1-$2');
+      document.getElementById('f-numero')?.focus();
+    } catch(e) { cepEl.style.borderColor = 'red'; }
+  }
+
   function validar() {
     let ok = true;
 
-    const obrigatorios = ['f-nome', 'f-nasc', 'f-cpf', 'f-email', 'f-celular', 'f-endereco'];
+    const obrigatorios = ['f-nome', 'f-nasc', 'f-cpf', 'f-email', 'f-celular', 'f-cep', 'f-logradouro', 'f-numero'];
     obrigatorios.forEach(id => {
       const el = document.getElementById(id);
-      const grupo = el.closest('.form-group');
+      const grupo = el?.closest('.form-group');
+      if (!grupo) return;
       if (!el.value.trim()) { grupo.classList.add('campo-erro'); ok = false; }
       else { grupo.classList.remove('campo-erro'); }
     });
@@ -703,7 +747,19 @@
       cpf:             document.getElementById('f-cpf').value.trim(),
       email:           document.getElementById('f-email').value.trim(),
       celular:         document.getElementById('f-celular').value.trim(),
-      endereco:        document.getElementById('f-endereco').value.trim(),
+      endereco:        [
+        document.getElementById('f-logradouro').value.trim(),
+        document.getElementById('f-numero').value.trim(),
+        document.getElementById('f-bairro').value.trim(),
+        document.getElementById('f-cidade').value.trim() + (document.getElementById('f-uf').value.trim() ? ' — ' + document.getElementById('f-uf').value.trim() : ''),
+        'CEP ' + document.getElementById('f-cep').value.trim()
+      ].filter(Boolean).join(', '),
+      end_logradouro:  document.getElementById('f-logradouro').value.trim(),
+      end_numero:      document.getElementById('f-numero').value.trim(),
+      end_bairro:      document.getElementById('f-bairro').value.trim(),
+      end_cidade:      document.getElementById('f-cidade').value.trim(),
+      end_uf:          document.getElementById('f-uf').value.trim(),
+      end_cep:         document.getElementById('f-cep').value.trim(),
       forma_pgto:      document.querySelector('input[name="forma_pgto"]:checked').value,
       freq_sessoes:    document.querySelector('input[name="freq_mensal"]:checked')?.value || null,
       nome_responsavel: menor ? document.getElementById('f-nome-resp').value.trim() : null,

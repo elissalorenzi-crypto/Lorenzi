@@ -1227,8 +1227,12 @@ function pacienteFormHtml(p = {}) {
         <label style="color:var(--muted);font-size:11px;letter-spacing:.5px;text-transform:uppercase;font-weight:700">Endereço estruturado para Nota Fiscal</label>
       </div>
       <div class="form-group" style="flex:3">
-        <label>Logradouro e número</label>
-        <input type="text" id="fp-nf-logradouro" value="${p.nf_logradouro||''}" placeholder="Rua Exemplo, 123">
+        <label>Logradouro</label>
+        <input type="text" id="fp-nf-logradouro" value="${p.nf_logradouro||''}" placeholder="Rua Exemplo">
+      </div>
+      <div class="form-group" style="flex:1;min-width:80px;max-width:110px">
+        <label>Número</label>
+        <input type="text" id="fp-nf-numero" value="${p.nf_numero||''}" placeholder="123">
       </div>
       <div class="form-group" style="flex:2">
         <label>Bairro</label>
@@ -1324,6 +1328,7 @@ function openModalPaciente(p = {}) {
       email:           document.getElementById('fp-email').value.trim(),
       endereco:        document.getElementById('fp-end').value.trim(),
       nf_logradouro:   document.getElementById('fp-nf-logradouro').value.trim(),
+      nf_numero:       document.getElementById('fp-nf-numero').value.trim(),
       nf_bairro:       document.getElementById('fp-nf-bairro').value.trim(),
       nf_cidade:       document.getElementById('fp-nf-cidade').value.trim(),
       nf_uf:           document.getElementById('fp-nf-uf').value.trim().toUpperCase(),
@@ -2799,7 +2804,8 @@ async function abrirModalNfse(pacienteId, ano, mes) {
         ${_nfseCopiaBotao('CNPJ / CPF', p.cpf)}
         ${_nfseCopiaBotao('E-mail', p.email)}
         ${_nfseCopiaBotao('Telefone', p.whatsapp || p.telefone)}
-        ${_nfseCopiaBotao('Logradouro e Nº', p.nf_logradouro)}
+        ${_nfseCopiaBotao('Logradouro', p.nf_logradouro)}
+        ${_nfseCopiaBotao('Número', p.nf_numero)}
         ${_nfseCopiaBotao('Bairro', p.nf_bairro)}
         ${_nfseCopiaBotao('Cidade', p.nf_cidade)}
         ${_nfseCopiaBotao('UF', p.nf_uf)}

@@ -23,6 +23,13 @@ const migrations = [
   "ALTER TABLE pacientes ADD COLUMN nf_cidade TEXT",
   "ALTER TABLE pacientes ADD COLUMN nf_uf TEXT",
   "ALTER TABLE pacientes ADD COLUMN nf_cep TEXT",
+  "ALTER TABLE pacientes ADD COLUMN nf_numero TEXT",
+  "ALTER TABLE contratos ADD COLUMN end_logradouro TEXT",
+  "ALTER TABLE contratos ADD COLUMN end_numero TEXT",
+  "ALTER TABLE contratos ADD COLUMN end_bairro TEXT",
+  "ALTER TABLE contratos ADD COLUMN end_cidade TEXT",
+  "ALTER TABLE contratos ADD COLUMN end_uf TEXT",
+  "ALTER TABLE contratos ADD COLUMN end_cep TEXT",
 ];
 for (const m of migrations) {
   try { db.exec(m); } catch(_) {}
@@ -503,11 +510,16 @@ const getContratos = () =>
 
 const createContrato = (data) =>
   rid(db.prepare(`
-    INSERT INTO contratos (nome, data_nascimento, cpf, email, celular, endereco, forma_pgto, nome_responsavel, cpf_responsavel, arquivo, origem, aceite)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+    INSERT INTO contratos (nome, data_nascimento, cpf, email, celular, endereco,
+      end_logradouro, end_numero, end_bairro, end_cidade, end_uf, end_cep,
+      forma_pgto, nome_responsavel, cpf_responsavel, arquivo, origem, aceite)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
   `).run(
     data.nome, data.data_nascimento || null, data.cpf || null,
     data.email || null, data.celular || null, data.endereco || null,
+    data.end_logradouro || null, data.end_numero || null,
+    data.end_bairro || null, data.end_cidade || null,
+    data.end_uf || null, data.end_cep || null,
     data.forma_pgto || null, data.nome_responsavel || null,
     data.cpf_responsavel || null, data.arquivo || null,
     data.origem || 'online', data.aceite || 0
