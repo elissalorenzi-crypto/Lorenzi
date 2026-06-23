@@ -36,7 +36,7 @@ const _sessions = new Map(); // token → expiry
 function gerarToken() { return crypto.randomBytes(32).toString('hex'); }
 function hashSenha(s) { return crypto.createHash('sha256').update(s + 'psi_salt_2024').digest('hex'); }
 
-// Rotas públicas — não exigem token
+// Rotas públicas — não exigem token (usa req.originalUrl)
 const ROTAS_PUBLICAS = [
   /^\/api\/auth\//,
   /^\/api\/agenda-publica/,
@@ -46,15 +46,14 @@ const ROTAS_PUBLICAS = [
 ];
 
 function authMiddleware(req, res, next) {
-  const publica = ROTAS_PUBLICAS.some(r => r.test(req.path));
+  const publica = ROTAS_PUBLICAS.some(r => r.test(req.originalUrl));
   if (publica) return next();
 
-  const token = (req.headers.authorization || '').replace('Bearer ', '');
+  const token = (req.headers.authorization || '').replace('Bearer ', '').trim();
   const expiry = _sessions.get(token);
   if (!token || !expiry || Date.now() > expiry) {
     return res.status(401).json({ error: 'Não autenticado' });
   }
-  // Renova sessão a cada request
   _sessions.set(token, Date.now() + 8 * 60 * 60 * 1000);
   next();
 }

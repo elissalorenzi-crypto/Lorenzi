@@ -59,7 +59,12 @@ async function api(method, path, body = null) {
   const opts = { method, headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() } };
   if (body) opts.body = JSON.stringify(body);
   const res = await fetch('/api' + path, opts);
-  if (res.status === 401) { clearToken(); location.reload(); return; }
+  if (res.status === 401) {
+    clearToken();
+    document.getElementById('login-screen').style.display = 'flex';
+    setTimeout(() => document.getElementById('login-senha')?.focus(), 100);
+    return;
+  }
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Ocorreu um erro. Tente novamente.');
   return data;
