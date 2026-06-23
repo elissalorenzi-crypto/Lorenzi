@@ -2771,7 +2771,7 @@ async function novoConvite() {
       </div>
       <div class="form-group">
         <label>Valor da sessão (R$)</label>
-        <input type="number" id="conv-valor" placeholder="Ex: 350,00" min="0" step="0.01">
+        <input type="number" id="conv-valor" placeholder="Ex: 350,00" min="0" step="0.01" value="${parseFloat(_config?.valor_sessao_padrao) || ''}">
       </div>
     </div>
     <div id="conv-link-box" style="display:none;margin-top:18px">
