@@ -203,7 +203,7 @@ function compartilharWa(e) {
   e.preventDefault();
   const url  = window.location.origin + '/agenda-cliente/';
   const nome = document.getElementById('h-nome')?.textContent || 'Psicóloga';
-  const msg  = `Olá! Segue o link para você agendar sua sessão com ${nome}:\n${url}`;
+  const msg  = `Oi, segue link com os horarios disponíveis para voce agendar a sua sessão de orientação profissional:\n${url}`;
   window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
 }
 
