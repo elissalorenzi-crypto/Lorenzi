@@ -1609,73 +1609,82 @@ async function corrigirProntuario() {
 }
 
 // ── DITADO POR VOZ ────────────────────────────────────────────
-let _ditadoRec = null;
+let _ditadoRec   = null;
 let _ditadoAtivo = false;
-let _ditadoTexto = '';
+let _ditadoAcumulado = ''; // texto confirmado entre reinícios
 
 function toggleDitado() {
   if (_ditadoAtivo) pararDitado();
   else iniciarDitado();
 }
 
-function iniciarDitado() {
+function _criarReconhecedor() {
   const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRec) {
+  const rec = new SpeechRec();
+  rec.lang = 'pt-BR';
+  rec.continuous = true;
+  rec.interimResults = true;
+
+  rec.onresult = (e) => {
+    let interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) _ditadoAcumulado += e.results[i][0].transcript + ' ';
+      else interim = e.results[i][0].transcript;
+    }
+    const ta = document.getElementById('ditado-transcricao');
+    if (ta) { ta.value = _ditadoAcumulado + interim; ta.scrollTop = ta.scrollHeight; }
+  };
+
+  rec.onerror = (e) => {
+    if (e.error === 'not-allowed') { toast('Permissão de microfone negada', 'error'); pararDitado(); }
+    // no-speech e outros erros: o onend vai reiniciar automaticamente
+  };
+
+  // O browser para sozinho após silêncio — reinicia sempre que _ditadoAtivo for true
+  rec.onend = () => {
+    if (!_ditadoAtivo) return;
+    _ditadoRec = _criarReconhecedor();
+    try { _ditadoRec.start(); } catch(_) {}
+  };
+
+  return rec;
+}
+
+function iniciarDitado() {
+  if (!(window.SpeechRecognition || window.webkitSpeechRecognition)) {
     toast('Seu navegador não suporta reconhecimento de voz. Use Chrome ou Edge.', 'error');
     return;
   }
-  _ditadoRec = new SpeechRec();
-  _ditadoRec.lang = 'pt-BR';
-  _ditadoRec.continuous = true;
-  _ditadoRec.interimResults = true;
-  _ditadoRec.maxAlternatives = 1;
 
-  const btnMic    = document.getElementById('btn-mic');
-  const status    = document.getElementById('ditado-status');
-  const textarea  = document.getElementById('ditado-transcricao');
-  const btnEstr   = document.getElementById('btn-estruturar');
+  const textarea = document.getElementById('ditado-transcricao');
+  const btnEstr  = document.getElementById('btn-estruturar');
+  const btnMic   = document.getElementById('btn-mic');
+  const status   = document.getElementById('ditado-status');
 
+  _ditadoAtivo     = true;
+  _ditadoAcumulado = textarea.value; // preserva texto já digitado/transcrito
   textarea.style.display = 'block';
   btnEstr.style.display  = 'none';
-  _ditadoAtivo = true;
-  _ditadoTexto = textarea.value;
 
   btnMic.style.background = '#c0425d';
   btnMic.innerHTML = '⏹️';
   btnMic.title = 'Parar gravação';
   status.innerHTML = '<span style="color:#c0425d;font-weight:700">● Gravando…</span> fale livremente sobre a sessão';
 
-  let textoFinal = _ditadoTexto;
-
-  _ditadoRec.onresult = (e) => {
-    let interim = '';
-    for (let i = e.resultIndex; i < e.results.length; i++) {
-      if (e.results[i].isFinal) textoFinal += e.results[i][0].transcript + ' ';
-      else interim = e.results[i][0].transcript;
-    }
-    textarea.value = textoFinal + interim;
-    textarea.scrollTop = textarea.scrollHeight;
-  };
-
-  _ditadoRec.onerror = (e) => {
-    if (e.error === 'not-allowed') toast('Permissão de microfone negada', 'error');
-    else if (e.error !== 'no-speech') toast('Erro no microfone: ' + e.error, 'error');
-    pararDitado();
-  };
-
-  _ditadoRec.onend = () => {
-    if (_ditadoAtivo) _ditadoRec.start(); // reinicia para gravação contínua
-  };
-
+  _ditadoRec = _criarReconhecedor();
   _ditadoRec.start();
 }
 
 function pararDitado() {
   _ditadoAtivo = false;
-  if (_ditadoRec) { _ditadoRec.onend = null; _ditadoRec.stop(); _ditadoRec = null; }
+  if (_ditadoRec) {
+    _ditadoRec.onend = null; // impede reinício após o stop
+    try { _ditadoRec.stop(); } catch(_) {}
+    _ditadoRec = null;
+  }
 
-  const btnMic   = document.getElementById('btn-mic');
-  const status   = document.getElementById('ditado-status');
+  const btnMic  = document.getElementById('btn-mic');
+  const status  = document.getElementById('ditado-status');
   const textarea = document.getElementById('ditado-transcricao');
   const btnEstr  = document.getElementById('btn-estruturar');
 
@@ -1683,8 +1692,7 @@ function pararDitado() {
   btnMic.innerHTML = '🎙️';
   btnMic.title = 'Gravar relato por voz';
 
-  const temTexto = textarea?.value?.trim();
-  if (temTexto) {
+  if (textarea?.value?.trim()) {
     status.innerHTML = '✅ Gravação concluída — revise o texto e clique em <strong>Estruturar com IA</strong>';
     btnEstr.style.display = 'inline-flex';
   } else {
