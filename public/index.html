@@ -558,6 +558,33 @@
       <div class="stats-row" id="fin-stats"></div>
 
       <div id="fin-grid">
+        <!-- Pendências — primeiro card -->
+        <div class="card fin-card" draggable="true" data-fin-id="pendencias">
+          <div class="card-header">
+            <span class="fin-drag-handle" title="Arrastar">⣿</span>
+            <span class="card-title">💸 Pendências</span>
+            <button class="fin-expand-btn" onclick="finToggleExpand('pendencias')">⊞ Ampliar</button>
+          </div>
+          <div id="fin-pendentes-wrap">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Data</th><th>Cliente</th><th class="text-right">Valor</th><th>Ação</th></tr></thead>
+                <tbody id="fin-pendentes-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Receita por dia -->
+        <div class="card fin-card" draggable="true" data-fin-id="pordia">
+          <div class="card-header">
+            <span class="fin-drag-handle" title="Arrastar">⣿</span>
+            <span class="card-title">Receita por Dia</span>
+            <button class="fin-expand-btn" onclick="finToggleExpand('pordia')">⊞ Ampliar</button>
+          </div>
+          <div class="card-body" id="fin-chart"></div>
+        </div>
+
         <!-- Projeção recorrente -->
         <div class="card fin-card fin-expanded" draggable="true" data-fin-id="recorrente">
           <div class="card-header">
@@ -578,33 +605,6 @@
               </thead>
               <tbody id="fin-proj-tbody"></tbody>
             </table>
-          </div>
-        </div>
-
-        <!-- Receita por dia -->
-        <div class="card fin-card" draggable="true" data-fin-id="pordia">
-          <div class="card-header">
-            <span class="fin-drag-handle" title="Arrastar">⣿</span>
-            <span class="card-title">Receita por Dia</span>
-            <button class="fin-expand-btn" onclick="finToggleExpand('pordia')">⊞ Ampliar</button>
-          </div>
-          <div class="card-body" id="fin-chart"></div>
-        </div>
-
-        <!-- Pendências -->
-        <div class="card fin-card" draggable="true" data-fin-id="pendencias">
-          <div class="card-header">
-            <span class="fin-drag-handle" title="Arrastar">⣿</span>
-            <span class="card-title">💸 Pendências</span>
-            <button class="fin-expand-btn" onclick="finToggleExpand('pendencias')">⊞ Ampliar</button>
-          </div>
-          <div id="fin-pendentes-wrap">
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th>Data</th><th>Cliente</th><th class="text-right">Valor</th><th>Ação</th></tr></thead>
-                <tbody id="fin-pendentes-tbody"></tbody>
-              </table>
-            </div>
           </div>
         </div>
 

@@ -2701,7 +2701,7 @@ function updateFinMesLabel() {
 }
 
 // ── Financeiro: drag & expand ─────────────────────────────────
-const _FIN_LAYOUT_KEY = 'fin_layout_v1';
+const _FIN_LAYOUT_KEY = 'fin_layout_v2';
 let _finDrag = null;
 let _finDragInit = false;
 let _finPointerEl = null; // último elemento clicado — para checar se veio da alça
