@@ -319,7 +319,7 @@
 
   <!-- Cabeçalho -->
   <div class="header" style="position:relative">
-    <a href="/agenda-cliente/" style="position:absolute;top:14px;left:16px;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:rgba(255,255,255,.8);text-decoration:none;background:rgba(255,255,255,.15);border-radius:20px;padding:5px 12px;border:1px solid rgba(255,255,255,.25)" title="Voltar à agenda">
+    <a href="#" onclick="voltarAgenda(event)" style="position:absolute;top:14px;left:16px;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:rgba(255,255,255,.8);text-decoration:none;background:rgba(255,255,255,.15);border-radius:20px;padding:5px 12px;border:1px solid rgba(255,255,255,.25)" title="Voltar à agenda">
       ← Voltar à agenda
     </a>
     <h1>Consultório de Psicologia</h1>
@@ -329,7 +329,7 @@
   <!-- Opção de remarcar -->
   <div id="box-remarcar" style="display:none;background:#FBF3F9;border-bottom:1.5px solid #E8D5E4;padding:10px 24px;text-align:center;font-size:13px;color:#5B4466">
     Deseja escolher outro horário?
-    <a href="/agenda-cliente/" style="margin-left:8px;color:#C96A84;font-weight:700;text-decoration:underline">Clique aqui para remarcar</a>
+    <a href="#" onclick="voltarAgenda(event)" style="margin-left:8px;color:#C96A84;font-weight:700;text-decoration:underline">Clique aqui para remarcar</a>
   </div>
 
   <!-- Título -->
@@ -484,6 +484,20 @@
 
 <script>
   let _token = null;
+
+  async function voltarAgenda(e) {
+    e.preventDefault();
+    if (_token) {
+      try {
+        await fetch('/api/agenda-publica/cancelar-reserva', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: _token })
+        });
+      } catch(_) {}
+    }
+    window.location.href = '/agenda-cliente/';
+  }
   let _valorSessao = 0;
 
   const MODELO_DEFAULT = {

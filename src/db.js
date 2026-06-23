@@ -456,12 +456,12 @@ const marcarContratosVistos = () => db.prepare('UPDATE contratos SET visto=1 WHE
 // ============================================================
 const crypto = require('crypto');
 
-const createConvite = (nome_paciente, valor = 0, data_inicio = null) => {
+const createConvite = (nome_paciente, valor = 0, data_inicio = null, agendamento_id = null) => {
   const token = crypto.randomBytes(16).toString('hex');
   rid(db.prepare(`
-    INSERT INTO convites (token, nome_paciente, valor, data_inicio, expires_at)
-    VALUES (?, ?, ?, ?, datetime('now', '+7 days', 'localtime'))
-  `).run(token, nome_paciente || null, valor || 0, data_inicio || null));
+    INSERT INTO convites (token, nome_paciente, valor, data_inicio, agendamento_id, expires_at)
+    VALUES (?, ?, ?, ?, ?, datetime('now', '+7 days', 'localtime'))
+  `).run(token, nome_paciente || null, valor || 0, data_inicio || null, agendamento_id || null));
   return token;
 };
 

@@ -506,16 +506,29 @@ app.post('/api/agenda-publica/reservar', async (req, res) => {
       pac = { id, nome };
     }
 
-    db.createAgendamento({
+    const agId = db.createAgendamento({
       paciente_id: pac.id, data, hora,
       tipo: 'sessao', status: 'agendado',
       valor: cfg.valor_sessao_padrao || 180
     });
 
-    const conviteToken = db.createConvite(nome, cfg.valor_sessao_padrao || 0);
+    const conviteToken = db.createConvite(nome, cfg.valor_sessao_padrao || 0, data, agId);
     const base = `${req.protocol}://${req.get('host')}`;
     res.json({ success: true, contratoLink: `${base}/contratos/?token=${conviteToken}` });
   } catch(e) { erro(res, e); }
+});
+
+app.post('/api/agenda-publica/cancelar-reserva', (req, res) => {
+  const { token } = req.body || {};
+  if (!token) return res.status(400).json({ error: 'Token obrigatório.' });
+  const convite = db.getConviteByToken(token);
+  if (!convite) return res.status(404).json({ error: 'Token inválido.' });
+  if (convite.usado) return res.status(409).json({ error: 'Contrato já enviado.' });
+  if (convite.agendamento_id) {
+    try { db.deleteAgendamento(convite.agendamento_id); } catch(_) {}
+  }
+  db.deleteConvite(convite.id);
+  res.json({ ok: true });
 });
 
 // ── CONVITES ─────────────────────────────────────────────────
