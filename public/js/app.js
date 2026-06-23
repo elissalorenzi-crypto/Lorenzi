@@ -17,6 +17,47 @@ const TIPO_LABEL = {
   sessao: 'Sessão', avaliacao: 'Avaliação', retorno: 'Retorno', outro: 'Outro'
 };
 
+// ── AUTH ─────────────────────────────────────────────────────
+function getToken()   { return localStorage.getItem('psi_token') || ''; }
+function setToken(t)  { localStorage.setItem('psi_token', t); }
+function clearToken() { localStorage.removeItem('psi_token'); }
+
+function mostrarLogin() {
+  document.getElementById('login-screen').style.display = 'flex';
+  setTimeout(() => document.getElementById('login-senha')?.focus(), 100);
+}
+function ocultarLogin() {
+  document.getElementById('login-screen').style.display = 'none';
+}
+
+async function doLogin() {
+  const senha = document.getElementById('login-senha').value;
+  const btn   = document.getElementById('btn-login');
+  const erro  = document.getElementById('login-erro');
+  if (!senha) return;
+  btn.disabled = true; btn.textContent = 'Entrando…'; erro.style.display = 'none';
+  try {
+    const r = await fetch('/api/auth/login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ senha })
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error();
+    setToken(d.token);
+    ocultarLogin();
+    iniciarApp();
+  } catch(_) { erro.style.display = 'block'; }
+  btn.disabled = false; btn.textContent = 'Entrar';
+}
+
+async function fazerLogout() {
+  try { await fetch('/api/auth/logout', { method: 'POST', headers: { Authorization: 'Bearer ' + getToken() } }); } catch(_) {}
+  clearToken();
+  document.getElementById('login-senha').value = '';
+  document.getElementById('login-erro').style.display = 'none';
+  mostrarLogin();
+}
+
 // ── API ──────────────────────────────────────────────────────
 async function api(method, path, body = null) {
   const opts = { method, headers: { 'Content-Type': 'application/json' } };
@@ -3294,13 +3335,23 @@ function salvarNovoBibCard() {
   showToast('Card criado com sucesso!', 'success');
 }
 
-async function init() {
+async function iniciarApp() {
   _config = await api('GET', '/configuracoes');
   atualizarBrand();
   loadNotificacoes();
   refreshAll();
-  // Normaliza telefones existentes no banco (remove código de país duplicado etc.)
   fetch('/api/admin/normalizar-fones', { method: 'POST' }).catch(() => {});
 }
 
-init();
+// Bootstrap: verifica token ou exibe login
+(async () => {
+  const token = getToken();
+  if (token) {
+    try {
+      const r = await fetch('/api/auth/verificar', { method: 'POST', headers: { Authorization: 'Bearer ' + token } });
+      if (r.ok) { ocultarLogin(); iniciarApp(); return; }
+    } catch(_) {}
+    clearToken();
+  }
+  mostrarLogin();
+})();

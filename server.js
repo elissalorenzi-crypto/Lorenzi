@@ -22,11 +22,49 @@ const upload = multer({
   }
 });
 
+const crypto = require('crypto');
+
 const app  = express();
 const PORT = process.env.PORT || 3001;
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// ── AUTH ─────────────────────────────────────────────────────
+const hashSenha = s => crypto.createHash('sha256').update(s + 'psi2024').digest('hex');
+const _tokens   = new Map(); // token → expiry
+
+app.post('/api/auth/login', (req, res) => {
+  const { senha } = req.body || {};
+  const cfg = db.getConfig();
+  const hash = cfg.senha_admin || hashSenha('1234');
+  if (hashSenha(senha) !== hash) return res.status(401).json({ error: 'Senha incorreta' });
+  const token = crypto.randomBytes(32).toString('hex');
+  _tokens.set(token, Date.now() + 8 * 60 * 60 * 1000);
+  res.json({ token });
+});
+
+app.post('/api/auth/logout', (req, res) => {
+  _tokens.delete((req.headers.authorization || '').replace('Bearer ', ''));
+  res.json({ ok: true });
+});
+
+app.post('/api/auth/verificar', (req, res) => {
+  const token  = (req.headers.authorization || '').replace('Bearer ', '');
+  const expiry = _tokens.get(token);
+  if (!token || !expiry || Date.now() > expiry) return res.status(401).json({ ok: false });
+  _tokens.set(token, Date.now() + 8 * 60 * 60 * 1000);
+  res.json({ ok: true });
+});
+
+app.post('/api/auth/senha', (req, res) => {
+  const { senha_atual, senha_nova } = req.body || {};
+  const cfg = db.getConfig();
+  if (hashSenha(senha_atual) !== (cfg.senha_admin || hashSenha('1234')))
+    return res.status(401).json({ error: 'Senha atual incorreta' });
+  db.setConfig('senha_admin', hashSenha(senha_nova));
+  res.json({ ok: true });
+});
 
 // Traduz mensagens de erro técnicas do SQLite para português
 function traduzErro(msg) {

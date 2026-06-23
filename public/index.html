@@ -55,8 +55,34 @@
       <span class="icon">⚙️</span> Configurações
     </a>
   </nav>
-  <div class="sidebar-footer">v1.0 — Consultório</div>
+  <div class="sidebar-footer" style="display:flex;align-items:center;justify-content:space-between">
+    <span>v1.0 — Consultório</span>
+    <button onclick="fazerLogout()" title="Sair" style="background:none;border:none;cursor:pointer;font-size:16px;opacity:.6">🚪</button>
+  </div>
 </aside>
+
+<!-- TELA DE LOGIN -->
+<div id="login-screen" style="display:flex;position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#14392F 0%,#1e4d3f 100%);align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:20px;padding:40px 36px;width:100%;max-width:380px;box-shadow:0 24px 64px rgba(0,0,0,.35);margin:16px">
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="font-size:36px;margin-bottom:8px">🌿</div>
+      <div style="font-size:18px;font-weight:800;color:#14392F">Consultório</div>
+      <div style="font-size:13px;color:#9B8A7E;margin-top:4px">Acesso restrito</div>
+    </div>
+    <div style="margin-bottom:16px">
+      <label style="font-size:11px;font-weight:700;color:#9B8A7E;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">Senha</label>
+      <input type="password" id="login-senha" placeholder="Digite sua senha"
+        style="width:100%;border:1.5px solid #D4C8BE;border-radius:10px;padding:13px 14px;font-size:15px;font-family:inherit;color:#14392F;outline:none;box-sizing:border-box"
+        onkeydown="if(event.key==='Enter')doLogin()"
+        onfocus="this.style.borderColor='#75553C'" onblur="this.style.borderColor='#D4C8BE'">
+    </div>
+    <div id="login-erro" style="display:none;color:#c0425d;font-size:13px;margin-bottom:12px;text-align:center">Senha incorreta. Tente novamente.</div>
+    <button onclick="doLogin()" id="btn-login"
+      style="width:100%;padding:14px;background:linear-gradient(135deg,#75553C,#5a3f2a);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer">
+      Entrar
+    </button>
+  </div>
+</div>
 
 <!-- MAIN -->
 <div id="main">
