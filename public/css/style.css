@@ -609,7 +609,7 @@ tbody tr:hover { background: var(--rose-pale); }
 /* ── MODALS ──────────────────────────────────────────────── */
 #modal-overlay {
   position: fixed; inset: 0;
-  background: rgba(20,57,47,.45);
+  background: rgba(64,41,82,.55);
   backdrop-filter: blur(4px);
   display: none;
   align-items: center;
@@ -884,13 +884,13 @@ tbody tr:hover { background: var(--rose-pale); }
 .bib-card {
   background: var(--card);
   border-radius: 14px;
-  box-shadow: 0 2px 8px rgba(20,57,47,.08);
+  box-shadow: 0 2px 8px rgba(64,41,82,.08);
   overflow: hidden;
   transition: transform .15s, box-shadow .15s;
 }
 .bib-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(20,57,47,.13);
+  box-shadow: 0 6px 20px rgba(64,41,82,.13);
 }
 .bib-card-header {
   display: flex; align-items: center; gap: 14px;
@@ -926,7 +926,7 @@ tbody tr:hover { background: var(--rose-pale); }
 /* Visualização de atividade */
 .bib-atv-view {
   background: var(--card); border-radius: 14px;
-  box-shadow: 0 2px 8px rgba(20,57,47,.08); overflow: hidden;
+  box-shadow: 0 2px 8px rgba(64,41,82,.08); overflow: hidden;
 }
 .bib-atv-header {
   display: flex; align-items: center; gap: 18px; padding: 24px 28px;
@@ -1026,7 +1026,7 @@ tbody tr:hover { background: var(--rose-pale); }
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(20,57,47,.45);
+  background: rgba(64,41,82,.55);
   z-index: 99;
 }
 
