@@ -413,6 +413,10 @@
           <span class="erro-msg">Campo obrigatório</span>
         </div>
         <div class="form-group" style="flex:2">
+          <label>Complemento</label>
+          <input type="text" id="f-complemento" placeholder="Apto 45, Bloco B">
+        </div>
+        <div class="form-group" style="flex:2">
           <label>Bairro</label>
           <input type="text" id="f-bairro" placeholder="Bairro">
         </div>
@@ -750,12 +754,14 @@
       endereco:        [
         document.getElementById('f-logradouro').value.trim(),
         document.getElementById('f-numero').value.trim(),
+        document.getElementById('f-complemento').value.trim(),
         document.getElementById('f-bairro').value.trim(),
         document.getElementById('f-cidade').value.trim() + (document.getElementById('f-uf').value.trim() ? ' — ' + document.getElementById('f-uf').value.trim() : ''),
         'CEP ' + document.getElementById('f-cep').value.trim()
       ].filter(Boolean).join(', '),
       end_logradouro:  document.getElementById('f-logradouro').value.trim(),
       end_numero:      document.getElementById('f-numero').value.trim(),
+      end_complemento: document.getElementById('f-complemento').value.trim(),
       end_bairro:      document.getElementById('f-bairro').value.trim(),
       end_cidade:      document.getElementById('f-cidade').value.trim(),
       end_uf:          document.getElementById('f-uf').value.trim(),

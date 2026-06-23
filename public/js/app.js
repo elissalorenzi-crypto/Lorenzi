@@ -1235,6 +1235,10 @@ function pacienteFormHtml(p = {}) {
         <input type="text" id="fp-nf-numero" value="${p.nf_numero||''}" placeholder="123">
       </div>
       <div class="form-group" style="flex:2">
+        <label>Complemento</label>
+        <input type="text" id="fp-nf-complemento" value="${p.nf_complemento||''}" placeholder="Apto 45, Bloco B">
+      </div>
+      <div class="form-group" style="flex:2">
         <label>Bairro</label>
         <input type="text" id="fp-nf-bairro" value="${p.nf_bairro||''}" placeholder="Bairro">
       </div>
@@ -1329,6 +1333,7 @@ function openModalPaciente(p = {}) {
       endereco:        document.getElementById('fp-end').value.trim(),
       nf_logradouro:   document.getElementById('fp-nf-logradouro').value.trim(),
       nf_numero:       document.getElementById('fp-nf-numero').value.trim(),
+      nf_complemento:  document.getElementById('fp-nf-complemento').value.trim(),
       nf_bairro:       document.getElementById('fp-nf-bairro').value.trim(),
       nf_cidade:       document.getElementById('fp-nf-cidade').value.trim(),
       nf_uf:           document.getElementById('fp-nf-uf').value.trim().toUpperCase(),

@@ -30,6 +30,8 @@ const migrations = [
   "ALTER TABLE contratos ADD COLUMN end_cidade TEXT",
   "ALTER TABLE contratos ADD COLUMN end_uf TEXT",
   "ALTER TABLE contratos ADD COLUMN end_cep TEXT",
+  "ALTER TABLE pacientes ADD COLUMN nf_complemento TEXT",
+  "ALTER TABLE contratos ADD COLUMN end_complemento TEXT",
 ];
 for (const m of migrations) {
   try { db.exec(m); } catch(_) {}
@@ -222,7 +224,7 @@ const updatePaciente = (id, data) =>
       endereco=?, ocupacao=?, convenio=?, num_convenio=?, responsavel=?,
       tel_responsavel=?, queixa_principal=?, encaminhamento=?, valor_sessao=?, obs=?,
       ativo=?, nota_fiscal=?, forma_pgto=?, frequencia=?, freq_pgto=?,
-      nf_logradouro=?, nf_numero=?, nf_bairro=?, nf_cidade=?, nf_uf=?, nf_cep=?
+      nf_logradouro=?, nf_numero=?, nf_complemento=?, nf_bairro=?, nf_cidade=?, nf_uf=?, nf_cep=?
     WHERE id=?
   `).run(
     data.nome, data.apelido || null, data.cpf || null, data.data_nascimento || null, data.sexo || 'F',
@@ -232,8 +234,8 @@ const updatePaciente = (id, data) =>
     data.queixa_principal || null, data.encaminhamento || null,
     data.valor_sessao || 0, data.obs || null,
     data.ativo ?? 1, data.nota_fiscal || 'nao', data.forma_pgto || null, data.frequencia || null, data.freq_pgto || null,
-    data.nf_logradouro || null, data.nf_numero || null, data.nf_bairro || null,
-    data.nf_cidade || null, data.nf_uf || null, data.nf_cep || null,
+    data.nf_logradouro || null, data.nf_numero || null, data.nf_complemento || null,
+    data.nf_bairro || null, data.nf_cidade || null, data.nf_uf || null, data.nf_cep || null,
     id
   );
 
@@ -515,13 +517,13 @@ const getContratos = () =>
 const createContrato = (data) =>
   rid(db.prepare(`
     INSERT INTO contratos (nome, data_nascimento, cpf, email, celular, endereco,
-      end_logradouro, end_numero, end_bairro, end_cidade, end_uf, end_cep,
+      end_logradouro, end_numero, end_complemento, end_bairro, end_cidade, end_uf, end_cep,
       forma_pgto, nome_responsavel, cpf_responsavel, arquivo, origem, aceite)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
   `).run(
     data.nome, data.data_nascimento || null, data.cpf || null,
     data.email || null, data.celular || null, data.endereco || null,
-    data.end_logradouro || null, data.end_numero || null,
+    data.end_logradouro || null, data.end_numero || null, data.end_complemento || null,
     data.end_bairro || null, data.end_cidade || null,
     data.end_uf || null, data.end_cep || null,
     data.forma_pgto || null, data.nome_responsavel || null,
