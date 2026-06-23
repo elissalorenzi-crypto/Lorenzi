@@ -6,14 +6,14 @@
   --plum:         #402952;   /* roxo escuro — faixa superior e títulos */
   --plum-mid:     #5B4466;
   --plum-light:   #7A6088;
-  --rose:         #C96A84;   /* rosa antigo — barra lateral */
-  --rose-soft:    #D9899D;
+  --rose:         #C4956A;   /* rosa antigo — barra lateral */
+  --rose-soft:    #D4A87A;
   --rose-pale:    #FBF3F9;
   --lavender:     #F1E4EE;   /* lilás claro — faixa central */
   --lavender-pale:#FBF3F9;
   --sage:         #2A6B4A;   /* verde médio — sucesso */
   --sage-pale:    #DFF0E7;
-  --peach:        #C96A84;
+  --peach:        #C4956A;
   --peach-pale:   #FBF3F9;
   --red:          #8B3A3A;
   --red-pale:     #F0E0E0;
@@ -128,7 +128,7 @@ nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
 }
 .nav-link.active .nav-badge { background: rgba(255,255,255,.30); color: #fff; }
 .nav-link.active {
-  background: linear-gradient(90deg, #C96A84 0%, #a8536d 100%);
+  background: linear-gradient(90deg, #C4956A 0%, #A07040 100%);
   color: #fff;
   font-weight: 600;
   box-shadow: 0 3px 12px rgba(117,85,60,.40);
@@ -233,7 +233,7 @@ nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
   top: 0; left: 0; right: 0;
   height: 3px;
 }
-.stat-card.rose::before    { background: linear-gradient(90deg, #C96A84, #D9899D); }
+.stat-card.rose::before    { background: linear-gradient(90deg, #C4956A, #D4A87A); }
 .stat-card.lavender::before{ background: linear-gradient(90deg, #F1E4EE, #FBF3F9); }
 .stat-card.sage::before    { background: linear-gradient(90deg, #2A6B4A, #5a9a7a); }
 .stat-card.peach::before   { background: linear-gradient(90deg, #C8843A, #DCA070); }
@@ -267,7 +267,7 @@ nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
 .btn-lg { padding: 11px 22px; font-size: 14px; }
 
 .btn-primary {
-  background: linear-gradient(135deg, #C96A84 0%, #a8536d 100%);
+  background: linear-gradient(135deg, #C4956A 0%, #A07040 100%);
   color: #fff;
   box-shadow: 0 2px 8px rgba(117,85,60,.30);
 }
@@ -407,7 +407,7 @@ tbody tr:hover { background: var(--rose-pale); }
   border-radius: var(--radius) var(--radius) 0 0;
   overflow: hidden;
 }
-.day-col.today .day-header { background: linear-gradient(135deg, #C96A84, #402952); color: #fff; }
+.day-col.today .day-header { background: linear-gradient(135deg, #C4956A, #402952); color: #fff; }
 .day-name { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); }
 .day-col.today .day-name { color: rgba(255,255,255,.8); }
 .day-num { font-size: 20px; font-weight: 800; color: var(--plum); line-height: 1.1; }
@@ -587,7 +587,7 @@ tbody tr:hover { background: var(--rose-pale); }
 .pac-avatar {
   width: 72px; height: 72px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #C96A84, #402952);
+  background: linear-gradient(135deg, #C4956A, #402952);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -731,7 +731,7 @@ tbody tr:hover { background: var(--rose-pale); }
 @keyframes toast-in { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
 .toast.success { background: linear-gradient(135deg, var(--sage), #1e4d36); }
 .toast.error   { background: linear-gradient(135deg, var(--red),  #702e2e); }
-.toast.info    { background: linear-gradient(135deg, #C96A84, #402952); }
+.toast.info    { background: linear-gradient(135deg, #C4956A, #402952); }
 
 /* ── SEARCH BOX ──────────────────────────────────────────── */
 .search-wrap { position: relative; display: inline-block; }
@@ -807,7 +807,7 @@ tbody tr:hover { background: var(--rose-pale); }
   border-bottom: 2px solid var(--border);
   text-align: center; white-space: nowrap; position: sticky; top: 0; z-index: 2;
 }
-.hor-table thead th.hoje { background: linear-gradient(135deg, #C96A84, #402952); color: #fff; }
+.hor-table thead th.hoje { background: linear-gradient(135deg, #C4956A, #402952); color: #fff; }
 .hor-table thead th.hora-th { width: 54px; min-width: 54px; background: var(--bg); }
 .hor-table th.dom, .hor-table td.dom { width: 40px; min-width: 40px; max-width: 40px; text-align: center; }
 .hor-table td.dom .hor-add { font-size: 14px; }
@@ -871,7 +871,7 @@ tbody tr:hover { background: var(--rose-pale); }
   color: var(--text-mid); text-transform: uppercase; letter-spacing: .6px;
   border-bottom: 2px solid var(--border); text-align: center; white-space: nowrap;
 }
-.hor-dias-sub th.hoje { background: linear-gradient(135deg, #C96A84, #402952); color: #fff; }
+.hor-dias-sub th.hoje { background: linear-gradient(135deg, #C4956A, #402952); color: #fff; }
 
 /* ── BIBLIOTECA DE ATIVIDADES ───────────────────────────── */
 .bib-grid {
@@ -895,7 +895,7 @@ tbody tr:hover { background: var(--rose-pale); }
   padding: 20px 20px 16px;
 }
 .bib-op  { background: linear-gradient(135deg, #402952 0%, #5B4466 100%); }
-.bib-oc  { background: linear-gradient(135deg, #C96A84 0%, #a8536d 100%); }
+.bib-oc  { background: linear-gradient(135deg, #C4956A 0%, #A07040 100%); }
 .bib-icon { font-size: 32px; flex-shrink: 0; }
 .bib-titulo   { font-size: 15px; font-weight: 700; color: #fff; line-height: 1.2; }
 .bib-subtitulo{ font-size: 12px; color: rgba(255,255,255,.75); margin-top: 2px; }
