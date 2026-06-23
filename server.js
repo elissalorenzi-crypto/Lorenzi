@@ -727,6 +727,42 @@ app.get('/api/nfse/dados', (req, res) => {
   res.json({ ...dados, config: { nome_psicologa: cfg.nome_psicologa, crp: cfg.crp } });
 });
 
+// ── BULK CEP ENRICHMENT ───────────────────────────────────────
+app.post('/api/admin/enrich-cep', async (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  const pacientes = db.getPacientes();
+  const semCep    = pacientes.filter(p => !p.nf_cep);
+  const cepRe     = /\b(\d{5}-?\d{3})\b/;
+  const log = [];
+
+  for (const p of semCep) {
+    const match = cepRe.exec(p.endereco || '');
+    if (!match) { log.push({ nome: p.nome, status: 'sem_cep' }); continue; }
+    const cepRaw = match[1].replace('-', '');
+    try {
+      const r = await fetch(`https://viacep.com.br/ws/${cepRaw}/json/`);
+      const d = await r.json();
+      if (d.erro) { log.push({ nome: p.nome, cep: cepRaw, status: 'invalido' }); continue; }
+      db.updatePaciente(p.id, {
+        ...p,
+        nf_logradouro: d.logradouro || '',
+        nf_bairro:     d.bairro     || '',
+        nf_cidade:     d.localidade || '',
+        nf_uf:         d.uf         || '',
+        nf_cep:        cepRaw.replace(/(\d{5})(\d{3})/, '$1-$2'),
+      });
+      log.push({ nome: p.nome, cep: cepRaw, logradouro: d.logradouro, cidade: d.localidade, uf: d.uf, status: 'ok' });
+    } catch(e) {
+      log.push({ nome: p.nome, cep: cepRaw, status: 'erro', msg: e.message });
+    }
+    await new Promise(r => setTimeout(r, 120));
+  }
+
+  const ok   = log.filter(l => l.status === 'ok').length;
+  const skip = log.filter(l => l.status === 'sem_cep').length;
+  res.json({ total: pacientes.length, processados: semCep.length, atualizados: ok, sem_cep: skip, log });
+});
+
 // ── ZOOM WEBHOOK (sem auth — chamado diretamente pelo Zoom) ───
 app.post('/api/zoom/webhook', express.json(), (req, res) => {
   const body = req.body || {};
