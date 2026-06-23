@@ -28,11 +28,13 @@
     .container { max-width:1060px; margin:0 auto; padding:24px 16px; }
 
     /* Week nav */
-    .week-nav { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; background:#fff; border-radius:12px; border:1.5px solid var(--border); padding:10px 16px; box-shadow:0 2px 8px rgba(20,57,47,.05); }
-    .nav-btn { background:none; border:1.5px solid var(--border); border-radius:8px; padding:6px 16px; cursor:pointer; font-size:14px; color:var(--plum); font-weight:600; transition:all .15s; white-space:nowrap; }
-    .nav-btn:hover:not(:disabled) { border-color:var(--rose); color:var(--rose); }
+    .week-nav { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:16px; background:#fff; border-radius:12px; border:1.5px solid var(--border); padding:10px 16px; box-shadow:0 2px 8px rgba(20,57,47,.05); }
+    .nav-btn { background:none; border:1.5px solid var(--border); border-radius:50%; width:34px; height:34px; cursor:pointer; font-size:18px; color:var(--plum); font-weight:400; line-height:1; transition:all .15s; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .nav-btn:hover:not(:disabled) { background:var(--rose); border-color:var(--rose); color:#fff; }
     .nav-btn:disabled { opacity:.3; cursor:default; }
-    .sem-label { font-size:14px; font-weight:700; color:var(--plum); text-align:center; flex:1; }
+    .sem-label { text-align:center; flex:1; }
+    .sem-label-title { font-size:10px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin-bottom:2px; }
+    .sem-label-datas { font-size:14px; font-weight:700; color:var(--plum); }
 
     /* Legenda */
     .legenda { display:flex; gap:16px; align-items:center; margin-bottom:14px; flex-wrap:wrap; }
@@ -161,9 +163,9 @@
 
   <div id="main" style="display:none">
     <div class="week-nav">
-      <button class="nav-btn" id="btn-ant"  onclick="navSem(-1)">&#8249; Anterior</button>
-      <span class="sem-label" id="sem-label"></span>
-      <button class="nav-btn" id="btn-prox" onclick="navSem(1)">Próxima &#8250;</button>
+      <button class="nav-btn" id="btn-ant"  onclick="navSem(-1)" title="Semana anterior">&#8592;</button>
+      <div class="sem-label" id="sem-label"></div>
+      <button class="nav-btn" id="btn-prox" onclick="navSem(1)"  title="Próxima semana">&#8594;</button>
     </div>
 
     <div class="legenda">
@@ -211,7 +213,8 @@ function compartilharWa(e) {
 const DIAS_SHORT = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 const DIAS_FULL  = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
 const MESES_GEN  = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
-const MESES_CURTO = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const MESES_CURTO  = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const MESES_LONGO  = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
 const _hojeDate = new Date(); _hojeDate.setHours(0,0,0,0);
 const HOJE_STR  = _hojeDate.toISOString().slice(0, 10);
@@ -338,8 +341,11 @@ function renderGrade(data) {
 function renderSemana(data) {
   const de  = new Date(data.semDe  + 'T12:00:00');
   const ate = new Date(data.semAte + 'T12:00:00');
-  document.getElementById('sem-label').textContent =
-    `${de.getDate()} ${MESES_CURTO[de.getMonth()]} – ${ate.getDate()} ${MESES_CURTO[ate.getMonth()]} ${ate.getFullYear()}`;
+  const mesLabel = de.getMonth() === ate.getMonth()
+    ? `${de.getDate()} a ${ate.getDate()} de ${MESES_LONGO[ate.getMonth()]} · ${ate.getFullYear()}`
+    : `${de.getDate()} ${MESES_CURTO[de.getMonth()]} – ${ate.getDate()} ${MESES_CURTO[ate.getMonth()]} · ${ate.getFullYear()}`;
+  document.getElementById('sem-label').innerHTML =
+    `<div class="sem-label-title">Semana</div><div class="sem-label-datas">${mesLabel}</div>`;
   document.getElementById('btn-ant').disabled = new Date(data.semDe + 'T12:00:00') <= _hojeDate;
   _dadosAtual = data;
   renderGrade(data);
