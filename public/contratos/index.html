@@ -318,11 +318,18 @@
 <div class="page">
 
   <!-- Cabeçalho -->
-  <div class="header">
-
+  <div class="header" style="position:relative">
+    <a href="/agenda-cliente/" style="position:absolute;top:14px;left:16px;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:rgba(255,255,255,.8);text-decoration:none;background:rgba(255,255,255,.15);border-radius:20px;padding:5px 12px;border:1px solid rgba(255,255,255,.25)" title="Voltar à agenda">
+      ← Voltar à agenda
+    </a>
     <h1>Consultório de Psicologia</h1>
     <div class="psico-nome" id="psico-nome">Psi. Elissa Catarina Lorenzi</div>
     <div class="crp" id="psico-crp">CRP 06/91616</div>
+  </div>
+  <!-- Opção de remarcar -->
+  <div id="box-remarcar" style="display:none;background:#FBF3F9;border-bottom:1.5px solid #E8D5E4;padding:10px 24px;text-align:center;font-size:13px;color:#5B4466">
+    Deseja escolher outro horário?
+    <a href="/agenda-cliente/" style="margin-left:8px;color:#C96A84;font-weight:700;text-decoration:underline">Clique aqui para remarcar</a>
   </div>
 
   <!-- Título -->
@@ -412,18 +419,12 @@
                   <label style="flex:1;min-width:120px;cursor:pointer">
                     <input type="radio" name="freq_mensal" id="freq-semanal" value="semanal" style="accent-color:var(--rose);margin-right:6px" onchange="document.getElementById('pgto-mensal').checked=true;toggleFreqMensal()">
                     <span style="font-weight:700;color:#14392F">Semanal</span>
-                    <div style="background:#f0f7f4;border:1.5px solid #a8d5c2;border-radius:8px;padding:6px 12px;margin-top:6px;text-align:center">
-                      <div style="font-size:10px;font-weight:700;color:#2a6b4a;text-transform:uppercase;letter-spacing:.5px">×4 sessões/mês</div>
-                      <div id="val-semanal" style="font-size:16px;font-weight:800;color:#14392F;margin-top:2px"></div>
-                    </div>
+                    <div style="font-size:11px;color:#5B4466;margin-top:4px;opacity:.8">×4 sessões/mês</div>
                   </label>
                   <label style="flex:1;min-width:120px;cursor:pointer">
                     <input type="radio" name="freq_mensal" id="freq-quinzenal" value="quinzenal" style="accent-color:var(--rose);margin-right:6px" onchange="document.getElementById('pgto-mensal').checked=true;toggleFreqMensal()">
                     <span style="font-weight:700;color:#14392F">Quinzenal</span>
-                    <div style="background:#f5f0f7;border:1.5px solid #c8a8d5;border-radius:8px;padding:6px 12px;margin-top:6px;text-align:center">
-                      <div style="font-size:10px;font-weight:700;color:#6a3a7a;text-transform:uppercase;letter-spacing:.5px">×2 sessões/mês</div>
-                      <div id="val-quinzenal" style="font-size:16px;font-weight:800;color:#14392F;margin-top:2px"></div>
-                    </div>
+                    <div style="font-size:11px;color:#5B4466;margin-top:4px;opacity:.8">×2 sessões/mês</div>
                   </label>
                 </div>
                 <span class="erro-msg" id="erro-freq-mensal" style="display:none">Selecione a frequência das sessões</span>
@@ -436,11 +437,7 @@
               <label for="pgto-sessao">Por Sessão</label>
               <div class="pgto-desc">Pagamento no dia de cada sessão</div>
               <div id="pgto-sessao-valores" style="display:none;margin-top:8px">
-                <div style="background:#f0f7f4;border:1.5px solid #a8d5c2;border-radius:8px;padding:6px 12px;display:inline-block;margin-top:4px">
-                  <span style="font-size:10px;font-weight:700;color:#2a6b4a;text-transform:uppercase;letter-spacing:.5px">Valor por sessão: </span>
-                  <span id="val-sessao-unica" style="font-size:16px;font-weight:800;color:#14392F"></span>
-                </div>
-                <div style="margin-top:8px;font-size:12px;color:#7a5a7a;background:#fdf5f0;border-left:3px solid #c8a890;padding:7px 10px;border-radius:0 6px 6px 0">
+                <div style="margin-top:4px;font-size:12px;color:#7a5a7a;background:#fdf5f0;border-left:3px solid #c8a890;padding:7px 10px;border-radius:0 6px 6px 0">
                   💳 Você poderá receber automaticamente um Pix de cobrança ao final de cada sessão.
                 </div>
               </div>
@@ -599,14 +596,8 @@
     _valorSessao = convite.valor || Number(cfg.valor_sessao_padrao) || 0;
     if (convite.nome_paciente) document.getElementById('f-nome').value = convite.nome_paciente;
     renderClausulas(modelo, _valorSessao);
-    if (_valorSessao) {
-      const fmt = v => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-      document.getElementById('val-semanal').textContent    = fmt(_valorSessao * 4);
-      document.getElementById('val-quinzenal').textContent  = fmt(_valorSessao * 2);
-      document.getElementById('val-sessao-unica').textContent = fmt(_valorSessao);
-      document.getElementById('pgto-mensal-valores').style.display = 'block';
-      document.getElementById('pgto-sessao-valores').style.display = 'block';
-    }
+    // Mostrar opção de remarcar quando há token (reserva feita pela agenda pública)
+    if (token) document.getElementById('box-remarcar').style.display = 'block';
   });
 
   function toggleFreqMensal() {
