@@ -2644,6 +2644,9 @@ async function loadFinanceiro() {
       </tr>
     `).join('');
   }
+
+  _finIniciarDrag();
+  _restaurarFinLayout();
 }
 
 async function marcarPago(id) {
@@ -2695,6 +2698,108 @@ function finIrMesAtual() {
 
 function updateFinMesLabel() {
   document.getElementById('fin-mes-label').textContent = `${MESES[_finMes-1]} / ${_finAno}`;
+}
+
+// ── Financeiro: drag & expand ─────────────────────────────────
+const _FIN_LAYOUT_KEY = 'fin_layout_v1';
+let _finDrag = null;
+let _finDragInit = false;
+
+function _finIniciarDrag() {
+  if (_finDragInit) return;
+  _finDragInit = true;
+  const grid = document.getElementById('fin-grid');
+  if (!grid) return;
+
+  grid.addEventListener('dragstart', e => {
+    const card = e.target.closest('.fin-card');
+    if (!card || !card.getAttribute('draggable')) { e.preventDefault(); return; }
+    _finDrag = card;
+    setTimeout(() => card.classList.add('fin-dragging'), 0);
+    e.dataTransfer.effectAllowed = 'move';
+  });
+
+  grid.addEventListener('dragend', () => {
+    if (_finDrag) {
+      _finDrag.classList.remove('fin-dragging');
+      _finDrag.removeAttribute('draggable');
+    }
+    grid.querySelectorAll('.fin-drop-over').forEach(el => el.classList.remove('fin-drop-over'));
+    _finDrag = null;
+    _salvarFinLayout();
+  });
+
+  grid.addEventListener('dragover', e => {
+    e.preventDefault();
+    const card = e.target.closest('.fin-card');
+    if (!card || card === _finDrag) return;
+    grid.querySelectorAll('.fin-drop-over').forEach(el => el.classList.remove('fin-drop-over'));
+    card.classList.add('fin-drop-over');
+  });
+
+  grid.addEventListener('dragleave', e => {
+    const card = e.target.closest('.fin-card');
+    if (card && !card.contains(e.relatedTarget)) card.classList.remove('fin-drop-over');
+  });
+
+  grid.addEventListener('drop', e => {
+    e.preventDefault();
+    const target = e.target.closest('.fin-card');
+    if (!target || !_finDrag || target === _finDrag) return;
+    target.classList.remove('fin-drop-over');
+    const cards = [...grid.querySelectorAll('.fin-card')];
+    if (cards.indexOf(_finDrag) < cards.indexOf(target)) {
+      grid.insertBefore(_finDrag, target.nextSibling);
+    } else {
+      grid.insertBefore(_finDrag, target);
+    }
+  });
+}
+
+function _finDragHandle(handle) {
+  const card = handle.closest('.fin-card');
+  if (card) card.setAttribute('draggable', 'true');
+}
+
+function finToggleExpand(id) {
+  const card = document.querySelector(`.fin-card[data-fin-id="${id}"]`);
+  if (!card) return;
+  const expanding = !card.classList.contains('fin-expanded');
+  card.classList.toggle('fin-expanded', expanding);
+  const btn = card.querySelector('.fin-expand-btn');
+  if (btn) btn.textContent = expanding ? '⊟ Reduzir' : '⊞ Ampliar';
+  _salvarFinLayout();
+}
+
+function _salvarFinLayout() {
+  const grid = document.getElementById('fin-grid');
+  if (!grid) return;
+  const layout = [...grid.querySelectorAll('.fin-card')].map(c => ({
+    id: c.dataset.finId,
+    expanded: c.classList.contains('fin-expanded')
+  }));
+  localStorage.setItem(_FIN_LAYOUT_KEY, JSON.stringify(layout));
+}
+
+function _restaurarFinLayout() {
+  const grid = document.getElementById('fin-grid');
+  if (!grid) return;
+  const saved = localStorage.getItem(_FIN_LAYOUT_KEY);
+  if (!saved) return;
+  try {
+    const layout = JSON.parse(saved);
+    layout.forEach(({ id, expanded }) => {
+      const card = grid.querySelector(`.fin-card[data-fin-id="${id}"]`);
+      if (!card) return;
+      card.classList.toggle('fin-expanded', expanded);
+      const btn = card.querySelector('.fin-expand-btn');
+      if (btn) btn.textContent = expanded ? '⊟ Reduzir' : '⊞ Ampliar';
+    });
+    layout.forEach(({ id }) => {
+      const card = grid.querySelector(`.fin-card[data-fin-id="${id}"]`);
+      if (card) grid.appendChild(card);
+    });
+  } catch(e) {}
 }
 
 // ============================================================

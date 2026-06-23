@@ -557,41 +557,46 @@
 
       <div class="stats-row" id="fin-stats"></div>
 
-      <!-- Projeção recorrente baseada em clientes -->
-      <div class="card" style="margin-bottom:20px">
-        <div class="card-header">
-          <span class="card-title">📊 Receita Recorrente Estimada</span>
-          <span id="fin-proj-totais" style="font-size:12px;color:var(--muted);font-weight:600"></span>
+      <div id="fin-grid">
+        <!-- Projeção recorrente -->
+        <div class="card fin-card fin-expanded" data-fin-id="recorrente">
+          <div class="card-header">
+            <span class="fin-drag-handle" title="Arrastar">⣿</span>
+            <span class="card-title">📊 Receita Recorrente Estimada</span>
+            <span id="fin-proj-totais" style="font-size:12px;color:var(--muted);font-weight:600"></span>
+            <button class="fin-expand-btn" onclick="finToggleExpand('recorrente')">⊟ Reduzir</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Cliente</th><th>Frequência</th><th>Freq. Pgto</th><th>Forma Pgto</th>
+                  <th class="text-right">Valor Sessão</th>
+                  <th class="text-right">Est. Semana</th>
+                  <th class="text-right">Est. Mês</th>
+                </tr>
+              </thead>
+              <tbody id="fin-proj-tbody"></tbody>
+            </table>
+          </div>
         </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Cliente</th>
-                <th>Frequência</th>
-                <th>Freq. Pgto</th>
-                <th>Forma Pgto</th>
-                <th class="text-right">Valor Sessão</th>
-                <th class="text-right">Est. Semana</th>
-                <th class="text-right">Est. Mês</th>
-              </tr>
-            </thead>
-            <tbody id="fin-proj-tbody"></tbody>
-          </table>
-        </div>
-      </div>
 
-      <div class="grid-2col">
         <!-- Receita por dia -->
-        <div class="card">
-          <div class="card-header"><span class="card-title">Receita por Dia</span></div>
+        <div class="card fin-card" data-fin-id="pordia">
+          <div class="card-header">
+            <span class="fin-drag-handle" title="Arrastar">⣿</span>
+            <span class="card-title">Receita por Dia</span>
+            <button class="fin-expand-btn" onclick="finToggleExpand('pordia')">⊞ Ampliar</button>
+          </div>
           <div class="card-body" id="fin-chart"></div>
         </div>
 
-        <!-- A receber -->
-        <div class="card">
+        <!-- Pendências -->
+        <div class="card fin-card" data-fin-id="pendencias">
           <div class="card-header">
+            <span class="fin-drag-handle" title="Arrastar">⣿</span>
             <span class="card-title">💸 Pendências</span>
+            <button class="fin-expand-btn" onclick="finToggleExpand('pendencias')">⊞ Ampliar</button>
           </div>
           <div id="fin-pendentes-wrap">
             <div class="table-wrap">
@@ -602,15 +607,14 @@
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Previsão lado a lado -->
-      <div class="grid-2col">
-        <!-- Previsão de faturamento do mês -->
-        <div class="card">
+        <!-- Previsão de faturamento -->
+        <div class="card fin-card" data-fin-id="previsao">
           <div class="card-header">
+            <span class="fin-drag-handle" title="Arrastar">⣿</span>
             <span class="card-title">📅 Previsão de Faturamento</span>
             <span id="fin-previsao-total" style="font-weight:800;font-size:13px;color:var(--plum)"></span>
+            <button class="fin-expand-btn" onclick="finToggleExpand('previsao')">⊞ Ampliar</button>
           </div>
           <div class="table-wrap">
             <table>
@@ -620,29 +624,35 @@
           </div>
         </div>
 
-        <!-- Previsão por frequência de pagamento -->
-        <div class="card">
+        <!-- Previsão por pgto -->
+        <div class="card fin-card" data-fin-id="previsaopgto">
           <div class="card-header">
+            <span class="fin-drag-handle" title="Arrastar">⣿</span>
             <span class="card-title">💳 Previsão por Pgto</span>
             <div style="display:flex;gap:6px">
               <button id="tab-pgto-sem" class="btn btn-primary btn-sm" onclick="switchTabPgto('semanal')">Semana</button>
               <button id="tab-pgto-mes" class="btn btn-outline btn-sm" onclick="switchTabPgto('mensal')">Mês</button>
             </div>
+            <button class="fin-expand-btn" onclick="finToggleExpand('previsaopgto')">⊞ Ampliar</button>
           </div>
           <div id="fin-previsao-pgto-body"></div>
         </div>
-      </div>
 
-      <!-- Lista completa -->
-      <div class="card">
-        <div class="card-header"><span class="card-title">Sessões Realizadas</span></div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr><th>Data</th><th>Hora</th><th>Cliente</th><th class="text-right">Valor</th><th>Pago</th><th>Forma</th></tr>
-            </thead>
-            <tbody id="fin-lista-tbody"></tbody>
-          </table>
+        <!-- Sessões realizadas -->
+        <div class="card fin-card fin-expanded" data-fin-id="realizadas">
+          <div class="card-header">
+            <span class="fin-drag-handle" title="Arrastar">⣿</span>
+            <span class="card-title">Sessões Realizadas</span>
+            <button class="fin-expand-btn" onclick="finToggleExpand('realizadas')">⊟ Reduzir</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Data</th><th>Hora</th><th>Cliente</th><th class="text-right">Valor</th><th>Pago</th><th>Forma</th></tr>
+              </thead>
+              <tbody id="fin-lista-tbody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
