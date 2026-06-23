@@ -37,7 +37,7 @@ const _tokens   = new Map(); // token → expiry
 app.post('/api/auth/login', (req, res) => {
   const { senha } = req.body || {};
   const cfg = db.getConfig();
-  const hash = cfg.senha_admin || hashSenha('1234');
+  const hash = cfg.senha_admin || hashSenha('2207');
   if (hashSenha(senha) !== hash) return res.status(401).json({ error: 'Senha incorreta' });
   const token = crypto.randomBytes(32).toString('hex');
   _tokens.set(token, Date.now() + 8 * 60 * 60 * 1000);
@@ -60,7 +60,7 @@ app.post('/api/auth/verificar', (req, res) => {
 app.post('/api/auth/senha', (req, res) => {
   const { senha_atual, senha_nova } = req.body || {};
   const cfg = db.getConfig();
-  if (hashSenha(senha_atual) !== (cfg.senha_admin || hashSenha('1234')))
+  if (hashSenha(senha_atual) !== (cfg.senha_admin || hashSenha('2207')))
     return res.status(401).json({ error: 'Senha atual incorreta' });
   db.setConfig('senha_admin', hashSenha(senha_nova));
   res.json({ ok: true });
