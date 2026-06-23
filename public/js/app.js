@@ -2704,7 +2704,8 @@ async function loadFinanceiro() {
 
   // Pendentes
   const pendTbody = document.getElementById('fin-pendentes-tbody');
-  const pixKey    = _config?.chave_pix || '';
+  const pixKey     = _config?.chave_pix      || '';
+  const pixKeyCnpj = _config?.chave_pix_cnpj || '';
   if (!data.pendentes.length) {
     pendTbody.innerHTML = `<tr><td colspan="6" class="text-muted" style="text-align:center;padding:20px">Sem pendências 🎉</td></tr>`;
   } else {
@@ -2712,8 +2713,8 @@ async function loadFinanceiro() {
       const nfCell = a.paciente_nota_fiscal === 'sim'
         ? `<button class="btn-nfse" onclick="abrirModalNfse(${a.paciente_id},${_finAno},${_finMes})" title="Emitir NFS-e">📄 NFS-e</button>`
         : '<span style="color:var(--muted);font-size:11px">—</span>';
-      const pixCell = pixKey
-        ? `<button class="btn-pix-copy" title="Copiar chave PIX" onclick="copiarPixKey()">${pixKey.length > 22 ? pixKey.slice(0,20)+'…' : pixKey} 📋</button>`
+      const pixCell = (pixKey || pixKeyCnpj)
+        ? `${pixKey ? `<button class="btn-pix-copy" title="PIX CPF" onclick="copiarPixKey('cpf')">CPF 📋</button>` : ''}${pixKeyCnpj ? `<button class="btn-pix-copy" title="PIX CNPJ" onclick="copiarPixKey('cnpj')" style="margin-left:4px">CNPJ 📋</button>` : ''}`
         : '<span style="color:var(--muted);font-size:11px">—</span>';
       return `
         <tr>
@@ -2740,8 +2741,8 @@ async function loadFinanceiro() {
       const nfCell = a.paciente_nota_fiscal === 'sim'
         ? `<button class="btn-nfse" onclick="abrirModalNfse(${a.paciente_id},${_finAno},${_finMes})" title="Emitir NFS-e">📄 NFS-e</button>`
         : '<span style="color:var(--muted);font-size:11px">—</span>';
-      const pixCell = pixKey
-        ? `<button class="btn-pix-copy" title="Copiar chave PIX" onclick="copiarPixKey()">${pixKey.length > 22 ? pixKey.slice(0,20)+'…' : pixKey} 📋</button>`
+      const pixCell = (pixKey || pixKeyCnpj)
+        ? `${pixKey ? `<button class="btn-pix-copy" title="PIX CPF" onclick="copiarPixKey('cpf')">CPF 📋</button>` : ''}${pixKeyCnpj ? `<button class="btn-pix-copy" title="PIX CNPJ" onclick="copiarPixKey('cnpj')" style="margin-left:4px">CNPJ 📋</button>` : ''}`
         : '<span style="color:var(--muted);font-size:11px">—</span>';
       return `
         <tr>
@@ -2762,12 +2763,12 @@ async function loadFinanceiro() {
   _restaurarFinLayout();
 }
 
-async function copiarPixKey() {
-  const key = _config?.chave_pix || '';
+async function copiarPixKey(tipo = 'cpf') {
+  const key = tipo === 'cnpj' ? (_config?.chave_pix_cnpj || '') : (_config?.chave_pix || '');
   if (!key) { toast('Chave PIX não configurada. Vá em ⚙ Configurações.', 'error'); return; }
   try {
     await navigator.clipboard.writeText(key);
-    toast('Chave PIX copiada! 📋');
+    toast(`PIX ${tipo.toUpperCase()} copiado! 📋`);
   } catch(e) {
     toast('Não foi possível copiar. Chave: ' + key, 'error');
   }
@@ -3069,6 +3070,7 @@ async function loadConfiguracoes() {
   document.getElementById('cfg-zoom-client-secret').value  = cfg.zoom_client_secret   || '';
   document.getElementById('cfg-zoom-webhook-secret').value = cfg.zoom_webhook_secret  || '';
   document.getElementById('cfg-chave-pix').value           = cfg.chave_pix            || '';
+  document.getElementById('cfg-chave-pix-cnpj').value      = cfg.chave_pix_cnpj       || '';
   document.getElementById('cfg-nfse-url').value            = cfg.nfse_url             || 'https://webapp1-boituva.cidade360.cloud/NFSe.Portal/';
   document.getElementById('cfg-nfse-solicitacao').value    = cfg.nfse_solicitacao      || '';
   document.getElementById('cfg-nfse-cpf').value            = cfg.nfse_cpf             || '';
@@ -3123,6 +3125,7 @@ async function salvarConfiguracoes() {
     zoom_client_secret:   document.getElementById('cfg-zoom-client-secret').value.trim(),
     zoom_webhook_secret:  document.getElementById('cfg-zoom-webhook-secret').value.trim(),
     chave_pix:            document.getElementById('cfg-chave-pix').value.trim(),
+    chave_pix_cnpj:       document.getElementById('cfg-chave-pix-cnpj').value.trim(),
     nfse_url:             document.getElementById('cfg-nfse-url').value.trim(),
     nfse_solicitacao:     document.getElementById('cfg-nfse-solicitacao').value.trim(),
     nfse_cpf:             document.getElementById('cfg-nfse-cpf').value.trim(),
