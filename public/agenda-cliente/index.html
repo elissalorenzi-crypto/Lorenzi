@@ -229,7 +229,14 @@ const MESES_LONGO  = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Jul
 
 const _hojeDate = new Date(); _hojeDate.setHours(0,0,0,0);
 const HOJE_STR  = _hojeDate.toISOString().slice(0, 10);
-let _semana     = HOJE_STR;
+
+// Inicia sempre no domingo da semana atual
+function domingoSemana(dataStr) {
+  const d = new Date(dataStr + 'T12:00:00');
+  d.setDate(d.getDate() - d.getDay());
+  return d.toISOString().slice(0, 10);
+}
+let _semana     = domingoSemana(HOJE_STR);
 let _slotSel    = null;
 let _dadosAtual = null;
 
@@ -270,7 +277,7 @@ function renderGrade(data) {
     }
   }
 
-  const dias = data.semana.map(d => d.data).filter(d => { const dw = new Date(d + 'T12:00:00').getDay(); return dw !== 0 && dw !== 6; });
+  const dias = data.semana.map(d => d.data);
 
   const toMin = t => { const [h,m] = t.split(':').map(Number); return h*60+m; };
   const toStr = n => `${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`;
@@ -357,7 +364,7 @@ function renderSemana(data) {
     : `${de.getDate()} ${MESES_CURTO[de.getMonth()]} – ${ate.getDate()} ${MESES_CURTO[ate.getMonth()]} · ${ate.getFullYear()}`;
   document.getElementById('sem-label').innerHTML =
     `<div class="sem-label-title">Semana</div><div class="sem-label-datas">${mesLabel}</div>`;
-  document.getElementById('btn-ant').disabled = new Date(data.semDe + 'T12:00:00') <= _hojeDate;
+  document.getElementById('btn-ant').disabled = new Date(data.semAte + 'T12:00:00') < _hojeDate;
   _dadosAtual = data;
   renderGrade(data);
 }

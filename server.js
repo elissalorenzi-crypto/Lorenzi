@@ -424,11 +424,10 @@ app.post('/api/agendamento-links/:token/reservar', (req, res) => {
 app.get('/api/agenda-publica', (req, res) => {
   const semana = req.query.semana || new Date().toISOString().slice(0, 10);
   const d = new Date(semana + 'T12:00:00');
-  const dow = d.getDay() || 7;
-  const seg = new Date(d); seg.setDate(d.getDate() - dow + 1);
+  const dom = new Date(d); dom.setDate(d.getDate() - d.getDay()); // domingo da semana
 
-  const dias = Array.from({ length: 6 }, (_, i) => {
-    const x = new Date(seg); x.setDate(seg.getDate() + i);
+  const dias = Array.from({ length: 7 }, (_, i) => {
+    const x = new Date(dom); x.setDate(dom.getDate() + i);
     return x.toISOString().slice(0, 10);
   });
 
