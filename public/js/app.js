@@ -2713,8 +2713,12 @@ async function loadFinanceiro() {
       const nfCell = a.paciente_nota_fiscal === 'sim'
         ? `<button class="btn-nfse" onclick="abrirModalNfse(${a.paciente_id},${_finAno},${_finMes})" title="Emitir NFS-e">📄 NFS-e</button>`
         : '<span style="color:var(--muted);font-size:11px">—</span>';
-      const pixCell = (pixKey || pixKeyCnpj)
-        ? `${pixKey ? `<button class="btn-pix-copy" title="PIX CPF" onclick="copiarPixKey('cpf')">CPF 📋</button>` : ''}${pixKeyCnpj ? `<button class="btn-pix-copy" title="PIX CNPJ" onclick="copiarPixKey('cnpj')" style="margin-left:4px">CNPJ 📋</button>` : ''}`
+      const usaCnpj  = a.paciente_nota_fiscal === 'sim';
+      const pixTipo  = usaCnpj ? 'cnpj' : 'cpf';
+      const pixLabel = usaCnpj ? 'CNPJ 📋' : 'CPF 📋';
+      const pixAtivo = usaCnpj ? pixKeyCnpj : pixKey;
+      const pixCell  = pixAtivo
+        ? `<button class="btn-pix-copy" title="PIX ${pixTipo.toUpperCase()}" onclick="copiarPixKey('${pixTipo}')">${pixLabel}</button>`
         : '<span style="color:var(--muted);font-size:11px">—</span>';
       return `
         <tr>
@@ -2741,8 +2745,12 @@ async function loadFinanceiro() {
       const nfCell = a.paciente_nota_fiscal === 'sim'
         ? `<button class="btn-nfse" onclick="abrirModalNfse(${a.paciente_id},${_finAno},${_finMes})" title="Emitir NFS-e">📄 NFS-e</button>`
         : '<span style="color:var(--muted);font-size:11px">—</span>';
-      const pixCell = (pixKey || pixKeyCnpj)
-        ? `${pixKey ? `<button class="btn-pix-copy" title="PIX CPF" onclick="copiarPixKey('cpf')">CPF 📋</button>` : ''}${pixKeyCnpj ? `<button class="btn-pix-copy" title="PIX CNPJ" onclick="copiarPixKey('cnpj')" style="margin-left:4px">CNPJ 📋</button>` : ''}`
+      const usaCnpj  = a.paciente_nota_fiscal === 'sim';
+      const pixTipo  = usaCnpj ? 'cnpj' : 'cpf';
+      const pixLabel = usaCnpj ? 'CNPJ 📋' : 'CPF 📋';
+      const pixAtivo = usaCnpj ? pixKeyCnpj : pixKey;
+      const pixCell  = pixAtivo
+        ? `<button class="btn-pix-copy" title="PIX ${pixTipo.toUpperCase()}" onclick="copiarPixKey('${pixTipo}')">${pixLabel}</button>`
         : '<span style="color:var(--muted);font-size:11px">—</span>';
       return `
         <tr>
