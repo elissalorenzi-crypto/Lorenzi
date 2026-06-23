@@ -747,6 +747,28 @@ function copiarZoom(link) {
 }
 
 // Remove código de país e formata como (DDD) NNNNN-NNNN para armazenamento
+async function buscarCep(valor) {
+  const cep = valor.replace(/\D/g, '');
+  if (cep.length !== 8) return;
+  const cepEl = document.getElementById('fp-nf-cep');
+  if (cepEl) cepEl.style.borderColor = 'var(--border)';
+  try {
+    const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    const d = await r.json();
+    if (d.erro) { if (cepEl) cepEl.style.borderColor = 'var(--red)'; return; }
+    const set = (id, v) => { const el = document.getElementById(id); if (el && v) el.value = v; };
+    set('fp-nf-logradouro', d.logradouro);
+    set('fp-nf-bairro',     d.bairro);
+    set('fp-nf-cidade',     d.localidade);
+    set('fp-nf-uf',         d.uf);
+    if (cepEl) cepEl.style.borderColor = 'var(--sage)';
+    // Formata CEP
+    if (cepEl) cepEl.value = cep.replace(/(\d{5})(\d{3})/, '$1-$2');
+  } catch(e) {
+    if (cepEl) cepEl.style.borderColor = 'var(--red)';
+  }
+}
+
 function normalizarFone(fone) {
   if (!fone) return '';
   let d = fone.replace(/\D/g, '');
@@ -1222,7 +1244,7 @@ function pacienteFormHtml(p = {}) {
       </div>
       <div class="form-group" style="flex:1;min-width:100px">
         <label>CEP</label>
-        <input type="text" id="fp-nf-cep" value="${p.nf_cep||''}" placeholder="00000-000">
+        <input type="text" id="fp-nf-cep" value="${p.nf_cep||''}" placeholder="00000-000" oninput="buscarCep(this.value)" maxlength="9">
       </div>
       <div class="form-group">
         <label>Convênio</label>
