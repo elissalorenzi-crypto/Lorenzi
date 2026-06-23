@@ -746,6 +746,12 @@ ${partes.join('\n\n')}`;
   }
 });
 
+// Health check Railway
+app.get('/health', (req, res) => res.json({ ok: true }));
+
+process.on('uncaughtException', err => { console.error('UNCAUGHT:', err); });
+process.on('unhandledRejection', err => { console.error('UNHANDLED:', err); });
+
 // ─────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log('\n╔══════════════════════════════════════════════╗');
