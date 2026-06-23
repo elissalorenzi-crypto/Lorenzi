@@ -374,8 +374,6 @@ async function carregar(autoAvancar = true) {
     }
 
     if (!document.getElementById('h-nome').dataset.loaded) {
-      document.getElementById('h-nome').textContent = data.config.nome_psicologa || '';
-      document.getElementById('h-crp').textContent  = data.config.crp ? `CRP ${data.config.crp}` : '';
       document.getElementById('h-nome').dataset.loaded = '1';
     }
 
