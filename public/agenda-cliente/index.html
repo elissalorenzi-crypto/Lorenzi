@@ -375,9 +375,7 @@ function abrirModal(data, hora) {
   _slotSel = { data, hora };
   document.getElementById('modal-resumo').textContent = fmtResumo(data, hora);
   document.getElementById('f-nome').value = '';
-  document.getElementById('f-wpp').value  = '';
   document.getElementById('fg-nome').classList.remove('erro');
-  document.getElementById('fg-wpp').classList.remove('erro');
   document.getElementById('btn-conf').disabled    = false;
   document.getElementById('btn-conf').textContent = 'Confirmar e Assinar Contrato →';
   document.getElementById('modal').classList.add('open');
