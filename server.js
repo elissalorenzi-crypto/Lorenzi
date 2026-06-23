@@ -530,7 +530,7 @@ app.post('/api/contratos', (req, res) => {
 
     // Cria ou atualiza paciente automaticamente com os dados do contrato
     try {
-      const { nome, data_nascimento, cpf, email, celular, endereco, nome_responsavel, forma_pgto, token } = req.body;
+      const { nome, data_nascimento, cpf, email, celular, endereco, nome_responsavel, forma_pgto, freq_sessoes, token } = req.body;
       if (nome) {
         // Busca valor_sessao do convite (se existir)
         let valorSessao = 0;
@@ -551,7 +551,7 @@ app.post('/api/contratos', (req, res) => {
           endereco:         endereco         || null,
           responsavel:      nome_responsavel || null,
           freq_pgto:        freqPgto,
-          frequencia:       'semanal',
+          frequencia:       freq_sessoes || 'semanal',
           ...(valorSessao ? { valor_sessao: valorSessao } : {}),
         };
         const existente = cpf ? db.getPacienteByCpf(cpf) : null;
