@@ -1351,7 +1351,8 @@ function openModalPaciente(p = {}) {
       obs:             document.getElementById('fp-obs').value.trim(),
       forma_pgto:      document.getElementById('fp-forma').value     || null,
       frequencia:      document.getElementById('fp-freq').value      || null,
-      freq_pgto:       document.getElementById('fp-freqpgto').value  || null
+      freq_pgto:       document.getElementById('fp-freqpgto').value  || null,
+      nota_fiscal:     p.nota_fiscal || 'nao'
     };
     if (!body.nome) return toast('Nome é obrigatório', 'error') || false;
     try {
@@ -2705,13 +2706,13 @@ async function loadFinanceiro() {
   const pendTbody = document.getElementById('fin-pendentes-tbody');
   const pixKey    = _config?.chave_pix || '';
   if (!data.pendentes.length) {
-    pendTbody.innerHTML = `<tr><td colspan="5" class="text-muted" style="text-align:center;padding:20px">Sem pendências 🎉</td></tr>`;
+    pendTbody.innerHTML = `<tr><td colspan="6" class="text-muted" style="text-align:center;padding:20px">Sem pendências 🎉</td></tr>`;
   } else {
     pendTbody.innerHTML = data.pendentes.map(a => {
-      const nfBadge = a.paciente_nota_fiscal === 'sim'
+      const nfCell = a.paciente_nota_fiscal === 'sim'
         ? `<button class="btn-nfse" onclick="abrirModalNfse(${a.paciente_id},${_finAno},${_finMes})" title="Emitir NFS-e">📄 NFS-e</button>`
-        : '';
-      const pixBtn = pixKey
+        : '<span style="color:var(--muted);font-size:11px">—</span>';
+      const pixCell = pixKey
         ? `<button class="btn-pix-copy" title="Copiar chave PIX" onclick="copiarPixKey()">${pixKey.length > 22 ? pixKey.slice(0,20)+'…' : pixKey} 📋</button>`
         : '<span style="color:var(--muted);font-size:11px">—</span>';
       return `
@@ -2719,7 +2720,8 @@ async function loadFinanceiro() {
           <td>${fmtData(a.data)}</td>
           <td>${a.paciente_nome || '—'}</td>
           <td class="text-right fw-bold" style="color:var(--peach)">${BRL(a.valor)}</td>
-          <td style="white-space:nowrap">${nfBadge}${nfBadge && pixKey ? ' ' : ''}${pixBtn}</td>
+          <td>${nfCell}</td>
+          <td>${pixCell}</td>
           <td>
             <button class="btn btn-sage btn-xs" onclick="marcarPago(${a.id})">✓ Recebido</button>
           </td>
@@ -2731,12 +2733,15 @@ async function loadFinanceiro() {
   // Lista completa
   const listaTbody = document.getElementById('fin-lista-tbody');
   if (!data.lista.length) {
-    listaTbody.innerHTML = `<tr><td colspan="7" class="text-muted" style="text-align:center;padding:20px">Nenhuma sessão realizada neste mês</td></tr>`;
+    listaTbody.innerHTML = `<tr><td colspan="8" class="text-muted" style="text-align:center;padding:20px">Nenhuma sessão realizada neste mês</td></tr>`;
   } else {
     const formaLabel = { dinheiro:'Dinheiro', pix:'PIX', credito:'Crédito', debito:'Débito', convenio:'Convênio', transferencia:'TED/PIX' };
     listaTbody.innerHTML = data.lista.map(a => {
-      const nfBtn = a.paciente_nota_fiscal === 'sim'
+      const nfCell = a.paciente_nota_fiscal === 'sim'
         ? `<button class="btn-nfse" onclick="abrirModalNfse(${a.paciente_id},${_finAno},${_finMes})" title="Emitir NFS-e">📄 NFS-e</button>`
+        : '<span style="color:var(--muted);font-size:11px">—</span>';
+      const pixCell = pixKey
+        ? `<button class="btn-pix-copy" title="Copiar chave PIX" onclick="copiarPixKey()">${pixKey.length > 22 ? pixKey.slice(0,20)+'…' : pixKey} 📋</button>`
         : '<span style="color:var(--muted);font-size:11px">—</span>';
       return `
         <tr>
@@ -2746,7 +2751,8 @@ async function loadFinanceiro() {
           <td class="text-right fw-bold">${BRL(a.valor)}</td>
           <td>${a.pago ? '<span style="color:var(--sage);font-weight:700">Recebido ✓</span>' : '<span style="color:var(--peach)">Pendente</span>'}</td>
           <td>${formaLabel[a.forma_pgto] || a.forma_pgto || '—'}</td>
-          <td>${nfBtn}</td>
+          <td>${nfCell}</td>
+          <td>${pixCell}</td>
         </tr>
       `;
     }).join('');
