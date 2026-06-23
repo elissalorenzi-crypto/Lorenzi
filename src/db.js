@@ -15,6 +15,7 @@ const migrations = [
   "ALTER TABLE contratos ADD COLUMN valor_sessao REAL DEFAULT 0",
   "ALTER TABLE convites ADD COLUMN valor REAL DEFAULT 0",
   "ALTER TABLE convites ADD COLUMN data_inicio TEXT",
+  "ALTER TABLE convites ADD COLUMN agendamento_id INTEGER",
   "ALTER TABLE pagamentos ADD COLUMN pago_meses TEXT DEFAULT '[]'",
 ];
 for (const m of migrations) {
