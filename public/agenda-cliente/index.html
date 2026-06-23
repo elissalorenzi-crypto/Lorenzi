@@ -260,9 +260,11 @@ function renderGrade(data) {
   const toMin = t => { const [h,m] = t.split(':').map(Number); return h*60+m; };
   const toStr = n => `${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`;
 
-  // Mesma grade do admin: manhã 30min, tarde 60min
+  // Manhã: só horas cheias 08-11. Tarde: 14-20 a cada 60min
+  // Ter(2)/Qui(4)/Sex(5): sem 20:00
+  const SEM_20H = new Set([2, 4, 5]);
   const slots = [];
-  for (let m = 480; m <= 660; m += 30) slots.push({ t: toStr(m), isHour: m % 60 === 0 });
+  for (let m = 480; m <= 660; m += 60) slots.push({ t: toStr(m), isHour: true });
   for (let m = 840; m <= 1200; m += 60) slots.push({ t: toStr(m), isHour: true });
 
   // Cabeçalho
@@ -294,6 +296,7 @@ function renderGrade(data) {
     }
 
     const cells = dias.map(d => {
+      if (t === '20:00' && SEM_20H.has(new Date(d + 'T12:00:00').getDay())) return `<td class="grade-cell"></td>`;
       const past = isPast(d, t);
       const s    = idx[`${d}|${t}`];
 
