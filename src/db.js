@@ -750,7 +750,8 @@ const getRelatorios = () => {
   };
 };
 
-function limparZoomLinks() {
+function limparZoomLinks(id) {
+  if (id) return db.prepare('UPDATE agendamentos SET zoom_link = NULL WHERE id = ?').run(id);
   return db.prepare('UPDATE agendamentos SET zoom_link = NULL').run();
 }
 

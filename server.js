@@ -634,7 +634,8 @@ app.delete('/api/contratos/:id', (req, res) => {
 app.post('/api/admin/limpar-zoom-links', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
   try {
-    const result = db.limparZoomLinks();
+    const { id } = req.body || {};
+    const result = db.limparZoomLinks(id || null);
     res.json({ ok: true, alterados: result.changes });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
