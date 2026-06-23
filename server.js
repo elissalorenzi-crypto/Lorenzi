@@ -856,6 +856,68 @@ ${partes.join('\n\n')}`;
   }
 });
 
+// ─── ESTRUTURAR DITADO ──────────────────────────────────────
+app.post('/api/prontuarios/estruturar-ditado', async (req, res) => {
+  const { transcricao, nome_paciente } = req.body || {};
+  if (!transcricao?.trim()) return res.status(400).json({ error: 'Transcrição vazia' });
+
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return res.status(503).json({ error: 'ANTHROPIC_API_KEY não configurada' });
+
+  const prompt = `Você é um assistente especializado em registros de prontuário psicológico. O psicólogo fez o seguinte relato livre sobre a sessão${nome_paciente ? ` com ${nome_paciente}` : ''}:
+
+---
+${transcricao}
+---
+
+Com base nesse relato, estruture uma anotação de prontuário psicológico profissional, objetiva e técnica. Siga rigorosamente as diretrizes éticas do CFP (Conselho Federal de Psicologia) para registros em prontuário.
+
+Retorne um JSON com exatamente estes campos (sem markdown, sem explicações, apenas o JSON):
+{
+  "conteudo": "Demandas e temas abordados na sessão; relatos e acontecimentos relevantes; intervenções realizadas pelo psicólogo; observações clínicas",
+  "humor": "Estado emocional e humor observados no cliente",
+  "tecnicas": "Técnicas e intervenções realizadas pelo psicólogo",
+  "tarefas": "Encaminhamentos, combinados e tarefas propostas para a próxima sessão"
+}
+
+Diretrizes:
+- Linguagem técnica, objetiva e em terceira pessoa ("O paciente relatou...", "Foram trabalhados...")
+- Registrar apenas informações pertinentes ao acompanhamento psicológico
+- Evitar interpretações não fundamentadas
+- Preservar sigilo — não incluir nomes de terceiros mencionados
+- Se o relato não mencionar algo para um campo, deixe a string vazia ""`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 2048,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data?.error?.message || 'Erro na API');
+    const texto = data.content?.[0]?.text || '{}';
+    const jsonMatch = texto.match(/\{[\s\S]*\}/);
+    const resultado = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
+    res.json({
+      conteudo:  resultado.conteudo  || '',
+      humor:     resultado.humor     || '',
+      tecnicas:  resultado.tecnicas  || '',
+      tarefas:   resultado.tarefas   || '',
+    });
+  } catch(e) {
+    console.error('estruturar-ditado:', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ─────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log('\n╔══════════════════════════════════════════════╗');

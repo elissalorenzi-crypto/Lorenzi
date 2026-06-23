@@ -1539,6 +1539,18 @@ function prontuarioFormHtml(r = {}, agendamentos = []) {
       <label>Data da Sessão</label>
       <input type="date" id="pr-data" value="${r.data || HOJE()}">
     </div>
+    <!-- Ditado por voz -->
+    <div id="ditado-box" style="background:#FBF3F9;border:1.5px solid #E8D5E4;border-radius:12px;padding:14px 16px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <button type="button" id="btn-mic" onclick="toggleDitado()" title="Gravar relato por voz" style="width:42px;height:42px;border-radius:50%;border:none;background:var(--rose);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s">🎙️</button>
+        <div>
+          <div style="font-weight:700;font-size:13.5px;color:var(--plum)">Ditado por Voz</div>
+          <div id="ditado-status" style="font-size:12px;color:var(--muted)">Clique no microfone e fale livremente sobre a sessão</div>
+        </div>
+        <button type="button" id="btn-estruturar" onclick="estruturarDitado()" style="display:none;margin-left:auto" class="btn btn-sm btn-primary">✨ Estruturar com IA</button>
+      </div>
+      <textarea id="ditado-transcricao" rows="3" placeholder="A transcrição aparecerá aqui enquanto você fala..." style="width:100%;border:1px solid #E8D5E4;border-radius:8px;padding:10px;font-size:13px;color:var(--text);background:#fff;resize:vertical;display:none"></textarea>
+    </div>
     <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
       <button type="button" class="btn btn-sm btn-outline" id="btn-corrigir-pront" onclick="corrigirProntuario()" title="Corrige ortografia e gramática automaticamente com IA">
         ✨ Corrigir texto com IA
@@ -1594,6 +1606,125 @@ async function corrigirProntuario() {
   btn.textContent = '✨ Corrigir texto com IA';
   if (corrigidos > 0) toast(`✅ ${corrigidos} campo(s) corrigido(s)!`);
   else toast('Nenhuma correção necessária 👍');
+}
+
+// ── DITADO POR VOZ ────────────────────────────────────────────
+let _ditadoRec = null;
+let _ditadoAtivo = false;
+let _ditadoTexto = '';
+
+function toggleDitado() {
+  if (_ditadoAtivo) pararDitado();
+  else iniciarDitado();
+}
+
+function iniciarDitado() {
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRec) {
+    toast('Seu navegador não suporta reconhecimento de voz. Use Chrome ou Edge.', 'error');
+    return;
+  }
+  _ditadoRec = new SpeechRec();
+  _ditadoRec.lang = 'pt-BR';
+  _ditadoRec.continuous = true;
+  _ditadoRec.interimResults = true;
+  _ditadoRec.maxAlternatives = 1;
+
+  const btnMic    = document.getElementById('btn-mic');
+  const status    = document.getElementById('ditado-status');
+  const textarea  = document.getElementById('ditado-transcricao');
+  const btnEstr   = document.getElementById('btn-estruturar');
+
+  textarea.style.display = 'block';
+  btnEstr.style.display  = 'none';
+  _ditadoAtivo = true;
+  _ditadoTexto = textarea.value;
+
+  btnMic.style.background = '#c0425d';
+  btnMic.innerHTML = '⏹️';
+  btnMic.title = 'Parar gravação';
+  status.innerHTML = '<span style="color:#c0425d;font-weight:700">● Gravando…</span> fale livremente sobre a sessão';
+
+  let textoFinal = _ditadoTexto;
+
+  _ditadoRec.onresult = (e) => {
+    let interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) textoFinal += e.results[i][0].transcript + ' ';
+      else interim = e.results[i][0].transcript;
+    }
+    textarea.value = textoFinal + interim;
+    textarea.scrollTop = textarea.scrollHeight;
+  };
+
+  _ditadoRec.onerror = (e) => {
+    if (e.error === 'not-allowed') toast('Permissão de microfone negada', 'error');
+    else if (e.error !== 'no-speech') toast('Erro no microfone: ' + e.error, 'error');
+    pararDitado();
+  };
+
+  _ditadoRec.onend = () => {
+    if (_ditadoAtivo) _ditadoRec.start(); // reinicia para gravação contínua
+  };
+
+  _ditadoRec.start();
+}
+
+function pararDitado() {
+  _ditadoAtivo = false;
+  if (_ditadoRec) { _ditadoRec.onend = null; _ditadoRec.stop(); _ditadoRec = null; }
+
+  const btnMic   = document.getElementById('btn-mic');
+  const status   = document.getElementById('ditado-status');
+  const textarea = document.getElementById('ditado-transcricao');
+  const btnEstr  = document.getElementById('btn-estruturar');
+
+  btnMic.style.background = 'var(--rose)';
+  btnMic.innerHTML = '🎙️';
+  btnMic.title = 'Gravar relato por voz';
+
+  const temTexto = textarea?.value?.trim();
+  if (temTexto) {
+    status.innerHTML = '✅ Gravação concluída — revise o texto e clique em <strong>Estruturar com IA</strong>';
+    btnEstr.style.display = 'inline-flex';
+  } else {
+    status.textContent = 'Clique no microfone e fale livremente sobre a sessão';
+  }
+}
+
+async function estruturarDitado() {
+  const textarea  = document.getElementById('ditado-transcricao');
+  const btnEstr   = document.getElementById('btn-estruturar');
+  const status    = document.getElementById('ditado-status');
+  const transcricao = textarea?.value?.trim();
+  if (!transcricao) return toast('Nenhum texto para estruturar', 'error');
+
+  const pacId = document.getElementById('pront-paciente-select')?.value;
+  const pac = _pacientesCache?.find(p => p.id == pacId);
+  const nome = pac?.apelido || pac?.nome?.split(' ')[0] || '';
+
+  btnEstr.disabled = true;
+  btnEstr.textContent = '⏳ Estruturando…';
+  status.textContent = 'Processando com IA…';
+
+  try {
+    const r = await api('POST', '/prontuarios/estruturar-ditado', { transcricao, nome_paciente: nome });
+
+    if (r.conteudo)  { const el = document.getElementById('pr-conteudo');  el.value = r.conteudo;  el.style.background = '#f0fdf4'; setTimeout(() => el.style.background = '', 2000); }
+    if (r.humor)     { const el = document.getElementById('pr-humor');     el.value = r.humor;     el.style.background = '#f0fdf4'; setTimeout(() => el.style.background = '', 2000); }
+    if (r.tecnicas)  { const el = document.getElementById('pr-tecnicas');  el.value = r.tecnicas;  el.style.background = '#f0fdf4'; setTimeout(() => el.style.background = '', 2000); }
+    if (r.tarefas)   { const el = document.getElementById('pr-tarefas');   el.value = r.tarefas;   el.style.background = '#f0fdf4'; setTimeout(() => el.style.background = '', 2000); }
+
+    status.innerHTML = '✅ Campos preenchidos! Revise e ajuste antes de salvar.';
+    btnEstr.style.display = 'none';
+    toast('Prontuário estruturado com sucesso! ✨');
+  } catch(e) {
+    toast('Erro ao estruturar: ' + e.message, 'error');
+    status.textContent = 'Erro ao processar. Tente novamente.';
+  } finally {
+    btnEstr.disabled = false;
+    btnEstr.textContent = '✨ Estruturar com IA';
+  }
 }
 
 function syncDataPront() {
