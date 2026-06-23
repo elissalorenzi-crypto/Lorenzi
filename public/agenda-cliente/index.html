@@ -252,7 +252,7 @@ function renderGrade(data) {
   // Mesma grade do admin: manhã 30min, tarde 60min
   const slots = [];
   for (let m = 480; m <= 660; m += 30) slots.push({ t: toStr(m), isHour: m % 60 === 0 });
-  for (let m = 840; m <= 1260; m += 60) slots.push({ t: toStr(m), isHour: true });
+  for (let m = 840; m <= 1200; m += 60) slots.push({ t: toStr(m), isHour: true });
 
   // Cabeçalho
   const ths = dias.map(d => {
