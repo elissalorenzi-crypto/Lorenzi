@@ -717,6 +717,16 @@ app.post('/api/notificacoes/:id/lida', (req, res) => {
   res.json({ ok: true });
 });
 
+// ── NFS-e HELPER ──────────────────────────────────────────────
+app.get('/api/nfse/dados', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  const { paciente_id, ano, mes } = req.query;
+  if (!paciente_id || !ano || !mes) return res.status(400).json({ error: 'Parâmetros obrigatórios: paciente_id, ano, mes' });
+  const dados = db.getNfseData(Number(paciente_id), Number(ano), Number(mes));
+  const cfg   = db.getConfig();
+  res.json({ ...dados, config: { nome_psicologa: cfg.nome_psicologa, crp: cfg.crp } });
+});
+
 // ── ZOOM WEBHOOK (sem auth — chamado diretamente pelo Zoom) ───
 app.post('/api/zoom/webhook', express.json(), (req, res) => {
   const body = req.body || {};

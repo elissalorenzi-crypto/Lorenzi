@@ -17,6 +17,12 @@ const migrations = [
   "ALTER TABLE convites ADD COLUMN data_inicio TEXT",
   "ALTER TABLE convites ADD COLUMN agendamento_id INTEGER",
   "ALTER TABLE pagamentos ADD COLUMN pago_meses TEXT DEFAULT '[]'",
+  // Campos de endereço estruturado para emissão de NFS-e
+  "ALTER TABLE pacientes ADD COLUMN nf_logradouro TEXT",
+  "ALTER TABLE pacientes ADD COLUMN nf_bairro TEXT",
+  "ALTER TABLE pacientes ADD COLUMN nf_cidade TEXT",
+  "ALTER TABLE pacientes ADD COLUMN nf_uf TEXT",
+  "ALTER TABLE pacientes ADD COLUMN nf_cep TEXT",
 ];
 for (const m of migrations) {
   try { db.exec(m); } catch(_) {}
@@ -788,6 +794,19 @@ const getAgendamentoByZoomMeetingId = (meetingId) =>
   db.prepare("SELECT * FROM agendamentos WHERE zoom_link LIKE ? LIMIT 1")
     .get(`%/j/${meetingId}%`);
 
+const getNfseData = (pacienteId, ano, mes) => {
+  const de  = `${ano}-${String(mes).padStart(2,'0')}-01`;
+  const ult = new Date(ano, mes, 0).getDate();
+  const ate = `${ano}-${String(mes).padStart(2,'0')}-${String(ult).padStart(2,'0')}`;
+  const paciente = db.prepare('SELECT * FROM pacientes WHERE id = ?').get(pacienteId);
+  const sessoes  = db.prepare(`
+    SELECT * FROM agendamentos
+    WHERE paciente_id = ? AND data >= ? AND data <= ? AND status = 'realizado'
+    ORDER BY data, hora
+  `).all(pacienteId, de, ate);
+  return { paciente, sessoes };
+};
+
 module.exports = {
   getPacientes, getPacienteById, getPacienteByCpf, createPaciente, updatePaciente, deletePaciente,
   getAgendamentos, getAgendamentoById, createAgendamento, updateAgendamento, deleteAgendamento,
@@ -798,5 +817,6 @@ module.exports = {
   createLinkAgendamento, getLinkAgendamento, getLinksAgendamento, desativarLinkAgendamento,
   createConvite, getConvites, getConviteByToken, usarConvite, deleteConvite,
   limparZoomLinks,
-  createNotificacao, getNotificacoes, marcarNotificacaoLida, getAgendamentoByZoomMeetingId
+  createNotificacao, getNotificacoes, marcarNotificacaoLida, getAgendamentoByZoomMeetingId,
+  getNfseData
 };

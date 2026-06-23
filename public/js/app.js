@@ -1193,8 +1193,31 @@ function pacienteFormHtml(p = {}) {
         <input type="text" id="fp-ocup" value="${p.ocupacao||''}" placeholder="Profissão">
       </div>
       <div class="form-group full">
-        <label>Endereço</label>
+        <label>Endereço (geral)</label>
         <input type="text" id="fp-end" value="${p.endereco||''}" placeholder="Rua, número, bairro, cidade">
+      </div>
+      <div class="form-group full" style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px">
+        <label style="color:var(--muted);font-size:11px;letter-spacing:.5px;text-transform:uppercase;font-weight:700">Endereço estruturado para Nota Fiscal</label>
+      </div>
+      <div class="form-group" style="flex:3">
+        <label>Logradouro e número</label>
+        <input type="text" id="fp-nf-logradouro" value="${p.nf_logradouro||''}" placeholder="Rua Exemplo, 123">
+      </div>
+      <div class="form-group" style="flex:2">
+        <label>Bairro</label>
+        <input type="text" id="fp-nf-bairro" value="${p.nf_bairro||''}" placeholder="Bairro">
+      </div>
+      <div class="form-group" style="flex:2">
+        <label>Cidade</label>
+        <input type="text" id="fp-nf-cidade" value="${p.nf_cidade||''}" placeholder="Cidade">
+      </div>
+      <div class="form-group" style="flex:1;min-width:60px;max-width:80px">
+        <label>UF</label>
+        <input type="text" id="fp-nf-uf" value="${p.nf_uf||''}" placeholder="SP" maxlength="2">
+      </div>
+      <div class="form-group" style="flex:1;min-width:100px">
+        <label>CEP</label>
+        <input type="text" id="fp-nf-cep" value="${p.nf_cep||''}" placeholder="00000-000">
       </div>
       <div class="form-group">
         <label>Convênio</label>
@@ -1273,6 +1296,11 @@ function openModalPaciente(p = {}) {
       whatsapp:        normalizarFone(document.getElementById('fp-wpp').value.trim()),
       email:           document.getElementById('fp-email').value.trim(),
       endereco:        document.getElementById('fp-end').value.trim(),
+      nf_logradouro:   document.getElementById('fp-nf-logradouro').value.trim(),
+      nf_bairro:       document.getElementById('fp-nf-bairro').value.trim(),
+      nf_cidade:       document.getElementById('fp-nf-cidade').value.trim(),
+      nf_uf:           document.getElementById('fp-nf-uf').value.trim().toUpperCase(),
+      nf_cep:          document.getElementById('fp-nf-cep').value.trim(),
       ocupacao:        document.getElementById('fp-ocup').value.trim(),
       convenio:        document.getElementById('fp-conv').value.trim(),
       num_convenio:    document.getElementById('fp-numconv').value.trim(),
@@ -2618,7 +2646,7 @@ async function loadFinanceiro() {
   } else {
     pendTbody.innerHTML = data.pendentes.map(a => {
       const nfBadge = a.paciente_nota_fiscal === 'sim'
-        ? `<span class="badge-nf" title="Cliente solicita Nota Fiscal">📄 NF</span>`
+        ? `<button class="btn-nfse" onclick="abrirModalNfse(${a.paciente_id},${_finAno},${_finMes})" title="Emitir NFS-e">📄 NFS-e</button>`
         : '';
       const pixBtn = pixKey
         ? `<button class="btn-pix-copy" title="Copiar chave PIX" onclick="copiarPixKey()">${pixKey.length > 22 ? pixKey.slice(0,20)+'…' : pixKey} 📋</button>`
@@ -2668,6 +2696,118 @@ async function copiarPixKey() {
   } catch(e) {
     toast('Não foi possível copiar. Chave: ' + key, 'error');
   }
+}
+
+// ── NFS-e Helper ──────────────────────────────────────────────
+const _NFSE_PORTAL = 'https://webapp1-boituva.cidade360.cloud/NFSe.Portal/';
+
+function _nfseCopiaBotao(label, valor) {
+  const id = 'nfse_' + Math.random().toString(36).slice(2);
+  return `
+    <div class="nfse-linha">
+      <span class="nfse-label">${label}</span>
+      <span class="nfse-val" id="${id}">${valor || '<span style="color:var(--muted)">—</span>'}</span>
+      ${valor ? `<button class="nfse-copy" onclick="nfseCopiar('${id}',this)" title="Copiar">📋</button>` : ''}
+    </div>`;
+}
+
+async function nfseCopiar(elId, btn) {
+  const el  = document.getElementById(elId) || document.querySelector(`[id="${elId}"]`);
+  const txt = (el?.value || el?.textContent || '').trim();
+  if (!txt) return;
+  try {
+    await navigator.clipboard.writeText(txt);
+    const orig = btn.textContent;
+    btn.textContent = '✓';
+    setTimeout(() => btn.textContent = orig, 1500);
+  } catch(e) { toast('Erro ao copiar', 'error'); }
+}
+
+function _gerarDescricaoNfse(p, sessoes, cfg) {
+  if (!sessoes.length) return '';
+  const datas = sessoes.map(s => {
+    const d = new Date(s.data + 'T12:00:00');
+    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getFullYear()).slice(2)}`;
+  });
+  const datasStr = datas.length === 1 ? datas[0]
+    : datas.length === 2 ? `${datas[0]} e ${datas[1]}`
+    : datas.slice(0,-1).join(', ') + ' e ' + datas.at(-1);
+
+  const valor   = parseFloat(sessoes[0]?.valor) || parseFloat(p.valor_sessao) || 0;
+  const total   = sessoes.reduce((acc, s) => acc + (parseFloat(s.valor) || 0), 0);
+  const n       = sessoes.length;
+  const nomePsi = (cfg.nome_psicologa || 'ELISSA CATARINA RAMOS PEREIRA LORENZI').toUpperCase();
+  const crp     = cfg.crp || '06/91616';
+  const brl     = v => v.toFixed(2).replace('.', ',');
+
+  return `SESSÃO DE PSICOTERAPIA: ${datasStr}. PACIENTE: ${p.nome.toUpperCase()} PSICOLOGA: ${nomePsi} CRP: ${crp} VALOR DA SESSÃO: R$${brl(valor)} VALOR TOTAL DE ${n} ${n === 1 ? 'SESSÃO' : 'SESSÕES'}: R$${brl(total)}. Alíquota Efetiva: 2,0100000000%.`;
+}
+
+async function abrirModalNfse(pacienteId, ano, mes) {
+  const dados = await api('GET', `/nfse/dados?paciente_id=${pacienteId}&ano=${ano}&mes=${mes}`);
+  const { paciente: p, sessoes, config: cfg } = dados;
+
+  const total     = sessoes.reduce((acc, s) => acc + (parseFloat(s.valor) || 0), 0);
+  const descricao = _gerarDescricaoNfse(p, sessoes, cfg);
+  const uid       = Date.now();
+  const descId    = 'nfse_desc_' + uid;
+  const valorId   = 'nfse_val_'  + uid;
+
+  const html = `
+    <div class="nfse-modal">
+      <div class="nfse-portal-bar">
+        <a href="${_NFSE_PORTAL}" target="_blank" class="btn btn-primary btn-sm">🌐 Abrir Portal NFS-e</a>
+        <span style="font-size:12px;color:var(--muted)">Login: CPF <strong>31850592802</strong></span>
+      </div>
+
+      <div class="nfse-secao">
+        <div class="nfse-secao-titulo">👤 Tomador do Serviço</div>
+        ${_nfseCopiaBotao('Nome / Razão Social', p.nome?.toUpperCase())}
+        ${_nfseCopiaBotao('CNPJ / CPF', p.cpf)}
+        ${_nfseCopiaBotao('E-mail', p.email)}
+        ${_nfseCopiaBotao('Telefone', p.whatsapp || p.telefone)}
+        ${_nfseCopiaBotao('Logradouro e Nº', p.nf_logradouro)}
+        ${_nfseCopiaBotao('Bairro', p.nf_bairro)}
+        ${_nfseCopiaBotao('Cidade', p.nf_cidade)}
+        ${_nfseCopiaBotao('UF', p.nf_uf)}
+        ${_nfseCopiaBotao('CEP', p.nf_cep)}
+      </div>
+
+      <div class="nfse-secao">
+        <div class="nfse-secao-titulo">🔧 Dados do Serviço</div>
+        ${_nfseCopiaBotao('Código do Serviço', '04.16 - Psicologia')}
+        ${_nfseCopiaBotao('Código NBS', '123019800')}
+        <div class="nfse-linha">
+          <span class="nfse-label">Valor Total (R$)</span>
+          <span class="nfse-val" id="${valorId}">${total.toFixed(2).replace('.',',')}</span>
+          <button class="nfse-copy" onclick="nfseCopiar('${valorId}',this)">📋</button>
+        </div>
+        <div class="nfse-desc-wrap">
+          <div class="nfse-label" style="margin-bottom:6px">Discriminação dos Serviços</div>
+          <textarea class="nfse-desc-area" id="${descId}" rows="5" readonly>${descricao}</textarea>
+          <button class="btn btn-outline btn-sm" style="margin-top:6px" onclick="nfseCopiar('${descId}',this)">📋 Copiar Descrição Completa</button>
+          ${!sessoes.length ? '<p style="color:var(--peach);font-size:12px;margin-top:6px">⚠️ Nenhuma sessão realizada neste mês.</p>' : ''}
+        </div>
+      </div>
+
+      <div class="nfse-secao">
+        <div class="nfse-secao-titulo">📋 Passo a Passo</div>
+        <ol class="nfse-passos">
+          <li>Clique em <strong>Abrir Portal NFS-e</strong> acima</li>
+          <li>Login → CPF: <code>31850592802</code> / Senha: <code>8gMmHebL</code></li>
+          <li>Clique em <strong>Emitir NFS-e</strong></li>
+          <li>Seção <em>Tomador do Serviço</em>: copie os dados acima (📋)</li>
+          <li>Seção <em>Discriminação dos Serviços</em>: cole o texto gerado acima</li>
+          <li>Código do Serviço: <code>04.16</code> → Psicologia</li>
+          <li>Valor total: <code>${total.toFixed(2).replace('.',',')}</code></li>
+          <li>Confirme e baixe o PDF da NFS-e</li>
+        </ol>
+        ${!p.nf_logradouro ? '<p style="color:var(--peach);font-size:12px;margin-top:8px">⚠️ Endereço NFS-e não preenchido — edite o cadastro do cliente e preencha os campos "Endereço estruturado para Nota Fiscal".</p>' : ''}
+      </div>
+    </div>
+  `;
+
+  openModal(`📄 NFS-e — ${p.nome.split(' ')[0]} · ${MESES[mes-1]}/${ano}`, html, null, { large: true });
 }
 
 async function marcarPago(id) {
