@@ -588,7 +588,7 @@
       return;
     }
 
-    _valorSessao = convite.valor || 0;
+    _valorSessao = convite.valor || Number(cfg.valor_sessao_padrao) || 0;
     if (convite.nome_paciente) document.getElementById('f-nome').value = convite.nome_paciente;
     renderClausulas(modelo, _valorSessao);
     if (_valorSessao) {

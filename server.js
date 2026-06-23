@@ -385,7 +385,7 @@ app.post('/api/agendamento-links/:token/reservar', (req, res) => {
       valor: cfg.valor_sessao_padrao || 180
     });
 
-    const conviteToken = db.createConvite(nome);
+    const conviteToken = db.createConvite(nome, cfg.valor_sessao_padrao || 0);
     const base = `${req.protocol}://${req.get('host')}`;
     res.json({ success: true, contratoLink: `${base}/contratos/?token=${conviteToken}` });
   } catch(e) { erro(res, e); }
@@ -480,7 +480,7 @@ app.post('/api/agenda-publica/reservar', async (req, res) => {
       valor: cfg.valor_sessao_padrao || 180
     });
 
-    const conviteToken = db.createConvite(nome);
+    const conviteToken = db.createConvite(nome, cfg.valor_sessao_padrao || 0);
     const base = `${req.protocol}://${req.get('host')}`;
     res.json({ success: true, contratoLink: `${base}/contratos/?token=${conviteToken}` });
   } catch(e) { erro(res, e); }
