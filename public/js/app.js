@@ -3029,6 +3029,60 @@ async function loadConfiguracoes() {
   document.getElementById('cfg-chave-pix').value           = cfg.chave_pix            || '';
 }
 
+async function preencherEnderecosPorCep() {
+  const log   = document.getElementById('cep-bulk-log');
+  const btn   = document.querySelector('[onclick="preencherEnderecosPorCep()"]');
+  log.style.display = 'block';
+  log.innerHTML = '⏳ Buscando clientes...';
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Processando...'; }
+
+  const addLog = (msg) => { log.innerHTML += '<br>' + msg; log.scrollTop = log.scrollHeight; };
+
+  try {
+    const pacientes = await api('GET', '/pacientes');
+    const semCep = pacientes.filter(p => !p.nf_cep);
+    const cepRe  = /\b(\d{5}-?\d{3})\b/;
+
+    addLog(`📋 ${pacientes.length} clientes encontrados · ${semCep.length} sem CEP estruturado`);
+
+    let atualizados = 0, naoEncontrado = 0, semCepNoEnd = 0;
+
+    for (const p of semCep) {
+      const match = cepRe.exec(p.endereco || '');
+      if (!match) { semCepNoEnd++; continue; }
+
+      const cepRaw = match[1].replace('-', '');
+      try {
+        const r = await fetch(`https://viacep.com.br/ws/${cepRaw}/json/`);
+        const d = await r.json();
+        if (d.erro) { naoEncontrado++; addLog(`⚠️ ${p.nome} — CEP ${cepRaw} não encontrado`); continue; }
+
+        await api('PUT', `/pacientes/${p.id}`, {
+          ...p,
+          nf_logradouro: d.logradouro || p.nf_logradouro || '',
+          nf_bairro:     d.bairro     || p.nf_bairro     || '',
+          nf_cidade:     d.localidade || p.nf_cidade      || '',
+          nf_uf:         d.uf         || p.nf_uf          || '',
+          nf_cep:        cepRaw.replace(/(\d{5})(\d{3})/, '$1-$2'),
+        });
+        addLog(`✅ ${p.nome} — ${d.logradouro}, ${d.localidade}/${d.uf} (${cepRaw})`);
+        atualizados++;
+
+        // Pequena pausa para não sobrecarregar a API pública
+        await new Promise(r => setTimeout(r, 150));
+      } catch(e) {
+        addLog(`❌ ${p.nome} — erro ao buscar CEP ${cepRaw}`);
+      }
+    }
+
+    addLog(`<br><strong>✔ Concluído:</strong> ${atualizados} atualizados · ${naoEncontrado} CEP inválido · ${semCepNoEnd} sem CEP no endereço`);
+  } catch(e) {
+    addLog('❌ Erro: ' + e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🔍 Executar novamente'; }
+  }
+}
+
 async function salvarConfiguracoes() {
   const valorAntigo = parseFloat(_config.valor_sessao_padrao) || 0;
   const novoValor   = parseFloat(document.getElementById('cfg-valor').value) || 0;
