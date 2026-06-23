@@ -189,11 +189,7 @@
         <input type="text" id="f-nome" placeholder="Nome completo" spellcheck="true" lang="pt-BR" autocomplete="name">
         <span class="errmsg">Campo obrigatório</span>
       </div>
-      <div class="fg" id="fg-wpp">
-        <label>WhatsApp *</label>
-        <input type="tel" id="f-wpp" placeholder="(00) 00000-0000" oninput="mascTel(this)" autocomplete="tel">
-        <span class="errmsg">Campo obrigatório</span>
-      </div>
+
       <div class="modal-footer">
         <button class="btn-cancel" onclick="fecharModal()">Cancelar</button>
         <button class="btn-confirmar" id="btn-conf" onclick="confirmar()">Confirmar e Assinar Contrato →</button>
@@ -400,13 +396,8 @@ function mascTel(el) {
 async function confirmar() {
   if (!_slotSel) return;
   const nome = document.getElementById('f-nome').value.trim();
-  const wpp  = document.getElementById('f-wpp').value.trim();
-  let ok = true;
-  [['fg-nome', nome], ['fg-wpp', wpp]].forEach(([id, val]) => {
-    document.getElementById(id).classList.toggle('erro', !val);
-    if (!val) ok = false;
-  });
-  if (!ok) return;
+  if (!nome) { document.getElementById('fg-nome').classList.add('erro'); return; }
+  document.getElementById('fg-nome').classList.remove('erro');
 
   const btn = document.getElementById('btn-conf');
   btn.disabled = true;
@@ -416,7 +407,7 @@ async function confirmar() {
     const r = await fetch('/api/agenda-publica/reservar', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nome, whatsapp: wpp, data: _slotSel.data, hora: _slotSel.hora })
+      body: JSON.stringify({ nome, data: _slotSel.data, hora: _slotSel.hora })
     });
     const data = await r.json();
     if (!r.ok) {
