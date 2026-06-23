@@ -415,7 +415,7 @@ app.get('/api/agenda-publica', (req, res) => {
   // Ter(2)/Qui(4)/Sex(5): sem 20:00
   const SEM_20H = new Set([2, 4, 5]);
   const baseSlots = [];
-  for (let m = 480; m <= 660; m += 60) baseSlots.push(fromMin(m));  // 08:00–11:00 horas cheias
+  for (let m = 480; m <= 600; m += 60) baseSlots.push(fromMin(m));  // 08:00–10:00 horas cheias
   for (let m = 840; m <= 1200; m += 60) baseSlots.push(fromMin(m)); // 14:00–20:00
 
   const existentes = db.getAgendamentos({ data_de: dias[0], data_ate: dias[dias.length - 1] })
