@@ -277,6 +277,27 @@ async function criarReuniaozoom(cfg, topic, startLocal, durationMin) {
   return meet.join_url;
 }
 
+app.post('/api/admin/gerar-zoom-todos', async (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  try {
+    const cfg  = db.getConfig();
+    const hoje = new Date().toISOString().slice(0, 10);
+    const ags  = db.getAgendamentos({ data_de: hoje })
+      .filter(a => ['agendado','confirmado'].includes(a.status) && !a.zoom_link);
+    const resultados = [];
+    for (const ag of ags) {
+      try {
+        const link = await criarReuniaozoom(cfg, `Sessão — ${ag.paciente_nome}`, `${ag.data}T${ag.hora}:00`, ag.duracao || cfg.duracao_sessao || 50);
+        db.updateAgendamento(ag.id, { ...ag, zoom_link: link });
+        resultados.push({ id: ag.id, nome: ag.paciente_nome, data: ag.data, hora: ag.hora, ok: true });
+      } catch(e) {
+        resultados.push({ id: ag.id, nome: ag.paciente_nome, data: ag.data, hora: ag.hora, ok: false, erro: e.message });
+      }
+    }
+    res.json({ total: ags.length, resultados });
+  } catch(e) { erro(res, e); }
+});
+
 app.post('/api/agendamentos/:id/zoom', async (req, res) => {
   try {
     const ag  = db.getAgendamentoById(req.params.id);
