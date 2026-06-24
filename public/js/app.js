@@ -3056,29 +3056,38 @@ async function marcarPago(id) {
   const ag = await api('GET', `/agendamentos/${id}`);
   const formaAtual = ag.forma_pgto || 'pix';
 
+  const dataAtual = ag.data_pagamento || HOJE();
+
   const html = `
     <div style="margin-bottom:16px">
       <div style="font-size:14px;color:var(--text-mid);margin-bottom:14px">
         <strong>${ag.paciente_nome || 'Cliente'}</strong> — ${fmtData(ag.data)} às ${ag.hora}<br>
         <span style="font-size:13px;color:var(--muted)">Valor: <strong style="color:var(--plum)">${BRL(ag.valor)}</strong></span>
       </div>
-      <div class="form-group">
-        <label>Forma de Pagamento</label>
-        <select id="fin-forma">
-          <option value="pix"          ${formaAtual==='pix'?'selected':''}>PIX</option>
-          <option value="dinheiro"     ${formaAtual==='dinheiro'?'selected':''}>Dinheiro</option>
-          <option value="credito"      ${formaAtual==='credito'?'selected':''}>Cartão de Crédito</option>
-          <option value="debito"       ${formaAtual==='debito'?'selected':''}>Cartão de Débito</option>
-          <option value="transferencia"${formaAtual==='transferencia'?'selected':''}>Transferência</option>
-          <option value="convenio"     ${formaAtual==='convenio'?'selected':''}>Convênio</option>
-        </select>
+      <div style="display:flex;gap:12px">
+        <div class="form-group" style="flex:1">
+          <label>Forma de Pagamento</label>
+          <select id="fin-forma">
+            <option value="pix"          ${formaAtual==='pix'?'selected':''}>PIX</option>
+            <option value="dinheiro"     ${formaAtual==='dinheiro'?'selected':''}>Dinheiro</option>
+            <option value="credito"      ${formaAtual==='credito'?'selected':''}>Cartão de Crédito</option>
+            <option value="debito"       ${formaAtual==='debito'?'selected':''}>Cartão de Débito</option>
+            <option value="transferencia"${formaAtual==='transferencia'?'selected':''}>Transferência</option>
+            <option value="convenio"     ${formaAtual==='convenio'?'selected':''}>Convênio</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex:0 0 150px">
+          <label>Data do Recebimento</label>
+          <input type="date" id="fin-data-pgto" value="${dataAtual}" style="width:100%">
+        </div>
       </div>
     </div>
   `;
 
   openModal('Confirmar Recebimento', html, async () => {
     const forma = document.getElementById('fin-forma').value;
-    await api('PUT', `/agendamentos/${id}`, { ...ag, pago: 1, forma_pgto: forma });
+    const dataPgto = document.getElementById('fin-data-pgto').value || HOJE();
+    await api('PUT', `/agendamentos/${id}`, { ...ag, pago: 1, forma_pgto: forma, data_pagamento: dataPgto });
     toast('Pagamento registrado! 💰');
     closeModal();
     refreshAll();
