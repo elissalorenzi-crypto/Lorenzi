@@ -2813,7 +2813,7 @@ function dispararCobrancas() {
           ? `sessão de orientação profissional realizada em ${datas}`
           : `sessões de orientação profissional realizadas em ${datas}`;
         const nomeExibir = p.apelido || p.nome?.split(' ')[0] || p.nome;
-        const msg = `Olá, ${nomeExibir}, abaixo dados para pagamento das ${sessoesLinha}.\n`
+        const msg = `Oi ${nomeExibir}, abaixo dados para pagamento das ${sessoesLinha}.\n`
           + (p.sessoes.length > 1 ? `Valor total: ${BRL(total)}\n` : `Valor: ${BRL(total)}\n`)
           + `\nAbaixo dados para transferência:\n`
           + `PIX ${pixTipo}: ${pixKey || '(configure a chave PIX em Configurações)'}\n`
