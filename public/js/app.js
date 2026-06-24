@@ -2637,13 +2637,12 @@ async function loadFinanceiro() {
         <td><span style="font-size:11.5px">${freqLabel[c.frequencia] || c.frequencia || '—'}</span></td>
         <td><span style="font-size:11.5px">${fpLabel[c.freq_pgto] || c.freq_pgto || '—'}</span></td>
         <td class="text-right">${BRL(c.valor_sessao)}</td>
-        <td class="text-right">${semStr}</td>
         <td class="text-right">${mesStr}</td>
-        <td class="text-right" style="font-weight:700">${totRow > 0 ? BRL(totRow) : '<span style="color:var(--muted);font-size:11px">—</span>'}</td>
         <td class="text-right">${semCell(sem[0])}</td>
         <td class="text-right">${semCell(sem[1])}</td>
         <td class="text-right">${semCell(sem[2])}</td>
         <td class="text-right">${semCell(sem[3])}</td>
+        <td class="text-right" style="font-weight:700">${totRow > 0 ? BRL(totRow) : '<span style="color:var(--muted);font-size:11px">—</span>'}</td>
       </tr>`;
     }).join('') + (() => {
       const ts = [0,1,2,3].map(i => proj.itens.reduce((s,c) => {
@@ -2654,13 +2653,12 @@ async function loadFinanceiro() {
       return `<tr style="border-top:2px solid var(--border);background:var(--bg-alt)">
         <td colspan="3" style="font-weight:700;font-size:12.5px">Total estimado (${proj.itens?.length || 0} clientes)</td>
         <td></td>
-        <td class="text-right fw-bold" style="color:var(--sage)">${BRL(proj.totalSemana)}</td>
         <td class="text-right fw-bold" style="color:var(--plum)">${BRL(proj.totalMes)}</td>
-        <td class="text-right fw-bold" style="color:var(--text)">${BRL(proj.totalCombinado)}</td>
         <td class="text-right fw-bold" style="color:var(--plum)">${BRL(ts[0])}</td>
         <td class="text-right fw-bold" style="color:var(--plum)">${BRL(ts[1])}</td>
         <td class="text-right fw-bold" style="color:var(--plum)">${BRL(ts[2])}</td>
         <td class="text-right fw-bold" style="color:var(--plum)">${BRL(ts[3])}</td>
+        <td class="text-right fw-bold" style="color:var(--text)">${BRL(proj.totalCombinado)}</td>
       </tr>`;
     })();
   }
