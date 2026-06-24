@@ -2770,11 +2770,16 @@ function sortPor(tbodyId, col) {
   if (!s) return;
   if (s.col === col) s.asc = !s.asc;
   else { s.col = col; s.asc = true; }
+  if (tbodyId === 'fin-lista-tbody') localStorage.setItem('sort_fin_lista', JSON.stringify({ col: s.col, asc: s.asc }));
   _sortRender(tbodyId);
 }
 
 function _sortInit(tbodyId, dados, renderFn, defaultCol = null) {
-  _sortState[tbodyId] = { col: defaultCol, asc: true, dados, renderFn };
+  let col = defaultCol, asc = true;
+  if (tbodyId === 'fin-lista-tbody') {
+    try { const s = JSON.parse(localStorage.getItem('sort_fin_lista')); if (s) { col = s.col; asc = s.asc; } } catch(_) {}
+  }
+  _sortState[tbodyId] = { col, asc, dados, renderFn };
   _sortRender(tbodyId);
 }
 
@@ -2824,8 +2829,8 @@ function _renderFinRow(a) {
 }
 
 let _pendDados = [];
-let _pendSortCol = 'data';
-let _pendSortAsc = true;
+let _pendSortCol = (() => { try { return JSON.parse(localStorage.getItem('sort_pend'))?.col || 'data'; } catch(_) { return 'data'; } })();
+let _pendSortAsc = (() => { try { const s = JSON.parse(localStorage.getItem('sort_pend')); return s ? s.asc : true; } catch(_) { return true; } })();
 
 function pendSelecionarTodos(chkAll) {
   document.querySelectorAll('.pend-chk').forEach(c => c.checked = chkAll.checked);
@@ -2834,6 +2839,7 @@ function pendSelecionarTodos(chkAll) {
 function pendOrdenar(col) {
   if (_pendSortCol === col) { _pendSortAsc = !_pendSortAsc; }
   else { _pendSortCol = col; _pendSortAsc = true; }
+  localStorage.setItem('sort_pend', JSON.stringify({ col: _pendSortCol, asc: _pendSortAsc }));
   _pendRenderizar();
 }
 
