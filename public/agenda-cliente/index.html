@@ -15,9 +15,7 @@
       --border:   #E8D5E4;
       --bg:       #FFFFFF;
     }
-    body { font-family:'Segoe UI',system-ui,sans-serif; background:#ede5f0; color:var(--plum); font-size:14px; min-height:100vh; padding:0 0 40px; }
-
-    .page { max-width:700px; margin:0 auto; background:var(--bg); box-shadow:0 4px 32px rgba(74,55,40,.15); border-radius:0 0 16px 16px; overflow:hidden; }
+    body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--plum); font-size:14px; min-height:100vh; padding:0 0 40px; }
 
     /* Header */
     .header { background:linear-gradient(135deg,#856952 0%,#6B4F38 100%); padding:18px 24px 14px; text-align:center; color:#fff; }
@@ -27,7 +25,7 @@
     .hero { background:linear-gradient(90deg,#F5EDE7,#EDE5DC); padding:10px 16px; border-bottom:2px solid var(--border); text-align:center; }
     .hero p { font-size:12px; color:var(--muted); }
 
-    .container { padding:14px 12px; }
+    .container { max-width:1060px; margin:0 auto; padding:14px 12px; }
 
     /* Week nav */
     .week-nav { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:16px; background:#fff; border-radius:12px; border:1.5px solid var(--border); padding:10px 16px; box-shadow:0 2px 8px rgba(20,57,47,.05); }
@@ -144,10 +142,6 @@
     .btn-confirmar:hover:not(:disabled) { transform:translateY(-1px); }
     .btn-confirmar:disabled { opacity:.6; cursor:not-allowed; transform:none; }
 
-    @media(max-width:700px) {
-      .page { border-radius:0; box-shadow:none; }
-      body { background:var(--bg); }
-    }
     @media(max-width:480px) {
       .header { padding:14px 14px 12px; }
       .hero { padding:8px 12px; }
@@ -156,7 +150,6 @@
   </style>
 </head>
 <body>
-<div class="page">
 
 <div id="div-voltar" style="background:linear-gradient(135deg,#856952 0%,#6B4F38 100%);padding:10px 16px 0">
   <a href="/" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:rgba(255,255,255,.8);text-decoration:none;background:rgba(255,255,255,.15);border-radius:20px;padding:5px 12px;border:1px solid rgba(255,255,255,.25)">
@@ -200,8 +193,6 @@
     </div>
   </div>
 </div>
-
-</div><!-- /page -->
 
 <!-- Modal -->
 <div class="modal-overlay" id="modal" onclick="if(event.target===this)fecharModal()">
