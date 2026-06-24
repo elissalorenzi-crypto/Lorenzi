@@ -3709,7 +3709,7 @@ const MODELO_DEFAULT = {
       "Situações excepcionais, como problemas de saúde, instabilidade de internet ou outras intercorrências relevantes, serão avaliadas individualmente."
     ]},
     { titulo: "Honorários", itens: [
-      "O valor da sessão será definido no momento da contratação e informado no link enviado ao cliente.",
+      "__VALOR_SESSAO__",
       "O pagamento poderá ocorrer por sessão — realizado no mesmo dia da sessão — ou de forma mensal, em parcela única até o 5º dia útil do mês em que ocorrerão as sessões.",
       "O pagamento deverá ser realizado via Pix, transferência ou depósito bancário.",
       "Os dados para pagamento serão disponibilizados pela psicóloga."
