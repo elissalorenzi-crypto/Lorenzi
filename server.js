@@ -498,20 +498,8 @@ app.post('/api/agenda-publica/reservar', async (req, res) => {
     });
     if (conflict) return res.status(409).json({ error: 'Este horário acabou de ser ocupado. Escolha outro.' });
 
-    const todos = db.getPacientes();
-    let pac = todos.find(p => p.nome.toLowerCase() === nome.toLowerCase());
-    if (!pac) {
-      const id = db.createPaciente({ nome, whatsapp: whatsapp || null });
-      pac = { id, nome };
-    }
-
-    const agId = db.createAgendamento({
-      paciente_id: pac.id, data, hora,
-      tipo: 'sessao', status: 'agendado',
-      valor: cfg.valor_sessao_padrao || 180
-    });
-
-    const conviteToken = db.createConvite(nome, cfg.valor_sessao_padrao || 0, data, agId);
+    // Agendamento e paciente só são criados após assinatura do contrato
+    const conviteToken = db.createConvite(nome, cfg.valor_sessao_padrao || 0, data, null, hora);
     const base = `${req.protocol}://${req.get('host')}`;
     res.json({ success: true, contratoLink: `${base}/contratos/?token=${conviteToken}` });
   } catch(e) { erro(res, e); }
@@ -523,9 +511,6 @@ app.post('/api/agenda-publica/cancelar-reserva', (req, res) => {
   const convite = db.getConviteByToken(token);
   if (!convite) return res.status(404).json({ error: 'Token inválido.' });
   if (convite.usado) return res.status(409).json({ error: 'Contrato já enviado.' });
-  if (convite.agendamento_id) {
-    try { db.deleteAgendamento(convite.agendamento_id); } catch(_) {}
-  }
   db.deleteConvite(convite.id);
   res.json({ ok: true });
 });
@@ -614,9 +599,36 @@ app.post('/api/contratos', (req, res) => {
       console.warn('Aviso: não foi possível criar paciente automaticamente:', e.message);
     }
 
-    // Marca o convite como usado se veio com token
+    // Marca o convite como usado e cria agendamento se veio da agenda pública
     if (req.body.token) {
-      try { db.usarConvite(req.body.token, id); } catch(e) {}
+      try {
+        const conv = db.getConviteByToken(req.body.token);
+        if (conv && conv.data_inicio && conv.hora_inicio && !conv.agendamento_id) {
+          const cfg2 = db.getConfig();
+          const duracao = parseInt(cfg2.duracao_sessao) || 50;
+          const toMin = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+          const existentes = db.getAgendamentos({ data: conv.data_inicio })
+            .filter(a => ['agendado', 'confirmado'].includes(a.status));
+          const slotMin = toMin(conv.hora_inicio), slotFim = slotMin + duracao;
+          const conflict = existentes.find(a => {
+            const am = toMin(a.hora), af = am + duracao;
+            return slotMin < af && am < slotFim;
+          });
+          if (!conflict) {
+            // Busca ou usa o paciente já criado pelo contrato
+            const todos = db.getPacientes();
+            const pac = todos.find(p => p.nome.toLowerCase() === (req.body.nome || '').toLowerCase());
+            if (pac) {
+              db.createAgendamento({
+                paciente_id: pac.id, data: conv.data_inicio, hora: conv.hora_inicio,
+                tipo: 'sessao', status: 'agendado',
+                valor: conv.valor || cfg2.valor_sessao_padrao || 0
+              });
+            }
+          }
+        }
+        db.usarConvite(req.body.token, id);
+      } catch(e) { console.warn('Aviso ao criar agendamento do contrato:', e.message); }
     }
 
     res.json({ id, success: true });
