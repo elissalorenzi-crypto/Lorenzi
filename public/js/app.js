@@ -2619,24 +2619,35 @@ async function loadFinanceiro() {
   const fpLabel    = { 'fp-semanal':'Semanal', 'fp-mensal':'Mensal', 'cada4':'A cada 4', 'por-sessao':'Por sessão' };
   const fmLabel    = { pix:'PIX', credito:'Crédito', debito:'Débito', dinheiro:'Dinheiro', transferencia:'Transf.' };
   if (projTbody) {
-    projTbody.innerHTML = (proj.itens || []).map(c => `
-      <tr>
+    projTbody.innerHTML = (proj.itens || []).map(c => {
+      const semStr = c.freq_pgto === 'fp-semanal'
+        ? `<span style="color:var(--sage);font-weight:700">${BRL(c.receita_semana)}</span>`
+        : `<span style="color:var(--muted);font-size:11px">—</span>`;
+      const mesStr = c.freq_pgto === 'fp-mensal'
+        ? `<span style="color:var(--plum);font-weight:700">${BRL(c.receita_mes)}</span>`
+        : `<span style="color:var(--muted);font-size:11px">—</span>`;
+      const totRow = c.freq_pgto === 'fp-semanal' ? c.receita_semana
+                   : c.freq_pgto === 'fp-mensal'  ? c.receita_mes : 0;
+      return `<tr>
         <td style="font-weight:600">${c.nome}</td>
         <td><span style="font-size:11.5px">${freqLabel[c.frequencia] || c.frequencia || '—'}</span></td>
         <td><span style="font-size:11.5px">${fpLabel[c.freq_pgto] || c.freq_pgto || '—'}</span></td>
         <td><span style="font-size:11.5px">${fmLabel[c.forma_pgto] || c.forma_pgto || '—'}</span></td>
         <td class="text-right">${BRL(c.valor_sessao)}</td>
-        <td class="text-right" style="color:var(--sage);font-weight:700">${BRL(c.receita_semana)}</td>
-        <td class="text-right" style="color:var(--plum);font-weight:700">${BRL(c.receita_mes)}</td>
-      </tr>`).join('') +
+        <td class="text-right">${semStr}</td>
+        <td class="text-right">${mesStr}</td>
+        <td class="text-right" style="font-weight:700">${totRow > 0 ? BRL(totRow) : '<span style="color:var(--muted);font-size:11px">—</span>'}</td>
+      </tr>`;
+    }).join('') +
       `<tr style="border-top:2px solid var(--border);background:var(--bg-alt)">
         <td colspan="4" style="font-weight:700;font-size:12.5px">Total estimado (${proj.itens?.length || 0} clientes)</td>
         <td></td>
         <td class="text-right fw-bold" style="color:var(--sage)">${BRL(proj.totalSemana)}</td>
         <td class="text-right fw-bold" style="color:var(--plum)">${BRL(proj.totalMes)}</td>
+        <td class="text-right fw-bold" style="color:var(--text)">${BRL(proj.totalCombinado)}</td>
       </tr>`;
   }
-  if (projTotais) projTotais.textContent = `Semana: ${BRL(proj.totalSemana)} · Mês: ${BRL(proj.totalMes)}`;
+  if (projTotais) projTotais.textContent = `Semana: ${BRL(proj.totalSemana)} · Mês: ${BRL(proj.totalMes)} · Total: ${BRL(proj.totalCombinado)}`;
 
   // Stats
   document.getElementById('fin-stats').innerHTML = `

@@ -588,21 +588,22 @@ const getProjecaoRecorrente = () => {
     if (!nm) continue;
     const recMes = nm * c.valor_sessao;
     const recSem = recMes / 4;
-    totalMes    += recMes;
-    totalSemana += recSem;
+    // Totais filtrados por freq_pgto
+    if (c.freq_pgto === 'fp-semanal') totalSemana += recSem;
+    if (c.freq_pgto === 'fp-mensal')  totalMes    += recMes;
     itens.push({
-      nome:          c.nome,
-      frequencia:    c.frequencia,
-      freq_pgto:     c.freq_pgto,
-      forma_pgto:    c.forma_pgto,
-      valor_sessao:  c.valor_sessao,
-      sessoes_mes:   nm,
+      nome:           c.nome,
+      frequencia:     c.frequencia,
+      freq_pgto:      c.freq_pgto,
+      forma_pgto:     c.forma_pgto,
+      valor_sessao:   c.valor_sessao,
+      sessoes_mes:    nm,
       receita_semana: recSem,
       receita_mes:    recMes,
     });
   }
 
-  return { totalSemana, totalMes, itens };
+  return { totalSemana, totalMes, totalCombinado: totalSemana + totalMes, itens };
 };
 
 // ============================================================
