@@ -45,21 +45,22 @@
 
     /* Grade */
     .grade-wrap { overflow-x:auto; background:#fff; border-radius:14px; border:1.5px solid var(--border); box-shadow:0 2px 8px rgba(20,57,47,.05); }
-    .grade-table { width:100%; border-collapse:collapse; min-width:480px; font-size:12px; }
+    .grade-table { width:100%; border-collapse:collapse; min-width:340px; font-size:12px; }
 
     .grade-table thead th {
       background:linear-gradient(90deg,#F5EDE7,#EDE0D5);
-      padding:10px 6px; font-size:10.5px; font-weight:700;
-      text-transform:uppercase; letter-spacing:.6px; color:var(--muted);
+      padding:6px 2px; font-size:10px; font-weight:700;
+      text-transform:uppercase; letter-spacing:.3px; color:var(--muted);
       border-bottom:2px solid var(--border); text-align:center; white-space:nowrap;
+      width:44px; min-width:44px; max-width:44px;
     }
     .grade-table thead th.hoje { background:linear-gradient(135deg,#856952,#856952); color:#fff; }
-    .grade-table thead th.hora-th { width:52px; background:var(--bg); }
+    .grade-table thead th.hora-th { width:36px; min-width:36px; max-width:36px; background:var(--bg); padding:6px 2px; }
     .grade-table th.dom-th, .grade-table td.dom-td { width:44px; min-width:44px; max-width:44px; }
 
     .grade-hora {
-      font-size:11px; font-weight:700; color:var(--muted);
-      padding:3px 8px 0; text-align:right; white-space:nowrap;
+      font-size:10px; font-weight:700; color:var(--muted);
+      padding:3px 4px 0; text-align:right; white-space:nowrap;
       vertical-align:top; background:var(--bg);
       border-right:2px solid var(--border);
     }
@@ -304,13 +305,11 @@ function renderGrade(data) {
     const dw  = dt.getDay();
     const hj  = d === HOJE_STR;
     const cls = [hj ? 'hoje' : '', dw === 0 ? 'dom-th' : ''].filter(Boolean).join(' ');
-    const label = dw === 0
-      ? `${DIAS_SHORT[dw]}<br><span style="font-weight:500;opacity:.75;font-size:10px">${dt.getDate()}/${String(dt.getMonth()+1).padStart(2,'0')}</span>`
-      : `${DIAS_SHORT[dw]} <span style="font-weight:500;opacity:.75">${dt.getDate()}/${String(dt.getMonth()+1).padStart(2,'0')}</span>`;
+    const label = `${DIAS_SHORT[dw]}<br><span style="font-weight:500;opacity:.75;font-size:9px">${dt.getDate()}/${String(dt.getMonth()+1).padStart(2,'0')}</span>`;
     return `<th class="${cls}">${label}</th>`;
   }).join('');
 
-  let html = `<thead><tr><th class="hora-th">Hora</th>${ths}</tr></thead><tbody>`;
+  let html = `<thead><tr><th class="hora-th"></th>${ths}</tr></thead><tbody>`;
   let almocoDone = false;
 
   for (const { t, isHour } of slots) {
@@ -325,9 +324,7 @@ function renderGrade(data) {
         const dw  = dt.getDay();
         const hj  = d === HOJE_STR;
         const cls = [hj ? 'hoje' : '', dw === 0 ? 'dom-th' : ''].filter(Boolean).join(' ');
-        const label = dw === 0
-          ? `${DIAS_SHORT[dw]}<br><span style="font-weight:500;opacity:.75;font-size:10px">${dt.getDate()}/${String(dt.getMonth()+1).padStart(2,'0')}</span>`
-          : `${DIAS_SHORT[dw]} <span style="font-weight:500;opacity:.75">${dt.getDate()}/${String(dt.getMonth()+1).padStart(2,'0')}</span>`;
+        const label = `${DIAS_SHORT[dw]}<br><span style="font-weight:500;opacity:.75;font-size:9px">${dt.getDate()}/${String(dt.getMonth()+1).padStart(2,'0')}</span>`;
         return `<th class="${cls}">${label}</th>`;
       }).join('');
       html += `<tr class="grade-sub-header"><th class="hora-th" style="background:var(--bg)"></th>${ths2}</tr>`;
