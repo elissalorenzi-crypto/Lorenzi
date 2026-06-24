@@ -2817,16 +2817,18 @@ function dispararCobrancas() {
           + `PIX ${pixTipo}: ${pixKey || '(configure a chave PIX em Configurações)'}\n`
           + `\nPor favor, encaminhar o recibo da transferência.\n\nObrigada e um beijo!`;
         const waNum = toWaNum(p.wpp || '');
-        const waUrl = waNum ? `https://wa.me/${waNum}?text=${encodeURIComponent(msg)}` : '';
+        const waEnviar = waNum
+          ? `onclick="window.open('https://wa.me/${waNum}?text='+encodeURIComponent(document.getElementById('cobranca-msg-${i}').value),'_blank')"`
+          : '';
         return `
           <div style="border:1px solid var(--border);border-radius:8px;padding:12px">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
               <strong>${p.nome}</strong>
-              ${waUrl
-                ? `<a href="${waUrl}" target="_blank" class="btn btn-sage btn-sm">📲 Enviar WhatsApp</a>`
+              ${waNum
+                ? `<button class="btn btn-sage btn-sm" ${waEnviar}>📲 Enviar WhatsApp</button>`
                 : `<span style="color:var(--muted);font-size:12px">⚠️ Sem WhatsApp cadastrado</span>`}
             </div>
-            <textarea readonly style="width:100%;font-size:12px;line-height:1.5;border:1px solid var(--border);border-radius:6px;padding:8px;resize:none;background:var(--bg-alt);color:var(--text)" rows="7">${msg}</textarea>
+            <textarea id="cobranca-msg-${i}" style="width:100%;font-size:12px;line-height:1.5;border:1px solid var(--border);border-radius:6px;padding:8px;resize:vertical;background:var(--bg);color:var(--text)" rows="7">${msg}</textarea>
           </div>
         `;
       }).join('')}
