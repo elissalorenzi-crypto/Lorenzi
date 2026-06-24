@@ -56,7 +56,8 @@
     }
     .grade-table thead th.hoje { background:linear-gradient(135deg,#856952,#856952); color:#fff; }
     .grade-table thead th.hora-th { width:36px; min-width:36px; max-width:36px; background:var(--bg); padding:6px 2px; }
-    .grade-table th.dom-th, .grade-table td.dom-td { width:44px; min-width:44px; max-width:44px; }
+    .grade-table th.dom-th, .grade-table td.dom-td,
+    .grade-table th.sab-th, .grade-table td.sab-td { width:22px; min-width:22px; max-width:22px; }
 
     .grade-hora {
       font-size:10px; font-weight:700; color:var(--muted);
@@ -337,6 +338,7 @@ function renderGrade(data) {
     const cells = dias.map(d => {
       const dw    = new Date(d + 'T12:00:00').getDay();
       const domCl = dw === 0 ? ' dom-td' : dw === 6 ? ' sab-td' : '';
+      if (dw === 6) return `<td class="grade-cell${domCl}"></td>`;
       if (t === '20:00' && SEM_20H.has(dw)) return `<td class="grade-cell${domCl}"></td>`;
       const past = isPast(d, t);
       const s    = idx[`${d}|${t}`];
