@@ -2623,6 +2623,15 @@ async function loadFinanceiro() {
         : `<span style="color:var(--muted);font-size:11px">—</span>`;
       const totRow = ePorSessao                   ? c.receita_semana
                    : c.freq_pgto === 'fp-mensal'  ? c.receita_mes : 0;
+      // Distribuição semanal: 4x=todas, 2x=sem1+sem3, 1x=sem1
+      const v = c.valor_sessao;
+      const sem = {
+        '4x-mes':  [v, v, v, v],
+        'semanal': [v, v, v, v],
+        '2x-mes':  [v, 0, v, 0],
+        '1x-mes':  [v, 0, 0, 0],
+      }[c.frequencia] || [0, 0, 0, 0];
+      const semCell = s => s > 0 ? `<span style="font-size:11.5px">${BRL(s)}</span>` : `<span style="color:var(--muted);font-size:11px">—</span>`;
       return `<tr>
         <td style="font-weight:600">${c.nome}</td>
         <td><span style="font-size:11.5px">${freqLabel[c.frequencia] || c.frequencia || '—'}</span></td>
@@ -2631,15 +2640,29 @@ async function loadFinanceiro() {
         <td class="text-right">${semStr}</td>
         <td class="text-right">${mesStr}</td>
         <td class="text-right" style="font-weight:700">${totRow > 0 ? BRL(totRow) : '<span style="color:var(--muted);font-size:11px">—</span>'}</td>
+        <td class="text-right">${semCell(sem[0])}</td>
+        <td class="text-right">${semCell(sem[1])}</td>
+        <td class="text-right">${semCell(sem[2])}</td>
+        <td class="text-right">${semCell(sem[3])}</td>
       </tr>`;
-    }).join('') +
-      `<tr style="border-top:2px solid var(--border);background:var(--bg-alt)">
+    }).join('') + (() => {
+      const ts = [0,1,2,3].map(i => proj.itens.reduce((s,c) => {
+        const v = c.valor_sessao;
+        const sem = {'4x-mes':[v,v,v,v],'semanal':[v,v,v,v],'2x-mes':[v,0,v,0],'1x-mes':[v,0,0,0]}[c.frequencia]||[0,0,0,0];
+        return s + sem[i];
+      }, 0));
+      return `<tr style="border-top:2px solid var(--border);background:var(--bg-alt)">
         <td colspan="3" style="font-weight:700;font-size:12.5px">Total estimado (${proj.itens?.length || 0} clientes)</td>
         <td></td>
         <td class="text-right fw-bold" style="color:var(--sage)">${BRL(proj.totalSemana)}</td>
         <td class="text-right fw-bold" style="color:var(--plum)">${BRL(proj.totalMes)}</td>
         <td class="text-right fw-bold" style="color:var(--text)">${BRL(proj.totalCombinado)}</td>
+        <td class="text-right fw-bold" style="color:var(--plum)">${BRL(ts[0])}</td>
+        <td class="text-right fw-bold" style="color:var(--plum)">${BRL(ts[1])}</td>
+        <td class="text-right fw-bold" style="color:var(--plum)">${BRL(ts[2])}</td>
+        <td class="text-right fw-bold" style="color:var(--plum)">${BRL(ts[3])}</td>
       </tr>`;
+    })();
   }
   if (projTotais) projTotais.textContent = `Semana: ${BRL(proj.totalSemana)} · Mês: ${BRL(proj.totalMes)} · Total: ${BRL(proj.totalCombinado)}`;
 
