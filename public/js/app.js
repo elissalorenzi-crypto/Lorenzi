@@ -2627,7 +2627,6 @@ async function loadFinanceiro() {
         <td style="font-weight:600">${c.nome}</td>
         <td><span style="font-size:11.5px">${freqLabel[c.frequencia] || c.frequencia || '—'}</span></td>
         <td><span style="font-size:11.5px">${fpLabel[c.freq_pgto] || c.freq_pgto || '—'}</span></td>
-        <td><span style="font-size:11.5px">${fmLabel[c.forma_pgto] || c.forma_pgto || '—'}</span></td>
         <td class="text-right">${BRL(c.valor_sessao)}</td>
         <td class="text-right">${semStr}</td>
         <td class="text-right">${mesStr}</td>
@@ -2635,7 +2634,7 @@ async function loadFinanceiro() {
       </tr>`;
     }).join('') +
       `<tr style="border-top:2px solid var(--border);background:var(--bg-alt)">
-        <td colspan="4" style="font-weight:700;font-size:12.5px">Total estimado (${proj.itens?.length || 0} clientes)</td>
+        <td colspan="3" style="font-weight:700;font-size:12.5px">Total estimado (${proj.itens?.length || 0} clientes)</td>
         <td></td>
         <td class="text-right fw-bold" style="color:var(--sage)">${BRL(proj.totalSemana)}</td>
         <td class="text-right fw-bold" style="color:var(--plum)">${BRL(proj.totalMes)}</td>
