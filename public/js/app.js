@@ -2621,8 +2621,7 @@ async function loadFinanceiro() {
       const mesStr = c.freq_pgto === 'fp-mensal'
         ? `<span style="color:var(--plum);font-weight:700">${BRL(c.receita_mes)}</span>`
         : `<span style="color:var(--muted);font-size:11px">—</span>`;
-      const totRow = ePorSessao                   ? c.receita_semana
-                   : c.freq_pgto === 'fp-mensal'  ? c.receita_mes : 0;
+      const totRow = c.receita_mes;
       // Distribuição semanal: 4x=todas, 2x=sem1+sem3, 1x=sem1
       const v = c.valor_sessao;
       const sem = {
@@ -2658,7 +2657,7 @@ async function loadFinanceiro() {
         <td class="text-right fw-bold" style="color:var(--plum)">${BRL(ts[1])}</td>
         <td class="text-right fw-bold" style="color:var(--plum)">${BRL(ts[2])}</td>
         <td class="text-right fw-bold" style="color:var(--plum)">${BRL(ts[3])}</td>
-        <td class="text-right fw-bold" style="color:var(--text)">${BRL(proj.totalCombinado)}</td>
+        <td class="text-right fw-bold" style="color:var(--text)">${BRL(proj.itens.reduce((s,c)=>s+c.receita_mes,0))}</td>
       </tr>`;
     })();
   }
