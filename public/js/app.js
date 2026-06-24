@@ -3740,13 +3740,31 @@ function renderModeloPreview() {
   const introHtml = (m.intro || '').split('\n\n').map(p =>
     `<p style="margin-bottom:12px;font-size:14px;color:#5a3a5a;line-height:1.75">${p.replace(/\n/g,'<br>')}</p>`
   ).join('');
+  const valorPadrao = Number(_config?.valor_sessao_padrao) || 0;
+  function _valorExtenso(v) {
+    if (!v) return '(a combinar com a psicóloga)';
+    const brl = v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    const un=['','um','dois','três','quatro','cinco','seis','sete','oito','nove','dez','onze','doze','treze','quatorze','quinze','dezesseis','dezessete','dezoito','dezenove'];
+    const dz=['','dez','vinte','trinta','quarenta','cinquenta','sessenta','setenta','oitenta','noventa'];
+    const ct=['','cento','duzentos','trezentos','quatrocentos','quinhentos','seiscentos','setecentos','oitocentos','novecentos'];
+    const dez=x=>x<20?un[x]:dz[Math.floor(x/10)]+(x%10?' e '+un[x%10]:'');
+    const cem=x=>x===100?'cem':ct[Math.floor(x/100)]+(x%100?' e '+dez(x%100):'');
+    const w=x=>x<100?dez(x):cem(x);
+    const n=Math.round(v*100),r=Math.floor(n/100),c=n%100;
+    const pr=r>0?w(r)+(r===1?' real':' reais'):'';
+    const pc=c>0?w(c)+(c===1?' centavo':' centavos'):'';
+    return brl + ' (' + ((pr&&pc)?pr+' e '+pc:(pr||pc||'zero reais')) + ')';
+  }
   const secoesHtml = (m.secoes || []).map((s, si) => `
     <div style="margin-bottom:22px">
       <div style="font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:var(--rose,#c2657a);background:linear-gradient(90deg,#fce8f2,#fff);padding:7px 12px;border-left:3px solid var(--rose,#c2657a);border-radius:4px;margin-bottom:10px">
         ${s.titulo}
       </div>
       <ol type="a" style="padding-left:20px">
-        ${(s.itens||[]).map(it => `<li style="font-size:13.5px;color:#3d2b3d;margin-bottom:8px;line-height:1.65">${it}</li>`).join('')}
+        ${(s.itens||[]).map(it => {
+          if (it === '__VALOR_SESSAO__') return `<li style="font-size:13.5px;color:#3d2b3d;margin-bottom:8px;line-height:1.65">O valor da sessão é de <strong>${_valorExtenso(valorPadrao)}</strong>.</li>`;
+          return `<li style="font-size:13.5px;color:#3d2b3d;margin-bottom:8px;line-height:1.65">${it}</li>`;
+        }).join('')}
       </ol>
     </div>
   `).join('');
@@ -3773,14 +3791,24 @@ function editarModeloContrato() {
       <button class="btn btn-outline btn-xs" style="margin-top:8px" onclick="addItem(this)">+ Adicionar item</button>
     </div>
   `;
-  const renderItemEditor = (txt, si, ii) => `
-    <div class="item-bloco" style="display:flex;gap:6px;margin-bottom:8px;align-items:flex-start">
-      <textarea class="item-txt" rows="3"
-        style="flex:1;font-size:13px;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;resize:vertical;line-height:1.6"
-      >${txt.replace(/</g,'&lt;')}</textarea>
-      <button class="btn btn-ghost btn-xs" style="color:var(--red,#c0425d);margin-top:4px" onclick="removerItem(this)">×</button>
-    </div>
-  `;
+  const renderItemEditor = (txt, si, ii) => {
+    if (txt === '__VALOR_SESSAO__') return `
+      <div class="item-bloco" style="display:flex;gap:6px;margin-bottom:8px;align-items:center">
+        <div style="flex:1;font-size:13px;padding:8px 10px;border:1.5px solid #d4a76a;border-radius:7px;background:#fff8f0;color:#7a5a2a">
+          💰 <strong>Valor da sessão</strong> — vinculado às Configurações (R$ ${Number(_config?.valor_sessao_padrao||0).toLocaleString('pt-BR',{minimumFractionDigits:2})})
+          <input type="hidden" class="item-txt" value="__VALOR_SESSAO__">
+        </div>
+      </div>
+    `;
+    return `
+      <div class="item-bloco" style="display:flex;gap:6px;margin-bottom:8px;align-items:flex-start">
+        <textarea class="item-txt" rows="3"
+          style="flex:1;font-size:13px;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;resize:vertical;line-height:1.6"
+        >${txt.replace(/</g,'&lt;')}</textarea>
+        <button class="btn btn-ghost btn-xs" style="color:var(--red,#c0425d);margin-top:4px" onclick="removerItem(this)">×</button>
+      </div>
+    `;
+  };
   const html = `
     <div style="max-height:65vh;overflow-y:auto;padding-right:4px">
       <div style="margin-bottom:16px">
