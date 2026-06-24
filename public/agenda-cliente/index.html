@@ -52,7 +52,7 @@
       padding:6px 2px; font-size:10px; font-weight:700;
       text-transform:uppercase; letter-spacing:.3px; color:var(--muted);
       border-bottom:2px solid var(--border); text-align:center; white-space:nowrap;
-      width:44px; min-width:44px; max-width:44px;
+      width:33px; min-width:33px; max-width:33px;
     }
     .grade-table thead th.hoje { background:linear-gradient(135deg,#856952,#856952); color:#fff; }
     .grade-table thead th.hora-th { width:36px; min-width:36px; max-width:36px; background:var(--bg); padding:6px 2px; }
@@ -364,7 +364,7 @@ function renderGrade(data) {
       }
 
       return `<td class="grade-cell${domCl}">
-        <button class="slot-livre" onclick="abrirModal('${d}','${t}')">✓ ${t}</button>
+        <button class="slot-livre" onclick="abrirModal('${d}','${t}')">${t}</button>
       </td>`;
     }).join('');
 
