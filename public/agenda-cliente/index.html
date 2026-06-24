@@ -143,6 +143,10 @@
     .btn-confirmar:hover:not(:disabled) { transform:translateY(-1px); }
     .btn-confirmar:disabled { opacity:.6; cursor:not-allowed; transform:none; }
 
+    @media(max-width:600px) {
+      .grade-table th.dom-th, .grade-table td.dom-td,
+      .grade-table th.sab-th, .grade-table td.sab-td { display:none; }
+    }
     @media(max-width:480px) {
       .header { padding:14px 14px 12px; }
       .hero { padding:8px 12px; }
@@ -304,7 +308,7 @@ function renderGrade(data) {
     const dt  = new Date(d + 'T12:00:00');
     const dw  = dt.getDay();
     const hj  = d === HOJE_STR;
-    const cls = [hj ? 'hoje' : '', dw === 0 ? 'dom-th' : ''].filter(Boolean).join(' ');
+    const cls = [hj ? 'hoje' : '', dw === 0 ? 'dom-th' : '', dw === 6 ? 'sab-th' : ''].filter(Boolean).join(' ');
     const label = `${DIAS_SHORT[dw]}<br><span style="font-weight:500;opacity:.75;font-size:9px">${dt.getDate()}/${String(dt.getMonth()+1).padStart(2,'0')}</span>`;
     return `<th class="${cls}">${label}</th>`;
   }).join('');
@@ -323,7 +327,7 @@ function renderGrade(data) {
         const dt  = new Date(d + 'T12:00:00');
         const dw  = dt.getDay();
         const hj  = d === HOJE_STR;
-        const cls = [hj ? 'hoje' : '', dw === 0 ? 'dom-th' : ''].filter(Boolean).join(' ');
+        const cls = [hj ? 'hoje' : '', dw === 0 ? 'dom-th' : '', dw === 6 ? 'sab-th' : ''].filter(Boolean).join(' ');
         const label = `${DIAS_SHORT[dw]}<br><span style="font-weight:500;opacity:.75;font-size:9px">${dt.getDate()}/${String(dt.getMonth()+1).padStart(2,'0')}</span>`;
         return `<th class="${cls}">${label}</th>`;
       }).join('');
@@ -332,7 +336,7 @@ function renderGrade(data) {
 
     const cells = dias.map(d => {
       const dw    = new Date(d + 'T12:00:00').getDay();
-      const domCl = dw === 0 ? ' dom-td' : '';
+      const domCl = dw === 0 ? ' dom-td' : dw === 6 ? ' sab-td' : '';
       if (t === '20:00' && SEM_20H.has(dw)) return `<td class="grade-cell${domCl}"></td>`;
       const past = isPast(d, t);
       const s    = idx[`${d}|${t}`];
