@@ -581,8 +581,22 @@
 
   function valorExtenso(v) {
     if (!v) return '';
-    const s = Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    return s;
+    return Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  function numPorExtenso(n) {
+    const un = ['','um','dois','três','quatro','cinco','seis','sete','oito','nove','dez',
+      'onze','doze','treze','quatorze','quinze','dezesseis','dezessete','dezoito','dezenove'];
+    const dz = ['','dez','vinte','trinta','quarenta','cinquenta','sessenta','setenta','oitenta','noventa'];
+    const ct = ['','cento','duzentos','trezentos','quatrocentos','quinhentos','seiscentos','setecentos','oitocentos','novecentos'];
+    function dez(x) { return x < 20 ? un[x] : dz[Math.floor(x/10)] + (x%10 ? ' e ' + un[x%10] : ''); }
+    function cem(x) { if (x===100) return 'cem'; return ct[Math.floor(x/100)] + (x%100 ? ' e ' + dez(x%100) : ''); }
+    function words(x) { return x < 100 ? dez(x) : cem(x); }
+    n = Math.round(n * 100);
+    const r = Math.floor(n / 100), c = n % 100;
+    const pr = r > 0 ? words(r) + (r === 1 ? ' real' : ' reais') : '';
+    const pc = c > 0 ? words(c) + (c === 1 ? ' centavo' : ' centavos') : '';
+    return (pr && pc) ? pr + ' e ' + pc : (pr || pc || 'zero reais');
   }
 
   function renderClausulas(modelo, valor) {
@@ -594,10 +608,10 @@
     const secoesHtml = (m.secoes || []).map(s => {
       const itensHtml = (s.itens || []).map(it => {
         if (it === '__VALOR_SESSAO__') {
-          const vFmt = valor ? `<strong>${valorExtenso(valor)}</strong>` : '<strong>(a combinar com a psicóloga)</strong>';
-          return `<li>O valor da sessão é de:
-            <div class="destaque">${vFmt}<br><span style="font-size:13px;color:#7a5a7a">Os dados para pagamento serão enviados via WhatsApp.</span></div>
-          </li>`;
+          const vFmt = valor
+            ? `<strong>${valorExtenso(valor)}</strong> <span style="font-weight:400">(${numPorExtenso(valor)})</span>`
+            : '<strong>(a combinar com a psicóloga)</strong>';
+          return `<li>O valor da sessão é de ${vFmt}.</li>`;
         }
         return `<li>${it}</li>`;
       }).join('');
