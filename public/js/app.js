@@ -154,13 +154,15 @@ function navigate(name) {
 }
 
 async function refreshAll() {
-  await Promise.all([
+  const tasks = [
     loadDashboard(),
     loadPacientes(),
     loadFinanceiro(),
     fetchAgendaSemana(),
     loadContratos(),
-  ]);
+  ];
+  if (_currentSection === 'relatorios') tasks.push(loadRelatorios());
+  await Promise.all(tasks);
 }
 
 document.querySelectorAll('.nav-link').forEach(a => {
@@ -1412,7 +1414,7 @@ async function alterarFreqPgto(id, valor) {
   await api('PUT', `/pacientes/${id}`, { ...p, freq_pgto: valor });
   const label = { 'por-sessao':'Por sessão', 'cada4':'A cada 4', 'fp-semanal':'Semanal', 'fp-mensal':'Mensal' }[valor] || valor;
   toast(`Freq. pagamento: ${label}`);
-  loadFinanceiro();
+  refreshAll();
 }
 
 async function alterarFormaPgto(id, valor) {
@@ -1421,7 +1423,7 @@ async function alterarFormaPgto(id, valor) {
   await api('PUT', `/pacientes/${id}`, { ...p, forma_pgto: valor });
   const label = { pix:'PIX', credito:'Crédito', debito:'Débito', dinheiro:'Dinheiro', transferencia:'Transferência' }[valor] || valor;
   toast(`Forma de pagamento: ${label}`);
-  loadFinanceiro();
+  refreshAll();
 }
 
 async function alterarFrequencia(id, valor) {
@@ -1430,7 +1432,7 @@ async function alterarFrequencia(id, valor) {
   await api('PUT', `/pacientes/${id}`, { ...p, frequencia: valor });
   const label = { semanal:'Semanal', quinzenal:'Quinzenal', mensal:'Mensal' }[valor] || valor;
   toast(`Frequência: ${label}`);
-  loadFinanceiro();
+  refreshAll();
 }
 
 async function alterarNotaFiscal(id, valor) {
@@ -1438,7 +1440,7 @@ async function alterarNotaFiscal(id, valor) {
   if (!p?.id) return;
   await api('PUT', `/pacientes/${id}`, { ...p, nota_fiscal: valor });
   toast(valor === 'sim' ? 'Nota fiscal: Sim ✓' : 'Nota fiscal: Não');
-  loadFinanceiro();
+  refreshAll();
 }
 
 async function alterarStatusCliente(id, novoAtivoStr, selectEl) {
@@ -3900,7 +3902,7 @@ async function salvarValorContrato(id) {
   const valor = parseFloat(input.value) || 0;
   await api('PUT', `/contratos/${id}`, { valor_sessao: valor });
   toast('Valor atualizado');
-  loadContratos();
+  refreshAll();
 }
 
 async function deleteContratoItem(id) {
