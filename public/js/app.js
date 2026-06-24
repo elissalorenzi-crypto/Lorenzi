@@ -449,16 +449,7 @@ function renderAgendaGrid() {
   }).join('');
 }
 
-function renderAgendaLista() {
-  const tbody  = document.getElementById('agenda-tbody');
-  const filtro = document.getElementById('agenda-status-filter')?.value || '';
-  const lista  = _agendaData.filter(a => !filtro || a.status === filtro);
-
-  if (!lista.length) {
-    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="empty-icon">📅</span><p>Nenhuma sessão nesta semana</p></div></td></tr>`;
-    return;
-  }
-  tbody.innerHTML = lista.map(a => `
+function _renderAgendaRow(a) { return `
     <tr>
       <td>${fmtData(a.data)}</td>
       <td><strong>${a.hora}</strong></td>
@@ -486,7 +477,17 @@ function renderAgendaLista() {
         </div>
       </td>
     </tr>
-  `).join('');
+  `; }
+
+function renderAgendaLista() {
+  const filtro = document.getElementById('agenda-status-filter')?.value || '';
+  const lista  = _agendaData.filter(a => !filtro || a.status === filtro);
+  if (!lista.length) {
+    document.getElementById('agenda-tbody').innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="empty-icon">📅</span><p>Nenhuma sessão nesta semana</p></div></td></tr>`;
+    _sortState['agenda-tbody'] = null;
+    return;
+  }
+  _sortInit('agenda-tbody', lista, _renderAgendaRow, 'data');
 }
 
 function renderAgendaHorario() {
@@ -964,15 +965,9 @@ function filtrarPacientes() {
   renderPacientesTable(filtered);
 }
 
-function renderPacientesTable(data) {
-  const tbody = document.getElementById('pacientes-tbody');
-  if (!data.length) {
-    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><span class="empty-icon">👤</span><p>Nenhum cliente encontrado</p></div></td></tr>`;
-    return;
-  }
-  const contadorEl = document.getElementById('pac-contador');
-  if (contadorEl) contadorEl.textContent = `${data.length} cliente${data.length !== 1 ? 's' : ''}`;
-  tbody.innerHTML = data.map((p, i) => `
+let _pacientesData = [];
+function _renderPacienteRow(p, i) {
+  return `
     <tr>
       <td style="text-align:center;color:var(--muted);font-size:11px;font-weight:600;width:28px;padding:0 4px">${i + 1}</td>
       <td>
@@ -1051,7 +1046,18 @@ function renderPacientesTable(data) {
         </div>
       </td>
     </tr>
-  `).join('');
+  `; }
+
+function renderPacientesTable(data) {
+  if (!data.length) {
+    document.getElementById('pacientes-tbody').innerHTML = `<tr><td colspan="10"><div class="empty-state"><span class="empty-icon">👤</span><p>Nenhum cliente encontrado</p></div></td></tr>`;
+    _sortState['pacientes-tbody'] = null;
+    return;
+  }
+  const contadorEl = document.getElementById('pac-contador');
+  if (contadorEl) contadorEl.textContent = `${data.length} cliente${data.length !== 1 ? 's' : ''}`;
+  _pacientesData = data;
+  _sortInit('pacientes-tbody', data, _renderPacienteRow, 'nome');
 }
 
 async function verDetalhePaciente(id) {
@@ -2428,15 +2434,19 @@ async function loadRelatorios() {
     { legend: false, extra: { indexAxis: 'y' } });
 
   // ── Tabela top clientes ────────────────────────────────────
-  document.getElementById('rel-top-tbody').innerHTML = d.topClientes.map((r, i) => `
-    <tr>
+  if (d.topClientes.length) {
+    _sortInit('rel-top-tbody', d.topClientes, (r, i) => `<tr>
       <td><strong style="color:var(--plum)">#${i+1}</strong></td>
       <td>${r.nome}</td>
       <td class="text-right">${r.total_sessoes}</td>
       <td class="text-right">${brl(r.receita_total)}</td>
       <td class="text-right">${brl(r.total_sessoes ? r.receita_total / r.total_sessoes : 0)}</td>
-    </tr>
-  `).join('') || `<tr><td colspan="5" style="text-align:center;color:var(--muted)">Nenhuma sessão realizada ainda</td></tr>`;
+    </tr>`, 'total_sessoes');
+    _sortState['rel-top-tbody'].asc = false;
+    _sortRender('rel-top-tbody');
+  } else {
+    document.getElementById('rel-top-tbody').innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted)">Nenhuma sessão realizada ainda</td></tr>`;
+  }
 
   // ── Tabela semanas ─────────────────────────────────────────
   document.getElementById('rel-semana-tbody').innerHTML = d.sessoesPorSemana.map(r => `
@@ -2712,39 +2722,78 @@ async function loadFinanceiro() {
   _pendRenderizar();
 
   // Lista completa
-  const listaTbody = document.getElementById('fin-lista-tbody');
   if (!data.lista.length) {
-    listaTbody.innerHTML = `<tr><td colspan="8" class="text-muted" style="text-align:center;padding:20px">Nenhuma sessão realizada neste mês</td></tr>`;
+    document.getElementById('fin-lista-tbody').innerHTML = `<tr><td colspan="8" class="text-muted" style="text-align:center;padding:20px">Nenhuma sessão realizada neste mês</td></tr>`;
+    _sortState['fin-lista-tbody'] = null;
   } else {
-    const formaLabel = { dinheiro:'Dinheiro', pix:'PIX', credito:'Crédito', debito:'Débito', convenio:'Convênio', transferencia:'TED/PIX' };
-    listaTbody.innerHTML = data.lista.map(a => {
-      const nfCell = a.paciente_nota_fiscal === 'sim'
-        ? `<button class="btn-nfse" onclick="abrirModalNfse(${a.paciente_id},${_finAno},${_finMes})" title="Emitir NFS-e">📄 NFS-e</button>`
-        : '<span style="color:var(--muted);font-size:11px">—</span>';
-      const usaCnpj  = a.paciente_nota_fiscal === 'sim';
-      const pixTipo  = usaCnpj ? 'cnpj' : 'cpf';
-      const pixLabel = usaCnpj ? 'CNPJ 📋' : 'CPF 📋';
-      const pixAtivo = usaCnpj ? pixKeyCnpj : pixKey;
-      const pixCell  = pixAtivo
-        ? `<button class="btn-pix-copy" title="PIX ${pixTipo.toUpperCase()}" onclick="copiarPixKey('${pixTipo}')">${pixLabel}</button>`
-        : '<span style="color:var(--muted);font-size:11px">—</span>';
-      return `
-        <tr>
-          <td>${fmtData(a.data)}</td>
-          <td>${a.hora}</td>
-          <td>${a.paciente_nome || '—'}</td>
-          <td class="text-right fw-bold">${BRL(a.valor)}</td>
-          <td>${a.pago ? '<span style="color:var(--sage);font-weight:700">Recebido ✓</span>' : '<span style="color:var(--peach)">Pendente</span>'}</td>
-          <td>${formaLabel[a.forma_pgto] || a.forma_pgto || '—'}</td>
-          <td>${nfCell}</td>
-          <td>${pixCell}</td>
-        </tr>
-      `;
-    }).join('');
+    _finPixKey = pixKey;
+    _finPixKeyCnpj = pixKeyCnpj;
+    _sortInit('fin-lista-tbody', data.lista, _renderFinRow, 'data');
   }
 
   _finIniciarDrag();
   _restaurarFinLayout();
+}
+
+// ── UTILITÁRIO DE ORDENAÇÃO GENÉRICA ─────────────────────────
+const _sortState = {};
+
+function sortPor(tbodyId, col) {
+  const s = _sortState[tbodyId];
+  if (!s) return;
+  if (s.col === col) s.asc = !s.asc;
+  else { s.col = col; s.asc = true; }
+  _sortRender(tbodyId);
+}
+
+function _sortInit(tbodyId, dados, renderFn, defaultCol = null) {
+  _sortState[tbodyId] = { col: defaultCol, asc: true, dados, renderFn };
+  _sortRender(tbodyId);
+}
+
+function _sortRender(tbodyId) {
+  const s = _sortState[tbodyId];
+  if (!s) return;
+  document.querySelectorAll(`[data-sort-for="${tbodyId}"]`).forEach(th => {
+    const ind = th.querySelector('.sort-ind');
+    if (ind) ind.textContent = s.col === th.dataset.sortCol ? (s.asc ? ' ▲' : ' ▼') : '';
+  });
+  const sorted = s.col ? [...s.dados].sort((a, b) => {
+    let va = a[s.col] ?? '', vb = b[s.col] ?? '';
+    const isNum = typeof va === 'number' || (va !== '' && !isNaN(Number(va)));
+    if (isNum) { va = Number(va) || 0; vb = Number(vb) || 0; }
+    else { va = String(va).toLowerCase(); vb = String(vb).toLowerCase(); }
+    return va < vb ? (s.asc ? -1 : 1) : va > vb ? (s.asc ? 1 : -1) : 0;
+  }) : s.dados;
+  document.getElementById(tbodyId).innerHTML = sorted.map((item, i) => s.renderFn(item, i)).join('');
+}
+
+let _finPixKey = '';
+let _finPixKeyCnpj = '';
+const _finFormaLabel = { dinheiro:'Dinheiro', pix:'PIX', credito:'Crédito', debito:'Débito', convenio:'Convênio', transferencia:'TED/PIX' };
+function _renderFinRow(a) {
+  const nfCell = a.paciente_nota_fiscal === 'sim'
+    ? `<button class="btn-nfse" onclick="abrirModalNfse(${a.paciente_id},${_finAno},${_finMes})" title="Emitir NFS-e">📄 NFS-e</button>`
+    : '<span style="color:var(--muted);font-size:11px">—</span>';
+  const usaCnpj  = a.paciente_nota_fiscal === 'sim';
+  const pixTipo  = usaCnpj ? 'cnpj' : 'cpf';
+  const pixLabel = usaCnpj ? 'CNPJ 📋' : 'CPF 📋';
+  const pixAtivo = usaCnpj ? _finPixKeyCnpj : _finPixKey;
+  const pixCell  = pixAtivo
+    ? `<button class="btn-pix-copy" title="PIX ${pixTipo.toUpperCase()}" onclick="copiarPixKey('${pixTipo}')">${pixLabel}</button>`
+    : '<span style="color:var(--muted);font-size:11px">—</span>';
+  return `
+    <tr>
+      <td>${fmtData(a.data)}</td>
+      <td>${a.hora}</td>
+      <td>${a.paciente_nome || '—'}</td>
+      <td class="text-right fw-bold">${BRL(a.valor)}</td>
+      <td>${a.pago ? '<span style="color:var(--sage);font-weight:700">Recebido ✓</span>' : '<span style="color:var(--peach)">Pendente</span>'}</td>
+      <td>${_finFormaLabel[a.forma_pgto] || a.forma_pgto || '—'}</td>
+      <td>${nfCell}</td>
+      <td>${pixCell}</td>
+    </tr>
+  `;
 }
 
 let _pendDados = [];
@@ -3779,52 +3828,56 @@ function filtrarContratos() {
   renderContratosTable(filtrados);
 }
 
+function _renderContratoRow(c) {
+  const pgtoLabel = { mensal: 'Mensal', 'por sessão': 'Por Sessão', Mensal: 'Mensal', 'Por sessão': 'Por Sessão' };
+  const [a, m, d] = (c.created_at || '').split(' ')[0]?.split('-') || [];
+  const dataFmt = d ? `${d}/${m}/${a}` : '—';
+  const valorFmt = c.valor_sessao ? `R$ ${Number(c.valor_sessao).toFixed(2).replace('.',',')}` : '—';
+  const arquivoHtml = c.arquivo
+    ? `<a href="/uploads/contratos/${c.arquivo}" target="_blank" class="btn btn-outline btn-sm" style="margin-right:8px">📄 Ver contrato assinado</a>`
+    : `<span style="color:var(--muted);font-size:12px">Sem arquivo anexo</span>`;
+  return `
+    <tr style="cursor:pointer" onclick="toggleContratoDetalhe(${c.id})">
+      <td style="white-space:nowrap">${dataFmt}</td>
+      <td>
+        <strong>${c.nome}</strong>
+        ${c.nome_responsavel ? `<br><span style="font-size:11px;color:var(--muted)">Resp: ${c.nome_responsavel}</span>` : ''}
+      </td>
+      <td>${c.cpf || '—'}</td>
+      <td>${c.email || '—'}</td>
+      <td>${c.celular || '—'}</td>
+      <td>${c.forma_pgto ? `<span class="badge badge-confirmado">${pgtoLabel[c.forma_pgto] || c.forma_pgto}</span>` : '—'}</td>
+      <td style="white-space:nowrap">${valorFmt}</td>
+      <td style="white-space:nowrap" onclick="event.stopPropagation()">
+        <button class="btn btn-ghost btn-xs" style="color:var(--red)" onclick="deleteContratoItem(${c.id})">🗑</button>
+      </td>
+    </tr>
+    <tr id="detalhe-contrato-${c.id}" style="display:none">
+      <td colspan="8" style="background:#faf7f4;padding:16px 20px;border-bottom:2px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+          ${arquivoHtml}
+          <div style="display:flex;align-items:center;gap:8px">
+            <label style="font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap">Valor da Sessão:</label>
+            <input type="number" id="valor-contrato-${c.id}" value="${c.valor_sessao || ''}"
+              placeholder="0,00" min="0" step="0.01"
+              style="width:110px;padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
+            <button class="btn btn-primary btn-sm" onclick="salvarValorContrato(${c.id})">Salvar</button>
+          </div>
+        </div>
+      </td>
+    </tr>
+  `;
+}
+
 function renderContratosTable(data) {
-  const tbody = document.getElementById('contratos-tbody');
   if (!data.length) {
-    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="empty-icon">📝</span><p>Nenhum contrato assinado ainda.<br>Clique em <strong>+ Novo Contrato</strong> para enviar o link ao cliente.</p></div></td></tr>`;
+    document.getElementById('contratos-tbody').innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="empty-icon">📝</span><p>Nenhum contrato assinado ainda.<br>Clique em <strong>+ Novo Contrato</strong> para enviar o link ao cliente.</p></div></td></tr>`;
+    _sortState['contratos-tbody'] = null;
     return;
   }
-  const pgtoLabel = { mensal: 'Mensal', 'por sessão': 'Por Sessão', Mensal: 'Mensal', 'Por sessão': 'Por Sessão' };
-  tbody.innerHTML = data.map(c => {
-    const [a, m, d] = (c.created_at || '').split(' ')[0]?.split('-') || [];
-    const dataFmt = d ? `${d}/${m}/${a}` : '—';
-    const valorFmt = c.valor_sessao ? `R$ ${Number(c.valor_sessao).toFixed(2).replace('.',',')}` : '—';
-    const arquivoHtml = c.arquivo
-      ? `<a href="/uploads/contratos/${c.arquivo}" target="_blank" class="btn btn-outline btn-sm" style="margin-right:8px">📄 Ver contrato assinado</a>`
-      : `<span style="color:var(--muted);font-size:12px">Sem arquivo anexo</span>`;
-    return `
-      <tr style="cursor:pointer" onclick="toggleContratoDetalhe(${c.id})">
-        <td style="white-space:nowrap">${dataFmt}</td>
-        <td>
-          <strong>${c.nome}</strong>
-          ${c.nome_responsavel ? `<br><span style="font-size:11px;color:var(--muted)">Resp: ${c.nome_responsavel}</span>` : ''}
-        </td>
-        <td>${c.cpf || '—'}</td>
-        <td>${c.email || '—'}</td>
-        <td>${c.celular || '—'}</td>
-        <td>${c.forma_pgto ? `<span class="badge badge-confirmado">${pgtoLabel[c.forma_pgto] || c.forma_pgto}</span>` : '—'}</td>
-        <td style="white-space:nowrap">${valorFmt}</td>
-        <td style="white-space:nowrap" onclick="event.stopPropagation()">
-          <button class="btn btn-ghost btn-xs" style="color:var(--red)" onclick="deleteContratoItem(${c.id})">🗑</button>
-        </td>
-      </tr>
-      <tr id="detalhe-contrato-${c.id}" style="display:none">
-        <td colspan="8" style="background:#faf7f4;padding:16px 20px;border-bottom:2px solid var(--border)">
-          <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
-            ${arquivoHtml}
-            <div style="display:flex;align-items:center;gap:8px">
-              <label style="font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap">Valor da Sessão:</label>
-              <input type="number" id="valor-contrato-${c.id}" value="${c.valor_sessao || ''}"
-                placeholder="0,00" min="0" step="0.01"
-                style="width:110px;padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
-              <button class="btn btn-primary btn-sm" onclick="salvarValorContrato(${c.id})">Salvar</button>
-            </div>
-          </div>
-        </td>
-      </tr>
-    `;
-  }).join('');
+  _sortInit('contratos-tbody', data, _renderContratoRow, 'created_at');
+  _sortState['contratos-tbody'].asc = false;
+  _sortRender('contratos-tbody');
 }
 
 function toggleContratoDetalhe(id) {
