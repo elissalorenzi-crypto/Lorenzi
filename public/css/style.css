@@ -334,6 +334,8 @@ table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 .table-compact { font-size: 12px; }
 .table-compact th { padding: 7px 8px; }
 .table-compact td { padding: 6px 8px; }
+.table-xs th { padding: 5px 6px; font-size: 11px; }
+.table-xs td { padding: 4px 6px; font-size: 11.5px; }
 thead tr { background: linear-gradient(90deg, #FBF3F9, #F1E4EE); }
 th {
   text-align: left;
