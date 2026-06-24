@@ -319,7 +319,12 @@ function renderGrade(data) {
     return `<th class="${cls}">${label}</th>`;
   }).join('');
 
-  let html = `<thead><tr><th class="hora-th"></th>${ths}</tr></thead><tbody>`;
+  const isMobile = window.innerWidth <= 600;
+  const horaW = isMobile ? 37 : 27;
+  const diaW  = isMobile ? Math.floor((window.innerWidth - horaW - 2) / dias.length) : 30;
+  const colgroup = `<colgroup><col style="width:${horaW}px">${dias.map(() => `<col style="width:${diaW}px">`).join('')}</colgroup>`;
+
+  let html = colgroup + `<thead><tr><th class="hora-th"></th>${ths}</tr></thead><tbody>`;
   let almocoDone = false;
 
   for (const { t, isHour } of slots) {
