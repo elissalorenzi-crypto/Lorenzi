@@ -37,6 +37,22 @@ for (const m of migrations) {
   try { db.exec(m); } catch(_) {}
 }
 
+// Migração: corrige modelo_contrato salvo — garante __VALOR_SESSAO__ em Honorários
+try {
+  const cfgRow = db.prepare("SELECT valor FROM configuracoes WHERE chave='modelo_contrato'").get();
+  if (cfgRow) {
+    const modelo = JSON.parse(cfgRow.valor);
+    const sec = modelo.secoes?.find(s => s.titulo?.toLowerCase().includes('honorar'));
+    if (sec && !sec.itens?.includes('__VALOR_SESSAO__')) {
+      sec.itens = ['__VALOR_SESSAO__', ...sec.itens.filter(it =>
+        !it.toLowerCase().includes('valor da sess') &&
+        !it.toLowerCase().includes('será definido')
+      )];
+      db.prepare("UPDATE configuracoes SET valor=? WHERE chave='modelo_contrato'").run(JSON.stringify(modelo));
+    }
+  }
+} catch(_) {}
+
 // ============================================================
 // SCHEMA
 // ============================================================
