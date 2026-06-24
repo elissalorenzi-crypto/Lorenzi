@@ -390,6 +390,9 @@ tbody tr:hover { background: var(--rose-pale); }
   white-space: nowrap;
 }
 .btn-nfse:hover { background: #c5dff5; }
+.th-sort { cursor: pointer; user-select: none; white-space: nowrap; }
+.th-sort:hover { color: var(--plum); }
+.th-sort span { font-size: 10px; margin-left: 2px; color: var(--plum); }
 
 /* NFS-e Modal */
 .nfse-modal { display: flex; flex-direction: column; gap: 16px; }

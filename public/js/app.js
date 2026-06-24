@@ -2706,40 +2706,10 @@ async function loadFinanceiro() {
   const pendTbody = document.getElementById('fin-pendentes-tbody');
   const pixKey     = _config?.chave_pix      || '';
   const pixKeyCnpj = _config?.chave_pix_cnpj || '';
-  if (!data.pendentes.length) {
-    pendTbody.innerHTML = `<tr><td colspan="7" class="text-muted" style="text-align:center;padding:20px">Sem pendências 🎉</td></tr>`;
-    const chkAll = document.getElementById('pend-chk-all');
-    if (chkAll) chkAll.checked = false;
-  } else {
-    pendTbody.innerHTML = data.pendentes.map(a => {
-      const nfCell = a.paciente_nota_fiscal === 'sim'
-        ? `<button class="btn-nfse" onclick="abrirModalNfse(${a.paciente_id},${_finAno},${_finMes})" title="Emitir NFS-e">📄 NFS-e</button>`
-        : '<span style="color:var(--muted);font-size:11px">—</span>';
-      const usaCnpj  = a.paciente_nota_fiscal === 'sim';
-      const pixTipo  = usaCnpj ? 'cnpj' : 'cpf';
-      const pixLabel = usaCnpj ? 'CNPJ 📋' : 'CPF 📋';
-      const pixAtivo = usaCnpj ? pixKeyCnpj : pixKey;
-      const pixCell  = pixAtivo
-        ? `<button class="btn-pix-copy" title="PIX ${pixTipo.toUpperCase()}" onclick="copiarPixKey('${pixTipo}')">${pixLabel}</button>`
-        : '<span style="color:var(--muted);font-size:11px">—</span>';
-      const dadosJson = JSON.stringify({ id: a.id, paciente_id: a.paciente_id, nome: a.paciente_nome,
-        apelido: a.paciente_apelido, wpp: a.paciente_whatsapp, data: a.data, valor: a.valor,
-        nf: a.paciente_nota_fiscal }).replace(/"/g, '&quot;');
-      return `
-        <tr>
-          <td style="text-align:center"><input type="checkbox" class="pend-chk" data-sessao="${dadosJson}"></td>
-          <td>${fmtData(a.data)}</td>
-          <td>${a.paciente_nome || '—'}</td>
-          <td class="text-right fw-bold" style="color:var(--peach)">${BRL(a.valor)}</td>
-          <td>${nfCell}</td>
-          <td>${pixCell}</td>
-          <td>
-            <button class="btn btn-sage btn-xs" onclick="marcarPago(${a.id})">✓ Recebido</button>
-          </td>
-        </tr>
-      `;
-    }).join('');
-  }
+  _pendDados = data.pendentes;
+  const chkAll = document.getElementById('pend-chk-all');
+  if (chkAll) chkAll.checked = false;
+  _pendRenderizar();
 
   // Lista completa
   const listaTbody = document.getElementById('fin-lista-tbody');
@@ -2777,8 +2747,72 @@ async function loadFinanceiro() {
   _restaurarFinLayout();
 }
 
+let _pendDados = [];
+let _pendSortCol = 'data';
+let _pendSortAsc = true;
+
 function pendSelecionarTodos(chkAll) {
   document.querySelectorAll('.pend-chk').forEach(c => c.checked = chkAll.checked);
+}
+
+function pendOrdenar(col) {
+  if (_pendSortCol === col) { _pendSortAsc = !_pendSortAsc; }
+  else { _pendSortCol = col; _pendSortAsc = true; }
+  _pendRenderizar();
+}
+
+function _pendRenderizar() {
+  const pixKey     = _config?.chave_pix      || '';
+  const pixKeyCnpj = _config?.chave_pix_cnpj || '';
+
+  // Atualizar indicadores de ordenação
+  ['data','nome','valor'].forEach(c => {
+    const el = document.getElementById('pend-sort-' + c);
+    if (el) el.textContent = _pendSortCol === c ? (_pendSortAsc ? '▲' : '▼') : '';
+  });
+
+  const sorted = [..._pendDados].sort((a, b) => {
+    let va, vb;
+    if (_pendSortCol === 'data')  { va = a.data; vb = b.data; }
+    else if (_pendSortCol === 'nome')  { va = (a.paciente_nome||'').toLowerCase(); vb = (b.paciente_nome||'').toLowerCase(); }
+    else if (_pendSortCol === 'valor') { va = parseFloat(a.valor)||0; vb = parseFloat(b.valor)||0; }
+    if (va < vb) return _pendSortAsc ? -1 : 1;
+    if (va > vb) return _pendSortAsc ?  1 : -1;
+    return 0;
+  });
+
+  const pendTbody = document.getElementById('fin-pendentes-tbody');
+  if (!sorted.length) {
+    pendTbody.innerHTML = `<tr><td colspan="7" class="text-muted" style="text-align:center;padding:20px">Sem pendências 🎉</td></tr>`;
+    return;
+  }
+
+  pendTbody.innerHTML = sorted.map(a => {
+    const nfCell = a.paciente_nota_fiscal === 'sim'
+      ? `<button class="btn-nfse" onclick="abrirModalNfse(${a.paciente_id},${_finAno},${_finMes})" title="Emitir NFS-e">📄 NFS-e</button>`
+      : '<span style="color:var(--muted);font-size:11px">—</span>';
+    const usaCnpj  = a.paciente_nota_fiscal === 'sim';
+    const pixTipo  = usaCnpj ? 'cnpj' : 'cpf';
+    const pixLabel = usaCnpj ? 'CNPJ 📋' : 'CPF 📋';
+    const pixAtivo = usaCnpj ? pixKeyCnpj : pixKey;
+    const pixCell  = pixAtivo
+      ? `<button class="btn-pix-copy" title="PIX ${pixTipo.toUpperCase()}" onclick="copiarPixKey('${pixTipo}')">${pixLabel}</button>`
+      : '<span style="color:var(--muted);font-size:11px">—</span>';
+    const dadosJson = JSON.stringify({ id: a.id, paciente_id: a.paciente_id, nome: a.paciente_nome,
+      apelido: a.paciente_apelido, wpp: a.paciente_whatsapp, data: a.data, valor: a.valor,
+      nf: a.paciente_nota_fiscal }).replace(/"/g, '&quot;');
+    return `
+      <tr>
+        <td style="text-align:center"><input type="checkbox" class="pend-chk" data-sessao="${dadosJson}"></td>
+        <td>${fmtData(a.data)}</td>
+        <td>${a.paciente_nome || '—'}</td>
+        <td class="text-right fw-bold" style="color:var(--peach)">${BRL(a.valor)}</td>
+        <td>${nfCell}</td>
+        <td>${pixCell}</td>
+        <td><button class="btn btn-sage btn-xs" onclick="marcarPago(${a.id})">✓ Recebido</button></td>
+      </tr>
+    `;
+  }).join('');
 }
 
 function dispararCobrancas() {

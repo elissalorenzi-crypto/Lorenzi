@@ -569,7 +569,13 @@
           <div id="fin-pendentes-wrap">
             <div class="table-wrap">
               <table>
-                <thead><tr><th style="width:32px"><input type="checkbox" id="pend-chk-all" onchange="pendSelecionarTodos(this)" title="Selecionar todos"></th><th>Data</th><th>Cliente</th><th class="text-right">Valor</th><th>NFS-e</th><th>PIX</th><th>Ação</th></tr></thead>
+                <thead><tr>
+  <th style="width:32px"><input type="checkbox" id="pend-chk-all" onchange="pendSelecionarTodos(this)" title="Selecionar todos"></th>
+  <th class="th-sort" onclick="pendOrdenar('data')" title="Ordenar por data">Data <span id="pend-sort-data"></span></th>
+  <th class="th-sort" onclick="pendOrdenar('nome')" title="Ordenar por nome">Cliente <span id="pend-sort-nome"></span></th>
+  <th class="th-sort text-right" onclick="pendOrdenar('valor')" title="Ordenar por valor">Valor <span id="pend-sort-valor"></span></th>
+  <th>NFS-e</th><th>PIX</th><th>Ação</th>
+</tr></thead>
                 <tbody id="fin-pendentes-tbody"></tbody>
               </table>
             </div>
