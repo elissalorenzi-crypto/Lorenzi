@@ -311,7 +311,8 @@ function renderGrade(data) {
 
   const isMobile = window.innerWidth <= 600;
   const horaW = isMobile ? 37 : 27;
-  const diaW  = isMobile ? Math.floor((window.innerWidth - horaW - 4) / dias.length) : 30;
+  const diasVisiveis = isMobile ? dias.filter(d => { const dw = new Date(d+'T12:00:00').getDay(); return dw !== 0 && dw !== 6; }) : dias;
+  const diaW  = isMobile ? Math.floor((window.innerWidth - horaW - 4) / diasVisiveis.length) : 30;
   const thSz  = isMobile ? `style="width:${diaW}px;min-width:${diaW}px;max-width:${diaW}px"` : '';
 
   // Cabeçalho
