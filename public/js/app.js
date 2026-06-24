@@ -2707,7 +2707,9 @@ async function loadFinanceiro() {
   const pixKey     = _config?.chave_pix      || '';
   const pixKeyCnpj = _config?.chave_pix_cnpj || '';
   if (!data.pendentes.length) {
-    pendTbody.innerHTML = `<tr><td colspan="6" class="text-muted" style="text-align:center;padding:20px">Sem pendências 🎉</td></tr>`;
+    pendTbody.innerHTML = `<tr><td colspan="7" class="text-muted" style="text-align:center;padding:20px">Sem pendências 🎉</td></tr>`;
+    const chkAll = document.getElementById('pend-chk-all');
+    if (chkAll) chkAll.checked = false;
   } else {
     pendTbody.innerHTML = data.pendentes.map(a => {
       const nfCell = a.paciente_nota_fiscal === 'sim'
@@ -2720,8 +2722,11 @@ async function loadFinanceiro() {
       const pixCell  = pixAtivo
         ? `<button class="btn-pix-copy" title="PIX ${pixTipo.toUpperCase()}" onclick="copiarPixKey('${pixTipo}')">${pixLabel}</button>`
         : '<span style="color:var(--muted);font-size:11px">—</span>';
+      const dadosJson = JSON.stringify({ id: a.id, paciente_id: a.paciente_id, nome: a.paciente_nome,
+        wpp: a.paciente_whatsapp, data: a.data, valor: a.valor, nf: a.paciente_nota_fiscal }).replace(/"/g, '&quot;');
       return `
         <tr>
+          <td style="text-align:center"><input type="checkbox" class="pend-chk" data-sessao="${dadosJson}"></td>
           <td>${fmtData(a.data)}</td>
           <td>${a.paciente_nome || '—'}</td>
           <td class="text-right fw-bold" style="color:var(--peach)">${BRL(a.valor)}</td>
@@ -2769,6 +2774,66 @@ async function loadFinanceiro() {
 
   _finIniciarDrag();
   _restaurarFinLayout();
+}
+
+function pendSelecionarTodos(chkAll) {
+  document.querySelectorAll('.pend-chk').forEach(c => c.checked = chkAll.checked);
+}
+
+function dispararCobrancas() {
+  const selecionados = [...document.querySelectorAll('.pend-chk:checked')]
+    .map(c => JSON.parse(c.dataset.sessao.replace(/&quot;/g, '"')));
+
+  if (!selecionados.length) return toast('Selecione pelo menos uma pendência', 'error');
+
+  // Agrupar por paciente
+  const porPaciente = {};
+  selecionados.forEach(s => {
+    if (!porPaciente[s.paciente_id]) porPaciente[s.paciente_id] = { ...s, sessoes: [] };
+    porPaciente[s.paciente_id].sessoes.push({ data: s.data, valor: s.valor });
+  });
+
+  const fmtDia = d => {
+    const [y, m, dia] = d.split('-');
+    return `${dia}/${m}/${y}`;
+  };
+
+  const itens = Object.values(porPaciente);
+
+  const html = `
+    <div style="display:flex;flex-direction:column;gap:14px">
+      ${itens.map((p, i) => {
+        const usaCnpj = p.nf === 'sim';
+        const pixKey  = usaCnpj ? (_config?.chave_pix_cnpj || '') : (_config?.chave_pix || '');
+        const pixTipo = usaCnpj ? 'CNPJ' : 'CPF';
+        const total   = p.sessoes.reduce((acc, s) => acc + parseFloat(s.valor || 0), 0);
+        const datas   = p.sessoes.map(s => fmtDia(s.data)).join(', ');
+        const sessoesLinha = p.sessoes.length === 1
+          ? `sessão de orientação profissional realizada em ${datas}`
+          : `sessões de orientação profissional realizadas em ${datas}`;
+        const msg = `Abaixo dados para pagamento das ${sessoesLinha}.\n`
+          + (p.sessoes.length > 1 ? `Valor total: ${BRL(total)}\n` : `Valor: ${BRL(total)}\n`)
+          + `\nAbaixo dados para transferência:\n`
+          + `PIX ${pixTipo}: ${pixKey || '(configure a chave PIX em Configurações)'}\n`
+          + `\nPor favor, encaminhar o recibo da transferência.\n\nObrigada e um beijo!`;
+        const waNum = toWaNum(p.wpp || '');
+        const waUrl = waNum ? `https://wa.me/${waNum}?text=${encodeURIComponent(msg)}` : '';
+        return `
+          <div style="border:1px solid var(--border);border-radius:8px;padding:12px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <strong>${p.nome}</strong>
+              ${waUrl
+                ? `<a href="${waUrl}" target="_blank" class="btn btn-sage btn-sm">📲 Enviar WhatsApp</a>`
+                : `<span style="color:var(--muted);font-size:12px">⚠️ Sem WhatsApp cadastrado</span>`}
+            </div>
+            <textarea readonly style="width:100%;font-size:12px;line-height:1.5;border:1px solid var(--border);border-radius:6px;padding:8px;resize:none;background:var(--bg-alt);color:var(--text)" rows="7">${msg}</textarea>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+
+  openModal('📲 Cobranças via WhatsApp', html, null, { large: true });
 }
 
 async function copiarPixKey(tipo = 'cpf') {

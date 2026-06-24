@@ -439,7 +439,8 @@ const getFinanceiro = (ano, mes) => {
   `).all(de, ate);
 
   const pendentes = db.prepare(`
-    SELECT a.*, p.nome as paciente_nome, p.nota_fiscal as paciente_nota_fiscal
+    SELECT a.*, p.nome as paciente_nome, p.nota_fiscal as paciente_nota_fiscal,
+           p.whatsapp as paciente_whatsapp
     FROM agendamentos a
     LEFT JOIN pacientes p ON p.id = a.paciente_id
     WHERE a.data >= ? AND a.data <= ? AND a.status = 'realizado' AND a.pago=0

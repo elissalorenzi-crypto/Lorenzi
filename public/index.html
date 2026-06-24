@@ -563,12 +563,13 @@
           <div class="card-header">
             <span class="fin-drag-handle" title="Arrastar">⣿</span>
             <span class="card-title">💸 Pendências</span>
+            <button class="btn btn-sm" style="margin-left:8px;background:var(--sage);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer" onclick="dispararCobrancas()">📲 Cobrar selecionados</button>
             <button class="fin-expand-btn" onclick="finToggleExpand('pendencias')">⊞ Ampliar</button>
           </div>
           <div id="fin-pendentes-wrap">
             <div class="table-wrap">
               <table>
-                <thead><tr><th>Data</th><th>Cliente</th><th class="text-right">Valor</th><th>NFS-e</th><th>PIX</th><th>Ação</th></tr></thead>
+                <thead><tr><th style="width:32px"><input type="checkbox" id="pend-chk-all" onchange="pendSelecionarTodos(this)" title="Selecionar todos"></th><th>Data</th><th>Cliente</th><th class="text-right">Valor</th><th>NFS-e</th><th>PIX</th><th>Ação</th></tr></thead>
                 <tbody id="fin-pendentes-tbody"></tbody>
               </table>
             </div>
