@@ -985,16 +985,18 @@ function _renderPacienteRow(p, i) {
         ${p.frequencia ? `
         <select class="status-select ${p.frequencia}"
                 onchange="this.className='status-select '+this.value;alterarFrequencia(${p.id},this.value)">
-          <option value="semanal"   ${p.frequencia==='semanal'  ?'selected':''}>Semanal</option>
-          <option value="quinzenal" ${p.frequencia==='quinzenal'?'selected':''}>Quinzenal</option>
-          <option value="mensal"    ${p.frequencia==='mensal'   ?'selected':''}>Mensal</option>
+          <option value="semanal" ${p.frequencia==='semanal' ?'selected':''}>Semanal</option>
+          <option value="1x-mes"  ${p.frequencia==='1x-mes'  ?'selected':''}>1x ao mês</option>
+          <option value="2x-mes"  ${p.frequencia==='2x-mes'  ?'selected':''}>2x ao mês</option>
+          <option value="4x-mes"  ${p.frequencia==='4x-mes'  ?'selected':''}>4x ao mês</option>
         </select>` : `
-        <select class="status-select mensal" style="opacity:.5"
+        <select class="status-select 4x-mes" style="opacity:.5"
                 onchange="this.className='status-select '+this.value;this.style.opacity=1;alterarFrequencia(${p.id},this.value)">
           <option value="" disabled selected>—</option>
           <option value="semanal">Semanal</option>
-          <option value="quinzenal">Quinzenal</option>
-          <option value="mensal">Mensal</option>
+          <option value="1x-mes">1x ao mês</option>
+          <option value="2x-mes">2x ao mês</option>
+          <option value="4x-mes">4x ao mês</option>
         </select>`}
       </td>
       <td>
@@ -1278,9 +1280,10 @@ function pacienteFormHtml(p = {}) {
         <label>Frequência</label>
         <select id="fp-freq">
           <option value="">—</option>
-          <option value="semanal"   ${p.frequencia==='semanal'  ?'selected':''}>Semanal</option>
-          <option value="quinzenal" ${p.frequencia==='quinzenal'?'selected':''}>Quinzenal</option>
-          <option value="mensal"    ${p.frequencia==='mensal'   ?'selected':''}>Mensal</option>
+          <option value="semanal" ${p.frequencia==='semanal' ?'selected':''}>Semanal</option>
+          <option value="1x-mes"  ${p.frequencia==='1x-mes'  ?'selected':''}>1x ao mês</option>
+          <option value="2x-mes"  ${p.frequencia==='2x-mes'  ?'selected':''}>2x ao mês</option>
+          <option value="4x-mes"  ${p.frequencia==='4x-mes'  ?'selected':''}>4x ao mês</option>
         </select>
       </div>
       <div class="form-group">
@@ -1427,7 +1430,7 @@ async function alterarFrequencia(id, valor) {
   const p = await api('GET', `/pacientes/${id}`);
   if (!p?.id) return;
   await api('PUT', `/pacientes/${id}`, { ...p, frequencia: valor });
-  const label = { semanal:'Semanal', quinzenal:'Quinzenal', mensal:'Mensal' }[valor] || valor;
+  const label = { semanal:'Semanal', '1x-mes':'1x ao mês', '2x-mes':'2x ao mês', '4x-mes':'4x ao mês' }[valor] || valor;
   toast(`Frequência: ${label}`);
   refreshAll();
 }
@@ -2612,7 +2615,7 @@ async function loadFinanceiro() {
   // Projeção recorrente baseada em clientes
   const projTbody  = document.getElementById('fin-proj-tbody');
   const projTotais = document.getElementById('fin-proj-totais');
-  const freqLabel  = { semanal:'Semanal', quinzenal:'Quinzenal', mensal:'Mensal' };
+  const freqLabel  = { semanal:'Semanal', '1x-mes':'1x ao mês', '2x-mes':'2x ao mês', '4x-mes':'4x ao mês' };
   const fpLabel    = { 'fp-semanal':'Por sessão', 'fp-mensal':'Mensal', 'cada4':'A cada 4', 'por-sessao':'Por sessão' };
   const fmLabel    = { pix:'PIX', credito:'Crédito', debito:'Débito', dinheiro:'Dinheiro', transferencia:'Transf.' };
   if (projTbody) {

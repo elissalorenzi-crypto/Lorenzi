@@ -272,6 +272,11 @@ const getAgendamentoById = (id) =>
 try { db.prepare('ALTER TABLE agendamentos ADD COLUMN zoom_link TEXT').run(); } catch(e) {}
 try { db.prepare('ALTER TABLE agendamentos ADD COLUMN data_pagamento TEXT').run(); } catch(e) {}
 
+// Migração de frequência: quinzenal → 2x-mes, mensal específicos → 1x-mes, demais → 4x-mes
+try { db.prepare("UPDATE pacientes SET frequencia='2x-mes' WHERE frequencia='quinzenal'").run(); } catch(e) {}
+try { db.prepare("UPDATE pacientes SET frequencia='1x-mes' WHERE frequencia='mensal' AND (apelido='Aninha' OR nome LIKE '%Jo_o Bosco%')").run(); } catch(e) {}
+try { db.prepare("UPDATE pacientes SET frequencia='4x-mes' WHERE frequencia='mensal'").run(); } catch(e) {}
+
 const createAgendamento = (data) =>
   rid(db.prepare(`
     INSERT INTO agendamentos (paciente_id, data, hora, duracao, tipo, status, valor, pago, forma_pgto, obs, zoom_link)
@@ -578,7 +583,7 @@ const getProjecaoRecorrente = () => {
     ORDER BY frequencia, nome
   `).all();
 
-  const sessMes = { semanal: 4, quinzenal: 2, mensal: 1 };
+  const sessMes = { semanal: 4, '1x-mes': 1, '2x-mes': 2, '4x-mes': 4 };
 
   let totalSemana = 0, totalMes = 0;
   const itens = [];
