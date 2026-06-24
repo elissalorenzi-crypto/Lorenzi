@@ -2723,7 +2723,8 @@ async function loadFinanceiro() {
         ? `<button class="btn-pix-copy" title="PIX ${pixTipo.toUpperCase()}" onclick="copiarPixKey('${pixTipo}')">${pixLabel}</button>`
         : '<span style="color:var(--muted);font-size:11px">—</span>';
       const dadosJson = JSON.stringify({ id: a.id, paciente_id: a.paciente_id, nome: a.paciente_nome,
-        wpp: a.paciente_whatsapp, data: a.data, valor: a.valor, nf: a.paciente_nota_fiscal }).replace(/"/g, '&quot;');
+        apelido: a.paciente_apelido, wpp: a.paciente_whatsapp, data: a.data, valor: a.valor,
+        nf: a.paciente_nota_fiscal }).replace(/"/g, '&quot;');
       return `
         <tr>
           <td style="text-align:center"><input type="checkbox" class="pend-chk" data-sessao="${dadosJson}"></td>
@@ -2811,7 +2812,8 @@ function dispararCobrancas() {
         const sessoesLinha = p.sessoes.length === 1
           ? `sessão de orientação profissional realizada em ${datas}`
           : `sessões de orientação profissional realizadas em ${datas}`;
-        const msg = `Abaixo dados para pagamento das ${sessoesLinha}.\n`
+        const nomeExibir = p.apelido || p.nome?.split(' ')[0] || p.nome;
+        const msg = `Olá, ${nomeExibir}! Abaixo dados para pagamento das ${sessoesLinha}.\n`
           + (p.sessoes.length > 1 ? `Valor total: ${BRL(total)}\n` : `Valor: ${BRL(total)}\n`)
           + `\nAbaixo dados para transferência:\n`
           + `PIX ${pixTipo}: ${pixKey || '(configure a chave PIX em Configurações)'}\n`
