@@ -636,10 +636,12 @@
     let modelo = MODELO_DEFAULT;
     try { if (cfg.modelo_contrato) modelo = JSON.parse(cfg.modelo_contrato); } catch(_) {}
 
+    const valorPadrao = Number(cfg.valor_sessao_padrao) || 0;
+
     if (!_token) {
       document.getElementById('formulario').style.display = 'none';
       document.getElementById('link-invalido').style.display = 'block';
-      renderClausulas(modelo, 0);
+      renderClausulas(modelo, valorPadrao);
       return;
     }
 
@@ -648,7 +650,7 @@
       document.getElementById('link-invalido').style.display = 'block';
       const msg = (convite?.error || 'Link inválido.') + '\nPor favor, solicite um novo link à psicóloga.';
       document.getElementById('link-invalido-msg').textContent = msg;
-      renderClausulas(modelo, 0);
+      renderClausulas(modelo, valorPadrao);
       return;
     }
 
