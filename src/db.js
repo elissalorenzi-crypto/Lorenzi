@@ -38,6 +38,15 @@ for (const m of migrations) {
   try { db.exec(m); } catch(_) {}
 }
 
+// Limpeza única: apaga todos os convites de teste (2026-06-24)
+try {
+  const flag = db.prepare("SELECT valor FROM configuracoes WHERE chave='_convites_limpos_20260624'").get();
+  if (!flag) {
+    db.prepare("DELETE FROM convites").run();
+    db.prepare("INSERT OR REPLACE INTO configuracoes (chave, valor) VALUES ('_convites_limpos_20260624', '1')").run();
+  }
+} catch(_) {}
+
 // Migração: remove modelo_contrato salvo sem __VALOR_SESSAO__ para usar MODELO_DEFAULT atualizado
 try {
   const cfgRow = db.prepare("SELECT valor FROM configuracoes WHERE chave='modelo_contrato'").get();
