@@ -232,7 +232,6 @@ function compartilharWa(e) {
 // Oculta o botão de compartilhar quando a página foi aberta via link do WhatsApp
 if (new URLSearchParams(window.location.search).get('ref') === 'wa') {
   document.getElementById('btn-wa-share')?.style && (document.getElementById('btn-wa-share').style.display = 'none');
-  document.getElementById('div-voltar').style.display = 'none';
 }
 
 const DIAS_SHORT = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
