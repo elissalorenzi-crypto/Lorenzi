@@ -1001,9 +1001,8 @@ function _renderPacienteRow(p, i) {
         ${p.freq_pgto ? `
         <select class="status-select ${p.freq_pgto}"
                 onchange="this.className='status-select '+this.value;alterarFreqPgto(${p.id},this.value)">
-          <option value="por-sessao" ${p.freq_pgto==='por-sessao'?'selected':''}>Por sessão</option>
+          <option value="por-sessao" ${(p.freq_pgto==='por-sessao'||p.freq_pgto==='fp-semanal')?'selected':''}>Por sessão</option>
           <option value="cada4"      ${p.freq_pgto==='cada4'     ?'selected':''}>A cada 4</option>
-          <option value="fp-semanal" ${p.freq_pgto==='fp-semanal'?'selected':''}>Semanal</option>
           <option value="fp-mensal"  ${p.freq_pgto==='fp-mensal' ?'selected':''}>Mensal</option>
         </select>` : `
         <select class="status-select fp-mensal" style="opacity:.5"
@@ -1011,7 +1010,6 @@ function _renderPacienteRow(p, i) {
           <option value="" disabled selected>—</option>
           <option value="por-sessao">Por sessão</option>
           <option value="cada4">A cada 4</option>
-          <option value="fp-semanal">Semanal</option>
           <option value="fp-mensal">Mensal</option>
         </select>`}
       </td>
@@ -1289,9 +1287,8 @@ function pacienteFormHtml(p = {}) {
         <label>Freq. de Pagamento</label>
         <select id="fp-freqpgto">
           <option value="">—</option>
-          <option value="por-sessao" ${p.freq_pgto==='por-sessao'?'selected':''}>Por sessão</option>
+          <option value="por-sessao" ${(p.freq_pgto==='por-sessao'||p.freq_pgto==='fp-semanal')?'selected':''}>Por sessão</option>
           <option value="cada4"      ${p.freq_pgto==='cada4'     ?'selected':''}>A cada 4 sessões</option>
-          <option value="fp-semanal" ${p.freq_pgto==='fp-semanal'?'selected':''}>Semanal</option>
           <option value="fp-mensal"  ${p.freq_pgto==='fp-mensal' ?'selected':''}>Mensal</option>
         </select>
       </div>
@@ -1412,7 +1409,7 @@ async function alterarFreqPgto(id, valor) {
   const p = await api('GET', `/pacientes/${id}`);
   if (!p?.id) return;
   await api('PUT', `/pacientes/${id}`, { ...p, freq_pgto: valor });
-  const label = { 'por-sessao':'Por sessão', 'cada4':'A cada 4', 'fp-semanal':'Semanal', 'fp-mensal':'Mensal' }[valor] || valor;
+  const label = { 'por-sessao':'Por sessão', 'fp-semanal':'Por sessão', 'cada4':'A cada 4', 'fp-mensal':'Mensal' }[valor] || valor;
   toast(`Freq. pagamento: ${label}`);
   refreshAll();
 }
@@ -2616,17 +2613,18 @@ async function loadFinanceiro() {
   const projTbody  = document.getElementById('fin-proj-tbody');
   const projTotais = document.getElementById('fin-proj-totais');
   const freqLabel  = { semanal:'Semanal', quinzenal:'Quinzenal', mensal:'Mensal' };
-  const fpLabel    = { 'fp-semanal':'Semanal', 'fp-mensal':'Mensal', 'cada4':'A cada 4', 'por-sessao':'Por sessão' };
+  const fpLabel    = { 'fp-semanal':'Por sessão', 'fp-mensal':'Mensal', 'cada4':'A cada 4', 'por-sessao':'Por sessão' };
   const fmLabel    = { pix:'PIX', credito:'Crédito', debito:'Débito', dinheiro:'Dinheiro', transferencia:'Transf.' };
   if (projTbody) {
     projTbody.innerHTML = (proj.itens || []).map(c => {
-      const semStr = c.freq_pgto === 'fp-semanal'
+      const ePorSessao = c.freq_pgto === 'fp-semanal' || c.freq_pgto === 'por-sessao';
+      const semStr = ePorSessao
         ? `<span style="color:var(--sage);font-weight:700">${BRL(c.receita_semana)}</span>`
         : `<span style="color:var(--muted);font-size:11px">—</span>`;
       const mesStr = c.freq_pgto === 'fp-mensal'
         ? `<span style="color:var(--plum);font-weight:700">${BRL(c.receita_mes)}</span>`
         : `<span style="color:var(--muted);font-size:11px">—</span>`;
-      const totRow = c.freq_pgto === 'fp-semanal' ? c.receita_semana
+      const totRow = ePorSessao                   ? c.receita_semana
                    : c.freq_pgto === 'fp-mensal'  ? c.receita_mes : 0;
       return `<tr>
         <td style="font-weight:600">${c.nome}</td>

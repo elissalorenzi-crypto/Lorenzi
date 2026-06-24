@@ -589,7 +589,7 @@ const getProjecaoRecorrente = () => {
     const recMes = nm * c.valor_sessao;
     const recSem = recMes / 4;
     // Totais filtrados por freq_pgto
-    if (c.freq_pgto === 'fp-semanal') totalSemana += recSem;
+    if (c.freq_pgto === 'fp-semanal' || c.freq_pgto === 'por-sessao') totalSemana += recSem;
     if (c.freq_pgto === 'fp-mensal')  totalMes    += recMes;
     itens.push({
       nome:           c.nome,
