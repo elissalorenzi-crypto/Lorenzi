@@ -309,6 +309,11 @@ function renderGrade(data) {
   for (let m = 480; m <= 600; m += 60) slots.push({ t: toStr(m), isHour: true });
   for (let m = 840; m <= 1200; m += 60) slots.push({ t: toStr(m), isHour: true });
 
+  const isMobile = window.innerWidth <= 600;
+  const horaW = isMobile ? 37 : 27;
+  const diaW  = isMobile ? Math.floor((window.innerWidth - horaW - 4) / dias.length) : 30;
+  const thSz  = isMobile ? `style="width:${diaW}px;min-width:${diaW}px;max-width:${diaW}px"` : '';
+
   // Cabeçalho
   const ths = dias.map(d => {
     const dt  = new Date(d + 'T12:00:00');
@@ -316,15 +321,13 @@ function renderGrade(data) {
     const hj  = d === HOJE_STR;
     const cls = [hj ? 'hoje' : '', dw === 0 ? 'dom-th' : '', dw === 6 ? 'sab-th' : ''].filter(Boolean).join(' ');
     const label = `${DIAS_SHORT[dw]}<br><span style="font-weight:500;opacity:.75;font-size:9px">${dt.getDate()}/${String(dt.getMonth()+1).padStart(2,'0')}</span>`;
-    return `<th class="${cls}">${label}</th>`;
+    return `<th class="${cls}" ${thSz}>${label}</th>`;
   }).join('');
 
-  const isMobile = window.innerWidth <= 600;
-  const horaW = isMobile ? 37 : 27;
-  const diaW  = isMobile ? Math.floor((window.innerWidth - horaW - 2) / dias.length) : 30;
-  const colgroup = `<colgroup><col style="width:${horaW}px">${dias.map(() => `<col style="width:${diaW}px">`).join('')}</colgroup>`;
+  const horaThSz = isMobile ? `style="width:${horaW}px;min-width:${horaW}px;max-width:${horaW}px"` : '';
+  const colgroup  = `<colgroup><col style="width:${horaW}px">${dias.map(() => `<col style="width:${diaW}px">`).join('')}</colgroup>`;
 
-  let html = colgroup + `<thead><tr><th class="hora-th"></th>${ths}</tr></thead><tbody>`;
+  let html = colgroup + `<thead><tr><th class="hora-th" ${horaThSz}></th>${ths}</tr></thead><tbody>`;
   let almocoDone = false;
 
   for (const { t, isHour } of slots) {
