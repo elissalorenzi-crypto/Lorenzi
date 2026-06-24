@@ -1002,14 +1002,12 @@ function _renderPacienteRow(p, i) {
         <select class="status-select ${p.freq_pgto}"
                 onchange="this.className='status-select '+this.value;alterarFreqPgto(${p.id},this.value)">
           <option value="por-sessao" ${(p.freq_pgto==='por-sessao'||p.freq_pgto==='fp-semanal')?'selected':''}>Por sessão</option>
-          <option value="cada4"      ${p.freq_pgto==='cada4'     ?'selected':''}>A cada 4</option>
-          <option value="fp-mensal"  ${p.freq_pgto==='fp-mensal' ?'selected':''}>Mensal</option>
+          <option value="fp-mensal"  ${(p.freq_pgto==='fp-mensal'||p.freq_pgto==='cada4') ?'selected':''}>Mensal</option>
         </select>` : `
         <select class="status-select fp-mensal" style="opacity:.5"
                 onchange="this.className='status-select '+this.value;this.style.opacity=1;alterarFreqPgto(${p.id},this.value)">
           <option value="" disabled selected>—</option>
           <option value="por-sessao">Por sessão</option>
-          <option value="cada4">A cada 4</option>
           <option value="fp-mensal">Mensal</option>
         </select>`}
       </td>
@@ -1288,8 +1286,7 @@ function pacienteFormHtml(p = {}) {
         <select id="fp-freqpgto">
           <option value="">—</option>
           <option value="por-sessao" ${(p.freq_pgto==='por-sessao'||p.freq_pgto==='fp-semanal')?'selected':''}>Por sessão</option>
-          <option value="cada4"      ${p.freq_pgto==='cada4'     ?'selected':''}>A cada 4 sessões</option>
-          <option value="fp-mensal"  ${p.freq_pgto==='fp-mensal' ?'selected':''}>Mensal</option>
+          <option value="fp-mensal"  ${(p.freq_pgto==='fp-mensal'||p.freq_pgto==='cada4') ?'selected':''}>Mensal</option>
         </select>
       </div>
       <div class="form-group">
@@ -1409,7 +1406,7 @@ async function alterarFreqPgto(id, valor) {
   const p = await api('GET', `/pacientes/${id}`);
   if (!p?.id) return;
   await api('PUT', `/pacientes/${id}`, { ...p, freq_pgto: valor });
-  const label = { 'por-sessao':'Por sessão', 'fp-semanal':'Por sessão', 'cada4':'A cada 4', 'fp-mensal':'Mensal' }[valor] || valor;
+  const label = { 'por-sessao':'Por sessão', 'fp-semanal':'Por sessão', 'cada4':'Mensal', 'fp-mensal':'Mensal' }[valor] || valor;
   toast(`Freq. pagamento: ${label}`);
   refreshAll();
 }
@@ -2613,7 +2610,7 @@ async function loadFinanceiro() {
   const projTbody  = document.getElementById('fin-proj-tbody');
   const projTotais = document.getElementById('fin-proj-totais');
   const freqLabel  = { semanal:'4x ao mês', '1x-mes':'1x ao mês', '2x-mes':'2x ao mês', '4x-mes':'4x ao mês' };
-  const fpLabel    = { 'fp-semanal':'Por sessão', 'fp-mensal':'Mensal', 'cada4':'A cada 4', 'por-sessao':'Por sessão' };
+  const fpLabel    = { 'fp-semanal':'Por sessão', 'fp-mensal':'Mensal', 'cada4':'Mensal', 'por-sessao':'Por sessão' };
   const fmLabel    = { pix:'PIX', credito:'Crédito', debito:'Débito', dinheiro:'Dinheiro', transferencia:'Transf.' };
   if (projTbody) {
     projTbody.innerHTML = (proj.itens || []).map(c => {

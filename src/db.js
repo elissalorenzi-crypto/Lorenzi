@@ -277,6 +277,8 @@ try { db.prepare("UPDATE pacientes SET frequencia='2x-mes' WHERE frequencia='qui
 try { db.prepare("UPDATE pacientes SET frequencia='1x-mes' WHERE frequencia='mensal' AND (apelido='Aninha' OR nome LIKE '%Jo_o Bosco%')").run(); } catch(e) {}
 try { db.prepare("UPDATE pacientes SET frequencia='4x-mes' WHERE frequencia='mensal'").run(); } catch(e) {}
 try { db.prepare("UPDATE pacientes SET frequencia='4x-mes' WHERE frequencia='semanal'").run(); } catch(e) {}
+// Migração freq_pgto: cada4 → fp-mensal
+try { db.prepare("UPDATE pacientes SET freq_pgto='fp-mensal' WHERE freq_pgto='cada4'").run(); } catch(e) {}
 
 const createAgendamento = (data) =>
   rid(db.prepare(`
