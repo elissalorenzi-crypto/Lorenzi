@@ -824,39 +824,64 @@ app.post('/api/configuracoes', (req, res) => {
   } catch(e) { erro(res, e); }
 });
 
-// ─── CORREÇÃO AUTOMÁTICA DE TEXTO ────────────────────────────
-app.post('/api/corrigir-texto', async (req, res) => {
-  const { texto } = req.body || {};
-  if (!texto || !texto.trim()) return res.json({ corrigido: texto || '' });
-
+// ─── ORGANIZAR PRONTUÁRIO ────────────────────────────────────
+app.post('/api/prontuarios/organizar', async (req, res) => {
+  const { conteudo, humor, tecnicas, tarefas, nome_paciente } = req.body || {};
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return res.status(503).json({ error: 'ANTHROPIC_API_KEY não configurada no servidor' });
 
-  try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1024,
-        messages: [{
-          role: 'user',
-          content: `Corrija apenas os erros ortográficos e gramaticais do texto abaixo. Preserve o estilo, formatação, parágrafos e conteúdo original. Retorne SOMENTE o texto corrigido, sem comentários, sem aspas, sem explicações.\n\n${texto}`,
-        }],
-      }),
-    });
-    const data = await resp.json();
-    if (!resp.ok) throw new Error(data?.error?.message || 'Erro na API');
-    const corrigido = data.content?.[0]?.text || texto;
-    res.json({ corrigido });
-  } catch(e) {
-    console.error('corrigir-texto:', e.message);
-    res.status(500).json({ error: e.message });
+  const CAMPOS = [
+    { key: 'conteudo',  label: 'Relato e conteúdo da sessão',              valor: conteudo  },
+    { key: 'humor',     label: 'Estado emocional e humor do paciente',      valor: humor     },
+    { key: 'tecnicas',  label: 'Técnicas e intervenções realizadas',        valor: tecnicas  },
+    { key: 'tarefas',   label: 'Tarefas e encaminhamentos propostos',       valor: tarefas   },
+  ];
+
+  const resultado = {};
+  for (const campo of CAMPOS) {
+    if (!campo.valor?.trim()) { resultado[campo.key] = campo.valor || ''; continue; }
+    const prompt = `Você é um assistente especializado em prontuários psicológicos seguindo as diretrizes do CFP (Conselho Federal de Psicologia).
+
+A psicóloga escreveu as seguintes anotações para o campo "${campo.label}" do prontuário${nome_paciente ? ` de ${nome_paciente}` : ''}:
+
+---
+${campo.valor}
+---
+
+Sua tarefa é ORGANIZAR essas anotações, seguindo rigorosamente estas regras:
+1. PRESERVE todos os pontos e informações escritos pela psicóloga — nenhuma informação pode ser removida ou omitida
+2. NÃO acrescente observações, interpretações ou informações que não estejam no texto original
+3. Corrija apenas ortografia e gramática
+4. Organize em tópicos objetivos quando houver mais de um ponto
+5. Use linguagem técnica e objetiva (3ª pessoa: "O paciente relatou...", "Foram utilizadas...")
+6. Mantenha a essência e o estilo clínico da psicóloga
+
+Retorne SOMENTE o texto organizado, sem comentários, sem explicações, sem aspas.`;
+
+    try {
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 1024,
+          messages: [{ role: 'user', content: prompt }],
+        }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data?.error?.message || 'Erro na API');
+      resultado[campo.key] = data.content?.[0]?.text || campo.valor;
+    } catch(e) {
+      console.error('organizar-prontuario:', e.message);
+      resultado[campo.key] = campo.valor;
+    }
   }
+
+  res.json(resultado);
 });
 
 // ─── ANÁLISE CLÍNICA IA ──────────────────────────────────────

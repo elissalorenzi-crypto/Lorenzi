@@ -1707,8 +1707,8 @@ function prontuarioFormHtml(r = {}, agendamentos = []) {
       <textarea id="ditado-transcricao" rows="3" placeholder="A transcrição aparecerá aqui enquanto você fala..." style="width:100%;border:1px solid #E8D5E4;border-radius:8px;padding:10px;font-size:13px;color:var(--text);background:#fff;resize:vertical;display:none"></textarea>
     </div>
     <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
-      <button type="button" class="btn btn-sm btn-outline" id="btn-corrigir-pront" onclick="corrigirProntuario()" title="Corrige ortografia e gramática automaticamente com IA">
-        ✨ Corrigir texto com IA
+      <button type="button" class="btn btn-sm btn-outline" id="btn-corrigir-pront" onclick="corrigirProntuario()" title="Organiza e estrutura suas anotações seguindo as diretrizes do CFP, preservando todo o conteúdo que você escreveu">
+        📋 Organizar com IA
       </button>
     </div>
     <div class="form-group" style="margin-bottom:14px">
@@ -1732,35 +1732,38 @@ function prontuarioFormHtml(r = {}, agendamentos = []) {
 
 async function corrigirProntuario() {
   const btn = document.getElementById('btn-corrigir-pront');
-  const ids = ['pr-conteudo', 'pr-humor', 'pr-tecnicas', 'pr-tarefas'];
-  const originais = ids.map(id => document.getElementById(id)?.value || '');
-  if (originais.every(t => !t.trim())) return toast('Nenhum texto para corrigir', 'error');
+  const campos = {
+    conteudo: document.getElementById('pr-conteudo')?.value || '',
+    humor:    document.getElementById('pr-humor')?.value    || '',
+    tecnicas: document.getElementById('pr-tecnicas')?.value || '',
+    tarefas:  document.getElementById('pr-tarefas')?.value  || '',
+  };
+  if (Object.values(campos).every(t => !t.trim())) return toast('Nenhum texto para organizar', 'error');
 
   btn.disabled = true;
-  btn.textContent = '⏳ Corrigindo…';
+  btn.textContent = '⏳ Organizando…';
 
-  let corrigidos = 0;
-  for (let i = 0; i < ids.length; i++) {
-    const el = document.getElementById(ids[i]);
-    if (!el || !originais[i].trim()) continue;
-    try {
-      const r = await api('POST', '/corrigir-texto', { texto: originais[i] });
-      if (r.corrigido && r.corrigido !== originais[i]) {
-        el.value = r.corrigido;
+  try {
+    const nome = document.querySelector('#pront-modal-titulo')?.textContent?.split('—')[1]?.trim() || '';
+    const r = await api('POST', '/prontuarios/organizar', { ...campos, nome_paciente: nome });
+    let alterados = 0;
+    for (const [key, val] of Object.entries(r)) {
+      const el = document.getElementById('pr-' + key);
+      if (el && val && val !== campos[key]) {
+        el.value = val;
         el.style.background = '#f0fdf4';
         setTimeout(() => el.style.background = '', 2000);
-        corrigidos++;
+        alterados++;
       }
-    } catch(e) {
-      toast('Erro ao corrigir: ' + e.message, 'error');
-      break;
     }
+    if (alterados > 0) toast(`✅ ${alterados} campo(s) organizado(s)!`);
+    else toast('Texto já está organizado 👍');
+  } catch(e) {
+    toast('Erro ao organizar: ' + e.message, 'error');
   }
 
   btn.disabled = false;
-  btn.textContent = '✨ Corrigir texto com IA';
-  if (corrigidos > 0) toast(`✅ ${corrigidos} campo(s) corrigido(s)!`);
-  else toast('Nenhuma correção necessária 👍');
+  btn.textContent = '📋 Organizar com IA';
 }
 
 // ── DITADO POR VOZ ────────────────────────────────────────────
