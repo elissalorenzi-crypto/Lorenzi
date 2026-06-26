@@ -1000,7 +1000,7 @@ Diretrizes:
   }
 });
 
-// ─── TAREFAS ──────────────────────────────────────────────────
+// ─── TAREFAS (CRUD) ───────────────────────────────────────────
 app.get('/api/tarefas', auth, (req, res) => {
   const hoje = new Date().toISOString().slice(0, 10);
   db.resetTarefasDiarias(hoje);
