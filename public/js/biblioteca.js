@@ -256,6 +256,44 @@ const BIB_CARDS = [
                 <li><strong>Mapeie as profissões</strong> que combinem com seus critérios.</li>
               </ol>
             `
+          },
+          {
+            id: 'comando-ia-caminhos',
+            titulo: 'Comando de IA para Mapear Caminhos Profissionais',
+            subtitulo: 'Mapeamento de profissões por habilidades e interesses',
+            icone: '🤖',
+            conteudo: `
+              <h3>Como usar</h3>
+              <p>Copie o comando abaixo e cole em uma ferramenta de IA (ChatGPT, Gemini, Claude etc.). Em seguida, adicione as habilidades e interesses mapeados com o(a) cliente durante o processo de orientação profissional.</p>
+
+              <div class="atv-destaque">
+                <p>💡 <strong>Dica:</strong> Use esse comando após a atividade <em>Habilidades e Interesses – Lista de Verbos</em> para aproveitar os dados já mapeados.</p>
+              </div>
+
+              <h3>Comando</h3>
+              <blockquote style="white-space:pre-wrap;font-family:inherit;font-size:13px;line-height:1.7;background:#f8f4ff;border-left:4px solid #a07cc0;padding:16px 18px;border-radius:0 8px 8px 0;color:#3a2a50">Você é um especialista em orientação profissional, carreira e mercado de trabalho, com experiência em ajudar jovens na primeira escolha profissional.
+Vou fornecer abaixo as habilidades e os interesses mapeados durante um processo de orientação profissional.
+Sua tarefa é identificar quais profissões de nível superior que apresentam maior compatibilidade com esse perfil.
+Considere principalmente:
+as habilidades que a pessoa deseja utilizar diariamente no trabalho;
+os interesses que ela gostaria de manter presentes ao longo da carreira;
+a forma como ela imagina aplicar essas habilidades e interesses em um trabalho futuro;
+o mercado de trabalho atual;
+diferentes possibilidades de atuação dentro de cada profissão.
+Importante:
+Sugira apenas profissões cuja formação principal seja uma graduação.
+Não sugira cargos, especializações, pós-graduações ou funções específicas (por exemplo: Product Manager, UX Research, Customer Success, Trader, Growth Marketing etc.). Priorize profissões que possam ser escolhidas como primeira formação universitária.
+Considere tanto profissões tradicionais quanto áreas mais recentes
+Sempre que uma mesma graduação permitir diferentes áreas de atuação que combinem com o perfil, explique essas possibilidades.
+Para cada profissão sugerida, informe:
+Nome da graduação.
+Por que essa profissão combina com o perfil apresentado.
+Quais habilidades e interesses do perfil seriam utilizados nessa profissão.
+Em quais ambientes essa pessoa poderia trabalhar.
+Quais são as principais áreas de atuação dessa graduação.
+O que provavelmente mais atrairia essa pessoa nessa profissão.
+Nível de compatibilidade com o perfil (0 a 10), justificando a nota.</blockquote>
+            `
           }
         ]
       }
