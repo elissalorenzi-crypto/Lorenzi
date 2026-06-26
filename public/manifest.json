@@ -1,0 +1,25 @@
+{
+  "name": "Consultório Elissa Lorenzi",
+  "short_name": "Elissa Psi",
+  "description": "Portal de gestão do consultório de psicologia",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FBF3F9",
+  "theme_color": "#C4956A",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

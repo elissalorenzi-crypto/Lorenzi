@@ -1,0 +1,25 @@
+{
+  "name": "Agendar Sessão — Elissa Lorenzi",
+  "short_name": "Agendar Sessão",
+  "description": "Agendamento online — Psicóloga Elissa Lorenzi",
+  "start_url": "/agenda-cliente/",
+  "scope": "/agenda-cliente/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FBF3F9",
+  "theme_color": "#C4956A",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
