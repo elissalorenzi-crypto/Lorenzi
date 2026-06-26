@@ -154,6 +154,7 @@ function navigate(name) {
     relatorios:   loadRelatorios,
     financeiro:   loadFinanceiro,
     pagamentos:   loadPagamentos,
+    tarefas:      loadTarefas,
     configuracoes:loadConfiguracoes
   };
   loaders[name]?.();
@@ -4224,6 +4225,98 @@ function salvarNovoBibCard() {
   fecharModalBibCard();
   bibRenderHome();
   showToast('Card criado com sucesso!', 'success');
+}
+
+// ── TAREFAS ──────────────────────────────────────────────────
+let _tarefas = [];
+
+async function loadTarefas() {
+  _tarefas = await api('GET', '/tarefas');
+  renderTarefas();
+}
+
+function renderTarefas() {
+  const pendentes  = _tarefas.filter(t => !t.concluida);
+  const concluidas = _tarefas.filter(t =>  t.concluida);
+
+  const renderItem = (t) => `
+    <div class="tarefa-item${t.concluida ? ' tarefa-done' : ''}" id="tarefa-${t.id}">
+      <label style="display:flex;align-items:center;gap:10px;flex:1;cursor:pointer;min-width:0">
+        <input type="checkbox" ${t.concluida ? 'checked' : ''} onchange="toggleTarefa(${t.id},this.checked)"
+          style="width:17px;height:17px;accent-color:var(--rose);flex-shrink:0;cursor:pointer">
+        <span class="tarefa-titulo">${t.titulo}</span>
+        ${t.diaria ? '<span class="tarefa-badge">🔄 diária</span>' : ''}
+      </label>
+      <div class="tarefa-acoes">
+        <button class="btn-icon" onclick="editarTarefa(${t.id})" title="Editar">✏️</button>
+        <button class="btn-icon" onclick="deletarTarefa(${t.id})" title="Excluir" style="color:var(--muted)">🗑️</button>
+      </div>
+    </div>`;
+
+  const html = [
+    pendentes.length  ? pendentes.map(renderItem).join('') : '<p style="text-align:center;color:var(--muted);padding:20px 0;font-size:13px">Nenhuma tarefa pendente 🎉</p>',
+    concluidas.length ? `<div style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);padding:4px 16px 8px;letter-spacing:.5px">CONCLUÍDAS</div>
+      ${concluidas.map(renderItem).join('')}
+    </div>` : ''
+  ].join('');
+
+  document.getElementById('tarefas-lista').innerHTML = html;
+}
+
+async function toggleTarefa(id, concluida) {
+  await api('PUT', `/tarefas/${id}`, { concluida });
+  _tarefas = _tarefas.map(t => t.id === id ? { ...t, concluida: concluida ? 1 : 0 } : t);
+  renderTarefas();
+}
+
+function editarTarefa(id) {
+  const t = _tarefas.find(t => t.id === id);
+  if (!t) return;
+  openModal('Editar Tarefa', `
+    <div class="form-group">
+      <label>Título</label>
+      <input type="text" id="tarefa-edit-titulo" value="${t.titulo.replace(/"/g,'&quot;')}" style="width:100%">
+    </div>
+    <div class="form-group" style="display:flex;align-items:center;gap:10px;margin-top:12px">
+      <input type="checkbox" id="tarefa-edit-diaria" ${t.diaria ? 'checked' : ''} style="width:16px;height:16px;accent-color:var(--rose)">
+      <label for="tarefa-edit-diaria" style="cursor:pointer;font-size:13px">Tarefa diária (reinicia todo dia)</label>
+    </div>
+  `, async () => {
+    const titulo = document.getElementById('tarefa-edit-titulo').value.trim();
+    if (!titulo) { toast('Informe o título', 'error'); return false; }
+    const diaria = document.getElementById('tarefa-edit-diaria').checked;
+    await api('PUT', `/tarefas/${id}`, { titulo, diaria });
+    await loadTarefas();
+  });
+  setTimeout(() => document.getElementById('tarefa-edit-titulo')?.focus(), 100);
+}
+
+function novaTarefa() {
+  openModal('Nova Tarefa', `
+    <div class="form-group">
+      <label>Título</label>
+      <input type="text" id="tarefa-nova-titulo" placeholder="Ex: Enviar relatório..." style="width:100%">
+    </div>
+    <div class="form-group" style="display:flex;align-items:center;gap:10px;margin-top:12px">
+      <input type="checkbox" id="tarefa-nova-diaria" checked style="width:16px;height:16px;accent-color:var(--rose)">
+      <label for="tarefa-nova-diaria" style="cursor:pointer;font-size:13px">Tarefa diária (reinicia todo dia)</label>
+    </div>
+  `, async () => {
+    const titulo = document.getElementById('tarefa-nova-titulo').value.trim();
+    if (!titulo) { toast('Informe o título', 'error'); return false; }
+    const diaria = document.getElementById('tarefa-nova-diaria').checked;
+    await api('POST', '/tarefas', { titulo, diaria });
+    await loadTarefas();
+  });
+  setTimeout(() => document.getElementById('tarefa-nova-titulo')?.focus(), 100);
+}
+
+async function deletarTarefa(id) {
+  if (!confirm('Excluir esta tarefa?')) return;
+  await api('DELETE', `/tarefas/${id}`);
+  _tarefas = _tarefas.filter(t => t.id !== id);
+  renderTarefas();
 }
 
 async function iniciarApp() {

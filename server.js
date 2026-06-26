@@ -1000,6 +1000,27 @@ Diretrizes:
   }
 });
 
+// ─── TAREFAS ──────────────────────────────────────────────────
+app.get('/api/tarefas', auth, (req, res) => {
+  const hoje = new Date().toISOString().slice(0, 10);
+  db.resetTarefasDiarias(hoje);
+  res.json(db.getTarefas());
+});
+app.post('/api/tarefas', auth, (req, res) => {
+  const { titulo, diaria } = req.body || {};
+  if (!titulo?.trim()) return res.status(400).json({ error: 'Título obrigatório' });
+  const id = db.createTarefa(titulo.trim(), diaria !== false);
+  res.json({ id });
+});
+app.put('/api/tarefas/:id', auth, (req, res) => {
+  db.updateTarefa(Number(req.params.id), req.body);
+  res.json({ ok: true });
+});
+app.delete('/api/tarefas/:id', auth, (req, res) => {
+  db.deleteTarefa(Number(req.params.id));
+  res.json({ ok: true });
+});
+
 // ─────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log('\n╔══════════════════════════════════════════════╗');

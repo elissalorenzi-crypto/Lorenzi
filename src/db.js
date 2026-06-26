@@ -195,6 +195,35 @@ db.exec(`
   );
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS tarefas (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    titulo       TEXT NOT NULL,
+    concluida    INTEGER DEFAULT 0,
+    diaria       INTEGER DEFAULT 1,
+    data_conclusao TEXT,
+    ordem        INTEGER DEFAULT 0,
+    created_at   TEXT DEFAULT (datetime('now','localtime'))
+  );
+`);
+
+// Seed tarefas padrão
+try {
+  const n = db.prepare("SELECT COUNT(*) as n FROM tarefas").get().n;
+  if (n === 0) {
+    const ins = db.prepare("INSERT INTO tarefas (titulo, diaria, ordem) VALUES (?,1,?)");
+    [
+      'Confirmar agendamentos do dia',
+      'Enviar lembretes de sessão (WhatsApp)',
+      'Registrar anotações de sessões realizadas',
+      'Verificar pagamentos pendentes',
+      'Responder e-mails e mensagens',
+      'Atualizar prontuários',
+      'Revisar tarefas propostas aos clientes',
+    ].forEach((t, i) => ins.run(t, i));
+  }
+} catch(_) {}
+
 try { db.prepare('ALTER TABLE contratos ADD COLUMN visto INTEGER DEFAULT 0').run(); } catch(e) {}
 try { db.prepare("ALTER TABLE pacientes ADD COLUMN nota_fiscal TEXT DEFAULT 'nao'").run(); } catch(e) {}
 try { db.prepare("ALTER TABLE pacientes ADD COLUMN forma_pgto TEXT").run(); } catch(e) {}
@@ -863,6 +892,35 @@ const getNfseData = (pacienteId, ano, mes) => {
   return { paciente, sessoes };
 };
 
+// ============================================================
+// TAREFAS
+// ============================================================
+const getTarefas = () => db.prepare('SELECT * FROM tarefas ORDER BY ordem, id').all();
+
+const createTarefa = (titulo, diaria = 1) => {
+  const ordem = (db.prepare('SELECT MAX(ordem) as m FROM tarefas').get().m || 0) + 1;
+  return rid(db.prepare('INSERT INTO tarefas (titulo, diaria, ordem) VALUES (?,?,?)').run(titulo, diaria ? 1 : 0, ordem));
+};
+
+const updateTarefa = (id, data) => {
+  const campos = [];
+  const vals = [];
+  if (data.titulo    !== undefined) { campos.push('titulo=?');        vals.push(data.titulo); }
+  if (data.concluida !== undefined) { campos.push('concluida=?');     vals.push(data.concluida ? 1 : 0);
+                                       campos.push('data_conclusao=?'); vals.push(data.concluida ? new Date().toISOString().slice(0,10) : null); }
+  if (data.diaria    !== undefined) { campos.push('diaria=?');        vals.push(data.diaria ? 1 : 0); }
+  if (data.ordem     !== undefined) { campos.push('ordem=?');         vals.push(data.ordem); }
+  if (!campos.length) return;
+  vals.push(id);
+  db.prepare(`UPDATE tarefas SET ${campos.join(',')} WHERE id=?`).run(...vals);
+};
+
+const deleteTarefa = (id) => db.prepare('DELETE FROM tarefas WHERE id=?').run(id);
+
+const resetTarefasDiarias = (hoje) => {
+  db.prepare("UPDATE tarefas SET concluida=0, data_conclusao=NULL WHERE diaria=1 AND (data_conclusao IS NULL OR data_conclusao < ?)").run(hoje);
+};
+
 module.exports = {
   getPacientes, getPacienteById, getPacienteByCpf, createPaciente, updatePaciente, deletePaciente,
   getAgendamentos, getAgendamentoById, createAgendamento, updateAgendamento, deleteAgendamento,
@@ -874,5 +932,6 @@ module.exports = {
   createConvite, getConvites, getConviteByToken, usarConvite, deleteConvite,
   limparZoomLinks,
   createNotificacao, getNotificacoes, marcarNotificacaoLida, getAgendamentoByZoomMeetingId,
-  getNfseData
+  getNfseData,
+  getTarefas, createTarefa, updateTarefa, deleteTarefa, resetTarefasDiarias
 };

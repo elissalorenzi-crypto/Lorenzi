@@ -57,6 +57,9 @@
     <a href="#" class="nav-link" data-section="pagamentos">
       <span class="icon">💳</span> Pagamentos
     </a>
+    <a href="#" class="nav-link" data-section="tarefas">
+      <span class="icon">✅</span> Tarefas
+    </a>
     <a href="#" class="nav-link" data-section="configuracoes">
       <span class="icon">⚙️</span> Configurações
     </a>
@@ -744,6 +747,24 @@
             <tbody id="pgto-tbody"></tbody>
           </table>
         </div>
+      </div>
+    </div>
+
+    <!-- ── TAREFAS ── -->
+    <div class="section" id="section-tarefas">
+      <div style="max-width:640px">
+        <div class="card">
+          <div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
+            <span class="card-title">✅ Lista de Tarefas</span>
+            <button class="btn btn-primary btn-sm" onclick="novaTarefa()">+ Nova Tarefa</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div id="tarefas-lista" style="padding:8px 0"></div>
+          </div>
+        </div>
+        <p style="font-size:12px;color:var(--muted);margin-top:8px;padding:0 4px">
+          Tarefas marcadas como <strong>diárias</strong> são reiniciadas automaticamente a cada novo dia.
+        </p>
       </div>
     </div>
 
