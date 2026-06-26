@@ -1001,22 +1001,26 @@ Diretrizes:
 });
 
 // ─── TAREFAS (CRUD) ───────────────────────────────────────────
-app.get('/api/tarefas', auth, (req, res) => {
+app.get('/api/tarefas', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
   const hoje = new Date().toISOString().slice(0, 10);
   db.resetTarefasDiarias(hoje);
   res.json(db.getTarefas());
 });
-app.post('/api/tarefas', auth, (req, res) => {
+app.post('/api/tarefas', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
   const { titulo, diaria } = req.body || {};
   if (!titulo?.trim()) return res.status(400).json({ error: 'Título obrigatório' });
   const id = db.createTarefa(titulo.trim(), diaria !== false);
   res.json({ id });
 });
-app.put('/api/tarefas/:id', auth, (req, res) => {
+app.put('/api/tarefas/:id', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
   db.updateTarefa(Number(req.params.id), req.body);
   res.json({ ok: true });
 });
-app.delete('/api/tarefas/:id', auth, (req, res) => {
+app.delete('/api/tarefas/:id', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
   db.deleteTarefa(Number(req.params.id));
   res.json({ ok: true });
 });
