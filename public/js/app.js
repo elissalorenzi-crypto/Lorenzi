@@ -979,14 +979,9 @@ function _renderPacienteRow(p, i) {
     <tr>
       <td style="text-align:center;color:var(--muted);font-size:11px;font-weight:600;width:28px;padding:0 4px">${i + 1}</td>
       <td>
-        <div>
-          <div style="font-weight:700;color:var(--plum)">${p.nome}</div>
-          ${p.cpf ? `<div style="font-size:11px;color:var(--muted)">${p.cpf}</div>` : ''}
-        </div>
+        <div style="font-weight:700;color:var(--plum)">${p.nome}</div>
       </td>
-      <td>
-        ${p.whatsapp ? `<a href="https://wa.me/${toWaNum(p.whatsapp)}" target="_blank" style="color:var(--sage);font-size:12px">💬 ${p.whatsapp}</a>` : '—'}
-      </td>
+      <td style="font-size:12px;color:var(--muted)">${p.cpf || '—'}</td>
       <td>
         ${p.frequencia ? `
         <select class="status-select ${p.frequencia}"
