@@ -106,8 +106,14 @@ async function modalSave() {
 }
 
 // fechar ao clicar no overlay
+document.getElementById('modal-overlay').addEventListener('mousedown', e => {
+  if (e.target === document.getElementById('modal-overlay')) e.currentTarget._pendingClose = true;
+});
 document.getElementById('modal-overlay').addEventListener('click', e => {
-  if (e.target === document.getElementById('modal-overlay')) closeModal();
+  if (e.target === document.getElementById('modal-overlay') && e.currentTarget._pendingClose) {
+    if (!window.getSelection()?.toString()) closeModal();
+  }
+  e.currentTarget._pendingClose = false;
 });
 
 // ── NAVIGATION ───────────────────────────────────────────────
