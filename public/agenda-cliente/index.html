@@ -352,7 +352,7 @@ function renderGrade(data) {
     const cells = dias.map(d => {
       const dw    = new Date(d + 'T12:00:00').getDay();
       const domCl = dw === 0 ? ' dom-td' : dw === 6 ? ' sab-td' : '';
-      if (dw === 6) return `<td class="grade-cell${domCl}"></td>`;
+      if (dw === 0 || dw === 6) return `<td class="grade-cell${domCl}"></td>`;
       if (t === '20:00' && SEM_20H.has(dw)) return `<td class="grade-cell${domCl}"></td>`;
       const past = isPast(d, t);
       const s    = idx[`${d}|${t}`];
