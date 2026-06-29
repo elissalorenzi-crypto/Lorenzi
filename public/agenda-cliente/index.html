@@ -204,7 +204,11 @@
     </div>
 
     <div class="grade-wrap">
-      <table class="grade-table" id="grade-table"></table>
+      <div id="sem-titulo-1" style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px"></div>
+      <table class="grade-table" id="grade-table-1"></table>
+      <div style="height:18px"></div>
+      <div id="sem-titulo-2" style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px"></div>
+      <table class="grade-table" id="grade-table-2"></table>
     </div>
   </div>
 </div>
@@ -288,8 +292,8 @@ function fmtResumo(dataStr, hora) {
   return `📅 ${DIAS_FULL[d.getDay()]}, ${d.getDate()} de ${MESES_GEN[d.getMonth()]} às ${hora}`;
 }
 
-function renderGrade(data) {
-  const table = document.getElementById('grade-table');
+function renderGrade(data, tableId = 'grade-table-1') {
+  const table = document.getElementById(tableId);
 
   // Índice: data|hora → slot
   const idx = {};
@@ -400,35 +404,46 @@ function renderGrade(data) {
   table.innerHTML = html;
 }
 
-function renderSemana(data) {
+function semTitulo(data) {
   const de  = new Date(data.semDe  + 'T12:00:00');
   const ate = new Date(data.semAte + 'T12:00:00');
-  const mesLabel = de.getMonth() === ate.getMonth()
+  return de.getMonth() === ate.getMonth()
     ? `${de.getDate()} a ${ate.getDate()} de ${MESES_LONGO[ate.getMonth()]} · ${ate.getFullYear()}`
     : `${de.getDate()} ${MESES_CURTO[de.getMonth()]} – ${ate.getDate()} ${MESES_CURTO[ate.getMonth()]} · ${ate.getFullYear()}`;
-  document.getElementById('sem-label').innerHTML =
-    `<div class="sem-label-title">Semana</div><div class="sem-label-datas">${mesLabel}</div>`;
-  document.getElementById('btn-ant').disabled = new Date(data.semAte + 'T12:00:00') < _hojeDate;
-  _dadosAtual = data;
-  renderGrade(data);
 }
 
 async function carregar(autoAvancar = true) {
   try {
-    const r = await fetch(`/api/agenda-publica?semana=${_semana}`);
-    if (!r.ok) throw new Error();
-    const data = await r.json();
+    const sem2 = semDeslocar(1);
+    const [r1, r2] = await Promise.all([
+      fetch(`/api/agenda-publica?semana=${_semana}`),
+      fetch(`/api/agenda-publica?semana=${sem2}`)
+    ]);
+    if (!r1.ok || !r2.ok) throw new Error();
+    const [d1, d2] = await Promise.all([r1.json(), r2.json()]);
 
-    if (autoAvancar && data.semAte < HOJE_STR) {
-      _semana = semDeslocar(1);
+    // Auto-avança se ambas as semanas já passaram
+    if (autoAvancar && d2.semAte < HOJE_STR) {
+      _semana = semDeslocar(2);
       return carregar(false);
     }
 
-    if (!document.getElementById('h-nome').dataset.loaded) {
-      document.getElementById('h-nome').dataset.loaded = '1';
-    }
+    // Monta label geral: "28 Jun – 11 Jul 2025"
+    const de  = new Date(d1.semDe + 'T12:00:00');
+    const ate = new Date(d2.semAte + 'T12:00:00');
+    const mesLabel = de.getMonth() === ate.getMonth()
+      ? `${de.getDate()} a ${ate.getDate()} de ${MESES_LONGO[ate.getMonth()]} · ${ate.getFullYear()}`
+      : `${de.getDate()} ${MESES_CURTO[de.getMonth()]} – ${ate.getDate()} ${MESES_CURTO[ate.getMonth()]} · ${ate.getFullYear()}`;
+    document.getElementById('sem-label').innerHTML =
+      `<div class="sem-label-title">2 Semanas</div><div class="sem-label-datas">${mesLabel}</div>`;
+    document.getElementById('btn-ant').disabled = new Date(d2.semAte + 'T12:00:00') < _hojeDate;
 
-    renderSemana(data);
+    document.getElementById('sem-titulo-1').textContent = semTitulo(d1);
+    document.getElementById('sem-titulo-2').textContent = semTitulo(d2);
+    _dadosAtual = d1;
+    renderGrade(d1, 'grade-table-1');
+    renderGrade(d2, 'grade-table-2');
+
     document.getElementById('loading').style.display = 'none';
     document.getElementById('main').style.display    = 'block';
   } catch(e) {
@@ -437,8 +452,8 @@ async function carregar(autoAvancar = true) {
 }
 
 async function navSem(delta) {
-  _semana = semDeslocar(delta);
-  await carregar();
+  _semana = semDeslocar(delta * 2); // avança/volta 2 semanas por vez
+  await carregar(false);
 }
 
 function abrirModal(data, hora) {
