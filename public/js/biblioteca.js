@@ -296,6 +296,12 @@ Nível de compatibilidade com o perfil (0 a 10), justificando a nota.</blockquot
             `
           }
         ]
+      },
+      {
+        id: 'mapeando-profissoes',
+        nome: 'Mapeando as Profissões',
+        icone: '🗺️',
+        atividades: []
       }
     ]
   },
