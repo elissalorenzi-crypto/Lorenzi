@@ -4048,6 +4048,16 @@ function _renderContratoRow(c) {
   const arquivoHtml = c.arquivo
     ? `<a href="/uploads/contratos/${c.arquivo}" target="_blank" class="btn btn-outline btn-sm" style="margin-right:8px">📄 Ver contrato assinado</a>`
     : `<span style="color:var(--muted);font-size:12px">Sem arquivo anexo</span>`;
+
+  // Agendamento escolhido pelo cliente
+  const agendFmt = (() => {
+    if (!c.agend_data) return '—';
+    const [aa, mm, dd] = c.agend_data.split('-');
+    const DIAS = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+    const dow  = DIAS[new Date(c.agend_data + 'T12:00:00').getDay()];
+    return `<span style="font-weight:700;color:var(--plum)">${dow} ${dd}/${mm}/${aa}</span><br><span style="font-size:11px;color:var(--rose)">${c.agend_hora || ''}</span>`;
+  })();
+
   return `
     <tr style="cursor:pointer" onclick="toggleContratoDetalhe(${c.id})">
       <td style="white-space:nowrap">${dataFmt}</td>
@@ -4060,12 +4070,13 @@ function _renderContratoRow(c) {
       <td>${c.celular || '—'}</td>
       <td>${c.forma_pgto ? `<span class="badge badge-confirmado">${pgtoLabel[c.forma_pgto] || c.forma_pgto}</span>` : '—'}</td>
       <td style="white-space:nowrap">${valorFmt}</td>
+      <td style="white-space:nowrap;line-height:1.4">${agendFmt}</td>
       <td style="white-space:nowrap" onclick="event.stopPropagation()">
         <button class="btn btn-ghost btn-xs" style="color:var(--red)" onclick="deleteContratoItem(${c.id})">🗑</button>
       </td>
     </tr>
     <tr id="detalhe-contrato-${c.id}" style="display:none">
-      <td colspan="8" style="background:#faf7f4;padding:16px 20px;border-bottom:2px solid var(--border)">
+      <td colspan="9" style="background:#faf7f4;padding:16px 20px;border-bottom:2px solid var(--border)">
         <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
           ${arquivoHtml}
           <div style="display:flex;align-items:center;gap:8px">
@@ -4083,7 +4094,7 @@ function _renderContratoRow(c) {
 
 function renderContratosTable(data) {
   if (!data.length) {
-    document.getElementById('contratos-tbody').innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="empty-icon">📝</span><p>Nenhum contrato assinado ainda.<br>Clique em <strong>+ Novo Contrato</strong> para enviar o link ao cliente.</p></div></td></tr>`;
+    document.getElementById('contratos-tbody').innerHTML = `<tr><td colspan="9"><div class="empty-state"><span class="empty-icon">📝</span><p>Nenhum contrato assinado ainda.<br>Clique em <strong>+ Novo Contrato</strong> para enviar o link ao cliente.</p></div></td></tr>`;
     _sortState['contratos-tbody'] = null;
     return;
   }

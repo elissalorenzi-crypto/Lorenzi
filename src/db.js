@@ -610,7 +610,14 @@ const deleteConvite = (id) =>
 // CONTRATOS
 // ============================================================
 const getContratos = () =>
-  db.prepare('SELECT * FROM contratos ORDER BY created_at DESC').all();
+  db.prepare(`
+    SELECT c.*,
+           cv.data_inicio  AS agend_data,
+           cv.hora_inicio  AS agend_hora
+    FROM contratos c
+    LEFT JOIN convites cv ON cv.contrato_id = c.id
+    ORDER BY c.created_at DESC
+  `).all();
 
 const createContrato = (data) =>
   rid(db.prepare(`
