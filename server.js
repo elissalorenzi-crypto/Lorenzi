@@ -164,6 +164,25 @@ app.post('/api/agendamentos', async (req, res) => {
   } catch(e) { erro(res, e); }
 });
 
+// Cria uma série de sessões para um paciente
+app.post('/api/agendamentos/serie', async (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  try {
+    const { paciente_id, data_inicio, hora, quantidade, tipo, valor, duracao } = req.body;
+    if (!paciente_id || !data_inicio || !hora || !quantidade) return res.status(400).json({ error: 'Dados incompletos' });
+    const cfg = db.getConfig();
+    const ids = [];
+    let d = new Date(data_inicio + 'T12:00:00');
+    for (let i = 0; i < quantidade; i++) {
+      const data = d.toISOString().slice(0, 10);
+      const id = db.createAgendamento({ paciente_id, data, hora, tipo: tipo || 'sessao', status: 'agendado', valor: valor || 0, duracao: duracao || cfg.duracao_sessao || 50 });
+      ids.push(id);
+      d.setDate(d.getDate() + 7); // avança 1 semana por sessão
+    }
+    res.json({ ids, success: true });
+  } catch(e) { erro(res, e); }
+});
+
 app.put('/api/agendamentos/:id', (req, res) => {
   try { db.updateAgendamento(req.params.id, req.body); res.json({ success: true }); }
   catch(e) { erro(res, e); }

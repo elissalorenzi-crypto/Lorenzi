@@ -1213,9 +1213,10 @@ async function verDetalhePaciente(id) {
       </div>
     </div>
 
-    <div style="display:flex;gap:12px">
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
       <button class="btn btn-primary" onclick="editPaciente(${p.id})">✏️ Editar Dados</button>
       <button class="btn btn-lavender" onclick="navigate('prontuarios');setTimeout(()=>{document.getElementById('pront-paciente-select').value=${p.id};loadProntuariosSection();},100)">📋 Ver Prontuários</button>
+      ${p.total_sessoes ? `<button class="btn btn-sage" onclick="abrirModalSerie(${p.id},${p.sessao_atual||1},${p.total_sessoes},${p.valor_sessao||0})">📅 Criar sessões em série</button>` : ''}
     </div>
   `;
 }
@@ -1223,6 +1224,50 @@ async function verDetalhePaciente(id) {
 function voltarListaPacientes() {
   document.getElementById('pacientes-list-view').style.display = '';
   document.getElementById('pacientes-detail-view').style.display = 'none';
+}
+
+async function abrirModalSerie(pacienteId, sessaoAtual, totalSessoes, valorSessao) {
+  const restantes = Math.max(1, totalSessoes - sessaoAtual + 1);
+  const proximaData = (() => {
+    const d = new Date(); d.setDate(d.getDate() + (7 - d.getDay()) % 7 || 7);
+    return d.toISOString().slice(0, 10);
+  })();
+  const html = `
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Data da 1ª sessão da série</label>
+          <input type="date" id="serie-data" value="${proximaData}">
+        </div>
+        <div class="form-group">
+          <label>Horário</label>
+          <input type="time" id="serie-hora" value="08:00">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Quantidade de sessões a criar</label>
+          <input type="number" id="serie-qtd" value="${restantes}" min="1" max="${totalSessoes}" step="1">
+          <small class="text-muted">Sessão ${sessaoAtual} → ${totalSessoes} (${restantes} restantes)</small>
+        </div>
+        <div class="form-group">
+          <label>Valor por sessão (R$)</label>
+          <input type="number" id="serie-valor" value="${valorSessao||0}" min="0" step="10">
+        </div>
+      </div>
+      <p class="text-muted" style="font-size:12px;margin:0">As sessões serão criadas semanalmente (1 por semana) a partir da data escolhida.</p>
+    </div>
+  `;
+  openModal('📅 Criar sessões em série', html, async () => {
+    const data_inicio = document.getElementById('serie-data').value;
+    const hora        = document.getElementById('serie-hora').value;
+    const quantidade  = parseInt(document.getElementById('serie-qtd').value) || 1;
+    const valor       = parseFloat(document.getElementById('serie-valor').value) || 0;
+    if (!data_inicio || !hora) return toast('Preencha data e horário', 'error');
+    const res = await api('POST', '/agendamentos/serie', { paciente_id: pacienteId, data_inicio, hora, quantidade, valor });
+    toast(`${res.ids.length} sessão(ões) criada(s) com sucesso`);
+    navigate('agenda');
+  });
 }
 
 // ── Modal Paciente ────────────────────────────────────────────
