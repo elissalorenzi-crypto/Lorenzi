@@ -193,9 +193,7 @@
 
   <div id="main" style="display:none">
     <div class="week-nav">
-      <button class="nav-btn" id="btn-ant"  onclick="navSem(-1)" title="Semana anterior">&#8592;</button>
-      <div class="sem-label" id="sem-label"></div>
-      <button class="nav-btn" id="btn-prox" onclick="navSem(1)"  title="Próxima semana">&#8594;</button>
+      <div class="sem-label" id="sem-label" style="margin:0 auto"></div>
     </div>
 
     <div class="legenda">
@@ -412,8 +410,10 @@ function semTitulo(data) {
     : `${de.getDate()} ${MESES_CURTO[de.getMonth()]} – ${ate.getDate()} ${MESES_CURTO[ate.getMonth()]} · ${ate.getFullYear()}`;
 }
 
-async function carregar(autoAvancar = true) {
+async function carregar() {
   try {
+    // Sempre mostra a semana atual + próxima semana
+    _semana = domingoSemana(HOJE_STR);
     const sem2 = semDeslocar(1);
     const [r1, r2] = await Promise.all([
       fetch(`/api/agenda-publica?semana=${_semana}`),
@@ -422,21 +422,14 @@ async function carregar(autoAvancar = true) {
     if (!r1.ok || !r2.ok) throw new Error();
     const [d1, d2] = await Promise.all([r1.json(), r2.json()]);
 
-    // Auto-avança se ambas as semanas já passaram
-    if (autoAvancar && d2.semAte < HOJE_STR) {
-      _semana = semDeslocar(2);
-      return carregar(false);
-    }
-
-    // Monta label geral: "28 Jun – 11 Jul 2025"
+    // Label: "28 Jun – 11 Jul 2025"
     const de  = new Date(d1.semDe + 'T12:00:00');
     const ate = new Date(d2.semAte + 'T12:00:00');
     const mesLabel = de.getMonth() === ate.getMonth()
       ? `${de.getDate()} a ${ate.getDate()} de ${MESES_LONGO[ate.getMonth()]} · ${ate.getFullYear()}`
       : `${de.getDate()} ${MESES_CURTO[de.getMonth()]} – ${ate.getDate()} ${MESES_CURTO[ate.getMonth()]} · ${ate.getFullYear()}`;
     document.getElementById('sem-label').innerHTML =
-      `<div class="sem-label-title">2 Semanas</div><div class="sem-label-datas">${mesLabel}</div>`;
-    document.getElementById('btn-ant').disabled = new Date(d2.semAte + 'T12:00:00') < _hojeDate;
+      `<div class="sem-label-title">Horários disponíveis</div><div class="sem-label-datas">${mesLabel}</div>`;
 
     document.getElementById('sem-titulo-1').textContent = semTitulo(d1);
     document.getElementById('sem-titulo-2').textContent = semTitulo(d2);
@@ -449,11 +442,6 @@ async function carregar(autoAvancar = true) {
   } catch(e) {
     document.getElementById('loading').textContent = '⚠️ Erro ao carregar. Atualize a página.';
   }
-}
-
-async function navSem(delta) {
-  _semana = semDeslocar(delta * 2); // avança/volta 2 semanas por vez
-  await carregar(false);
 }
 
 function abrirModal(data, hora) {
