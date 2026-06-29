@@ -188,6 +188,15 @@ app.put('/api/agendamentos/:id', (req, res) => {
   catch(e) { erro(res, e); }
 });
 
+app.delete('/api/pacientes/:id/sessoes-futuras', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  try {
+    const hoje = new Date().toISOString().slice(0, 10);
+    const deletados = db.deletarSessoesFuturas(req.params.id, hoje);
+    res.json({ deletados });
+  } catch(e) { erro(res, e); }
+});
+
 app.delete('/api/agendamentos/:id', (req, res) => {
   try { db.deleteAgendamento(req.params.id); res.json({ success: true }); }
   catch(e) { erro(res, e); }

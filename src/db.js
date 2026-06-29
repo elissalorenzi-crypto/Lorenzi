@@ -953,6 +953,10 @@ const resetTarefasDiarias = (hoje) => {
   db.prepare("UPDATE tarefas SET concluida=0, data_conclusao=NULL WHERE diaria=1 AND (data_conclusao IS NULL OR data_conclusao < ?)").run(hoje);
 };
 
+const deletarSessoesFuturas = (pacienteId, hoje) =>
+  db.prepare("DELETE FROM agendamentos WHERE paciente_id=? AND status='agendado' AND data >= ?")
+    .run(pacienteId, hoje).changes;
+
 module.exports = {
   getPacientes, getPacienteById, getPacienteByCpf, createPaciente, updatePaciente, deletePaciente,
   getAgendamentos, getAgendamentoById, createAgendamento, updateAgendamento, deleteAgendamento,
@@ -965,5 +969,6 @@ module.exports = {
   limparZoomLinks,
   createNotificacao, getNotificacoes, marcarNotificacaoLida, getAgendamentoByZoomMeetingId,
   getNfseData,
-  getTarefas, createTarefa, updateTarefa, deleteTarefa, resetTarefasDiarias
+  getTarefas, createTarefa, updateTarefa, deleteTarefa, resetTarefasDiarias,
+  deletarSessoesFuturas
 };

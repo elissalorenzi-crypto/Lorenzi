@@ -1217,6 +1217,7 @@ async function verDetalhePaciente(id) {
       <button class="btn btn-primary" onclick="editPaciente(${p.id})">✏️ Editar Dados</button>
       <button class="btn btn-lavender" onclick="navigate('prontuarios');setTimeout(()=>{document.getElementById('pront-paciente-select').value=${p.id};loadProntuariosSection();},100)">📋 Ver Prontuários</button>
       ${p.total_sessoes ? `<button class="btn btn-sage" onclick="abrirModalSerie(${p.id},${p.sessao_atual||1},${p.total_sessoes},${p.valor_sessao||0})">📅 Criar sessões em série</button>` : ''}
+      <button class="btn btn-ghost" style="color:var(--red);border-color:var(--red)" onclick="limparSessoesFuturas(${p.id},'${(p.apelido||p.nome.split(' ')[0]).replace(/'/g,"\\'")}')">🗑 Limpar série</button>
     </div>
   `;
 }
@@ -1224,6 +1225,13 @@ async function verDetalhePaciente(id) {
 function voltarListaPacientes() {
   document.getElementById('pacientes-list-view').style.display = '';
   document.getElementById('pacientes-detail-view').style.display = 'none';
+}
+
+async function limparSessoesFuturas(pacienteId, nome) {
+  if (!confirm(`Apagar todas as sessões futuras (status "agendado") de ${nome}?\n\nEsta ação não pode ser desfeita.`)) return;
+  const r = await api('DELETE', `/pacientes/${pacienteId}/sessoes-futuras`);
+  toast(`${r.deletados} sessão(ões) removida(s)`);
+  verDetalhePaciente(pacienteId);
 }
 
 async function abrirModalSerie(pacienteId, sessaoAtual, totalSessoes, valorSessao) {
