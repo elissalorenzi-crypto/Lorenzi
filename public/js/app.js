@@ -4076,26 +4076,15 @@ function _renderContratoRow(c) {
       </td>
     </tr>
     <tr id="detalhe-contrato-${c.id}" style="display:none">
-      <td colspan="9" style="background:#faf7f4;padding:16px 20px;border-bottom:2px solid var(--border)">
-        <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+      <td colspan="9" style="background:#faf7f4;padding:12px 20px;border-bottom:2px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
           ${c.agend_data ? (() => {
             const [aa,mm,dd] = c.agend_data.split('-');
             const DIAS_FULL = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
             const dow = DIAS_FULL[new Date(c.agend_data+'T12:00:00').getDay()];
-            return `<div style="background:var(--rose-pale);border:1.5px solid var(--rose);border-radius:10px;padding:10px 18px;text-align:center">
-              <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Sessão agendada</div>
-              <div style="font-size:16px;font-weight:800;color:var(--plum);margin-top:2px">${dow}</div>
-              <div style="font-size:14px;font-weight:700;color:var(--rose)">${dd}/${mm}/${aa} às ${c.agend_hora || '—'}</div>
-            </div>`;
-          })() : ''}
+            return `<span style="font-size:13px;color:var(--plum);font-weight:700">📅 ${dow}, ${dd}/${mm}/${aa} às ${c.agend_hora || '—'}</span>`;
+          })() : '<span style="color:var(--muted);font-size:12px">Sem agendamento vinculado</span>'}
           ${arquivoHtml}
-          <div style="display:flex;align-items:center;gap:8px">
-            <label style="font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap">Valor da Sessão:</label>
-            <input type="number" id="valor-contrato-${c.id}" value="${c.valor_sessao || ''}"
-              placeholder="0,00" min="0" step="0.01"
-              style="width:110px;padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
-            <button class="btn btn-primary btn-sm" onclick="salvarValorContrato(${c.id})">Salvar</button>
-          </div>
         </div>
       </td>
     </tr>
