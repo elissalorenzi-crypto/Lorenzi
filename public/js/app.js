@@ -1216,7 +1216,13 @@ async function verDetalhePaciente(id) {
     <div style="display:flex;gap:12px;flex-wrap:wrap">
       <button class="btn btn-primary" onclick="editPaciente(${p.id})">✏️ Editar Dados</button>
       <button class="btn btn-lavender" onclick="navigate('prontuarios');setTimeout(()=>{document.getElementById('pront-paciente-select').value=${p.id};loadProntuariosSection();},100)">📋 Ver Prontuários</button>
-      ${p.total_sessoes ? `<button class="btn btn-sage" onclick="abrirModalSerie(${p.id},${p.sessao_atual||1},${p.total_sessoes},${p.valor_sessao||0})">📅 Criar sessões em série</button>` : ''}
+      ${(() => {
+        if (!p.total_sessoes) return '';
+        const ultima = [...ags].sort((a,b) => (b.data+b.hora).localeCompare(a.data+a.hora))[0];
+        const uData  = ultima ? ultima.data : '';
+        const uHora  = ultima ? ultima.hora : '08:00';
+        return `<button class="btn btn-sage" onclick="abrirModalSerie(${p.id},${p.sessao_atual||1},${p.total_sessoes},${p.valor_sessao||0},'${uData}','${uHora}')">📅 Criar sessões em série</button>`;
+      })()}
       <button class="btn btn-ghost" style="color:var(--red);border-color:var(--red)" onclick="limparSessoesFuturas(${p.id},'${(p.apelido||p.nome.split(' ')[0]).replace(/'/g,"\\'")}')">🗑 Cancelar série</button>
       <button class="btn btn-ghost" style="color:var(--sage);border-color:var(--sage)" onclick="restaurarSessoesFuturas(${p.id},'${(p.apelido||p.nome.split(' ')[0]).replace(/'/g,"\\'")}')">↩ Restaurar série</button>
     </div>
@@ -1243,10 +1249,16 @@ async function restaurarSessoesFuturas(pacienteId, nome) {
   verDetalhePaciente(pacienteId);
 }
 
-async function abrirModalSerie(pacienteId, sessaoAtual, totalSessoes, valorSessao) {
+async function abrirModalSerie(pacienteId, sessaoAtual, totalSessoes, valorSessao, ultimaData = '', ultimaHora = '08:00') {
   const restantes = Math.max(1, totalSessoes - sessaoAtual + 1);
+  // Calcula próxima ocorrência do mesmo dia da semana da última sessão
   const proximaData = (() => {
-    const d = new Date(); d.setDate(d.getDate() + (7 - d.getDay()) % 7 || 7);
+    const base = ultimaData ? new Date(ultimaData + 'T12:00:00') : null;
+    const dow   = base ? base.getDay() : 1; // segunda por padrão
+    const hoje  = new Date();
+    const d     = new Date(hoje);
+    d.setDate(d.getDate() + 1); // começa amanhã
+    while (d.getDay() !== dow) d.setDate(d.getDate() + 1);
     return d.toISOString().slice(0, 10);
   })();
   const html = `
@@ -1258,7 +1270,7 @@ async function abrirModalSerie(pacienteId, sessaoAtual, totalSessoes, valorSessa
         </div>
         <div class="form-group">
           <label>Horário</label>
-          <input type="time" id="serie-hora" value="08:00">
+          <input type="time" id="serie-hora" value="${ultimaHora}">
         </div>
       </div>
       <div class="form-row">
