@@ -219,6 +219,13 @@ function badgeStatus(s) {
   return `<span class="badge badge-${s}">${STATUS_LABEL[s] || s}</span>`;
 }
 
+// Retorna { s, total, faltam } calculando sessão progressiva pelas futuras agendadas
+function calcSessao(a) {
+  if (!a.paciente_total_sessoes || !a.paciente_sessao_atual) return null;
+  const s = a.paciente_sessao_atual + (a.sessao_offset || 0);
+  return { s, total: a.paciente_total_sessoes, faltam: Math.max(0, a.paciente_total_sessoes - s) };
+}
+
 function getSegundaFeira(ref) {
   const d = new Date(ref + 'T12:00:00');
   const dow = d.getDay();
@@ -458,7 +465,7 @@ function renderAgendaGrid() {
                     <div class="appt-hora">${a.hora}</div>
                     <div class="appt-nome">${a.paciente_nome || 'Sem cliente'}</div>
                     <div class="appt-tipo">${TIPO_LABEL[a.tipo]||a.tipo}</div>
-                    ${a.paciente_sessao_atual && a.paciente_total_sessoes ? `<div class="appt-sessao">S${a.paciente_sessao_atual}/${a.paciente_total_sessoes} · faltam ${Math.max(0,a.paciente_total_sessoes-a.paciente_sessao_atual)}</div>` : ''}
+                    ${(() => { const si = calcSessao(a); return si ? `<div class="appt-sessao">S${si.s}/${si.total} · faltam ${si.faltam}</div>` : ''; })()}
                   </div>
                   <div class="appt-actions">
                     <button class="appt-btn appt-btn-ok"   onclick="marcarRealizado(${a.id})"       title="Finalizar">✓</button>
@@ -493,7 +500,7 @@ function _renderAgendaRow(a) { return `
     <tr>
       <td>${fmtData(a.data)}</td>
       <td><strong>${a.hora}</strong></td>
-      <td>${a.paciente_nome || '<span class="text-muted">—</span>'}</td>
+      <td>${a.paciente_nome || '<span class="text-muted">—</span>'}${(() => { const si = calcSessao(a); return si ? ` <span class="hor-sessao" style="vertical-align:middle">S${si.s}/${si.total}</span>` : ''; })()}</td>
       <td>${TIPO_LABEL[a.tipo]||a.tipo}</td>
       <td>${badgeStatus(a.status)}</td>
       <td class="text-right fw-bold">${BRL(a.valor)}</td>
@@ -621,8 +628,8 @@ function renderAgendaHorario() {
              </div>
            </div>`
         : `<button class="appt-btn appt-btn-zoom" onclick="gerarZoom(${a.id})" title="Zoom">📹</button>`;
-      const sessaoTag = a.paciente_sessao_atual && a.paciente_total_sessoes
-        ? `<span class="hor-sessao">S${a.paciente_sessao_atual}/${a.paciente_total_sessoes}</span>` : '';
+      const _si = calcSessao(a);
+      const sessaoTag = _si ? `<span class="hor-sessao">S${_si.s}/${_si.total}</span>` : '';
       const bloco = `<div class="hor-appt ${sc}">
         <span class="hor-nome">${a.paciente_nome || '—'}${duplo}</span>${sessaoTag}
         <div class="hor-actions">

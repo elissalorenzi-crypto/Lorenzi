@@ -446,8 +446,21 @@ app.get('/api/agenda-publica', (req, res) => {
   for (let m = 480; m <= 600; m += 60) baseSlots.push(fromMin(m));  // 08:00–10:00 horas cheias
   for (let m = 840; m <= 1200; m += 60) baseSlots.push(fromMin(m)); // 14:00–20:00
 
+  const hoje = new Date().toISOString().slice(0, 10);
   const existentes = db.getAgendamentos({ data_de: dias[0], data_ate: dias[dias.length - 1] })
     .filter(a => ['agendado', 'confirmado', 'realizado'].includes(a.status));
+
+  // Calcula rank futuro por paciente para sessao_calculada progressiva
+  const futurosPorPaciente = {};
+  const existentesOrdenados = existentes
+    .filter(a => a.data >= hoje && ['agendado','confirmado'].includes(a.status))
+    .sort((a, b) => (a.data + a.hora).localeCompare(b.data + b.hora));
+  const sessaoRank = new Map(); // ag.id → rank
+  for (const a of existentesOrdenados) {
+    const pid = a.paciente_id;
+    if (futurosPorPaciente[pid] === undefined) futurosPorPaciente[pid] = 0;
+    sessaoRank.set(a.id, futurosPorPaciente[pid]++);
+  }
 
   const bloqueios = [
     [cfg.bloqueio_inicio  || '', cfg.bloqueio_fim  || ''],
@@ -469,10 +482,14 @@ app.get('/api/agenda-publica', (req, res) => {
           const am = toMin(a.hora), af = am + duracao;
           return slotMin < af && am < slotFim;
         });
+        const sessaoBase  = ag ? (ag.paciente_sessao_atual  || null) : null;
+        const totalSessoes = ag ? (ag.paciente_total_sessoes || null) : null;
+        const rank         = ag ? (sessaoRank.get(ag.id) ?? null) : null;
+        const sessaoCalc   = sessaoBase !== null && rank !== null ? sessaoBase + rank : sessaoBase;
         return {
           hora, livre: !ag,
-          sessao_atual:   ag ? (ag.paciente_sessao_atual  || null) : null,
-          total_sessoes:  ag ? (ag.paciente_total_sessoes || null) : null,
+          sessao_calculada: sessaoCalc,
+          total_sessoes:    totalSessoes,
         };
       })
   }));

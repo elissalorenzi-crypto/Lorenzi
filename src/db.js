@@ -309,7 +309,14 @@ const getAgendamentos = (filtros = {}) => {
   let sql = `
     SELECT a.*, p.nome as paciente_nome, p.apelido as paciente_apelido, p.whatsapp as paciente_whatsapp,
            p.sessao_atual as paciente_sessao_atual, p.total_sessoes as paciente_total_sessoes,
-           p.nota_fiscal as paciente_nota_fiscal
+           p.nota_fiscal as paciente_nota_fiscal,
+           (SELECT COUNT(*) FROM agendamentos a2
+            WHERE a2.paciente_id = a.paciente_id
+              AND a2.id != a.id
+              AND a2.status IN ('agendado','confirmado')
+              AND (a2.data < a.data OR (a2.data = a.data AND a2.hora < a.hora))
+              AND a2.data >= date('now','localtime')
+           ) AS sessao_offset
     FROM agendamentos a
     LEFT JOIN pacientes p ON p.id = a.paciente_id
     WHERE 1=1
@@ -328,7 +335,14 @@ const getAgendamentoById = (id) =>
   db.prepare(`
     SELECT a.*, p.nome as paciente_nome, p.apelido as paciente_apelido, p.whatsapp as paciente_whatsapp,
            p.sessao_atual as paciente_sessao_atual, p.total_sessoes as paciente_total_sessoes,
-           p.nota_fiscal as paciente_nota_fiscal
+           p.nota_fiscal as paciente_nota_fiscal,
+           (SELECT COUNT(*) FROM agendamentos a2
+            WHERE a2.paciente_id = a.paciente_id
+              AND a2.id != a.id
+              AND a2.status IN ('agendado','confirmado')
+              AND (a2.data < a.data OR (a2.data = a.data AND a2.hora < a.hora))
+              AND a2.data >= date('now','localtime')
+           ) AS sessao_offset
     FROM agendamentos a LEFT JOIN pacientes p ON p.id = a.paciente_id
     WHERE a.id=?
   `).get(id);

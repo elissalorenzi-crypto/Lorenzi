@@ -363,8 +363,8 @@ function renderGrade(data) {
       if (!s) return `<td class="grade-cell${domCl}"></td>`;
 
       if (past) {
-        const badgeSessao = s.sessao_atual && s.total_sessoes
-          ? `<span class="sessao-badge">S${s.sessao_atual}/${s.total_sessoes}</span>` : '';
+        const badgeSessao = s.sessao_calculada && s.total_sessoes
+          ? `<span class="sessao-badge">S${s.sessao_calculada}/${s.total_sessoes}</span>` : '';
         return `<td class="grade-cell passado${domCl}"><div class="slot-ocupado-wrap">
           ${badgeSessao}
           <div class="slot-ocupado-inner">
@@ -375,8 +375,8 @@ function renderGrade(data) {
       }
 
       if (!s.livre) {
-        const badgeSessao = s.sessao_atual && s.total_sessoes
-          ? `<span class="sessao-badge">S${s.sessao_atual}/${s.total_sessoes}</span>` : '';
+        const badgeSessao = s.sessao_calculada && s.total_sessoes
+          ? `<span class="sessao-badge">S${s.sessao_calculada}/${s.total_sessoes}</span>` : '';
         return `<td class="grade-cell${domCl}"><div class="slot-ocupado-wrap">
           ${badgeSessao}
           <div class="slot-ocupado-inner">
