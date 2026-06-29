@@ -115,6 +115,9 @@
     }
     .blur-nome { font-size:11px; font-weight:800; color:#5a4a42; white-space:nowrap; overflow:hidden; }
     .blur-hora { font-size:9px; color:#7a6a62; font-weight:600; }
+    .sessao-badge { position:absolute; top:2px; right:4px; font-size:9px; font-weight:800;
+      color:#4A3728; background:rgba(196,149,106,.35); border-radius:5px; padding:1px 4px;
+      z-index:2; pointer-events:none; }
     .slot-ocupado-wrap::after {
       content:''; position:absolute; inset:0;
       background:rgba(255,255,255,.15);
@@ -360,7 +363,10 @@ function renderGrade(data) {
       if (!s) return `<td class="grade-cell${domCl}"></td>`;
 
       if (past) {
+        const badgeSessao = s.sessao_atual && s.total_sessoes
+          ? `<span class="sessao-badge">S${s.sessao_atual}/${s.total_sessoes}</span>` : '';
         return `<td class="grade-cell passado${domCl}"><div class="slot-ocupado-wrap">
+          ${badgeSessao}
           <div class="slot-ocupado-inner">
             <span class="blur-nome">${nomeBlur(s.seed)}</span>
             <span class="blur-hora">${t}</span>
@@ -369,7 +375,10 @@ function renderGrade(data) {
       }
 
       if (!s.livre) {
+        const badgeSessao = s.sessao_atual && s.total_sessoes
+          ? `<span class="sessao-badge">S${s.sessao_atual}/${s.total_sessoes}</span>` : '';
         return `<td class="grade-cell${domCl}"><div class="slot-ocupado-wrap">
+          ${badgeSessao}
           <div class="slot-ocupado-inner">
             <span class="blur-nome">${nomeBlur(s.seed)}</span>
             <span class="blur-hora">${t}</span>

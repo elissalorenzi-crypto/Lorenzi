@@ -464,12 +464,16 @@ app.get('/api/agenda-publica', (req, res) => {
       })
       .map(hora => {
         const slotMin = toMin(hora), slotFim = slotMin + duracao;
-        const ocupado = existentes.some(a => {
+        const ag = existentes.find(a => {
           if (a.data !== data) return false;
           const am = toMin(a.hora), af = am + duracao;
           return slotMin < af && am < slotFim;
         });
-        return { hora, livre: !ocupado };
+        return {
+          hora, livre: !ag,
+          sessao_atual:   ag ? (ag.paciente_sessao_atual  || null) : null,
+          total_sessoes:  ag ? (ag.paciente_total_sessoes || null) : null,
+        };
       })
   }));
 
