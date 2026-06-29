@@ -1249,6 +1249,62 @@ async function restaurarSessoesFuturas(pacienteId, nome) {
   verDetalhePaciente(pacienteId);
 }
 
+// ── Calendário inline para série ─────────────────────────────
+let _serieCalMes = null; // 'YYYY-MM'
+
+function serieCalRender(sel) {
+  const el = document.getElementById('serie-cal');
+  if (!el) return;
+  const hoje = HOJE();
+  const selDate = sel || document.getElementById('serie-data')?.value || hoje;
+  if (!_serieCalMes) _serieCalMes = selDate.slice(0, 7);
+  const [ano, mes] = _serieCalMes.split('-').map(Number);
+  const primeiroDia = new Date(ano, mes - 1, 1).getDay();
+  const diasNoMes   = new Date(ano, mes, 0).getDate();
+  const MESES_CAL   = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const DIAS_CAL    = ['D','S','T','Q','Q','S','S'];
+
+  let html = `
+    <div style="background:var(--plum);color:#fff;padding:8px 12px;display:flex;align-items:center;justify-content:space-between">
+      <button onclick="serieCalNav(-1)" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;padding:0 6px">‹</button>
+      <span style="font-size:13px;font-weight:700">${MESES_CAL[mes-1]} ${ano}</span>
+      <button onclick="serieCalNav(1)"  style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;padding:0 6px">›</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);background:#f5eff8">
+      ${DIAS_CAL.map(d => `<div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px 0">${d}</div>`).join('')}
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border);padding:1px">
+  `;
+  // células vazias antes do 1º dia
+  for (let i = 0; i < primeiroDia; i++) html += `<div style="background:#fff;padding:5px"></div>`;
+  for (let dia = 1; dia <= diasNoMes; dia++) {
+    const isoDate = `${ano}-${String(mes).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+    const passado = isoDate < hoje;
+    const selecionado = isoDate === selDate;
+    const bg    = selecionado ? 'var(--rose)' : passado ? '#f5f5f5' : '#fff';
+    const color = selecionado ? '#fff'        : passado ? '#bbb'    : 'var(--plum)';
+    const cursor = passado ? 'default' : 'pointer';
+    const fw = selecionado ? '800' : '500';
+    html += `<div onclick="${passado ? '' : `serieCalSel('${isoDate}')`}"
+      style="background:${bg};color:${color};text-align:center;padding:6px 2px;font-size:12px;font-weight:${fw};cursor:${cursor};border-radius:4px">${dia}</div>`;
+  }
+  html += `</div>`;
+  el.innerHTML = html;
+}
+
+function serieCalNav(delta) {
+  const [ano, mes] = _serieCalMes.split('-').map(Number);
+  const d = new Date(ano, mes - 1 + delta, 1);
+  _serieCalMes = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  serieCalRender(document.getElementById('serie-data')?.value);
+}
+
+function serieCalSel(iso) {
+  const inp = document.getElementById('serie-data');
+  if (inp) inp.value = iso;
+  serieCalRender(iso);
+}
+
 async function abrirModalSerie(pacienteId, sessaoAtual, totalSessoes, valorSessao, ultimaData = '', ultimaHora = '08:00') {
   const restantes = Math.max(1, totalSessoes - sessaoAtual + 1);
   // Calcula próxima ocorrência do mesmo dia da semana da última sessão
@@ -1263,30 +1319,36 @@ async function abrirModalSerie(pacienteId, sessaoAtual, totalSessoes, valorSessa
   })();
   const html = `
     <div style="display:flex;flex-direction:column;gap:16px">
-      <div class="form-row">
-        <div class="form-group">
-          <label>Data da 1ª sessão da série</label>
-          <input type="date" id="serie-data" value="${proximaData}">
+      <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
+        <!-- Calendário visual -->
+        <div>
+          <label style="font-size:12px;font-weight:700;color:var(--muted);display:block;margin-bottom:6px">Data da 1ª sessão</label>
+          <div id="serie-cal" style="border:1.5px solid var(--border);border-radius:12px;overflow:hidden;min-width:224px"></div>
+          <input type="hidden" id="serie-data" value="${proximaData}">
         </div>
-        <div class="form-group">
-          <label>Horário</label>
-          <input type="time" id="serie-hora" value="${ultimaHora}">
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Quantidade de sessões a criar</label>
-          <input type="number" id="serie-qtd" value="${restantes}" min="1" max="${totalSessoes}" step="1">
-          <small class="text-muted">Sessão ${sessaoAtual} → ${totalSessoes} (${restantes} restantes)</small>
-        </div>
-        <div class="form-group">
-          <label>Valor por sessão (R$)</label>
-          <input type="number" id="serie-valor" value="${valorSessao||0}" min="0" step="10">
+        <!-- Opções -->
+        <div style="display:flex;flex-direction:column;gap:12px;flex:1;min-width:180px">
+          <div class="form-group" style="margin:0">
+            <label>Horário</label>
+            <input type="time" id="serie-hora" value="${ultimaHora}" style="font-size:18px;padding:8px 12px">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Qtd. de sessões a criar</label>
+            <input type="number" id="serie-qtd" value="${restantes}" min="1" max="${totalSessoes}" step="1">
+            <small class="text-muted">Sessão ${sessaoAtual} → ${totalSessoes} (${restantes} restantes)</small>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Valor por sessão (R$)</label>
+            <input type="number" id="serie-valor" value="${valorSessao||0}" min="0" step="10">
+          </div>
         </div>
       </div>
       <p class="text-muted" style="font-size:12px;margin:0">As sessões serão criadas semanalmente (1 por semana) a partir da data escolhida.</p>
     </div>
   `;
+  // Renderiza calendário após inserção no DOM
+  _serieCalMes = proximaData.slice(0, 7);
+  setTimeout(() => serieCalRender(proximaData), 50);
   openModal('📅 Criar sessões em série', html, async () => {
     const data_inicio = document.getElementById('serie-data').value;
     const hora        = document.getElementById('serie-hora').value;
