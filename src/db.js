@@ -33,6 +33,8 @@ const migrations = [
   "ALTER TABLE pacientes ADD COLUMN nf_complemento TEXT",
   "ALTER TABLE contratos ADD COLUMN end_complemento TEXT",
   "ALTER TABLE convites ADD COLUMN hora_inicio TEXT",
+  "ALTER TABLE pacientes ADD COLUMN sessao_atual INTEGER DEFAULT 1",
+  "ALTER TABLE pacientes ADD COLUMN total_sessoes INTEGER DEFAULT 12",
 ];
 for (const m of migrations) {
   try { db.exec(m); } catch(_) {}
@@ -280,7 +282,8 @@ const updatePaciente = (id, data) =>
       endereco=?, ocupacao=?, convenio=?, num_convenio=?, responsavel=?,
       tel_responsavel=?, queixa_principal=?, encaminhamento=?, valor_sessao=?, obs=?,
       ativo=?, nota_fiscal=?, forma_pgto=?, frequencia=?, freq_pgto=?,
-      nf_logradouro=?, nf_numero=?, nf_complemento=?, nf_bairro=?, nf_cidade=?, nf_uf=?, nf_cep=?
+      nf_logradouro=?, nf_numero=?, nf_complemento=?, nf_bairro=?, nf_cidade=?, nf_uf=?, nf_cep=?,
+      sessao_atual=?, total_sessoes=?
     WHERE id=?
   `).run(
     data.nome, data.apelido || null, data.cpf || null, data.data_nascimento || null, data.sexo || 'F',
@@ -292,6 +295,7 @@ const updatePaciente = (id, data) =>
     data.ativo ?? 1, data.nota_fiscal || 'nao', data.forma_pgto || null, data.frequencia || null, data.freq_pgto || null,
     data.nf_logradouro || null, data.nf_numero || null, data.nf_complemento || null,
     data.nf_bairro || null, data.nf_cidade || null, data.nf_uf || null, data.nf_cep || null,
+    data.sessao_atual || 1, data.total_sessoes || 12,
     id
   );
 
@@ -303,7 +307,9 @@ const deletePaciente = (id) =>
 // ============================================================
 const getAgendamentos = (filtros = {}) => {
   let sql = `
-    SELECT a.*, p.nome as paciente_nome, p.apelido as paciente_apelido, p.whatsapp as paciente_whatsapp
+    SELECT a.*, p.nome as paciente_nome, p.apelido as paciente_apelido, p.whatsapp as paciente_whatsapp,
+           p.sessao_atual as paciente_sessao_atual, p.total_sessoes as paciente_total_sessoes,
+           p.nota_fiscal as paciente_nota_fiscal
     FROM agendamentos a
     LEFT JOIN pacientes p ON p.id = a.paciente_id
     WHERE 1=1
@@ -320,7 +326,9 @@ const getAgendamentos = (filtros = {}) => {
 
 const getAgendamentoById = (id) =>
   db.prepare(`
-    SELECT a.*, p.nome as paciente_nome, p.apelido as paciente_apelido, p.whatsapp as paciente_whatsapp
+    SELECT a.*, p.nome as paciente_nome, p.apelido as paciente_apelido, p.whatsapp as paciente_whatsapp,
+           p.sessao_atual as paciente_sessao_atual, p.total_sessoes as paciente_total_sessoes,
+           p.nota_fiscal as paciente_nota_fiscal
     FROM agendamentos a LEFT JOIN pacientes p ON p.id = a.paciente_id
     WHERE a.id=?
   `).get(id);

@@ -428,6 +428,7 @@ function renderAgendaGrid() {
                     <div class="appt-hora">${a.hora}</div>
                     <div class="appt-nome">${a.paciente_nome || 'Sem cliente'}</div>
                     <div class="appt-tipo">${TIPO_LABEL[a.tipo]||a.tipo}</div>
+                    ${a.paciente_sessao_atual && a.paciente_total_sessoes ? `<div class="appt-sessao">S${a.paciente_sessao_atual}/${a.paciente_total_sessoes} · faltam ${Math.max(0,a.paciente_total_sessoes-a.paciente_sessao_atual)}</div>` : ''}
                   </div>
                   <div class="appt-actions">
                     <button class="appt-btn appt-btn-ok"   onclick="marcarRealizado(${a.id})"       title="Finalizar">✓</button>
@@ -590,8 +591,10 @@ function renderAgendaHorario() {
              </div>
            </div>`
         : `<button class="appt-btn appt-btn-zoom" onclick="gerarZoom(${a.id})" title="Zoom">📹</button>`;
+      const sessaoTag = a.paciente_sessao_atual && a.paciente_total_sessoes
+        ? `<span class="hor-sessao">S${a.paciente_sessao_atual}/${a.paciente_total_sessoes}</span>` : '';
       const bloco = `<div class="hor-appt ${sc}">
-        <span class="hor-nome">${a.paciente_nome || '—'}${duplo}</span>
+        <span class="hor-nome">${a.paciente_nome || '—'}${duplo}</span>${sessaoTag}
         <div class="hor-actions">
           ${zoomBtn}
           <button class="appt-btn appt-btn-ok"  onclick="marcarRealizado(${a.id})"       title="Finalizar">✓</button>
@@ -1275,6 +1278,14 @@ function pacienteFormHtml(p = {}) {
         <input type="number" id="fp-valor" value="${p.valor_sessao||_config.valor_sessao_padrao||180}" min="0" step="10">
       </div>
       <div class="form-group">
+        <label>Sessão atual (nº)</label>
+        <input type="number" id="fp-sessao-atual" value="${p.sessao_atual||1}" min="1" max="12" step="1">
+      </div>
+      <div class="form-group">
+        <label>Total de sessões</label>
+        <input type="number" id="fp-total-sessoes" value="${p.total_sessoes||12}" min="1" max="12" step="1">
+      </div>
+      <div class="form-group">
         <label>Frequência</label>
         <select id="fp-freq">
           <option value="">—</option>
@@ -1356,7 +1367,9 @@ function openModalPaciente(p = {}) {
       forma_pgto:      document.getElementById('fp-forma').value     || null,
       frequencia:      document.getElementById('fp-freq').value      || null,
       freq_pgto:       document.getElementById('fp-freqpgto').value  || null,
-      nota_fiscal:     p.nota_fiscal || 'nao'
+      nota_fiscal:     p.nota_fiscal || 'nao',
+      sessao_atual:    parseInt(document.getElementById('fp-sessao-atual').value) || 1,
+      total_sessoes:   parseInt(document.getElementById('fp-total-sessoes').value) || 12
     };
     if (!body.nome) return toast('Nome é obrigatório', 'error') || false;
     try {

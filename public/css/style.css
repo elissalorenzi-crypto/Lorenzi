@@ -502,7 +502,8 @@ tbody tr:hover { background: var(--rose-pale); }
 .appt-chip.confirmado .appt-hora { color: #2a6090; }
 .appt-chip.realizado  .appt-hora { color: var(--sage); }
 .appt-nome  { font-weight: 600; color: var(--plum); line-height: 1.2; }
-.appt-tipo  { font-size: 10.5px; color: var(--muted); }
+.appt-tipo   { font-size: 10.5px; color: var(--muted); }
+.appt-sessao { font-size: 10px; color: var(--rose); font-weight: 700; margin-top: 2px; }
 
 /* ── APPT ACTIONS (botões rápidos no chip) ───────────────── */
 .appt-actions {
@@ -919,7 +920,9 @@ tbody tr:hover { background: var(--rose-pale); }
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   width: 100%;
 }
-.hor-appt.realizado  .hor-nome { color: #fff; font-weight: 700; }
+.hor-sessao { font-size: 9.5px; color: var(--rose); font-weight: 700; white-space: nowrap; margin-left: 4px; flex-shrink: 0; }
+.hor-appt.realizado  .hor-nome   { color: #fff; font-weight: 700; }
+.hor-appt.realizado  .hor-sessao { color: rgba(255,255,255,.85); }
 .hor-appt.realizado  .hor-actions .appt-btn { color: #fff; opacity: .85; }
 .hor-appt.realizado  .hor-actions .appt-btn:hover { opacity: 1; }
 .hor-appt.confirmado .hor-nome { color: #2a6090; }
