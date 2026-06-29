@@ -458,18 +458,28 @@ const getDashboard = (hoje) => {
   `).all(hoje);
 
   // Aniversariantes do mês
-  const mesBD = hoje.slice(5, 7);
+  const mesBD  = hoje.slice(5, 7);
+  const diaBD  = hoje.slice(8, 10);
   const aniversariantes = db.prepare(`
-    SELECT nome, data_nascimento, telefone, whatsapp
+    SELECT nome, apelido, data_nascimento, telefone, whatsapp
     FROM pacientes
     WHERE ativo=1 AND strftime('%m', data_nascimento) = ?
     ORDER BY strftime('%d', data_nascimento)
   `).all(mesBD);
 
+  // Aniversariantes de HOJE (para pop-up)
+  const aniversariantesHoje = db.prepare(`
+    SELECT nome, apelido, data_nascimento, whatsapp
+    FROM pacientes
+    WHERE ativo=1
+      AND strftime('%m', data_nascimento) = ?
+      AND strftime('%d', data_nascimento) = ?
+  `).all(mesBD, diaBD);
+
   return {
     totalPacientes, sessoesMes, faturamentoMes,
     recebidoMes, pendenteMes,
-    agendaHoje, proximosDias, sessoesGraph, aniversariantes
+    agendaHoje, proximosDias, sessoesGraph, aniversariantes, aniversariantesHoje
   };
 };
 

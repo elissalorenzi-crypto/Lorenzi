@@ -336,6 +336,37 @@ async function loadDashboard() {
     }).join('');
   }
 
+  // Pop-up aniversariantes de HOJE
+  if (data.aniversariantesHoje && data.aniversariantesHoje.length) {
+    const bdayHoje = data.aniversariantesHoje;
+    const nomes = bdayHoje.map(p => p.apelido || p.nome.split(' ')[0]).join(', ');
+    const plural = bdayHoje.length > 1;
+    const waLinks = bdayHoje
+      .filter(p => p.whatsapp)
+      .map(p => {
+        const primeiroNome = p.apelido || p.nome.split(' ')[0];
+        const msg = encodeURIComponent(`Olá, ${primeiroNome}! 🎉 Desejo a você um feliz aniversário! Que este novo ano traga muitas alegrias e conquistas. 🎂`);
+        return `<a href="https://wa.me/${toWaNum(p.whatsapp)}?text=${msg}" target="_blank" class="btn btn-sage" style="gap:6px;width:100%;justify-content:center">💬 Enviar parabéns para ${primeiroNome}</a>`;
+      }).join('');
+    const popup = document.createElement('div');
+    popup.id = 'bday-popup-overlay';
+    popup.style.cssText = 'position:fixed;inset:0;background:rgba(74,55,40,.45);z-index:3000;display:flex;align-items:center;justify-content:center';
+    popup.innerHTML = `
+      <div style="background:#fff;border-radius:20px;padding:36px 32px;max-width:380px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(74,55,40,.35);position:relative">
+        <div style="font-size:52px;margin-bottom:8px">🎂</div>
+        <h3 style="font-size:20px;font-weight:800;color:var(--plum);margin:0 0 6px">Aniversário${plural?'s':''} hoje!</h3>
+        <p style="font-size:15px;color:var(--rose);font-weight:700;margin:0 0 18px">${nomes}</p>
+        <p style="font-size:13px;color:var(--muted);margin:0 0 22px">${plural ? 'Seus clientes fazem' : 'Seu cliente faz'} aniversário hoje! 🎉</p>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          ${waLinks}
+          <button onclick="document.getElementById('bday-popup-overlay').remove()" class="btn btn-outline" style="width:100%;justify-content:center">Fechar</button>
+        </div>
+      </div>
+    `;
+    popup.addEventListener('click', e => { if (e.target === popup) popup.remove(); });
+    document.body.appendChild(popup);
+  }
+
   // Aniversariantes
   const bdayEl = document.getElementById('dash-bday');
   if (!data.aniversariantes.length) {
