@@ -363,7 +363,6 @@ async function loadDashboard() {
         </div>
       </div>
     `;
-    popup.addEventListener('click', e => { if (e.target === popup) popup.remove(); });
     document.body.appendChild(popup);
   }
 
