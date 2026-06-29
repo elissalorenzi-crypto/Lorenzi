@@ -954,7 +954,11 @@ const resetTarefasDiarias = (hoje) => {
 };
 
 const deletarSessoesFuturas = (pacienteId, hoje) =>
-  db.prepare("DELETE FROM agendamentos WHERE paciente_id=? AND status='agendado' AND data >= ?")
+  db.prepare("UPDATE agendamentos SET status='cancelado' WHERE paciente_id=? AND status='agendado' AND data >= ?")
+    .run(pacienteId, hoje).changes;
+
+const restaurarSessoesFuturas = (pacienteId, hoje) =>
+  db.prepare("UPDATE agendamentos SET status='agendado' WHERE paciente_id=? AND status='cancelado' AND data >= ?")
     .run(pacienteId, hoje).changes;
 
 module.exports = {
@@ -970,5 +974,5 @@ module.exports = {
   createNotificacao, getNotificacoes, marcarNotificacaoLida, getAgendamentoByZoomMeetingId,
   getNfseData,
   getTarefas, createTarefa, updateTarefa, deleteTarefa, resetTarefasDiarias,
-  deletarSessoesFuturas
+  deletarSessoesFuturas, restaurarSessoesFuturas
 };

@@ -192,8 +192,17 @@ app.delete('/api/pacientes/:id/sessoes-futuras', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
   try {
     const hoje = new Date().toISOString().slice(0, 10);
-    const deletados = db.deletarSessoesFuturas(req.params.id, hoje);
-    res.json({ deletados });
+    const cancelados = db.deletarSessoesFuturas(req.params.id, hoje);
+    res.json({ cancelados });
+  } catch(e) { erro(res, e); }
+});
+
+app.post('/api/pacientes/:id/restaurar-sessoes', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  try {
+    const hoje = new Date().toISOString().slice(0, 10);
+    const restaurados = db.restaurarSessoesFuturas(req.params.id, hoje);
+    res.json({ restaurados });
   } catch(e) { erro(res, e); }
 });
 

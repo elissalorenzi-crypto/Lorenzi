@@ -1217,7 +1217,8 @@ async function verDetalhePaciente(id) {
       <button class="btn btn-primary" onclick="editPaciente(${p.id})">✏️ Editar Dados</button>
       <button class="btn btn-lavender" onclick="navigate('prontuarios');setTimeout(()=>{document.getElementById('pront-paciente-select').value=${p.id};loadProntuariosSection();},100)">📋 Ver Prontuários</button>
       ${p.total_sessoes ? `<button class="btn btn-sage" onclick="abrirModalSerie(${p.id},${p.sessao_atual||1},${p.total_sessoes},${p.valor_sessao||0})">📅 Criar sessões em série</button>` : ''}
-      <button class="btn btn-ghost" style="color:var(--red);border-color:var(--red)" onclick="limparSessoesFuturas(${p.id},'${(p.apelido||p.nome.split(' ')[0]).replace(/'/g,"\\'")}')">🗑 Limpar série</button>
+      <button class="btn btn-ghost" style="color:var(--red);border-color:var(--red)" onclick="limparSessoesFuturas(${p.id},'${(p.apelido||p.nome.split(' ')[0]).replace(/'/g,"\\'")}')">🗑 Cancelar série</button>
+      <button class="btn btn-ghost" style="color:var(--sage);border-color:var(--sage)" onclick="restaurarSessoesFuturas(${p.id},'${(p.apelido||p.nome.split(' ')[0]).replace(/'/g,"\\'")}')">↩ Restaurar série</button>
     </div>
   `;
 }
@@ -1228,9 +1229,17 @@ function voltarListaPacientes() {
 }
 
 async function limparSessoesFuturas(pacienteId, nome) {
-  if (!confirm(`Apagar todas as sessões futuras (status "agendado") de ${nome}?\n\nEsta ação não pode ser desfeita.`)) return;
+  if (!confirm(`Cancelar todas as sessões futuras agendadas de ${nome}?\n\nElas ficarão salvas com status "cancelado" e podem ser restauradas depois.`)) return;
   const r = await api('DELETE', `/pacientes/${pacienteId}/sessoes-futuras`);
-  toast(`${r.deletados} sessão(ões) removida(s)`);
+  toast(`${r.cancelados} sessão(ões) cancelada(s) — use "Restaurar série" para desfazer`);
+  verDetalhePaciente(pacienteId);
+}
+
+async function restaurarSessoesFuturas(pacienteId, nome) {
+  if (!confirm(`Restaurar sessões futuras canceladas de ${nome} para "agendado"?`)) return;
+  const r = await api('POST', `/pacientes/${pacienteId}/restaurar-sessoes`);
+  if (!r.restaurados) return toast('Nenhuma sessão cancelada encontrada para restaurar', 'error');
+  toast(`${r.restaurados} sessão(ões) restaurada(s)`);
   verDetalhePaciente(pacienteId);
 }
 
