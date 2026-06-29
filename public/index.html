@@ -588,6 +588,7 @@
           <div class="card-header">
             <span class="fin-drag-handle" title="Arrastar">⣿</span>
             <span class="card-title">💸 Pendências</span>
+            <input id="pend-busca" type="search" placeholder="Buscar cliente…" oninput="pendFiltrar()" style="margin-left:8px;padding:3px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;width:160px;outline:none">
             <button class="btn btn-sm" style="margin-left:8px;background:var(--sage);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer" onclick="dispararCobrancas()">📲 Cobrar selecionados</button>
             <button class="fin-expand-btn" onclick="finToggleExpand('pendencias')">⊞ Ampliar</button>
           </div>
@@ -681,6 +682,7 @@
           <div class="card-header">
             <span class="fin-drag-handle" title="Arrastar">⣿</span>
             <span class="card-title">Sessões Realizadas</span>
+            <input id="fin-lista-busca" type="search" placeholder="Buscar cliente…" oninput="finListaFiltrar()" style="margin-left:8px;padding:3px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;width:160px;outline:none">
             <button class="fin-expand-btn" onclick="finToggleExpand('realizadas')">⊟ Reduzir</button>
           </div>
           <div class="table-wrap">

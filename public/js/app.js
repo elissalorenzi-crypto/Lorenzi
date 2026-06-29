@@ -2890,13 +2890,14 @@ function _sortRender(tbodyId) {
     const ind = th.querySelector('.sort-ind');
     if (ind) ind.textContent = s.col === th.dataset.sortCol ? (s.asc ? ' ▲' : ' ▼') : '';
   });
-  const sorted = s.col ? [...s.dados].sort((a, b) => {
+  const base = s.dadosFiltrados || s.dados;
+  const sorted = s.col ? [...base].sort((a, b) => {
     let va = a[s.col] ?? '', vb = b[s.col] ?? '';
     const isNum = typeof va === 'number' || (va !== '' && !isNaN(Number(va)));
     if (isNum) { va = Number(va) || 0; vb = Number(vb) || 0; }
     else { va = String(va).toLowerCase(); vb = String(vb).toLowerCase(); }
     return va < vb ? (s.asc ? -1 : 1) : va > vb ? (s.asc ? 1 : -1) : 0;
-  }) : s.dados;
+  }) : [...base];
   document.getElementById(tbodyId).innerHTML = sorted.map((item, i) => s.renderFn(item, i)).join('');
 }
 
@@ -2943,6 +2944,16 @@ function pendOrdenar(col) {
   _pendRenderizar();
 }
 
+function pendFiltrar() { _pendRenderizar(); }
+
+function finListaFiltrar() {
+  const s = _sortState['fin-lista-tbody'];
+  if (!s) return;
+  const termo = (document.getElementById('fin-lista-busca')?.value || '').toLowerCase().trim();
+  s.dadosFiltrados = termo ? s.dados.filter(a => (a.paciente_nome || '').toLowerCase().includes(termo)) : null;
+  _sortRender('fin-lista-tbody');
+}
+
 function _pendRenderizar() {
   const pixKey     = _config?.chave_pix      || '';
   const pixKeyCnpj = _config?.chave_pix_cnpj || '';
@@ -2953,7 +2964,9 @@ function _pendRenderizar() {
     if (el) el.textContent = _pendSortCol === c ? (_pendSortAsc ? '▲' : '▼') : '';
   });
 
-  const sorted = [..._pendDados].sort((a, b) => {
+  const termoPend = (document.getElementById('pend-busca')?.value || '').toLowerCase().trim();
+  const dadosFiltrados = termoPend ? _pendDados.filter(a => (a.paciente_nome || '').toLowerCase().includes(termoPend)) : _pendDados;
+  const sorted = [...dadosFiltrados].sort((a, b) => {
     let va, vb;
     if (_pendSortCol === 'data')  { va = a.data; vb = b.data; }
     else if (_pendSortCol === 'nome')  { va = (a.paciente_nome||'').toLowerCase(); vb = (b.paciente_nome||'').toLowerCase(); }
