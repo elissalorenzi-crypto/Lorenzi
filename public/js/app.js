@@ -1082,7 +1082,7 @@ function _renderPacienteRow(p, i) {
         <div class="inline-actions">
           <button class="btn btn-outline btn-xs" onclick="verDetalhePaciente(${p.id})">👁</button>
           <button class="btn btn-outline btn-xs" onclick="editPaciente(${p.id})">✏️</button>
-          <button class="btn btn-outline btn-xs" title="Enviar Lista de Profissões" onclick="enviarListaProfissoes(${p.id},${JSON.stringify(p.nome)},${JSON.stringify(p.whatsapp||'')})">📋</button>
+          <button class="btn btn-outline btn-xs" title="Enviar Lista de Profissões" onclick="enviarListaProfissoes(${p.id})">📋</button>
           <button class="btn btn-ghost btn-xs" style="color:var(--red)" onclick="deletePacienteItem(${p.id})">🗑</button>
         </div>
       </td>
@@ -1101,9 +1101,11 @@ function renderPacientesTable(data) {
   _sortInit('pacientes-tbody', data, _renderPacienteRow, 'nome');
 }
 
-async function enviarListaProfissoes(id, nome, whatsapp) {
+async function enviarListaProfissoes(id) {
   try {
     const base = location.origin;
+    const p = await api('GET', `/pacientes/${id}`);
+    const nome = p.nome, whatsapp = p.whatsapp || '';
     const r = await api('POST', '/atividade-profissoes/link', { paciente_id: id });
     if (!r || !r.token) { toast('Erro ao gerar link', 'error'); return; }
     const url = base + '/atividade-profissoes/?t=' + r.token;
@@ -1256,7 +1258,7 @@ async function verDetalhePaciente(id) {
       })()}
       <button class="btn btn-ghost" style="color:var(--red);border-color:var(--red)" onclick="limparSessoesFuturas(${p.id},'${(p.apelido||p.nome.split(' ')[0]).replace(/'/g,"\\'")}')">🗑 Cancelar série</button>
       <button class="btn btn-ghost" style="color:var(--sage);border-color:var(--sage)" onclick="restaurarSessoesFuturas(${p.id},'${(p.apelido||p.nome.split(' ')[0]).replace(/'/g,"\\'")}')">↩ Restaurar série</button>
-      <button class="btn btn-outline" onclick="enviarListaProfissoes(${p.id},${JSON.stringify(p.nome)},${JSON.stringify(p.whatsapp||'')})">📋 Enviar Lista de Profissões</button>
+      <button class="btn btn-outline" onclick="enviarListaProfissoes(${p.id})">📋 Enviar Lista de Profissões</button>
     </div>
   `;
 
