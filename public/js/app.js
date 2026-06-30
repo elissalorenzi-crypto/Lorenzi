@@ -1082,6 +1082,7 @@ function _renderPacienteRow(p, i) {
         <div class="inline-actions">
           <button class="btn btn-outline btn-xs" onclick="verDetalhePaciente(${p.id})">👁</button>
           <button class="btn btn-outline btn-xs" onclick="editPaciente(${p.id})">✏️</button>
+          <button class="btn btn-outline btn-xs" title="Enviar Lista de Profissões" onclick="enviarListaProfissoes(${p.id},${JSON.stringify(p.nome)},${JSON.stringify(p.whatsapp||'')})">📋</button>
           <button class="btn btn-ghost btn-xs" style="color:var(--red)" onclick="deletePacienteItem(${p.id})">🗑</button>
         </div>
       </td>
@@ -1100,9 +1101,34 @@ function renderPacientesTable(data) {
   _sortInit('pacientes-tbody', data, _renderPacienteRow, 'nome');
 }
 
+async function enviarListaProfissoes(id, nome, whatsapp) {
+  const base = location.origin;
+  // Gera novo link
+  const r = await api('POST', '/atividade-profissoes/link', { paciente_id: id });
+  if (!r || !r.token) { toast('Erro ao gerar link', 'error'); return; }
+  const url = base + '/atividade-profissoes/?t=' + r.token;
+  const waNome = nome.split(' ')[0];
+  const waMsg = encodeURIComponent(`Olá, ${waNome}! 😊\nSegue o link da atividade de Orientação Profissional:\n${url}\n\nClique no link, explore as profissões e marque as que você gostaria de conhecer melhor. Qualquer dúvida me chame! 🌟`);
+  const waLink = whatsapp ? `https://wa.me/${toWaNum(whatsapp)}?text=${waMsg}` : '';
+
+  openModal('📋 Lista de Profissões — ' + nome, `
+    <p style="margin-bottom:12px;font-size:14px;color:#555">Link gerado para <strong>${nome}</strong>. Envie pelo WhatsApp ou copie o link.</p>
+    <div style="background:#f8f4ff;border:1.5px solid #d8b8ff;border-radius:8px;padding:10px 14px;font-size:12px;word-break:break-all;margin-bottom:14px;color:#5c35a0">${url}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="navigator.clipboard.writeText('${url}').then(function(){toast('Link copiado!')})">📋 Copiar link</button>
+      ${waLink ? `<a href="${waLink}" target="_blank" class="btn btn-primary" style="background:#25d366;border-color:#25d366;text-decoration:none">💬 Enviar pelo WhatsApp</a>` : '<span style="color:#999;font-size:13px">WhatsApp não cadastrado</span>'}
+    </div>
+    <hr style="margin:16px 0;border-color:#e0d0ff">
+    <p style="font-size:12px;color:#888">As respostas ficam salvas no sistema. Para ver, abra o perfil do aluno (botão 👁).</p>
+  `, null);
+}
+
 async function verDetalhePaciente(id) {
   const p = await api('GET', `/pacientes/${id}`);
-  const ags = await api('GET', `/pacientes/${id}/agendamentos`);
+  const [ags, respostas] = await Promise.all([
+    api('GET', `/pacientes/${id}/agendamentos`),
+    api('GET', `/atividade-profissoes/respostas?paciente_id=${id}`).catch(() => [])
+  ]);
 
   document.getElementById('pacientes-list-view').style.display = 'none';
   document.getElementById('pacientes-detail-view').style.display = '';
@@ -1213,6 +1239,8 @@ async function verDetalhePaciente(id) {
       </div>
     </div>
 
+    <div id="respostas-profissoes-${p.id}" style="margin-bottom:16px"></div>
+
     <div style="display:flex;gap:12px;flex-wrap:wrap">
       <button class="btn btn-primary" onclick="editPaciente(${p.id})">✏️ Editar Dados</button>
       <button class="btn btn-lavender" onclick="navigate('prontuarios');setTimeout(()=>{document.getElementById('pront-paciente-select').value=${p.id};loadProntuariosSection();},100)">📋 Ver Prontuários</button>
@@ -1225,8 +1253,33 @@ async function verDetalhePaciente(id) {
       })()}
       <button class="btn btn-ghost" style="color:var(--red);border-color:var(--red)" onclick="limparSessoesFuturas(${p.id},'${(p.apelido||p.nome.split(' ')[0]).replace(/'/g,"\\'")}')">🗑 Cancelar série</button>
       <button class="btn btn-ghost" style="color:var(--sage);border-color:var(--sage)" onclick="restaurarSessoesFuturas(${p.id},'${(p.apelido||p.nome.split(' ')[0]).replace(/'/g,"\\'")}')">↩ Restaurar série</button>
+      <button class="btn btn-outline" onclick="enviarListaProfissoes(${p.id},${JSON.stringify(p.nome)},${JSON.stringify(p.whatsapp||'')})">📋 Enviar Lista de Profissões</button>
     </div>
   `;
+
+  // Render respostas da atividade de profissões
+  const elResp = document.getElementById('respostas-profissoes-' + p.id);
+  if (elResp && respostas && respostas.length) {
+    const ultima = respostas[0];
+    const profs = ultima.profissoes || [];
+    const dt = ultima.created_at ? ultima.created_at.slice(0,10).split('-').reverse().join('/') : '';
+    elResp.innerHTML = `
+      <div class="card" style="border:2px solid #9c27b0">
+        <div class="card-body">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <strong style="color:#7b1fa2">📋 Lista de Profissões — Respostas (${dt})</strong>
+            <span style="font-size:12px;color:#888">${profs.length} marcadas · ${respostas.length} envio(s)</span>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            ${profs.map(mp => {
+              const nome = mp.split(' ').slice(0, mp.split(' ').findIndex(w => ['saúde','tec','eng','hum','art','neg','bio','ser','com','ani'].includes(w.toLowerCase())) || 99).join(' ') || mp;
+              return `<span style="background:#f3e5f5;color:#6a1b9a;padding:3px 10px;border-radius:12px;font-size:12px">${nome}</span>`;
+            }).join('')}
+          </div>
+          ${respostas.length > 1 ? `<p style="font-size:11px;color:#aaa;margin-top:8px">Mostrando resposta mais recente. Total: ${respostas.length} envios.</p>` : ''}
+        </div>
+      </div>`;
+  }
 }
 
 function voltarListaPacientes() {

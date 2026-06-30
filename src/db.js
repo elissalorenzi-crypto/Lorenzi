@@ -968,6 +968,54 @@ const restaurarSessoesFuturas = (pacienteId, hoje) =>
   db.prepare("UPDATE agendamentos SET status='agendado' WHERE paciente_id=? AND status='cancelado' AND data >= ?")
     .run(pacienteId, hoje).changes;
 
+// ============================================================
+// ATIVIDADE — LISTA DE PROFISSÕES
+// ============================================================
+db.exec(`
+  CREATE TABLE IF NOT EXISTS ativ_prof_links (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    token         TEXT NOT NULL UNIQUE,
+    paciente_id   INTEGER NOT NULL,
+    paciente_nome TEXT NOT NULL,
+    ativo         INTEGER DEFAULT 1,
+    created_at    TEXT DEFAULT (datetime('now','localtime')),
+    FOREIGN KEY (paciente_id) REFERENCES pacientes(id)
+  );
+  CREATE TABLE IF NOT EXISTS ativ_prof_respostas (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    token         TEXT NOT NULL,
+    paciente_id   INTEGER NOT NULL,
+    paciente_nome TEXT NOT NULL,
+    profissoes    TEXT NOT NULL,
+    created_at    TEXT DEFAULT (datetime('now','localtime'))
+  );
+`);
+
+const gerarLinkAtivProf = (paciente_id, paciente_nome) => {
+  const token = require('crypto').randomBytes(20).toString('hex');
+  db.prepare('INSERT INTO ativ_prof_links (token, paciente_id, paciente_nome) VALUES (?,?,?)').run(token, paciente_id, paciente_nome);
+  return token;
+};
+
+const getLinkAtivProf = (paciente_id) =>
+  db.prepare('SELECT * FROM ativ_prof_links WHERE paciente_id=? AND ativo=1 ORDER BY id DESC LIMIT 1').get(paciente_id);
+
+const getInfoAtivProf = (token) =>
+  db.prepare('SELECT * FROM ativ_prof_links WHERE token=? AND ativo=1').get(token);
+
+const salvarRespostaAtivProf = (token, profissoes) => {
+  const link = db.prepare('SELECT * FROM ativ_prof_links WHERE token=?').get(token);
+  if (!link) return null;
+  return rid(db.prepare('INSERT INTO ativ_prof_respostas (token, paciente_id, paciente_nome, profissoes) VALUES (?,?,?,?)').run(token, link.paciente_id, link.paciente_nome, JSON.stringify(profissoes)));
+};
+
+const getRespostasAtivProf = (paciente_id) => {
+  const rows = paciente_id
+    ? db.prepare('SELECT * FROM ativ_prof_respostas WHERE paciente_id=? ORDER BY created_at DESC').all(paciente_id)
+    : db.prepare('SELECT * FROM ativ_prof_respostas ORDER BY created_at DESC').all();
+  return rows.map(r => ({ ...r, profissoes: JSON.parse(r.profissoes || '[]') }));
+};
+
 module.exports = {
   getPacientes, getPacienteById, getPacienteByCpf, createPaciente, updatePaciente, deletePaciente,
   getAgendamentos, getAgendamentoById, createAgendamento, updateAgendamento, deleteAgendamento,
@@ -981,5 +1029,6 @@ module.exports = {
   createNotificacao, getNotificacoes, marcarNotificacaoLida, getAgendamentoByZoomMeetingId,
   getNfseData,
   getTarefas, createTarefa, updateTarefa, deleteTarefa, resetTarefasDiarias,
-  deletarSessoesFuturas, restaurarSessoesFuturas
+  deletarSessoesFuturas, restaurarSessoesFuturas,
+  gerarLinkAtivProf, getLinkAtivProf, getInfoAtivProf, salvarRespostaAtivProf, getRespostasAtivProf
 };

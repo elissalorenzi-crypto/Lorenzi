@@ -942,6 +942,52 @@ Retorne SOMENTE o texto organizado, sem comentários, sem explicações, sem asp
   res.json(resultado);
 });
 
+// ── ATIVIDADE — LISTA DE PROFISSÕES ──────────────────────────
+// Gera link único para um aluno (requer auth)
+app.post('/api/atividade-profissoes/link', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  const { paciente_id } = req.body || {};
+  if (!paciente_id) return res.status(400).json({ error: 'paciente_id obrigatório' });
+  try {
+    const p = db.getPacienteById(paciente_id);
+    if (!p) return res.status(404).json({ error: 'Paciente não encontrado' });
+    const token = db.gerarLinkAtivProf(paciente_id, p.nome);
+    res.json({ token, url: `/atividade-profissoes/?t=${token}` });
+  } catch(e) { erro(res, e); }
+});
+
+// Retorna link existente de um aluno (requer auth)
+app.get('/api/atividade-profissoes/link/:paciente_id', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  const link = db.getLinkAtivProf(req.params.paciente_id);
+  res.json(link || {});
+});
+
+// Info pública do token (aluno verifica seu nome)
+app.get('/api/atividade-profissoes/info/:token', (req, res) => {
+  const link = db.getInfoAtivProf(req.params.token);
+  if (!link) return res.status(404).json({ error: 'Link inválido ou expirado' });
+  res.json({ paciente_nome: link.paciente_nome });
+});
+
+// Aluno envia respostas
+app.post('/api/atividade-profissoes/responder/:token', (req, res) => {
+  const { profissoes } = req.body || {};
+  if (!Array.isArray(profissoes) || profissoes.length === 0)
+    return res.status(400).json({ error: 'Selecione ao menos uma profissão' });
+  try {
+    const id = db.salvarRespostaAtivProf(req.params.token, profissoes);
+    if (!id) return res.status(404).json({ error: 'Link inválido' });
+    res.json({ ok: true, id });
+  } catch(e) { erro(res, e); }
+});
+
+// Admin: ver respostas (todas ou de um aluno)
+app.get('/api/atividade-profissoes/respostas', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  res.json(db.getRespostasAtivProf(req.query.paciente_id || null));
+});
+
 // ─── ANÁLISE CLÍNICA IA ──────────────────────────────────────
 app.post('/api/analisar-prontuario', async (req, res) => {
   const { conteudo, humor, tecnicas, tarefas, nome_paciente } = req.body || {};
