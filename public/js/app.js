@@ -1218,10 +1218,6 @@ async function verDetalhePaciente(id) {
             <div class="stat-label">Realizadas</div>
             <div class="stat-value" style="font-size:22px">${realiz}</div>
           </div>
-          <div class="stat-card peach" style="padding:14px">
-            <div class="stat-label">Faturado</div>
-            <div class="stat-value" style="font-size:13px">${BRL(faturado)}</div>
-          </div>
           <div class="stat-card" style="padding:14px;background:#e8f5e9">
             <div class="stat-label">Recebido</div>
             <div class="stat-value" style="font-size:13px;color:#388e3c">${BRL(recebido)}</div>
@@ -1265,8 +1261,7 @@ async function verDetalhePaciente(id) {
           ${realiz ? `<tfoot style="font-weight:600;background:#faf8f6">
             <tr>
               <td colspan="5" style="padding:8px 12px;font-size:12px;color:#888">${realiz} realizadas de ${total}</td>
-              <td colspan="3" style="padding:8px 12px;font-size:12px;color:#388e3c">Recebido: ${BRL(recebido)}${pendente > 0 ? ` · <span style="color:#e65100">A realizar: ${BRL(pendente)}</span>` : ''}</td>
-              <td class="text-right" style="padding:8px 12px">${BRL(faturado)}</td>
+              <td colspan="4" style="padding:8px 12px;font-size:12px;color:#388e3c">Recebido: ${BRL(recebido)}${pendente > 0 ? ` · <span style="color:#e65100">A realizar: ${BRL(pendente)}</span>` : ''}</td>
               <td></td>
             </tr>
           </tfoot>` : ''}
@@ -1433,8 +1428,7 @@ async function exportarHistoricoPDF(pacienteId) {
   ${realizadas.length ? `<tfoot>
     <tr>
       <td colspan="5">${realizadas.length} sessão(ões) realizada(s) de ${ags.length} no total</td>
-      <td colspan="3">Recebido: R$ ${recebido.toFixed(2).replace('.',',')}${pendente>0?' · A realizar: R$ '+pendente.toFixed(2).replace('.',','):''}</td>
-      <td style="text-align:right">R$ ${faturado.toFixed(2).replace('.',',')}</td>
+      <td colspan="4">Recebido: R$ ${recebido.toFixed(2).replace('.',',')}${pendente>0?' · A realizar: R$ '+pendente.toFixed(2).replace('.',','):''}</td>
     </tr>
   </tfoot>` : ''}
 </table>
