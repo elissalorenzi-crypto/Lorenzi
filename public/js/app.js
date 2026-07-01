@@ -1138,11 +1138,12 @@ async function verDetalhePaciente(id) {
   document.getElementById('pacientes-list-view').style.display = 'none';
   document.getElementById('pacientes-detail-view').style.display = '';
 
-  const total   = ags.length;
-  const realiz  = ags.filter(a => a.status === 'realizado').length;
-  const faturado = ags.filter(a => a.status === 'realizado').reduce((s, a) => s + (a.valor||0), 0);
-
-  const ultimasAgs = ags.slice(-5).reverse();
+  const total    = ags.length;
+  const realizadas = ags.filter(a => a.status === 'realizado').sort((a,b) => (b.data+b.hora).localeCompare(a.data+a.hora));
+  const realiz   = realizadas.length;
+  const faturado = realizadas.reduce((s, a) => s + (a.valor||0), 0);
+  const recebido = realizadas.filter(a => a.pago).reduce((s, a) => s + (a.valor||0), 0);
+  const pendente = faturado - recebido;
 
   document.getElementById('pac-detail-content').innerHTML = `
     <div class="grid-2col">
@@ -1204,7 +1205,7 @@ async function verDetalhePaciente(id) {
 
       <!-- Stats e histórico -->
       <div>
-        <div class="grid-3col-stats">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px">
           <div class="stat-card rose" style="padding:14px">
             <div class="stat-label">Total Sessões</div>
             <div class="stat-value" style="font-size:22px">${total}</div>
@@ -1215,29 +1216,40 @@ async function verDetalhePaciente(id) {
           </div>
           <div class="stat-card peach" style="padding:14px">
             <div class="stat-label">Faturado</div>
-            <div class="stat-value" style="font-size:14px">${BRL(faturado)}</div>
+            <div class="stat-value" style="font-size:13px">${BRL(faturado)}</div>
+          </div>
+          <div class="stat-card" style="padding:14px;background:#e8f5e9">
+            <div class="stat-label">Recebido</div>
+            <div class="stat-value" style="font-size:13px;color:#388e3c">${BRL(recebido)}</div>
           </div>
         </div>
 
         <div class="card">
           <div class="card-header">
-            <span class="card-title">Últimas Sessões</span>
+            <span class="card-title">Sessões Realizadas</span>
             <button class="btn btn-outline btn-sm" onclick="openModalAgendamento(null,null,${p.id})">+ Agendar</button>
           </div>
-          <div class="table-wrap">
+          <div class="table-wrap" style="max-height:320px;overflow-y:auto">
             <table>
-              <thead><tr><th>Data</th><th>Hora</th><th>Tipo</th><th>Status</th><th class="text-right">Valor</th></tr></thead>
+              <thead><tr><th>Data</th><th>Hora</th><th>Tipo</th><th>Pagamento</th><th class="text-right">Valor</th></tr></thead>
               <tbody>
-                ${ultimasAgs.length ? ultimasAgs.map(a => `
+                ${realizadas.length ? realizadas.map(a => `
                   <tr>
                     <td>${fmtData(a.data)}</td>
                     <td>${a.hora}</td>
                     <td>${TIPO_LABEL[a.tipo]||a.tipo}</td>
-                    <td>${badgeStatus(a.status)}</td>
+                    <td>${a.pago ? '<span class="badge badge-realizado" style="font-size:11px">✓ Pago</span>' : '<span class="badge badge-falta" style="font-size:11px">Pendente</span>'}</td>
                     <td class="text-right">${BRL(a.valor)}</td>
                   </tr>
-                `).join('') : `<tr><td colspan="5" class="text-muted" style="text-align:center;padding:16px">Nenhum agendamento</td></tr>`}
+                `).join('') : `<tr><td colspan="5" class="text-muted" style="text-align:center;padding:16px">Nenhuma sessão realizada</td></tr>`}
               </tbody>
+              ${realizadas.length ? `<tfoot style="font-weight:600;background:#faf8f6">
+                <tr>
+                  <td colspan="3" style="padding:8px 12px;font-size:12px;color:#888">${realiz} sessão(ões)</td>
+                  <td style="padding:8px 12px;font-size:12px;color:#388e3c">Recebido: ${BRL(recebido)}${pendente > 0 ? ` · <span style="color:#e65100">Pendente: ${BRL(pendente)}</span>` : ''}</td>
+                  <td class="text-right" style="padding:8px 12px">${BRL(faturado)}</td>
+                </tr>
+              </tfoot>` : ''}
             </table>
           </div>
         </div>
