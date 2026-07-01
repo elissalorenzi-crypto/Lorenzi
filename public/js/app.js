@@ -1235,11 +1235,14 @@ async function verDetalhePaciente(id) {
     <div class="card" style="margin-top:16px">
       <div class="card-header">
         <span class="card-title">Histórico de Sessões</span>
-        <button class="btn btn-outline btn-sm" onclick="openModalAgendamento(null,null,${p.id})">+ Agendar</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline btn-sm" onclick="exportarHistoricoPDF(${p.id})">📄 Exportar PDF</button>
+          <button class="btn btn-outline btn-sm" onclick="openModalAgendamento(null,null,${p.id})">+ Agendar</button>
+        </div>
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Data</th><th>Hora</th><th>Tipo</th><th>Status</th><th>Pagamento</th><th>Data Recebimento</th><th>Forma</th><th class="text-right">Valor</th></tr></thead>
+          <thead><tr><th>Data</th><th>Hora</th><th>Tipo</th><th>Status</th><th>Pagamento</th><th>Data Recebimento</th><th>Forma</th><th class="text-right">Valor</th><th></th></tr></thead>
           <tbody>
             ${todasOrdenadas.length ? todasOrdenadas.map(a => `
               <tr>
@@ -1251,14 +1254,16 @@ async function verDetalhePaciente(id) {
                 <td style="font-size:12px;color:var(--muted)">${a.data_pagamento ? fmtData(a.data_pagamento) : '—'}</td>
                 <td style="font-size:12px">${a.forma_pgto && a.pago ? ({pix:'PIX',dinheiro:'Dinheiro',credito:'Crédito',debito:'Débito',transferencia:'Transf.',convenio:'Convênio'}[a.forma_pgto]||a.forma_pgto) : '—'}</td>
                 <td class="text-right">${a.valor ? BRL(a.valor) : '—'}</td>
+                <td><button class="btn btn-ghost btn-xs" onclick="editAgendamento(${a.id})" title="Editar">✏️</button></td>
               </tr>
-            `).join('') : `<tr><td colspan="8" class="text-muted" style="text-align:center;padding:16px">Nenhum agendamento</td></tr>`}
+            `).join('') : `<tr><td colspan="9" class="text-muted" style="text-align:center;padding:16px">Nenhum agendamento</td></tr>`}
           </tbody>
           ${realiz ? `<tfoot style="font-weight:600;background:#faf8f6">
             <tr>
               <td colspan="4" style="padding:8px 12px;font-size:12px;color:#888">${realiz} realizadas de ${total}</td>
               <td colspan="3" style="padding:8px 12px;font-size:12px;color:#388e3c">Recebido: ${BRL(recebido)}${pendente > 0 ? ` · <span style="color:#e65100">Pendente: ${BRL(pendente)}</span>` : ''}</td>
               <td class="text-right" style="padding:8px 12px">${BRL(faturado)}</td>
+              <td></td>
             </tr>
           </tfoot>` : ''}
         </table>
@@ -1311,6 +1316,140 @@ async function verDetalhePaciente(id) {
 function voltarListaPacientes() {
   document.getElementById('pacientes-list-view').style.display = '';
   document.getElementById('pacientes-detail-view').style.display = 'none';
+}
+
+async function exportarHistoricoPDF(pacienteId) {
+  const [p, ags, cfg] = await Promise.all([
+    api('GET', `/pacientes/${pacienteId}`),
+    api('GET', `/pacientes/${pacienteId}/agendamentos`),
+    api('GET', '/configuracoes')
+  ]);
+
+  const FORMA = {pix:'PIX',dinheiro:'Dinheiro',credito:'Cartão Crédito',debito:'Cartão Débito',transferencia:'Transferência',convenio:'Convênio'};
+  const todasOrd = [...ags].sort((a,b) => (a.data+a.hora).localeCompare(b.data+b.hora));
+  const realizadas = ags.filter(a => a.status === 'realizado');
+  const faturado = realizadas.reduce((s,a) => s+(a.valor||0), 0);
+  const recebido = realizadas.filter(a => a.pago).reduce((s,a) => s+(a.valor||0), 0);
+  const pendente = faturado - recebido;
+
+  const psico   = cfg.nome_psicologa || 'Psicóloga';
+  const crp     = cfg.crp ? ` · CRP ${cfg.crp}` : '';
+  const hoje    = new Date().toLocaleDateString('pt-BR', {day:'2-digit',month:'long',year:'numeric'});
+
+  const linhas = todasOrd.map(a => {
+    const status = {agendado:'Agendado',confirmado:'Confirmado',realizado:'Realizado',cancelado:'Cancelado',falta:'Falta'}[a.status]||a.status;
+    const pgto   = a.status==='realizado' ? (a.pago ? '✓ Pago' : 'Pendente') : '—';
+    const dataPgto = a.data_pagamento ? a.data_pagamento.split('-').reverse().join('/') : '—';
+    const forma  = a.forma_pgto && a.pago ? (FORMA[a.forma_pgto]||a.forma_pgto) : '—';
+    const valor  = a.valor ? 'R$ '+a.valor.toFixed(2).replace('.',',') : '—';
+    return `<tr>
+      <td>${a.data.split('-').reverse().join('/')}</td>
+      <td>${a.hora}</td>
+      <td>${({individual:'Individual',casal:'Casal',grupo:'Grupo',online:'Online',avaliacao:'Avaliação'}[a.tipo]||a.tipo)}</td>
+      <td>${status}</td>
+      <td>${pgto}</td>
+      <td>${dataPgto}</td>
+      <td>${forma}</td>
+      <td style="text-align:right">${valor}</td>
+    </tr>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Histórico — ${p.nome}</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Segoe UI',Arial,sans-serif; font-size:11pt; color:#2d2028; padding:30px 40px; }
+  .header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; padding-bottom:16px; border-bottom:2px solid #7a5a48; }
+  .header-left h1 { font-size:17pt; color:#7a5a48; font-weight:700; }
+  .header-left p  { font-size:10pt; color:#888; margin-top:2px; }
+  .header-right   { text-align:right; font-size:10pt; color:#666; line-height:1.7; }
+  .paciente-box { background:#faf7f4; border:1px solid #e0d5cb; border-radius:8px; padding:14px 18px; margin-bottom:20px; display:flex; gap:40px; }
+  .paciente-box div { font-size:10pt; }
+  .paciente-box .label { font-size:9pt; color:#888; margin-bottom:2px; }
+  .paciente-box .val   { font-weight:600; color:#2d2028; }
+  table { width:100%; border-collapse:collapse; font-size:9.5pt; }
+  thead tr { background:#7a5a48; color:#fff; }
+  thead th { padding:8px 10px; text-align:left; font-weight:600; }
+  thead th:last-child { text-align:right; }
+  tbody tr:nth-child(even) { background:#faf7f4; }
+  tbody td { padding:7px 10px; border-bottom:1px solid #ece5de; }
+  tfoot tr { background:#f0ebe5; font-weight:700; }
+  tfoot td { padding:8px 10px; font-size:9.5pt; }
+  .totais { display:flex; gap:24px; margin-top:20px; }
+  .tot-card { flex:1; border:1px solid #e0d5cb; border-radius:8px; padding:12px 16px; text-align:center; }
+  .tot-card .tl { font-size:9pt; color:#888; margin-bottom:4px; }
+  .tot-card .tv { font-size:13pt; font-weight:700; }
+  .tv.green { color:#388e3c; }
+  .tv.orange { color:#e65100; }
+  .tv.plum   { color:#7a5a48; }
+  .footer { margin-top:40px; text-align:center; font-size:9pt; color:#aaa; border-top:1px solid #e0d5cb; padding-top:14px; }
+  .assinatura { margin-top:50px; text-align:center; }
+  .assinatura .linha { width:220px; border-top:1px solid #2d2028; margin:0 auto 6px; }
+  .assinatura p { font-size:10pt; }
+  @media print { body { padding:20px; } }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <h1>Histórico de Atendimentos</h1>
+    <p>${psico}${crp}</p>
+  </div>
+  <div class="header-right">
+    <div>Emitido em ${hoje}</div>
+    <div style="font-size:9pt;color:#bbb;margin-top:4px">Documento confidencial</div>
+  </div>
+</div>
+
+<div class="paciente-box">
+  <div><div class="label">Cliente</div><div class="val">${p.nome}</div></div>
+  ${p.data_nascimento ? `<div><div class="label">Nascimento</div><div class="val">${p.data_nascimento.split('-').reverse().join('/')}</div></div>` : ''}
+  ${p.cpf ? `<div><div class="label">CPF</div><div class="val">${p.cpf}</div></div>` : ''}
+  ${p.convenio ? `<div><div class="label">Convênio</div><div class="val">${p.convenio}</div></div>` : ''}
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Data</th><th>Hora</th><th>Tipo</th><th>Status</th>
+      <th>Pagamento</th><th>Data Receb.</th><th>Forma</th><th>Valor</th>
+    </tr>
+  </thead>
+  <tbody>${linhas}</tbody>
+  ${realizadas.length ? `<tfoot>
+    <tr>
+      <td colspan="4">${realizadas.length} sessão(ões) realizada(s) de ${ags.length} no total</td>
+      <td colspan="3">Recebido: R$ ${recebido.toFixed(2).replace('.',',')}${pendente>0?' · Pendente: R$ '+pendente.toFixed(2).replace('.',','):''}</td>
+      <td style="text-align:right">R$ ${faturado.toFixed(2).replace('.',',')}</td>
+    </tr>
+  </tfoot>` : ''}
+</table>
+
+<div class="totais">
+  <div class="tot-card"><div class="tl">Total Sessões</div><div class="tv plum">${ags.length}</div></div>
+  <div class="tot-card"><div class="tl">Realizadas</div><div class="tv plum">${realizadas.length}</div></div>
+  <div class="tot-card"><div class="tl">Faturado</div><div class="tv plum">R$ ${faturado.toFixed(2).replace('.',',')}</div></div>
+  <div class="tot-card"><div class="tl">Recebido</div><div class="tv green">R$ ${recebido.toFixed(2).replace('.',',')}</div></div>
+  ${pendente > 0 ? `<div class="tot-card"><div class="tl">A Receber</div><div class="tv orange">R$ ${pendente.toFixed(2).replace('.',',')}</div></div>` : ''}
+</div>
+
+<div class="assinatura">
+  <div class="linha"></div>
+  <p>${psico}${crp}</p>
+</div>
+
+<div class="footer">Documento gerado pelo sistema de gestão do consultório · ${hoje}</div>
+
+<script>window.onload = () => window.print();<\/script>
+</body>
+</html>`;
+
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
 }
 
 async function limparSessoesFuturas(pacienteId, nome) {
