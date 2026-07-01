@@ -1146,8 +1146,8 @@ async function verDetalhePaciente(id) {
   const realizadas = ags.filter(a => a.status === 'realizado');
   const realiz   = realizadas.length;
   const faturado = realizadas.reduce((s, a) => s + (a.valor||0), 0);
-  const recebido = realizadas.filter(a => a.pago).reduce((s, a) => s + (a.valor||0), 0);
-  const pendente = faturado - recebido;
+  const recebido = ags.filter(a => a.pago).reduce((s, a) => s + (a.valor||0), 0);
+  const pendente = realizadas.filter(a => !a.pago).reduce((s, a) => s + (a.valor||0), 0);
 
   document.getElementById('pac-detail-content').innerHTML = `
     <div class="grid-2col">
@@ -1333,8 +1333,8 @@ async function exportarHistoricoPDF(pacienteId) {
   const todasOrd = [...ags].sort((a,b) => (a.data+a.hora).localeCompare(b.data+b.hora));
   const realizadas = ags.filter(a => a.status === 'realizado');
   const faturado = realizadas.reduce((s,a) => s+(a.valor||0), 0);
-  const recebido = realizadas.filter(a => a.pago).reduce((s,a) => s+(a.valor||0), 0);
-  const pendente = faturado - recebido;
+  const recebido = ags.filter(a => a.pago).reduce((s,a) => s+(a.valor||0), 0);
+  const pendente = realizadas.filter(a => !a.pago).reduce((s,a) => s+(a.valor||0), 0);
 
   const psico   = cfg.nome_psicologa || 'Psicóloga';
   const crpRaw  = (cfg.crp || '').replace(/^CRP\s*/i, '');
