@@ -4820,10 +4820,14 @@ const STATUS_SOCIAL = {
 
 function socialView(mode) {
   _socialViewMode = mode;
-  document.getElementById('btn-social-cal').style.background   = mode === 'calendario' ? 'var(--plum)' : '';
-  document.getElementById('btn-social-cal').style.color        = mode === 'calendario' ? '#fff' : '';
-  document.getElementById('btn-social-lista').style.background = mode === 'lista' ? 'var(--plum)' : '';
-  document.getElementById('btn-social-lista').style.color      = mode === 'lista' ? '#fff' : '';
+  [['btn-social-cal','calendario'],['btn-social-lista','lista'],['btn-social-estilo','estilo']].forEach(([id, m]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.background = mode === m ? 'var(--plum)' : '';
+    el.style.color      = mode === m ? '#fff' : '';
+  });
+  const filtros = document.getElementById('social-filtros');
+  if (filtros) filtros.style.display = mode === 'estilo' ? 'none' : '';
   renderSocial();
 }
 
@@ -4842,9 +4846,30 @@ function renderSocial() {
   if (!el) return;
   if (_socialViewMode === 'calendario') {
     el.innerHTML = renderSocialCalendario();
+  } else if (_socialViewMode === 'estilo') {
+    el.innerHTML = renderSocialEstilo();
   } else {
     el.innerHTML = renderSocialLista();
   }
+}
+
+function renderSocialEstilo() {
+  const estilo = _config.social_estilo || '';
+  return `<div class="card" style="max-width:720px">
+    <h3 style="margin:0 0 8px;color:var(--plum)">✍️ Meu Estilo de Postagem</h3>
+    <p style="font-size:13px;color:var(--muted);margin:0 0 16px">Cole aqui exemplos dos seus melhores posts do Instagram (3 a 5 exemplos). A IA vai usar isso como referência de tom, linguagem e formato ao gerar textos e analisar mídias.</p>
+    <textarea id="social-estilo-input" rows="14" placeholder="Exemplo de post 1:
+Você sabia que a ansiedade pode se manifestar no corpo antes mesmo de aparecer nos pensamentos? 🌿
+Sintomas como tensão muscular, palpitações e dificuldade de respirar muitas vezes são os primeiros sinais...
+#psicologia #ansiedade #saudemental #bemestar #terapia
+
+Exemplo de post 2:
+..." style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;box-sizing:border-box;resize:vertical;font-family:inherit;font-size:13px;line-height:1.6">${estilo}</textarea>
+    <div style="display:flex;gap:10px;margin-top:12px;align-items:center">
+      <button onclick="salvarEstiloInstagram()" class="btn btn-primary">💾 Salvar Referência de Estilo</button>
+      <span style="font-size:12px;color:var(--muted)">Este texto é usado como contexto em todas as gerações com IA</span>
+    </div>
+  </div>`;
 }
 
 function renderSocialCalendario() {
@@ -4948,6 +4973,17 @@ function openModalPost(id, dataPreenchida) {
   const titulo = p ? 'Editar Post' : 'Novo Post';
   const html = `
     <div style="display:flex;flex-direction:column;gap:14px">
+
+      <!-- Analisar mídia -->
+      <div style="border:1px solid var(--border);border-radius:10px;padding:12px;background:#fff8f0">
+        <label style="font-size:12px;font-weight:600;color:#e65100;display:block;margin-bottom:8px">📎 Analisar Imagem ou Vídeo com IA</label>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input type="file" id="sp-midia" accept="image/*,video/*" onchange="previewMidia(this)" style="flex:1;font-size:12px;border:1px solid var(--border);border-radius:8px;padding:6px;background:#fff">
+          <button onclick="analisarMidia()" style="padding:7px 14px;border-radius:8px;border:none;background:#e65100;color:#fff;font-size:13px;cursor:pointer;white-space:nowrap">🔍 Analisar e Preencher</button>
+        </div>
+        <div id="midia-preview" style="margin-top:8px"></div>
+      </div>
+
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div>
           <label style="font-size:12px;font-weight:600;color:var(--muted)">Rede Social</label>
@@ -4966,10 +5002,15 @@ function openModalPost(id, dataPreenchida) {
           </select>
         </div>
       </div>
-      <div>
-        <label style="font-size:12px;font-weight:600;color:var(--muted)">Tema / Título</label>
-        <input id="sp-tema" type="text" placeholder="Ex: Dicas para lidar com a ansiedade" value="${p?.tema||''}" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;margin-top:4px;box-sizing:border-box">
+
+      <div style="display:flex;gap:8px;align-items:flex-end">
+        <div style="flex:1">
+          <label style="font-size:12px;font-weight:600;color:var(--muted)">Tema / Título</label>
+          <input id="sp-tema" type="text" placeholder="Ex: Dicas para lidar com a ansiedade" value="${p?.tema||''}" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;margin-top:4px;box-sizing:border-box">
+        </div>
+        <button onclick="gerarTextoPost()" title="Gerar texto pelo tema" style="padding:8px 12px;border-radius:8px;border:none;background:#7b5ea7;color:#fff;font-size:13px;cursor:pointer;white-space:nowrap;margin-bottom:1px">✨ Gerar Texto</button>
       </div>
+
       <div>
         <label style="font-size:12px;font-weight:600;color:var(--muted)">Texto do post</label>
         <textarea id="sp-texto" rows="5" placeholder="Escreva o conteúdo do post aqui..." style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;margin-top:4px;box-sizing:border-box;resize:vertical;font-family:inherit">${p?.texto||''}</textarea>
@@ -4982,10 +5023,10 @@ function openModalPost(id, dataPreenchida) {
         <label style="font-size:12px;font-weight:600;color:var(--muted)">Data de publicação</label>
         <input id="sp-data" type="date" value="${p?.data_publicacao||dataPreenchida||''}" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;margin-top:4px;box-sizing:border-box">
       </div>
+
+      <!-- Gerar Arte -->
       <div style="border:1px solid var(--border);border-radius:10px;padding:12px;background:#f9f5ff">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <label style="font-size:12px;font-weight:600;color:var(--plum)">🎨 Gerar Arte com IA (DALL-E 3)</label>
-        </div>
+        <label style="font-size:12px;font-weight:600;color:var(--plum);display:block;margin-bottom:8px">🎨 Gerar Arte com IA (DALL-E 3)</label>
         <input id="sp-prompt" type="text" placeholder="Descreva a arte desejada (ex: imagem calma com tons de lavanda sobre ansiedade)" value="${p?.imagem_prompt||''}" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;box-sizing:border-box;margin-bottom:8px">
         <button onclick="gerarArtePost()" style="padding:7px 16px;border-radius:8px;border:none;background:var(--plum);color:#fff;font-size:13px;cursor:pointer">🖼 Gerar Arte</button>
         <div id="arte-preview" style="margin-top:10px">${p?.imagem_url ? `<img src="${p.imagem_url}" style="max-width:100%;border-radius:8px">` : ''}</div>
@@ -5039,6 +5080,90 @@ async function gerarArtePost() {
     if (prev) prev.innerHTML = '';
   }
   if (btn) { btn.disabled = false; btn.textContent = '🖼 Gerar Arte'; }
+}
+
+function previewMidia(input) {
+  const file = input.files[0];
+  const prev = document.getElementById('midia-preview');
+  if (!file || !prev) return;
+  const url = URL.createObjectURL(file);
+  if (file.type.startsWith('image/')) {
+    prev.innerHTML = `<img src="${url}" style="max-height:120px;border-radius:8px;border:1px solid var(--border)">`;
+  } else if (file.type.startsWith('video/')) {
+    prev.innerHTML = `<video src="${url}" style="max-height:120px;border-radius:8px;border:1px solid var(--border)" controls muted></video>`;
+  }
+}
+
+async function analisarMidia() {
+  const input = document.getElementById('sp-midia');
+  const file = input?.files[0];
+  if (!file) { toast('Selecione uma imagem ou vídeo primeiro', 'error'); return; }
+
+  const btn = document.querySelector('#modal-body button[onclick="analisarMidia()"]');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Analisando…'; }
+
+  try {
+    let base64, mimeType;
+    if (file.type.startsWith('video/')) {
+      // Extrai frame do vídeo via canvas
+      const video = document.createElement('video');
+      video.src = URL.createObjectURL(file);
+      await new Promise(r => { video.onloadeddata = r; video.load(); });
+      video.currentTime = Math.min(2, video.duration / 2);
+      await new Promise(r => { video.onseeked = r; });
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      base64 = canvas.toDataURL('image/jpeg').split(',')[1];
+      mimeType = 'image/jpeg';
+    } else {
+      base64 = await new Promise(r => {
+        const reader = new FileReader();
+        reader.onload = e => r(e.target.result.split(',')[1]);
+        reader.readAsDataURL(file);
+      });
+      mimeType = file.type;
+    }
+
+    const estilo = _config.social_estilo || '';
+    const rede = document.getElementById('sp-rede')?.value || '';
+    const r = await api('POST', '/analisar-midia', { base64, mimeType, rede, estilo });
+
+    if (r.tema)      document.getElementById('sp-tema').value     = r.tema;
+    if (r.texto)     document.getElementById('sp-texto').value    = r.texto;
+    if (r.hashtags)  document.getElementById('sp-hashtags').value = r.hashtags;
+    if (r.prompt_arte) document.getElementById('sp-prompt').value = r.prompt_arte;
+    toast('✅ Campos preenchidos pela IA!');
+  } catch(e) {
+    toast('Erro ao analisar: ' + e.message, 'error');
+  }
+  if (btn) { btn.disabled = false; btn.textContent = '🔍 Analisar e Preencher'; }
+}
+
+async function gerarTextoPost() {
+  const tema = document.getElementById('sp-tema')?.value?.trim();
+  if (!tema) { toast('Digite um tema primeiro', 'error'); return; }
+  const btn = document.querySelector('#modal-body button[onclick="gerarTextoPost()"]');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Gerando…'; }
+  try {
+    const rede = document.getElementById('sp-rede')?.value || '';
+    const estilo = _config.social_estilo || '';
+    const r = await api('POST', '/gerar-texto-post', { tema, rede, estilo });
+    if (r.texto)     document.getElementById('sp-texto').value    = r.texto;
+    if (r.hashtags)  document.getElementById('sp-hashtags').value = r.hashtags;
+    if (r.prompt_arte) document.getElementById('sp-prompt').value = r.prompt_arte;
+    toast('✅ Texto gerado!');
+  } catch(e) {
+    toast('Erro ao gerar texto: ' + e.message, 'error');
+  }
+  if (btn) { btn.disabled = false; btn.textContent = '✨ Gerar Texto'; }
+}
+
+async function salvarEstiloInstagram() {
+  const val = document.getElementById('social-estilo-input')?.value || '';
+  await api('POST', '/configuracoes', { chave: 'social_estilo', valor: val });
+  _config.social_estilo = val;
+  toast('Estilo salvo! A IA vai usar isso como referência.');
 }
 
 async function iniciarApp() {

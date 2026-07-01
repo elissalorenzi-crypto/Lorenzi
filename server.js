@@ -1157,6 +1157,73 @@ app.post('/api/gerar-arte', async (req, res) => {
   }
 });
 
+// ── ANALISAR MÍDIA COM GPT-4o VISION ─────────────────────────
+app.post('/api/analisar-midia', async (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  const { base64, mimeType, rede, estilo } = req.body;
+  if (!base64) return res.status(400).json({ error: 'Imagem obrigatória' });
+  const key = process.env.OPENAI_API_KEY;
+  if (!key) return res.status(500).json({ error: 'OPENAI_API_KEY não configurada' });
+  const estiloCtx = estilo ? `\n\nReferência de estilo da psicóloga (posts anteriores):\n${estilo}` : '';
+  const redesCtx = rede ? ` para ${rede}` : '';
+  try {
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'text', text: `Você é especialista em marketing para psicólogos. Analise esta imagem e crie um post${redesCtx} no estilo acolhedor, profissional e humanizado de uma psicóloga clínica.${estiloCtx}\n\nRetorne APENAS um JSON válido com as chaves: tema, texto, hashtags, prompt_arte. Exemplo: {"tema":"Ansiedade","texto":"Texto do post...","hashtags":"#psicologia #ansiedade","prompt_arte":"Descrição para gerar arte relacionada"}` },
+            { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64}`, detail: 'high' } }
+          ]
+        }],
+        max_tokens: 1200,
+      })
+    });
+    const data = await resp.json();
+    if (!resp.ok) return res.status(500).json({ error: data.error?.message || 'Erro na API OpenAI' });
+    const content = data.choices[0].message.content.trim();
+    const json = JSON.parse(content.replace(/^```json\n?|\n?```$/g, ''));
+    res.json(json);
+  } catch(e) {
+    res.status(500).json({ error: 'Erro ao analisar mídia: ' + e.message });
+  }
+});
+
+// ── GERAR TEXTO COM GPT-4o ────────────────────────────────────
+app.post('/api/gerar-texto-post', async (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  const { tema, rede, estilo } = req.body;
+  if (!tema) return res.status(400).json({ error: 'Tema obrigatório' });
+  const key = process.env.OPENAI_API_KEY;
+  if (!key) return res.status(500).json({ error: 'OPENAI_API_KEY não configurada' });
+  const estiloCtx = estilo ? `\n\nReferência de estilo da psicóloga:\n${estilo}` : '';
+  const redesCtx = rede ? ` para ${rede}` : '';
+  try {
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [{
+          role: 'user',
+          content: `Crie um post${redesCtx} sobre "${tema}" para uma psicóloga clínica. Tom: acolhedor, profissional, humanizado.${estiloCtx}\n\nRetorne APENAS JSON: {"texto":"...","hashtags":"...","prompt_arte":"..."}`
+        }],
+        max_tokens: 1000,
+      })
+    });
+    const data = await resp.json();
+    if (!resp.ok) return res.status(500).json({ error: data.error?.message || 'Erro' });
+    const content = data.choices[0].message.content.trim();
+    const json = JSON.parse(content.replace(/^```json\n?|\n?```$/g, ''));
+    res.json(json);
+  } catch(e) {
+    res.status(500).json({ error: 'Erro ao gerar texto: ' + e.message });
+  }
+});
+
 // ── POSTS SOCIAIS ─────────────────────────────────────────────
 app.get('/api/posts-sociais', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });

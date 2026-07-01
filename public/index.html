@@ -949,7 +949,8 @@
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <button class="btn" onclick="socialView('calendario')" id="btn-social-cal" style="background:var(--plum);color:#fff">📅 Calendário</button>
           <button class="btn" onclick="socialView('lista')" id="btn-social-lista">📋 Lista</button>
-          <select id="social-filtro-rede" onchange="loadSocial()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px">
+          <button class="btn" onclick="socialView('estilo')" id="btn-social-estilo">✍️ Meu Estilo</button>
+          <select id="social-filtro-rede" onchange="loadSocial()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px" id="social-filtros">
             <option value="">Todas as redes</option>
             <option value="instagram">Instagram</option>
             <option value="facebook">Facebook</option>
