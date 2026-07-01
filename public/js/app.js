@@ -1204,9 +1204,9 @@ async function verDetalhePaciente(id) {
         </div>
       </div>
 
-      <!-- Stats e histórico -->
+      <!-- Stats -->
       <div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px">
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
           <div class="stat-card rose" style="padding:14px">
             <div class="stat-label">Total Sessões</div>
             <div class="stat-value" style="font-size:22px">${total}</div>
@@ -1223,42 +1223,49 @@ async function verDetalhePaciente(id) {
             <div class="stat-label">Recebido</div>
             <div class="stat-value" style="font-size:13px;color:#388e3c">${BRL(recebido)}</div>
           </div>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Histórico de Sessões</span>
-            <button class="btn btn-outline btn-sm" onclick="openModalAgendamento(null,null,${p.id})">+ Agendar</button>
-          </div>
-          <div class="table-wrap" style="max-height:320px;overflow-y:auto">
-            <table>
-              <thead><tr><th>Data</th><th>Hora</th><th>Tipo</th><th>Status</th><th>Pagamento</th><th class="text-right">Valor</th></tr></thead>
-              <tbody>
-                ${todasOrdenadas.length ? todasOrdenadas.map(a => `
-                  <tr>
-                    <td>${fmtData(a.data)}</td>
-                    <td>${a.hora}</td>
-                    <td>${TIPO_LABEL[a.tipo]||a.tipo}</td>
-                    <td>${badgeStatus(a.status)}</td>
-                    <td>${a.status === 'realizado' ? (a.pago ? '<span class="badge badge-realizado" style="font-size:11px">✓ Pago</span>' : '<span class="badge badge-falta" style="font-size:11px">Pendente</span>') : '—'}</td>
-                    <td class="text-right">${a.valor ? BRL(a.valor) : '—'}</td>
-                  </tr>
-                `).join('') : `<tr><td colspan="6" class="text-muted" style="text-align:center;padding:16px">Nenhum agendamento</td></tr>`}
-              </tbody>
-              ${realiz ? `<tfoot style="font-weight:600;background:#faf8f6">
-                <tr>
-                  <td colspan="3" style="padding:8px 12px;font-size:12px;color:#888">${realiz} realizadas de ${total}</td>
-                  <td colspan="2" style="padding:8px 12px;font-size:12px;color:#388e3c">Recebido: ${BRL(recebido)}${pendente > 0 ? ` · <span style="color:#e65100">Pendente: ${BRL(pendente)}</span>` : ''}</td>
-                  <td class="text-right" style="padding:8px 12px">${BRL(faturado)}</td>
-                </tr>
-              </tfoot>` : ''}
-            </table>
-          </div>
+          ${pendente > 0 ? `<div class="stat-card" style="padding:14px;background:#fff3e0;grid-column:1/-1">
+            <div class="stat-label">A Receber</div>
+            <div class="stat-value" style="font-size:13px;color:#e65100">${BRL(pendente)}</div>
+          </div>` : ''}
         </div>
       </div>
     </div>
 
-    <div id="respostas-profissoes-${p.id}" style="margin-bottom:16px"></div>
+    <!-- Histórico em largura total -->
+    <div class="card" style="margin-top:16px">
+      <div class="card-header">
+        <span class="card-title">Histórico de Sessões</span>
+        <button class="btn btn-outline btn-sm" onclick="openModalAgendamento(null,null,${p.id})">+ Agendar</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Data</th><th>Hora</th><th>Tipo</th><th>Status</th><th>Pagamento</th><th>Data Recebimento</th><th>Forma</th><th class="text-right">Valor</th></tr></thead>
+          <tbody>
+            ${todasOrdenadas.length ? todasOrdenadas.map(a => `
+              <tr>
+                <td>${fmtData(a.data)}</td>
+                <td>${a.hora}</td>
+                <td>${TIPO_LABEL[a.tipo]||a.tipo}</td>
+                <td>${badgeStatus(a.status)}</td>
+                <td>${a.status === 'realizado' ? (a.pago ? '<span class="badge badge-realizado" style="font-size:11px">✓ Pago</span>' : '<span class="badge badge-falta" style="font-size:11px">Pendente</span>') : '—'}</td>
+                <td style="font-size:12px;color:var(--muted)">${a.data_pagamento ? fmtData(a.data_pagamento) : '—'}</td>
+                <td style="font-size:12px">${a.forma_pgto && a.pago ? ({pix:'PIX',dinheiro:'Dinheiro',credito:'Crédito',debito:'Débito',transferencia:'Transf.',convenio:'Convênio'}[a.forma_pgto]||a.forma_pgto) : '—'}</td>
+                <td class="text-right">${a.valor ? BRL(a.valor) : '—'}</td>
+              </tr>
+            `).join('') : `<tr><td colspan="8" class="text-muted" style="text-align:center;padding:16px">Nenhum agendamento</td></tr>`}
+          </tbody>
+          ${realiz ? `<tfoot style="font-weight:600;background:#faf8f6">
+            <tr>
+              <td colspan="4" style="padding:8px 12px;font-size:12px;color:#888">${realiz} realizadas de ${total}</td>
+              <td colspan="3" style="padding:8px 12px;font-size:12px;color:#388e3c">Recebido: ${BRL(recebido)}${pendente > 0 ? ` · <span style="color:#e65100">Pendente: ${BRL(pendente)}</span>` : ''}</td>
+              <td class="text-right" style="padding:8px 12px">${BRL(faturado)}</td>
+            </tr>
+          </tfoot>` : ''}
+        </table>
+      </div>
+    </div>
+
+    <div id="respostas-profissoes-${p.id}" style="margin:16px 0"></div>
 
     <div style="display:flex;gap:12px;flex-wrap:wrap">
       <button class="btn btn-primary" onclick="editPaciente(${p.id})">✏️ Editar Dados</button>
