@@ -504,7 +504,7 @@ function _renderAgendaRow(a) { return `
       <td>${TIPO_LABEL[a.tipo]||a.tipo}</td>
       <td>${badgeStatus(a.status)}</td>
       <td class="text-right fw-bold">${BRL(a.valor)}</td>
-      <td>${a.pago ? '<span style="color:var(--sage);font-size:16px">✓</span>' : '<span style="color:var(--peach);font-size:16px">○</span>'}</td>
+      <td>${a.pago ? '<span style="color:var(--sage);font-size:16px" title="Pago">✓</span>' : (a.status === 'realizado' ? `<button class="btn btn-xs" style="background:#e8f5e9;color:#388e3c;border:1.5px solid #388e3c;font-weight:700;padding:2px 8px" onclick="pagarRapido(${a.id})" title="Registrar recebimento">✓ Receber</button>` : '<span style="color:var(--peach);font-size:16px">○</span>')}</td>
       <td>
         <div class="inline-actions">
           <button class="btn btn-xs" style="background:var(--sage-pale);color:var(--sage);border:1.5px solid var(--sage);font-weight:700" onclick="marcarRealizado(${a.id})" title="Finalizar">✓</button>
@@ -1247,7 +1247,7 @@ async function verDetalhePaciente(id) {
                 <td>${a.hora}</td>
                 <td>${TIPO_LABEL[a.tipo]||a.tipo}</td>
                 <td>${badgeStatus(a.status)}</td>
-                <td>${a.status === 'realizado' ? (a.pago ? '<span class="badge badge-realizado" style="font-size:11px">✓ Pago</span>' : '<span class="badge badge-falta" style="font-size:11px">Pendente</span>') : '—'}</td>
+                <td>${a.status === 'realizado' ? (a.pago ? '<span class="badge badge-realizado" style="font-size:11px">✓ Pago</span>' : `<button class="btn btn-xs" style="background:#e8f5e9;color:#388e3c;border:1.5px solid #388e3c;font-weight:700;padding:2px 8px" onclick="pagarRapido(${a.id})" title="Registrar recebimento">✓ Receber</button>`) : '—'}</td>
                 <td style="font-size:12px;color:var(--muted)">${a.data_pagamento ? fmtData(a.data_pagamento) : '—'}</td>
                 <td style="font-size:12px">${a.forma_pgto && a.pago ? ({pix:'PIX',dinheiro:'Dinheiro',credito:'Crédito',debito:'Débito',transferencia:'Transf.',convenio:'Convênio'}[a.forma_pgto]||a.forma_pgto) : '—'}</td>
                 <td class="text-right">${a.valor ? BRL(a.valor) : '—'}</td>
@@ -3366,6 +3366,19 @@ async function abrirModalNfse(pacienteId, ano, mes) {
   `;
 
   openModal(`📄 NFS-e — ${p.nome.split(' ')[0]} · ${MESES[mes-1]}/${ano}`, html, null, { large: true });
+}
+
+async function pagarRapido(agId) {
+  const ag = await api('GET', `/agendamentos/${agId}`);
+  await api('PUT', `/agendamentos/${agId}`, {
+    ...ag, pago: 1,
+    data_pagamento: HOJE(),
+    forma_pgto: ag.forma_pgto || 'pix'
+  });
+  toast('💰 Recebido — ' + BRL(ag.valor));
+  refreshAll();
+  const dv = document.getElementById('pacientes-detail-view');
+  if (dv && dv.style.display !== 'none' && ag.paciente_id) verDetalhePaciente(ag.paciente_id);
 }
 
 async function marcarPago(id) {
