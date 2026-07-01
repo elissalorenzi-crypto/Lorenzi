@@ -1222,10 +1222,10 @@ async function verDetalhePaciente(id) {
             <div class="stat-label">Recebido</div>
             <div class="stat-value" style="font-size:13px;color:#388e3c">${BRL(recebido)}</div>
           </div>
-          ${pendente > 0 ? `<div class="stat-card" style="padding:14px;background:#fff3e0;grid-column:1/-1">
+          <div class="stat-card" style="padding:14px;background:${pendente > 0 ? '#fff3e0' : '#f5f5f5'}">
             <div class="stat-label">A realizar</div>
-            <div class="stat-value" style="font-size:13px;color:#e65100">${BRL(pendente)}</div>
-          </div>` : ''}
+            <div class="stat-value" style="font-size:13px;color:${pendente > 0 ? '#e65100' : '#aaa'}">${BRL(pendente)}</div>
+          </div>
         </div>
       </div>
     </div>
