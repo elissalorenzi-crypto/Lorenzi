@@ -1227,7 +1227,7 @@ async function verDetalhePaciente(id) {
             <div class="stat-value" style="font-size:13px;color:#388e3c">${BRL(recebido)}</div>
           </div>
           ${pendente > 0 ? `<div class="stat-card" style="padding:14px;background:#fff3e0;grid-column:1/-1">
-            <div class="stat-label">A Receber</div>
+            <div class="stat-label">A realizar</div>
             <div class="stat-value" style="font-size:13px;color:#e65100">${BRL(pendente)}</div>
           </div>` : ''}
         </div>
@@ -1265,7 +1265,7 @@ async function verDetalhePaciente(id) {
           ${realiz ? `<tfoot style="font-weight:600;background:#faf8f6">
             <tr>
               <td colspan="5" style="padding:8px 12px;font-size:12px;color:#888">${realiz} realizadas de ${total}</td>
-              <td colspan="3" style="padding:8px 12px;font-size:12px;color:#388e3c">Recebido: ${BRL(recebido)}${pendente > 0 ? ` · <span style="color:#e65100">Pendente: ${BRL(pendente)}</span>` : ''}</td>
+              <td colspan="3" style="padding:8px 12px;font-size:12px;color:#388e3c">Recebido: ${BRL(recebido)}${pendente > 0 ? ` · <span style="color:#e65100">A realizar: ${BRL(pendente)}</span>` : ''}</td>
               <td class="text-right" style="padding:8px 12px">${BRL(faturado)}</td>
               <td></td>
             </tr>
@@ -1347,7 +1347,7 @@ async function exportarHistoricoPDF(pacienteId) {
 
   const linhas = todasOrd.map(a => {
     const status = {agendado:'Agendado',confirmado:'Confirmado',realizado:'Realizado',cancelado:'Cancelado',falta:'Falta'}[a.status]||a.status;
-    const pgto   = a.pago ? '✓ Pago' : 'Pendente';
+    const pgto   = a.pago ? '✓ Pago' : 'A realizar';
     const dataPgto = a.data_pagamento ? a.data_pagamento.split('-').reverse().join('/') : '—';
     const forma  = a.forma_pgto && a.pago ? (FORMA[a.forma_pgto]||a.forma_pgto) : '—';
     const valor  = a.valor ? 'R$ '+a.valor.toFixed(2).replace('.',',') : '—';
@@ -1433,7 +1433,7 @@ async function exportarHistoricoPDF(pacienteId) {
   ${realizadas.length ? `<tfoot>
     <tr>
       <td colspan="5">${realizadas.length} sessão(ões) realizada(s) de ${ags.length} no total</td>
-      <td colspan="3">Recebido: R$ ${recebido.toFixed(2).replace('.',',')}${pendente>0?' · Pendente: R$ '+pendente.toFixed(2).replace('.',','):''}</td>
+      <td colspan="3">Recebido: R$ ${recebido.toFixed(2).replace('.',',')}${pendente>0?' · A realizar: R$ '+pendente.toFixed(2).replace('.',','):''}</td>
       <td style="text-align:right">R$ ${faturado.toFixed(2).replace('.',',')}</td>
     </tr>
   </tfoot>` : ''}
