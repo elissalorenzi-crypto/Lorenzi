@@ -4805,6 +4805,7 @@ async function iniciarApp() {
   atualizarBrand();
   loadNotificacoes();
   refreshAll();
+  navigate('agenda');
   fetch('/api/admin/normalizar-fones', { method: 'POST' }).catch(() => {});
   iniciarPollingZoom();
 }
