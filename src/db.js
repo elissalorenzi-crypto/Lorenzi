@@ -35,6 +35,8 @@ const migrations = [
   "ALTER TABLE convites ADD COLUMN hora_inicio TEXT",
   "ALTER TABLE pacientes ADD COLUMN sessao_atual INTEGER DEFAULT 1",
   "ALTER TABLE pacientes ADD COLUMN total_sessoes INTEGER DEFAULT 12",
+  "ALTER TABLE pacientes ADD COLUMN hora_sessao TEXT",
+  "ALTER TABLE pacientes ADD COLUMN dia_semana INTEGER",
 ];
 for (const m of migrations) {
   try { db.exec(m); } catch(_) {}
@@ -283,7 +285,7 @@ const updatePaciente = (id, data) =>
       tel_responsavel=?, queixa_principal=?, encaminhamento=?, valor_sessao=?, obs=?,
       ativo=?, nota_fiscal=?, forma_pgto=?, frequencia=?, freq_pgto=?,
       nf_logradouro=?, nf_numero=?, nf_complemento=?, nf_bairro=?, nf_cidade=?, nf_uf=?, nf_cep=?,
-      sessao_atual=?, total_sessoes=?
+      sessao_atual=?, total_sessoes=?, hora_sessao=?, dia_semana=?
     WHERE id=?
   `).run(
     data.nome, data.apelido || null, data.cpf || null, data.data_nascimento || null, data.sexo || 'F',
@@ -296,6 +298,7 @@ const updatePaciente = (id, data) =>
     data.nf_logradouro || null, data.nf_numero || null, data.nf_complemento || null,
     data.nf_bairro || null, data.nf_cidade || null, data.nf_uf || null, data.nf_cep || null,
     data.sessao_atual || 1, data.total_sessoes || 12,
+    data.hora_sessao || null, data.dia_semana != null ? data.dia_semana : null,
     id
   );
 

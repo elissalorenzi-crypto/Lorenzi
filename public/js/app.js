@@ -1674,20 +1674,36 @@ function pacienteFormHtml(p = {}) {
       </div>
       <div class="form-group">
         <label>Sessão atual (nº)</label>
-        <input type="number" id="fp-sessao-atual" value="${p.sessao_atual||1}" min="1" max="12" step="1">
+        <input type="number" id="fp-sessao-atual" value="${p.sessao_atual||1}" min="1" step="1">
       </div>
       <div class="form-group">
         <label>Total de sessões</label>
-        <input type="number" id="fp-total-sessoes" value="${p.total_sessoes||12}" min="1" max="12" step="1">
+        <input type="number" id="fp-total-sessoes" value="${p.total_sessoes||12}" min="1" step="1">
       </div>
       <div class="form-group">
         <label>Frequência</label>
         <select id="fp-freq">
           <option value="">—</option>
-          <option value="4x-mes"  ${(p.frequencia==='4x-mes'||p.frequencia==='semanal') ?'selected':''}>4x ao mês</option>
-          <option value="2x-mes"  ${p.frequencia==='2x-mes'  ?'selected':''}>2x ao mês</option>
+          <option value="4x-mes"  ${(p.frequencia==='4x-mes'||p.frequencia==='semanal') ?'selected':''}>4x ao mês (semanal)</option>
+          <option value="2x-mes"  ${p.frequencia==='2x-mes'  ?'selected':''}>2x ao mês (quinzenal)</option>
           <option value="1x-mes"  ${p.frequencia==='1x-mes'  ?'selected':''}>1x ao mês</option>
         </select>
+      </div>
+      <div class="form-group">
+        <label>Dia da semana</label>
+        <select id="fp-dia-semana">
+          <option value="">—</option>
+          <option value="1" ${p.dia_semana===1||p.dia_semana==='1'?'selected':''}>Segunda-feira</option>
+          <option value="2" ${p.dia_semana===2||p.dia_semana==='2'?'selected':''}>Terça-feira</option>
+          <option value="3" ${p.dia_semana===3||p.dia_semana==='3'?'selected':''}>Quarta-feira</option>
+          <option value="4" ${p.dia_semana===4||p.dia_semana==='4'?'selected':''}>Quinta-feira</option>
+          <option value="5" ${p.dia_semana===5||p.dia_semana==='5'?'selected':''}>Sexta-feira</option>
+          <option value="6" ${p.dia_semana===6||p.dia_semana==='6'?'selected':''}>Sábado</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Horário da sessão</label>
+        <input type="time" id="fp-hora-sessao" value="${p.hora_sessao||''}">
       </div>
       <div class="form-group">
         <label>Freq. de Pagamento</label>
@@ -1764,15 +1780,34 @@ function openModalPaciente(p = {}) {
       freq_pgto:       document.getElementById('fp-freqpgto').value  || null,
       nota_fiscal:     p.nota_fiscal || 'nao',
       sessao_atual:    parseInt(document.getElementById('fp-sessao-atual').value) || 1,
-      total_sessoes:   parseInt(document.getElementById('fp-total-sessoes').value) || 12
+      total_sessoes:   parseInt(document.getElementById('fp-total-sessoes').value) || 12,
+      hora_sessao:     document.getElementById('fp-hora-sessao').value || null,
+      dia_semana:      document.getElementById('fp-dia-semana').value !== '' ? parseInt(document.getElementById('fp-dia-semana').value) : null,
     };
     if (!body.nome) return toast('Nome é obrigatório', 'error') || false;
     try {
       let savedId;
+      const isNovo = !p.id;
       if (p.id) { await api('PUT', `/pacientes/${p.id}`, body); savedId = p.id; toast('Cliente atualizado!'); }
       else      { const r = await api('POST', '/pacientes', body); savedId = r.id; toast('Cliente cadastrado!'); }
       closeModal();
       refreshAll();
+      // Auto-agendar série para novo cliente com frequência + dia + horário definidos
+      if (isNovo && body.frequencia && body.dia_semana != null && body.hora_sessao && body.total_sessoes) {
+        try {
+          const intervalo = body.frequencia === '2x-mes' ? 14 : body.frequencia === '1x-mes' ? 30 : 7;
+          // Próxima ocorrência do dia da semana escolhido
+          const d = new Date(); d.setDate(d.getDate() + 1);
+          while (d.getDay() !== body.dia_semana) d.setDate(d.getDate() + 1);
+          const data_inicio = d.toISOString().slice(0, 10);
+          const res = await api('POST', '/agendamentos/serie', {
+            paciente_id: savedId, data_inicio, hora: body.hora_sessao,
+            quantidade: body.total_sessoes, valor: body.valor_sessao || 0, intervalo
+          });
+          toast(`✅ ${res.ids.length} sessões agendadas automaticamente!`);
+          refreshAll();
+        } catch(se) { toast('Cliente salvo, mas erro ao criar sessões: ' + se.message, 'error'); }
+      }
       // Se não tem CEP estruturado mas o campo endereco contém um, preenche automaticamente
       if (!body.nf_cep && savedId) {
         const match = /\b(\d{5}-?\d{3})\b/.exec(body.endereco || '');
