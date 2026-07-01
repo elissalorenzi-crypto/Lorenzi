@@ -1140,6 +1140,9 @@ async function verDetalhePaciente(id) {
 
   const total    = ags.length;
   const todasOrdenadas = [...ags].sort((a,b) => (b.data+b.hora).localeCompare(a.data+a.hora));
+  // Numeração cronológica: sessão mais antiga = #1
+  const numMap = {};
+  [...ags].sort((a,b) => (a.data+a.hora).localeCompare(b.data+b.hora)).forEach((a,i) => { numMap[a.id] = i+1; });
   const realizadas = ags.filter(a => a.status === 'realizado');
   const realiz   = realizadas.length;
   const faturado = realizadas.reduce((s, a) => s + (a.valor||0), 0);
@@ -1242,25 +1245,26 @@ async function verDetalhePaciente(id) {
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Data</th><th>Hora</th><th>Tipo</th><th>Status</th><th>Pagamento</th><th>Data Recebimento</th><th>Forma</th><th class="text-right">Valor</th><th></th></tr></thead>
+          <thead><tr><th style="width:36px;text-align:center">#</th><th>Data</th><th>Hora</th><th>Tipo</th><th>Status</th><th>Pagamento</th><th>Data Recebimento</th><th>Forma</th><th class="text-right">Valor</th><th></th></tr></thead>
           <tbody>
             ${todasOrdenadas.length ? todasOrdenadas.map(a => `
               <tr>
+                <td style="text-align:center;color:var(--muted);font-size:11px;font-weight:600">${numMap[a.id]}</td>
                 <td>${fmtData(a.data)}</td>
                 <td>${a.hora}</td>
                 <td>${TIPO_LABEL[a.tipo]||a.tipo}</td>
                 <td>${badgeStatus(a.status)}</td>
-                <td>${a.status === 'realizado' ? (a.pago ? '<span class="badge badge-realizado" style="font-size:11px">✓ Pago</span>' : `<button class="btn btn-xs" style="background:#e8f5e9;color:#388e3c;border:1.5px solid #388e3c;font-weight:700;padding:2px 8px" onclick="pagarRapido(${a.id})" title="Registrar recebimento">✓ Receber</button>`) : '—'}</td>
-                <td style="font-size:12px;color:var(--muted)">${a.data_pagamento ? fmtData(a.data_pagamento) : '—'}</td>
+                <td>${a.pago ? '<span class="badge badge-realizado" style="font-size:11px">✓ Pago</span>' : `<button class="btn btn-xs" style="background:#e8f5e9;color:#388e3c;border:1.5px solid #388e3c;font-weight:700;padding:2px 8px" onclick="pagarRapido(${a.id})" title="Registrar recebimento">✓ Receber</button>`}</td>
+                <td><input type="date" value="${a.data_pagamento||''}" onchange="salvarDataPagamento(${a.id},this.value)" style="border:1px solid #e0d5cb;border-radius:5px;padding:2px 6px;font-size:11px;color:var(--muted);background:transparent;width:118px"></td>
                 <td style="font-size:12px">${a.forma_pgto && a.pago ? ({pix:'PIX',dinheiro:'Dinheiro',credito:'Crédito',debito:'Débito',transferencia:'Transf.',convenio:'Convênio'}[a.forma_pgto]||a.forma_pgto) : '—'}</td>
                 <td class="text-right">${a.valor ? BRL(a.valor) : '—'}</td>
                 <td><button class="btn btn-ghost btn-xs" onclick="editAgendamento(${a.id})" title="Editar">✏️</button></td>
               </tr>
-            `).join('') : `<tr><td colspan="9" class="text-muted" style="text-align:center;padding:16px">Nenhum agendamento</td></tr>`}
+            `).join('') : `<tr><td colspan="10" class="text-muted" style="text-align:center;padding:16px">Nenhum agendamento</td></tr>`}
           </tbody>
           ${realiz ? `<tfoot style="font-weight:600;background:#faf8f6">
             <tr>
-              <td colspan="4" style="padding:8px 12px;font-size:12px;color:#888">${realiz} realizadas de ${total}</td>
+              <td colspan="5" style="padding:8px 12px;font-size:12px;color:#888">${realiz} realizadas de ${total}</td>
               <td colspan="3" style="padding:8px 12px;font-size:12px;color:#388e3c">Recebido: ${BRL(recebido)}${pendente > 0 ? ` · <span style="color:#e65100">Pendente: ${BRL(pendente)}</span>` : ''}</td>
               <td class="text-right" style="padding:8px 12px">${BRL(faturado)}</td>
               <td></td>
@@ -1338,7 +1342,7 @@ async function exportarHistoricoPDF(pacienteId) {
 
   const linhas = todasOrd.map(a => {
     const status = {agendado:'Agendado',confirmado:'Confirmado',realizado:'Realizado',cancelado:'Cancelado',falta:'Falta'}[a.status]||a.status;
-    const pgto   = a.status==='realizado' ? (a.pago ? '✓ Pago' : 'Pendente') : '—';
+    const pgto   = a.pago ? '✓ Pago' : 'Pendente';
     const dataPgto = a.data_pagamento ? a.data_pagamento.split('-').reverse().join('/') : '—';
     const forma  = a.forma_pgto && a.pago ? (FORMA[a.forma_pgto]||a.forma_pgto) : '—';
     const valor  = a.valor ? 'R$ '+a.valor.toFixed(2).replace('.',',') : '—';
@@ -3511,13 +3515,22 @@ async function pagarRapido(agId) {
   const ag = await api('GET', `/agendamentos/${agId}`);
   await api('PUT', `/agendamentos/${agId}`, {
     ...ag, pago: 1,
-    data_pagamento: HOJE(),
+    data_pagamento: ag.data_pagamento || HOJE(),
     forma_pgto: ag.forma_pgto || 'pix'
   });
   toast('💰 Recebido — ' + BRL(ag.valor));
   refreshAll();
   const dv = document.getElementById('pacientes-detail-view');
   if (dv && dv.style.display !== 'none' && ag.paciente_id) verDetalhePaciente(ag.paciente_id);
+}
+
+async function salvarDataPagamento(agId, data) {
+  try {
+    const ag = await api('GET', `/agendamentos/${agId}`);
+    await api('PUT', `/agendamentos/${agId}`, { ...ag, data_pagamento: data || null });
+  } catch(e) {
+    toast('Erro ao salvar data', 'error');
+  }
 }
 
 async function marcarPago(id) {
