@@ -4984,12 +4984,11 @@ function openModalPost(id, dataPreenchida) {
       </div>
       <div style="border:1px solid var(--border);border-radius:10px;padding:12px;background:#f9f5ff">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <label style="font-size:12px;font-weight:600;color:var(--plum)">🎨 Gerar Arte com IA</label>
-          <span style="font-size:10px;color:var(--muted);background:#ede7f6;padding:2px 8px;border-radius:20px">Em breve</span>
+          <label style="font-size:12px;font-weight:600;color:var(--plum)">🎨 Gerar Arte com IA (DALL-E 3)</label>
         </div>
         <input id="sp-prompt" type="text" placeholder="Descreva a arte desejada (ex: imagem calma com tons de lavanda sobre ansiedade)" value="${p?.imagem_prompt||''}" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;box-sizing:border-box;margin-bottom:8px">
-        <button disabled style="padding:7px 16px;border-radius:8px;border:none;background:#ede7f6;color:var(--plum);font-size:13px;cursor:not-allowed;opacity:.6">🖼 Gerar Arte (em breve)</button>
-        ${p?.imagem_url ? `<div style="margin-top:8px"><img src="${p.imagem_url}" style="max-width:100%;border-radius:8px"></div>` : ''}
+        <button onclick="gerarArtePost()" style="padding:7px 16px;border-radius:8px;border:none;background:var(--plum);color:#fff;font-size:13px;cursor:pointer">🖼 Gerar Arte</button>
+        <div id="arte-preview" style="margin-top:10px">${p?.imagem_url ? `<img src="${p.imagem_url}" style="max-width:100%;border-radius:8px">` : ''}</div>
       </div>
     </div>`;
 
@@ -5002,7 +5001,7 @@ function openModalPost(id, dataPreenchida) {
       hashtags:        document.getElementById('sp-hashtags').value.trim(),
       data_publicacao: document.getElementById('sp-data').value || null,
       imagem_prompt:   document.getElementById('sp-prompt').value.trim(),
-      imagem_url:      p?.imagem_url || null,
+      imagem_url:      document.getElementById('arte-preview')?.dataset?.url || p?.imagem_url || null,
     };
     if (p) {
       await api('PUT', `/posts-sociais/${p.id}`, body);
@@ -5020,6 +5019,26 @@ async function deletePostSocial(id) {
   await api('DELETE', `/posts-sociais/${id}`);
   toast('Post excluído');
   loadSocial();
+}
+
+async function gerarArtePost() {
+  const prompt = document.getElementById('sp-prompt')?.value?.trim();
+  if (!prompt) { toast('Descreva a arte antes de gerar', 'error'); return; }
+  const btn = document.querySelector('#modal-body button[onclick="gerarArtePost()"]');
+  const prev = document.getElementById('arte-preview');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Gerando…'; }
+  if (prev) prev.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:10px">Gerando imagem, aguarde ~15s…</div>';
+  try {
+    const r = await api('POST', '/gerar-arte', { prompt });
+    if (prev) prev.innerHTML = `<img src="${r.url}" style="max-width:100%;border-radius:8px;margin-top:4px">
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">Clique em Salvar para guardar este post com a arte gerada.</div>`;
+    // Guarda URL temporariamente para salvar junto com o post
+    if (prev) prev.dataset.url = r.url;
+  } catch(e) {
+    toast('Erro ao gerar arte: ' + e.message, 'error');
+    if (prev) prev.innerHTML = '';
+  }
+  if (btn) { btn.disabled = false; btn.textContent = '🖼 Gerar Arte'; }
 }
 
 async function iniciarApp() {

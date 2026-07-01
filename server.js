@@ -1130,6 +1130,33 @@ app.delete('/api/tarefas/:id', (req, res) => {
   res.json({ ok: true });
 });
 
+// ── GERAR ARTE (DALL-E 3) ─────────────────────────────────────
+app.post('/api/gerar-arte', async (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  const { prompt } = req.body;
+  if (!prompt) return res.status(400).json({ error: 'Prompt obrigatório' });
+  const key = process.env.OPENAI_API_KEY;
+  if (!key) return res.status(500).json({ error: 'OPENAI_API_KEY não configurada' });
+  try {
+    const resp = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+      body: JSON.stringify({
+        model: 'dall-e-3',
+        prompt: `Imagem para post de psicologia/saúde mental no estilo minimalista, tons suaves e acolhedores: ${prompt}`,
+        n: 1,
+        size: '1024x1024',
+        quality: 'standard',
+      })
+    });
+    const data = await resp.json();
+    if (!resp.ok) return res.status(500).json({ error: data.error?.message || 'Erro na API OpenAI' });
+    res.json({ url: data.data[0].url, revised_prompt: data.data[0].revised_prompt });
+  } catch(e) {
+    res.status(500).json({ error: 'Erro ao gerar imagem' });
+  }
+});
+
 // ── POSTS SOCIAIS ─────────────────────────────────────────────
 app.get('/api/posts-sociais', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
