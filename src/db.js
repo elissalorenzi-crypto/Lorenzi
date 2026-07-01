@@ -37,6 +37,7 @@ const migrations = [
   "ALTER TABLE pacientes ADD COLUMN total_sessoes INTEGER DEFAULT 12",
   "ALTER TABLE pacientes ADD COLUMN hora_sessao TEXT",
   "ALTER TABLE pacientes ADD COLUMN dia_semana INTEGER",
+  "ALTER TABLE agendamentos ADD COLUMN data_pagamento TEXT",
 ];
 for (const m of migrations) {
   try { db.exec(m); } catch(_) {}
@@ -196,6 +197,21 @@ db.exec(`
     dados_json  TEXT,
     lida        INTEGER DEFAULT 0,
     created_at  TEXT DEFAULT (datetime('now','localtime'))
+  );
+`);
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS posts_sociais (
+    id               INTEGER PRIMARY KEY AUTOINCREMENT,
+    rede             TEXT NOT NULL,
+    tema             TEXT,
+    texto            TEXT,
+    hashtags         TEXT,
+    data_publicacao  TEXT,
+    status           TEXT DEFAULT 'rascunho',
+    imagem_url       TEXT,
+    imagem_prompt    TEXT,
+    created_at       TEXT DEFAULT (datetime('now','localtime'))
   );
 `);
 
@@ -1019,6 +1035,24 @@ const getRespostasAtivProf = (paciente_id) => {
   return rows.map(r => ({ ...r, profissoes: JSON.parse(r.profissoes || '[]') }));
 };
 
+// ── POSTS SOCIAIS ────────────────────────────────────────────
+const getPostsSociais = (rede, status) => {
+  let q = 'SELECT * FROM posts_sociais WHERE 1=1';
+  const params = [];
+  if (rede)   { q += ' AND rede=?';   params.push(rede); }
+  if (status) { q += ' AND status=?'; params.push(status); }
+  q += ' ORDER BY data_publicacao ASC, created_at DESC';
+  return db.prepare(q).all(...params);
+};
+const getPostSocialById = (id) => db.prepare('SELECT * FROM posts_sociais WHERE id=?').get(id);
+const createPostSocial = (d) => rid(db.prepare(
+  'INSERT INTO posts_sociais (rede,tema,texto,hashtags,data_publicacao,status,imagem_url,imagem_prompt) VALUES (?,?,?,?,?,?,?,?)'
+).run(d.rede, d.tema||null, d.texto||null, d.hashtags||null, d.data_publicacao||null, d.status||'rascunho', d.imagem_url||null, d.imagem_prompt||null));
+const updatePostSocial = (id, d) => { db.prepare(
+  'UPDATE posts_sociais SET rede=?,tema=?,texto=?,hashtags=?,data_publicacao=?,status=?,imagem_url=?,imagem_prompt=? WHERE id=?'
+).run(d.rede, d.tema||null, d.texto||null, d.hashtags||null, d.data_publicacao||null, d.status||'rascunho', d.imagem_url||null, d.imagem_prompt||null, id); };
+const deletePostSocial = (id) => { db.prepare('DELETE FROM posts_sociais WHERE id=?').run(id); };
+
 module.exports = {
   getPacientes, getPacienteById, getPacienteByCpf, createPaciente, updatePaciente, deletePaciente,
   getAgendamentos, getAgendamentoById, createAgendamento, updateAgendamento, deleteAgendamento,
@@ -1033,5 +1067,6 @@ module.exports = {
   getNfseData,
   getTarefas, createTarefa, updateTarefa, deleteTarefa, resetTarefasDiarias,
   deletarSessoesFuturas, restaurarSessoesFuturas,
-  gerarLinkAtivProf, getLinkAtivProf, getInfoAtivProf, salvarRespostaAtivProf, getRespostasAtivProf
+  gerarLinkAtivProf, getLinkAtivProf, getInfoAtivProf, salvarRespostaAtivProf, getRespostasAtivProf,
+  getPostsSociais, getPostSocialById, createPostSocial, updatePostSocial, deletePostSocial
 };

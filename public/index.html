@@ -60,6 +60,9 @@
     <a href="#" class="nav-link" data-section="pagamentos">
       <span class="icon">💳</span> Pagamentos
     </a>
+    <a href="#" class="nav-link" data-section="social">
+      <span class="icon">📱</span> Social Media
+    </a>
     <a href="#" class="nav-link" data-section="configuracoes">
       <span class="icon">⚙️</span> Configurações
     </a>
@@ -939,6 +942,30 @@
     </div>
   </div>
 </div>
+
+    <!-- ── SOCIAL MEDIA ── -->
+    <div class="section" id="section-social">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button class="btn" onclick="socialView('calendario')" id="btn-social-cal" style="background:var(--plum);color:#fff">📅 Calendário</button>
+          <button class="btn" onclick="socialView('lista')" id="btn-social-lista">📋 Lista</button>
+          <select id="social-filtro-rede" onchange="loadSocial()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px">
+            <option value="">Todas as redes</option>
+            <option value="instagram">Instagram</option>
+            <option value="facebook">Facebook</option>
+            <option value="tiktok">TikTok</option>
+          </select>
+          <select id="social-filtro-status" onchange="loadSocial()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px">
+            <option value="">Todos os status</option>
+            <option value="rascunho">Rascunho</option>
+            <option value="agendado">Agendado</option>
+            <option value="publicado">Publicado</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="openModalPost(null)">+ Novo Post</button>
+      </div>
+      <div id="social-content"></div>
+    </div>
 
 <div id="toast-container"></div>
 <script src="/js/biblioteca.js"></script>

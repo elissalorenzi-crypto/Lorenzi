@@ -155,7 +155,8 @@ function navigate(name) {
     financeiro:   loadFinanceiro,
     pagamentos:   loadPagamentos,
     tarefas:      loadTarefas,
-    configuracoes:loadConfiguracoes
+    configuracoes:loadConfiguracoes,
+    social:       loadSocial
   };
   loaders[name]?.();
 }
@@ -4798,6 +4799,227 @@ async function deletarTarefa(id) {
   await api('DELETE', `/tarefas/${id}`);
   _tarefas = _tarefas.filter(t => t.id !== id);
   renderTarefas();
+}
+
+// ============================================================
+// SOCIAL MEDIA
+// ============================================================
+let _socialViewMode = 'calendario';
+let _socialPosts = [];
+
+const REDE_COR = {
+  instagram: { bg: 'linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)', label: 'Instagram', icon: '📸' },
+  facebook:  { bg: '#1877F2', label: 'Facebook',  icon: '👥' },
+  tiktok:    { bg: '#010101', label: 'TikTok',     icon: '🎵' },
+};
+const STATUS_SOCIAL = {
+  rascunho:  { label: 'Rascunho',  cor: '#9e9e9e' },
+  agendado:  { label: 'Agendado',  cor: '#1976d2' },
+  publicado: { label: 'Publicado', cor: '#388e3c' },
+};
+
+function socialView(mode) {
+  _socialViewMode = mode;
+  document.getElementById('btn-social-cal').style.background   = mode === 'calendario' ? 'var(--plum)' : '';
+  document.getElementById('btn-social-cal').style.color        = mode === 'calendario' ? '#fff' : '';
+  document.getElementById('btn-social-lista').style.background = mode === 'lista' ? 'var(--plum)' : '';
+  document.getElementById('btn-social-lista').style.color      = mode === 'lista' ? '#fff' : '';
+  renderSocial();
+}
+
+async function loadSocial() {
+  const rede   = document.getElementById('social-filtro-rede')?.value   || '';
+  const status = document.getElementById('social-filtro-status')?.value || '';
+  const params = new URLSearchParams();
+  if (rede)   params.set('rede', rede);
+  if (status) params.set('status', status);
+  _socialPosts = await api('GET', `/posts-sociais?${params}`);
+  renderSocial();
+}
+
+function renderSocial() {
+  const el = document.getElementById('social-content');
+  if (!el) return;
+  if (_socialViewMode === 'calendario') {
+    el.innerHTML = renderSocialCalendario();
+  } else {
+    el.innerHTML = renderSocialLista();
+  }
+}
+
+function renderSocialCalendario() {
+  // Descobrir mês/ano a exibir (mês atual ou primeiro post futuro)
+  const hoje = new Date();
+  const mesAtual = hoje.getFullYear() * 100 + (hoje.getMonth() + 1);
+
+  // Agrupar posts por data
+  const porData = {};
+  _socialPosts.forEach(p => {
+    if (p.data_publicacao) {
+      porData[p.data_publicacao] = porData[p.data_publicacao] || [];
+      porData[p.data_publicacao].push(p);
+    }
+  });
+
+  // Gerar 2 meses (atual + próximo)
+  let html = '';
+  for (let m = 0; m < 2; m++) {
+    const d = new Date(hoje.getFullYear(), hoje.getMonth() + m, 1);
+    const ano = d.getFullYear();
+    const mes = d.getMonth();
+    const nomeMes = MESES[mes];
+    const primeiroDia = new Date(ano, mes, 1).getDay();
+    const diasNoMes = new Date(ano, mes + 1, 0).getDate();
+
+    html += `<div class="card" style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <h3 style="margin:0;color:var(--plum)">${nomeMes} ${ano}</h3>
+        <span style="font-size:12px;color:var(--muted)">${_socialPosts.filter(p => p.data_publicacao?.startsWith(ano+'-'+(String(mes+1).padStart(2,'0')))).length} posts</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center">
+        ${['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map(d => `<div style="font-size:11px;font-weight:600;color:var(--muted);padding:4px">${d}</div>`).join('')}
+        ${Array(primeiroDia).fill('<div></div>').join('')}
+        ${Array.from({length: diasNoMes}, (_,i) => {
+          const dia = i + 1;
+          const dataStr = `${ano}-${String(mes+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+          const postsHoje = porData[dataStr] || [];
+          const isHoje = dataStr === HOJE();
+          return `<div onclick="openModalPost(null,'${dataStr}')" style="min-height:54px;border-radius:8px;border:1px solid ${isHoje?'var(--plum)':'var(--border)'};background:${isHoje?'#f3eaff':'#fff'};padding:3px;cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,.12)'" onmouseout="this.style.boxShadow=''">
+            <div style="font-size:11px;font-weight:${isHoje?'700':'400'};color:${isHoje?'var(--plum)':'inherit'};margin-bottom:2px">${dia}</div>
+            ${postsHoje.map(p => {
+              const r = REDE_COR[p.rede] || {};
+              return `<div onclick="event.stopPropagation();openModalPost(${p.id})" title="${p.tema||''}" style="font-size:9px;border-radius:4px;padding:1px 3px;margin-bottom:1px;background:${r.bg||'#eee'};color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer">${r.icon||'📱'} ${p.tema||p.rede}</div>`;
+            }).join('')}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }
+
+  // Posts sem data
+  const semData = _socialPosts.filter(p => !p.data_publicacao);
+  if (semData.length) {
+    html += `<div class="card"><h4 style="margin:0 0 10px;color:var(--muted)">📋 Sem data definida (${semData.length})</h4>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        ${semData.map(p => socialCardMini(p)).join('')}
+      </div></div>`;
+  }
+  return html;
+}
+
+function renderSocialLista() {
+  if (!_socialPosts.length) return '<div class="card" style="text-align:center;color:var(--muted);padding:40px">Nenhum post cadastrado ainda.</div>';
+  return `<div style="display:flex;flex-direction:column;gap:12px">
+    ${_socialPosts.map(p => {
+      const r = REDE_COR[p.rede] || { bg:'#eee', label: p.rede, icon:'📱' };
+      const s = STATUS_SOCIAL[p.status] || { label: p.status, cor:'#aaa' };
+      return `<div class="card" style="display:flex;gap:14px;align-items:flex-start;cursor:pointer" onclick="openModalPost(${p.id})">
+        <div style="width:44px;height:44px;border-radius:10px;background:${r.bg};display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">${r.icon}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+            <strong style="font-size:14px">${p.tema || '(sem tema)'}</strong>
+            <span style="font-size:11px;padding:2px 8px;border-radius:20px;background:${s.cor}20;color:${s.cor};border:1px solid ${s.cor}40">${s.label}</span>
+            <span style="font-size:11px;color:var(--muted)">${r.label}</span>
+          </div>
+          <div style="font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.texto || '—'}</div>
+          ${p.data_publicacao ? `<div style="font-size:11px;color:var(--plum);margin-top:3px">📅 ${formatarData(p.data_publicacao)}</div>` : ''}
+        </div>
+        <button onclick="event.stopPropagation();deletePostSocial(${p.id})" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--muted);padding:4px" title="Excluir">🗑</button>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function socialCardMini(p) {
+  const r = REDE_COR[p.rede] || { bg:'#eee', icon:'📱' };
+  return `<div onclick="openModalPost(${p.id})" style="padding:8px 12px;border-radius:8px;background:${r.bg};color:#fff;cursor:pointer;font-size:12px;max-width:160px">
+    ${r.icon} ${p.tema || p.rede}
+  </div>`;
+}
+
+function formatarData(s) {
+  if (!s) return '—';
+  const [y,m,d] = s.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function openModalPost(id, dataPreenchida) {
+  const p = id ? _socialPosts.find(x => x.id === id) : null;
+  const titulo = p ? 'Editar Post' : 'Novo Post';
+  const html = `
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--muted)">Rede Social</label>
+          <select id="sp-rede" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;margin-top:4px">
+            <option value="instagram" ${(!p||p.rede==='instagram')?'selected':''}>📸 Instagram</option>
+            <option value="facebook"  ${(p?.rede==='facebook')?'selected':''}>👥 Facebook</option>
+            <option value="tiktok"    ${(p?.rede==='tiktok')?'selected':''}>🎵 TikTok</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--muted)">Status</label>
+          <select id="sp-status" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;margin-top:4px">
+            <option value="rascunho"  ${(!p||p.status==='rascunho')?'selected':''}>Rascunho</option>
+            <option value="agendado"  ${(p?.status==='agendado')?'selected':''}>Agendado</option>
+            <option value="publicado" ${(p?.status==='publicado')?'selected':''}>Publicado</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:600;color:var(--muted)">Tema / Título</label>
+        <input id="sp-tema" type="text" placeholder="Ex: Dicas para lidar com a ansiedade" value="${p?.tema||''}" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;margin-top:4px;box-sizing:border-box">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:600;color:var(--muted)">Texto do post</label>
+        <textarea id="sp-texto" rows="5" placeholder="Escreva o conteúdo do post aqui..." style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;margin-top:4px;box-sizing:border-box;resize:vertical;font-family:inherit">${p?.texto||''}</textarea>
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:600;color:var(--muted)">Hashtags</label>
+        <input id="sp-hashtags" type="text" placeholder="#psicologia #saudemental #bemestar" value="${p?.hashtags||''}" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;margin-top:4px;box-sizing:border-box">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:600;color:var(--muted)">Data de publicação</label>
+        <input id="sp-data" type="date" value="${p?.data_publicacao||dataPreenchida||''}" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;margin-top:4px;box-sizing:border-box">
+      </div>
+      <div style="border:1px solid var(--border);border-radius:10px;padding:12px;background:#f9f5ff">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <label style="font-size:12px;font-weight:600;color:var(--plum)">🎨 Gerar Arte com IA</label>
+          <span style="font-size:10px;color:var(--muted);background:#ede7f6;padding:2px 8px;border-radius:20px">Em breve</span>
+        </div>
+        <input id="sp-prompt" type="text" placeholder="Descreva a arte desejada (ex: imagem calma com tons de lavanda sobre ansiedade)" value="${p?.imagem_prompt||''}" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;box-sizing:border-box;margin-bottom:8px">
+        <button disabled style="padding:7px 16px;border-radius:8px;border:none;background:#ede7f6;color:var(--plum);font-size:13px;cursor:not-allowed;opacity:.6">🖼 Gerar Arte (em breve)</button>
+        ${p?.imagem_url ? `<div style="margin-top:8px"><img src="${p.imagem_url}" style="max-width:100%;border-radius:8px"></div>` : ''}
+      </div>
+    </div>`;
+
+  openModal(titulo, html, async () => {
+    const body = {
+      rede:            document.getElementById('sp-rede').value,
+      status:          document.getElementById('sp-status').value,
+      tema:            document.getElementById('sp-tema').value.trim(),
+      texto:           document.getElementById('sp-texto').value.trim(),
+      hashtags:        document.getElementById('sp-hashtags').value.trim(),
+      data_publicacao: document.getElementById('sp-data').value || null,
+      imagem_prompt:   document.getElementById('sp-prompt').value.trim(),
+      imagem_url:      p?.imagem_url || null,
+    };
+    if (p) {
+      await api('PUT', `/posts-sociais/${p.id}`, body);
+      toast('Post atualizado!');
+    } else {
+      await api('POST', '/posts-sociais', body);
+      toast('Post criado!');
+    }
+    loadSocial();
+  }, { large: true, saveLabel: p ? 'Salvar' : 'Criar Post' });
+}
+
+async function deletePostSocial(id) {
+  if (!confirm('Excluir este post?')) return;
+  await api('DELETE', `/posts-sociais/${id}`);
+  toast('Post excluído');
+  loadSocial();
 }
 
 async function iniciarApp() {

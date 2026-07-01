@@ -1130,6 +1130,27 @@ app.delete('/api/tarefas/:id', (req, res) => {
   res.json({ ok: true });
 });
 
+// ── POSTS SOCIAIS ─────────────────────────────────────────────
+app.get('/api/posts-sociais', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  res.json(db.getPostsSociais(req.query.rede, req.query.status));
+});
+app.post('/api/posts-sociais', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  const id = db.createPostSocial(req.body);
+  res.json({ id });
+});
+app.put('/api/posts-sociais/:id', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  db.updatePostSocial(Number(req.params.id), req.body);
+  res.json({ ok: true });
+});
+app.delete('/api/posts-sociais/:id', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  db.deletePostSocial(Number(req.params.id));
+  res.json({ ok: true });
+});
+
 // ─────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log('\n╔══════════════════════════════════════════════╗');
