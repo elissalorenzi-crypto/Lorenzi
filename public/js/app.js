@@ -1337,8 +1337,13 @@ async function exportarHistoricoPDF(pacienteId) {
   const pendente = faturado - recebido;
 
   const psico   = cfg.nome_psicologa || 'Psicóloga';
-  const crp     = cfg.crp ? ` · CRP ${cfg.crp}` : '';
+  const crpRaw  = (cfg.crp || '').replace(/^CRP\s*/i, '');
+  const crp     = crpRaw ? ` · CRP ${crpRaw}` : '';
   const hoje    = new Date().toLocaleDateString('pt-BR', {day:'2-digit',month:'long',year:'numeric'});
+
+  // Numeração cronológica: #1 = sessão mais antiga
+  const numMap = {};
+  todasOrd.forEach((a, i) => { numMap[a.id] = i + 1; });
 
   const linhas = todasOrd.map(a => {
     const status = {agendado:'Agendado',confirmado:'Confirmado',realizado:'Realizado',cancelado:'Cancelado',falta:'Falta'}[a.status]||a.status;
@@ -1347,9 +1352,10 @@ async function exportarHistoricoPDF(pacienteId) {
     const forma  = a.forma_pgto && a.pago ? (FORMA[a.forma_pgto]||a.forma_pgto) : '—';
     const valor  = a.valor ? 'R$ '+a.valor.toFixed(2).replace('.',',') : '—';
     return `<tr>
+      <td style="text-align:center;color:#aaa;font-size:9pt">${numMap[a.id]}</td>
       <td>${a.data.split('-').reverse().join('/')}</td>
       <td>${a.hora}</td>
-      <td>${({individual:'Individual',casal:'Casal',grupo:'Grupo',online:'Online',avaliacao:'Avaliação'}[a.tipo]||a.tipo)}</td>
+      <td>${({individual:'Individual',casal:'Casal',grupo:'Grupo',online:'Online',avaliacao:'Avaliação',sessao:'Sessão'}[a.tipo]||a.tipo)}</td>
       <td>${status}</td>
       <td>${pgto}</td>
       <td>${dataPgto}</td>
@@ -1377,6 +1383,7 @@ async function exportarHistoricoPDF(pacienteId) {
   table { width:100%; border-collapse:collapse; font-size:9.5pt; }
   thead tr { background:#7a5a48; color:#fff; }
   thead th { padding:8px 10px; text-align:left; font-weight:600; }
+  thead th:first-child { text-align:center; width:32px; }
   thead th:last-child { text-align:right; }
   tbody tr:nth-child(even) { background:#faf7f4; }
   tbody td { padding:7px 10px; border-bottom:1px solid #ece5de; }
@@ -1418,27 +1425,19 @@ async function exportarHistoricoPDF(pacienteId) {
 <table>
   <thead>
     <tr>
-      <th>Data</th><th>Hora</th><th>Tipo</th><th>Status</th>
+      <th>#</th><th>Data</th><th>Hora</th><th>Tipo</th><th>Status</th>
       <th>Pagamento</th><th>Data Receb.</th><th>Forma</th><th>Valor</th>
     </tr>
   </thead>
   <tbody>${linhas}</tbody>
   ${realizadas.length ? `<tfoot>
     <tr>
-      <td colspan="4">${realizadas.length} sessão(ões) realizada(s) de ${ags.length} no total</td>
+      <td colspan="5">${realizadas.length} sessão(ões) realizada(s) de ${ags.length} no total</td>
       <td colspan="3">Recebido: R$ ${recebido.toFixed(2).replace('.',',')}${pendente>0?' · Pendente: R$ '+pendente.toFixed(2).replace('.',','):''}</td>
       <td style="text-align:right">R$ ${faturado.toFixed(2).replace('.',',')}</td>
     </tr>
   </tfoot>` : ''}
 </table>
-
-<div class="totais">
-  <div class="tot-card"><div class="tl">Total Sessões</div><div class="tv plum">${ags.length}</div></div>
-  <div class="tot-card"><div class="tl">Realizadas</div><div class="tv plum">${realizadas.length}</div></div>
-  <div class="tot-card"><div class="tl">Faturado</div><div class="tv plum">R$ ${faturado.toFixed(2).replace('.',',')}</div></div>
-  <div class="tot-card"><div class="tl">Recebido</div><div class="tv green">R$ ${recebido.toFixed(2).replace('.',',')}</div></div>
-  ${pendente > 0 ? `<div class="tot-card"><div class="tl">A Receber</div><div class="tv orange">R$ ${pendente.toFixed(2).replace('.',',')}</div></div>` : ''}
-</div>
 
 <div class="assinatura">
   <div class="linha"></div>
