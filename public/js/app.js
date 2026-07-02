@@ -4856,7 +4856,32 @@ function renderSocial() {
 function renderSocialEstilo() {
   const estilo = _config.social_estilo || '';
   const importados = _config.social_instagram_posts ? JSON.parse(_config.social_instagram_posts) : [];
+  const midias = _config.social_estilo_midias ? JSON.parse(_config.social_estilo_midias) : [];
+
+  const miniMidias = midias.map(m => `
+    <div style="position:relative;display:inline-block">
+      ${m.tipo === 'video'
+        ? `<video src="${m.url}" style="width:110px;height:110px;object-fit:cover;border-radius:10px;border:2px solid var(--border)" muted></video>
+           <span style="position:absolute;bottom:4px;left:4px;background:rgba(0,0,0,.6);color:#fff;font-size:10px;padding:2px 5px;border-radius:4px">🎥 vídeo</span>`
+        : `<img src="${m.url}" style="width:110px;height:110px;object-fit:cover;border-radius:10px;border:2px solid var(--border)">`}
+      <button onclick="removerEstiloMidia('${m.url}')" style="position:absolute;top:-6px;right:-6px;background:#e53935;color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:13px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center">×</button>
+    </div>`).join('');
+
   return `<div style="display:flex;flex-direction:column;gap:16px;max-width:720px">
+
+    <!-- Mídias de referência visual -->
+    <div class="card" style="border-left:4px solid var(--plum)">
+      <h3 style="margin:0 0 6px;color:var(--plum)">🖼 Imagens e Vídeos de Referência</h3>
+      <p style="font-size:13px;color:var(--muted);margin:0 0 12px">Fixe imagens e vídeos dos seus posts para a IA analisar o seu estilo visual e manter o padrão ao gerar novos conteúdos.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+        ${miniMidias || '<span style="font-size:13px;color:var(--muted)">Nenhuma mídia fixada ainda</span>'}
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <input type="file" id="estilo-midia-input" accept="image/*,video/*" multiple style="flex:1;font-size:12px;border:1px solid var(--border);border-radius:8px;padding:6px;background:#fff">
+        <button onclick="adicionarEstiloMidia()" style="padding:8px 16px;border-radius:8px;border:none;background:var(--plum);color:#fff;font-size:13px;cursor:pointer;white-space:nowrap">📌 Fixar Mídia</button>
+      </div>
+      ${midias.length ? `<div style="margin-top:8px;font-size:12px;color:var(--muted)">✅ ${midias.length} mídia(s) fixada(s) — a IA usa até 3 imagens como referência visual</div>` : ''}
+    </div>
 
     <!-- Importar JSON do Instagram -->
     <div class="card" style="border-left:4px solid #e1306c">
@@ -4873,7 +4898,7 @@ function renderSocialEstilo() {
     <div class="card">
       <h3 style="margin:0 0 6px;color:var(--plum)">✍️ Referência de Estilo (manual)</h3>
       <p style="font-size:13px;color:var(--muted);margin:0 0 12px">Cole aqui exemplos dos seus melhores posts (3 a 5). A IA usa isso como referência de tom e linguagem em todas as gerações.</p>
-      <textarea id="social-estilo-input" rows="12" placeholder="Exemplo de post 1:
+      <textarea id="social-estilo-input" rows="10" placeholder="Exemplo de post 1:
 Você sabia que a ansiedade pode se manifestar no corpo antes mesmo de aparecer nos pensamentos? 🌿
 #psicologia #ansiedade #saudemental
 
@@ -5248,6 +5273,42 @@ async function importarPostsInstagram() {
     toast('Erro ao importar: ' + e.message, 'error');
   }
   if (btn) { btn.disabled = false; btn.textContent = '📥 Importar Posts'; }
+}
+
+async function adicionarEstiloMidia() {
+  const input = document.getElementById('estilo-midia-input');
+  const files = [...(input?.files || [])];
+  if (!files.length) { toast('Selecione pelo menos uma imagem ou vídeo', 'error'); return; }
+  const btn = document.querySelector('#social-content button[onclick="adicionarEstiloMidia()"]');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Enviando…'; }
+  let ok = 0;
+  for (const file of files) {
+    const form = new FormData();
+    form.append('file', file);
+    try {
+      const r = await fetch('/api/social/estilo-midia', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + getToken() },
+        body: form,
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error);
+      ok++;
+    } catch(e) { toast('Erro ao enviar ' + file.name + ': ' + e.message, 'error'); }
+  }
+  if (ok) {
+    toast(`✅ ${ok} mídia(s) fixada(s)!`);
+    _config = await api('GET', '/configuracoes');
+    renderSocial();
+  }
+  if (btn) { btn.disabled = false; btn.textContent = '📌 Fixar Mídia'; }
+}
+
+async function removerEstiloMidia(url) {
+  await api('DELETE', '/social/estilo-midia', { url });
+  _config = await api('GET', '/configuracoes');
+  toast('Mídia removida');
+  renderSocial();
 }
 
 async function salvarEstiloInstagram() {

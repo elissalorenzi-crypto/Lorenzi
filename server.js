@@ -22,6 +22,21 @@ const upload = multer({
   }
 });
 
+const uploadEstilo = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      const dir = path.join(__dirname, 'public/uploads/social/estilo');
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      cb(null, dir);
+    },
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname) || (file.mimetype.startsWith('video') ? '.mp4' : '.jpg');
+      cb(null, `ref_${Date.now()}${ext}`);
+    }
+  }),
+  limits: { fileSize: 50 * 1024 * 1024 },
+});
+
 const crypto = require('crypto');
 
 const app  = express();
@@ -1163,6 +1178,34 @@ app.post('/api/gerar-arte', async (req, res) => {
   }
 });
 
+// ── ESTILO MÍDIA (imagens/vídeos de referência) ───────────────
+app.post('/api/social/estilo-midia', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  uploadEstilo.single('file')(req, res, (err) => {
+    if (err) return res.status(400).json({ error: err.message });
+    const file = req.file;
+    if (!file) return res.status(400).json({ error: 'Arquivo obrigatório' });
+    const url = `/uploads/social/estilo/${file.filename}`;
+    const isVideo = file.mimetype.startsWith('video');
+    // Salva lista de mídias de referência na configuração
+    const atual = JSON.parse(db.getConfig('social_estilo_midias') || '[]');
+    atual.push({ url, tipo: isVideo ? 'video' : 'imagem', nome: file.originalname });
+    db.setConfig('social_estilo_midias', JSON.stringify(atual));
+    res.json({ url, tipo: isVideo ? 'video' : 'imagem' });
+  });
+});
+
+app.delete('/api/social/estilo-midia', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  const { url } = req.body;
+  const atual = JSON.parse(db.getConfig('social_estilo_midias') || '[]');
+  const nova = atual.filter(m => m.url !== url);
+  db.setConfig('social_estilo_midias', JSON.stringify(nova));
+  // Remove arquivo do disco
+  try { fs.unlinkSync(path.join(__dirname, 'public', url)); } catch(_) {}
+  res.json({ ok: true });
+});
+
 // ── ANALISAR MÍDIA COM GPT-4o VISION ─────────────────────────
 app.post('/api/analisar-midia', async (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
@@ -1172,6 +1215,20 @@ app.post('/api/analisar-midia', async (req, res) => {
   if (!key) return res.status(500).json({ error: 'OPENAI_API_KEY não configurada' });
   const estiloCtx = estilo ? `\n\nReferência de estilo da psicóloga (posts anteriores):\n${estilo}` : '';
   const redesCtx = rede ? ` para ${rede}` : '';
+
+  // Monta conteúdo com imagens de referência de estilo (até 3)
+  const midiaRefs = JSON.parse(db.getConfig('social_estilo_midias') || '[]');
+  const refsImagem = midiaRefs.filter(m => m.tipo === 'imagem').slice(0, 3);
+  const refContent = refsImagem.map(m => {
+    try {
+      const b64ref = fs.readFileSync(path.join(__dirname, 'public', m.url)).toString('base64');
+      const ext = path.extname(m.url).slice(1) || 'jpeg';
+      return { type: 'image_url', image_url: { url: `data:image/${ext};base64,${b64ref}`, detail: 'low' } };
+    } catch(_) { return null; }
+  }).filter(Boolean);
+
+  const refTexto = refsImagem.length ? `\n\nVocê também tem ${refsImagem.length} imagem(ns) de referência de estilo visual da psicóloga — use-as para manter o padrão visual e de comunicação.` : '';
+
   try {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -1181,7 +1238,8 @@ app.post('/api/analisar-midia', async (req, res) => {
         messages: [{
           role: 'user',
           content: [
-            { type: 'text', text: `Você é especialista em marketing para psicólogos. Analise esta imagem e crie um post${redesCtx} no estilo acolhedor, profissional e humanizado de uma psicóloga clínica.${estiloCtx}\n\nRetorne APENAS um JSON válido com as chaves: tema, texto, hashtags, prompt_arte. Exemplo: {"tema":"Ansiedade","texto":"Texto do post...","hashtags":"#psicologia #ansiedade","prompt_arte":"Descrição para gerar arte relacionada"}` },
+            { type: 'text', text: `Você é especialista em marketing para psicólogos. Analise esta imagem e crie um post${redesCtx} no estilo acolhedor, profissional e humanizado de uma psicóloga clínica.${estiloCtx}${refTexto}\n\nRetorne APENAS um JSON válido com as chaves: tema, texto, hashtags, prompt_arte. Exemplo: {"tema":"Ansiedade","texto":"Texto do post...","hashtags":"#psicologia #ansiedade","prompt_arte":"Descrição para gerar arte relacionada"}` },
+            ...refContent,
             { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64}`, detail: 'high' } }
           ]
         }],
@@ -1207,23 +1265,37 @@ app.post('/api/gerar-texto-post', async (req, res) => {
   if (!key) return res.status(500).json({ error: 'OPENAI_API_KEY não configurada' });
   const estiloCtx = estilo ? `\n\nReferência de estilo da psicóloga:\n${estilo}` : '';
   const redesCtx = rede ? ` para ${rede}` : '';
+
+  // Inclui imagens de referência de estilo (até 3)
+  const midiaRefs = JSON.parse(db.getConfig('social_estilo_midias') || '[]');
+  const refsImagem = midiaRefs.filter(m => m.tipo === 'imagem').slice(0, 3);
+  const refContent = refsImagem.map(m => {
+    try {
+      const b64ref = fs.readFileSync(path.join(__dirname, 'public', m.url)).toString('base64');
+      const ext = path.extname(m.url).slice(1) || 'jpeg';
+      return { type: 'image_url', image_url: { url: `data:image/${ext};base64,${b64ref}`, detail: 'low' } };
+    } catch(_) { return null; }
+  }).filter(Boolean);
+  const refTexto = refsImagem.length ? `\n\nVocê tem ${refsImagem.length} imagem(ns) de referência visual da psicóloga. Mantenha o mesmo padrão de comunicação e identidade visual.` : '';
+
   try {
+    const content_msg = refContent.length
+      ? [ { type: 'text', text: `Crie um post${redesCtx} sobre "${tema}" para uma psicóloga clínica. Tom: acolhedor, profissional, humanizado.${estiloCtx}${refTexto}\n\nRetorne APENAS JSON: {"texto":"...","hashtags":"...","prompt_arte":"..."}` }, ...refContent ]
+      : `Crie um post${redesCtx} sobre "${tema}" para uma psicóloga clínica. Tom: acolhedor, profissional, humanizado.${estiloCtx}\n\nRetorne APENAS JSON: {"texto":"...","hashtags":"...","prompt_arte":"..."}`;
+
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
       body: JSON.stringify({
         model: 'gpt-4o',
-        messages: [{
-          role: 'user',
-          content: `Crie um post${redesCtx} sobre "${tema}" para uma psicóloga clínica. Tom: acolhedor, profissional, humanizado.${estiloCtx}\n\nRetorne APENAS JSON: {"texto":"...","hashtags":"...","prompt_arte":"..."}`
-        }],
+        messages: [{ role: 'user', content: content_msg }],
         max_tokens: 1000,
       })
     });
     const data = await resp.json();
     if (!resp.ok) return res.status(500).json({ error: data.error?.message || 'Erro' });
-    const content = data.choices[0].message.content.trim();
-    const json = JSON.parse(content.replace(/^```json\n?|\n?```$/g, ''));
+    const txt = data.choices[0].message.content.trim();
+    const json = JSON.parse(txt.replace(/^```json\n?|\n?```$/g, ''));
     res.json(json);
   } catch(e) {
     res.status(500).json({ error: 'Erro ao gerar texto: ' + e.message });
