@@ -1188,7 +1188,7 @@ app.post('/api/social/estilo-midia', (req, res) => {
     const url = `/uploads/social/estilo/${file.filename}`;
     const isVideo = file.mimetype.startsWith('video');
     // Salva lista de mídias de referência na configuração
-    const atual = JSON.parse(db.getConfig('social_estilo_midias') || '[]');
+    const atual = JSON.parse(db.getConfig()['social_estilo_midias'] || '[]');
     atual.push({ url, tipo: isVideo ? 'video' : 'imagem', nome: file.originalname });
     db.setConfig('social_estilo_midias', JSON.stringify(atual));
     res.json({ url, tipo: isVideo ? 'video' : 'imagem' });
@@ -1198,7 +1198,7 @@ app.post('/api/social/estilo-midia', (req, res) => {
 app.delete('/api/social/estilo-midia', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
   const { url } = req.body;
-  const atual = JSON.parse(db.getConfig('social_estilo_midias') || '[]');
+  const atual = JSON.parse(db.getConfig()['social_estilo_midias'] || '[]');
   const nova = atual.filter(m => m.url !== url);
   db.setConfig('social_estilo_midias', JSON.stringify(nova));
   // Remove arquivo do disco
@@ -1217,7 +1217,7 @@ app.post('/api/analisar-midia', async (req, res) => {
   const redesCtx = rede ? ` para ${rede}` : '';
 
   // Monta conteúdo com imagens de referência de estilo (até 3)
-  const midiaRefs = JSON.parse(db.getConfig('social_estilo_midias') || '[]');
+  const midiaRefs = JSON.parse(db.getConfig()['social_estilo_midias'] || '[]');
   const refsImagem = midiaRefs.filter(m => m.tipo === 'imagem').slice(0, 3);
   const refContent = refsImagem.map(m => {
     try {
@@ -1267,7 +1267,7 @@ app.post('/api/gerar-texto-post', async (req, res) => {
   const redesCtx = rede ? ` para ${rede}` : '';
 
   // Inclui imagens de referência de estilo (até 3)
-  const midiaRefs = JSON.parse(db.getConfig('social_estilo_midias') || '[]');
+  const midiaRefs = JSON.parse(db.getConfig()['social_estilo_midias'] || '[]');
   const refsImagem = midiaRefs.filter(m => m.tipo === 'imagem').slice(0, 3);
   const refContent = refsImagem.map(m => {
     try {
