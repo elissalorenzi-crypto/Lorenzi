@@ -207,7 +207,7 @@ async function init() {
     renderTabela(profissoes);
     document.getElementById('loading').style.display = 'none';
     document.getElementById('conteudo').style.display = '';
-  } catch(e) { mostrarErro('Erro ao carregar. Tente novamente.'); }
+  } catch(e) { mostrarErro('Erro ao carregar. Tente novamente. (' + e.message + ')'); }
 }
 
 function mostrarErro(msg) {
@@ -226,16 +226,16 @@ function renderTabela(lista) {
     const tr = document.createElement('tr');
     tr.className = 'prof-row' + (selecionadas.has(p.mp) ? ' selecionado' : '');
     tr.dataset.mp = p.mp;
-    tr.dataset.area = p.area;
-    tr.dataset.form = p.form;
+    tr.dataset.area = p.area || '';
+    tr.dataset.form = p.form || '';
     tr.dataset.desc = p.desc || '';
     const areaBadge = p.area ? '<span class="badge mp-a-'+p.area+'">'+p.areaNome+'</span>' : '';
-    const formBadge = p.form ? '<span class="form-badge '+p.form+'">'+formLabel[p.form.replace('mp-','')]+'</span>' : '';
-    const formKey = p.form.replace('mp-', '');
+    const formKey = p.form ? p.form.replace('mp-', '') : '';
+    const formBadge = formKey ? '<span class="form-badge mp-'+formKey+'">'+( formLabel[formKey]||'' )+'</span>' : '';
     tr.innerHTML =
       '<td class="chk-cell" onclick="toggle(\''+p.mp+'\')">'+( selecionadas.has(p.mp) ? '☑' : '☐')+'</td>'+
       '<td class="nome-cell" onclick="toggleDesc(this)">'+p.nome+areaBadge+'</td>'+
-      '<td><span class="form-badge '+p.form+'">'+( formLabel[formKey]||'' )+'</span></td>';
+      '<td>'+formBadge+'</td>';
     tbody.appendChild(tr);
   });
   atualizarCnt(lista.length);
