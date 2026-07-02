@@ -1323,6 +1323,16 @@ app.delete('/api/posts-sociais/:id', (req, res) => {
   res.json({ ok: true });
 });
 
+// diagnóstico — remover após confirmar
+app.get('/api/debug-env', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  res.json({
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY ? '✅ presente (' + process.env.OPENAI_API_KEY.slice(0,12) + '...)' : '❌ AUSENTE',
+    NODE_ENV: process.env.NODE_ENV || '(não definido)',
+    PORT: process.env.PORT || '(não definido)',
+  });
+});
+
 // ─────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log('\n╔══════════════════════════════════════════════╗');
