@@ -5113,26 +5113,62 @@ function openModalPost(id, dataPreenchida) {
     </div>`;
 
   openModal(titulo, html, async () => {
-    const body = {
-      rede:            document.getElementById('sp-rede').value,
-      status:          document.getElementById('sp-status').value,
-      tema:            document.getElementById('sp-tema').value.trim(),
-      texto:           document.getElementById('sp-texto').value.trim(),
-      hashtags:        document.getElementById('sp-hashtags').value.trim(),
-      data_publicacao: document.getElementById('sp-data').value || null,
-      imagem_prompt:   document.getElementById('sp-prompt').value.trim(),
-      imagem_url:      document.getElementById('arte-preview')?.dataset?.url || p?.imagem_url || null,
-      formato:         document.getElementById('sp-formato')?.value || 'estatico',
-    };
-    if (p) {
-      await api('PUT', `/posts-sociais/${p.id}`, body);
-      toast('Post atualizado!');
-    } else {
-      await api('POST', '/posts-sociais', body);
-      toast('Post criado!');
-    }
-    loadSocial();
+    await salvarPost(p);
   }, { large: true, saveLabel: p ? 'Salvar' : 'Criar Post' });
+
+  // Injeta botão extra no footer do modal após renderizar
+  setTimeout(() => {
+    const footer = document.querySelector('#modal-box .modal-footer, #modal-box .modal-actions');
+    const saveBtn = document.getElementById('modal-save-btn');
+    if (saveBtn && !document.getElementById('btn-salvar-agenda')) {
+      const btn = document.createElement('button');
+      btn.id = 'btn-salvar-agenda';
+      btn.className = 'btn';
+      btn.style.cssText = 'background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;margin-right:8px';
+      btn.textContent = '📅 Salvar em minha agenda';
+      btn.onclick = async () => { await salvarPost(p, true); closeModal(); };
+      saveBtn.parentNode.insertBefore(btn, saveBtn);
+    }
+  }, 50);
+}
+
+async function salvarPost(p, adicionarAgenda = false) {
+  const body = {
+    rede:            document.getElementById('sp-rede').value,
+    status:          document.getElementById('sp-status').value,
+    tema:            document.getElementById('sp-tema').value.trim(),
+    texto:           document.getElementById('sp-texto').value.trim(),
+    hashtags:        document.getElementById('sp-hashtags').value.trim(),
+    data_publicacao: document.getElementById('sp-data').value || null,
+    imagem_prompt:   document.getElementById('sp-prompt').value.trim(),
+    imagem_url:      document.getElementById('arte-preview')?.dataset?.url || p?.imagem_url || null,
+    formato:         document.getElementById('sp-formato')?.value || 'estatico',
+  };
+  let postId = p?.id;
+  if (p) {
+    await api('PUT', `/posts-sociais/${p.id}`, body);
+    toast('Post atualizado!');
+  } else {
+    const r = await api('POST', '/posts-sociais', body);
+    postId = r.id;
+    toast('Post criado!');
+  }
+  if (adicionarAgenda && body.data_publicacao) {
+    const fmtLabel = {estatico:'🖼 Estático',carrossel:'🎠 Carrossel',reels:'🎬 Reels',stories:'⭕ Stories'}[body.formato] || body.formato;
+    const redeLabel = {instagram:'📸 Instagram',facebook:'👥 Facebook',tiktok:'🎵 TikTok'}[body.rede] || body.rede;
+    await api('POST', '/agendamentos', {
+      paciente_id: null,
+      data: body.data_publicacao,
+      hora: '09:00',
+      duracao: 30,
+      tipo: 'outro',
+      status: 'agendado',
+      valor: 0,
+      obs: `${redeLabel} · ${fmtLabel}\n${body.tema || ''}`,
+    });
+    toast('📅 Adicionado à agenda!');
+  }
+  loadSocial();
 }
 
 function previewPost() {
