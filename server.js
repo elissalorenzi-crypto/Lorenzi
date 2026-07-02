@@ -1142,16 +1142,22 @@ app.post('/api/gerar-arte', async (req, res) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
       body: JSON.stringify({
-        model: 'dall-e-3',
+        model: 'gpt-image-1',
         prompt: `Imagem para post de psicologia/saúde mental no estilo minimalista, tons suaves e acolhedores: ${prompt}`,
         n: 1,
         size: '1024x1024',
-        quality: 'standard',
+        output_format: 'png',
       })
     });
     const data = await resp.json();
     if (!resp.ok) return res.status(500).json({ error: data.error?.message || 'Erro na API OpenAI' });
-    res.json({ url: data.data[0].url, revised_prompt: data.data[0].revised_prompt });
+    // gpt-image-1 retorna b64_json — salvar em disco e retornar URL local
+    const b64 = data.data[0].b64_json;
+    const imgDir = path.join(__dirname, 'public/uploads/social');
+    if (!fs.existsSync(imgDir)) fs.mkdirSync(imgDir, { recursive: true });
+    const filename = `arte_${Date.now()}.png`;
+    fs.writeFileSync(path.join(imgDir, filename), Buffer.from(b64, 'base64'));
+    res.json({ url: `/uploads/social/${filename}` });
   } catch(e) {
     res.status(500).json({ error: 'Erro ao gerar imagem' });
   }
