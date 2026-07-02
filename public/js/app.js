@@ -1139,7 +1139,7 @@ async function verDetalhePaciente(id) {
   document.getElementById('pacientes-list-view').style.display = 'none';
   document.getElementById('pacientes-detail-view').style.display = '';
 
-  const total    = ags.length;
+  const total    = p.total_sessoes || ags.length;
   const todasOrdenadas = [...ags].sort((a,b) => (b.data+b.hora).localeCompare(a.data+a.hora));
   // Numeração cronológica: sessão mais antiga = #1
   const numMap = {};
