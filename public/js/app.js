@@ -4855,20 +4855,36 @@ function renderSocial() {
 
 function renderSocialEstilo() {
   const estilo = _config.social_estilo || '';
-  return `<div class="card" style="max-width:720px">
-    <h3 style="margin:0 0 8px;color:var(--plum)">✍️ Meu Estilo de Postagem</h3>
-    <p style="font-size:13px;color:var(--muted);margin:0 0 16px">Cole aqui exemplos dos seus melhores posts do Instagram (3 a 5 exemplos). A IA vai usar isso como referência de tom, linguagem e formato ao gerar textos e analisar mídias.</p>
-    <textarea id="social-estilo-input" rows="14" placeholder="Exemplo de post 1:
+  const importados = _config.social_instagram_posts ? JSON.parse(_config.social_instagram_posts) : [];
+  return `<div style="display:flex;flex-direction:column;gap:16px;max-width:720px">
+
+    <!-- Importar JSON do Instagram -->
+    <div class="card" style="border-left:4px solid #e1306c">
+      <h3 style="margin:0 0 6px;color:#e1306c">📥 Importar Histórico do Instagram</h3>
+      <p style="font-size:13px;color:var(--muted);margin:0 0 12px">Exporte seus dados no Instagram (Configurações → Privacidade → Baixar seus dados → JSON) e faça upload do arquivo <strong>posts_1.json</strong> aqui.</p>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <input type="file" id="ig-import-file" accept=".json" style="flex:1;font-size:12px;border:1px solid var(--border);border-radius:8px;padding:6px;background:#fff">
+        <button onclick="importarPostsInstagram()" style="padding:8px 16px;border-radius:8px;border:none;background:#e1306c;color:#fff;font-size:13px;cursor:pointer;white-space:nowrap">📥 Importar Posts</button>
+      </div>
+      ${importados.length ? `<div style="margin-top:10px;font-size:12px;color:var(--muted)">✅ ${importados.length} posts importados — usados como referência de estilo pela IA</div>` : ''}
+    </div>
+
+    <!-- Estilo manual -->
+    <div class="card">
+      <h3 style="margin:0 0 6px;color:var(--plum)">✍️ Referência de Estilo (manual)</h3>
+      <p style="font-size:13px;color:var(--muted);margin:0 0 12px">Cole aqui exemplos dos seus melhores posts (3 a 5). A IA usa isso como referência de tom e linguagem em todas as gerações.</p>
+      <textarea id="social-estilo-input" rows="12" placeholder="Exemplo de post 1:
 Você sabia que a ansiedade pode se manifestar no corpo antes mesmo de aparecer nos pensamentos? 🌿
-Sintomas como tensão muscular, palpitações e dificuldade de respirar muitas vezes são os primeiros sinais...
-#psicologia #ansiedade #saudemental #bemestar #terapia
+#psicologia #ansiedade #saudemental
 
 Exemplo de post 2:
 ..." style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;box-sizing:border-box;resize:vertical;font-family:inherit;font-size:13px;line-height:1.6">${estilo}</textarea>
-    <div style="display:flex;gap:10px;margin-top:12px;align-items:center">
-      <button onclick="salvarEstiloInstagram()" class="btn btn-primary">💾 Salvar Referência de Estilo</button>
-      <span style="font-size:12px;color:var(--muted)">Este texto é usado como contexto em todas as gerações com IA</span>
+      <div style="display:flex;gap:10px;margin-top:12px;align-items:center">
+        <button onclick="salvarEstiloInstagram()" class="btn btn-primary">💾 Salvar</button>
+        <span style="font-size:12px;color:var(--muted)">Usado como contexto em todas as gerações com IA</span>
+      </div>
     </div>
+
   </div>`;
 }
 
@@ -5157,6 +5173,81 @@ async function gerarTextoPost() {
     toast('Erro ao gerar texto: ' + e.message, 'error');
   }
   if (btn) { btn.disabled = false; btn.textContent = '✨ Gerar Texto'; }
+}
+
+async function importarPostsInstagram() {
+  const input = document.getElementById('ig-import-file');
+  const file = input?.files[0];
+  if (!file) { toast('Selecione o arquivo posts_1.json', 'error'); return; }
+
+  const btn = document.querySelector('#social-content button[onclick="importarPostsInstagram()"]');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Importando…'; }
+
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+
+    // Instagram exporta em vários formatos — tenta os dois mais comuns
+    let posts = [];
+    if (Array.isArray(data)) {
+      // formato: [{media:[{title, creation_timestamp}]}]
+      posts = data;
+    } else if (data.ig_media) {
+      posts = data.ig_media;
+    }
+
+    const extraidos = [];
+    for (const item of posts) {
+      const medias = item.media || [item];
+      for (const m of medias) {
+        const caption = m.title || m.caption || '';
+        const ts = m.creation_timestamp;
+        if (caption.trim()) {
+          extraidos.push({
+            texto: caption.trim(),
+            data: ts ? new Date(ts * 1000).toISOString().slice(0, 10) : null,
+          });
+        }
+      }
+    }
+
+    if (!extraidos.length) {
+      toast('Nenhum post com texto encontrado no arquivo', 'error');
+      if (btn) { btn.disabled = false; btn.textContent = '📥 Importar Posts'; }
+      return;
+    }
+
+    // Salva lista completa para uso como referência de estilo
+    await api('POST', '/configuracoes', { chave: 'social_instagram_posts', valor: JSON.stringify(extraidos) });
+    _config.social_instagram_posts = JSON.stringify(extraidos);
+
+    // Monta texto de estilo com os 10 mais recentes
+    const recentes = extraidos.slice(0, 10);
+    const estiloTexto = recentes.map((p, i) => `Post ${i+1}:\n${p.texto}`).join('\n\n---\n\n');
+    await api('POST', '/configuracoes', { chave: 'social_estilo', valor: estiloTexto });
+    _config.social_estilo = estiloTexto;
+
+    // Importa como posts publicados no sistema
+    let criados = 0;
+    for (const p of extraidos) {
+      const hashtags = (p.texto.match(/#\w+/g) || []).join(' ');
+      const textoSemHash = p.texto.replace(/#\w+/g, '').trim();
+      await api('POST', '/posts-sociais', {
+        rede: 'instagram', status: 'publicado',
+        tema: textoSemHash.split('\n')[0].slice(0, 80) || 'Post importado',
+        texto: textoSemHash, hashtags,
+        data_publicacao: p.data,
+      });
+      criados++;
+    }
+
+    toast(`✅ ${criados} posts importados com sucesso!`);
+    await loadSocial();
+    renderSocial();
+  } catch(e) {
+    toast('Erro ao importar: ' + e.message, 'error');
+  }
+  if (btn) { btn.disabled = false; btn.textContent = '📥 Importar Posts'; }
 }
 
 async function salvarEstiloInstagram() {
