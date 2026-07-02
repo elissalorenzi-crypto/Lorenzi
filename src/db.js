@@ -38,6 +38,7 @@ const migrations = [
   "ALTER TABLE pacientes ADD COLUMN hora_sessao TEXT",
   "ALTER TABLE pacientes ADD COLUMN dia_semana INTEGER",
   "ALTER TABLE agendamentos ADD COLUMN data_pagamento TEXT",
+  "ALTER TABLE posts_sociais ADD COLUMN formato TEXT DEFAULT 'estatico'",
 ];
 for (const m of migrations) {
   try { db.exec(m); } catch(_) {}
@@ -1046,11 +1047,11 @@ const getPostsSociais = (rede, status) => {
 };
 const getPostSocialById = (id) => db.prepare('SELECT * FROM posts_sociais WHERE id=?').get(id);
 const createPostSocial = (d) => rid(db.prepare(
-  'INSERT INTO posts_sociais (rede,tema,texto,hashtags,data_publicacao,status,imagem_url,imagem_prompt) VALUES (?,?,?,?,?,?,?,?)'
-).run(d.rede, d.tema||null, d.texto||null, d.hashtags||null, d.data_publicacao||null, d.status||'rascunho', d.imagem_url||null, d.imagem_prompt||null));
+  'INSERT INTO posts_sociais (rede,tema,texto,hashtags,data_publicacao,status,imagem_url,imagem_prompt,formato) VALUES (?,?,?,?,?,?,?,?,?)'
+).run(d.rede, d.tema||null, d.texto||null, d.hashtags||null, d.data_publicacao||null, d.status||'rascunho', d.imagem_url||null, d.imagem_prompt||null, d.formato||'estatico'));
 const updatePostSocial = (id, d) => { db.prepare(
-  'UPDATE posts_sociais SET rede=?,tema=?,texto=?,hashtags=?,data_publicacao=?,status=?,imagem_url=?,imagem_prompt=? WHERE id=?'
-).run(d.rede, d.tema||null, d.texto||null, d.hashtags||null, d.data_publicacao||null, d.status||'rascunho', d.imagem_url||null, d.imagem_prompt||null, id); };
+  'UPDATE posts_sociais SET rede=?,tema=?,texto=?,hashtags=?,data_publicacao=?,status=?,imagem_url=?,imagem_prompt=?,formato=? WHERE id=?'
+).run(d.rede, d.tema||null, d.texto||null, d.hashtags||null, d.data_publicacao||null, d.status||'rascunho', d.imagem_url||null, d.imagem_prompt||null, d.formato||'estatico', id); };
 const deletePostSocial = (id) => { db.prepare('DELETE FROM posts_sociais WHERE id=?').run(id); };
 
 module.exports = {

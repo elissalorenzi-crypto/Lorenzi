@@ -4986,6 +4986,7 @@ function renderSocialLista() {
             <strong style="font-size:14px">${p.tema || '(sem tema)'}</strong>
             <span style="font-size:11px;padding:2px 8px;border-radius:20px;background:${s.cor}20;color:${s.cor};border:1px solid ${s.cor}40">${s.label}</span>
             <span style="font-size:11px;color:var(--muted)">${r.label}</span>
+            ${{estatico:'🖼',carrossel:'🎠',reels:'🎬',stories:'⭕'}[p.formato] ? `<span style="font-size:11px;color:var(--muted)">${{estatico:'🖼 Estático',carrossel:'🎠 Carrossel',reels:'🎬 Reels',stories:'⭕ Stories'}[p.formato]}</span>` : ''}
           </div>
           <div style="font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.texto || '—'}</div>
           ${p.data_publicacao ? `<div style="font-size:11px;color:var(--plum);margin-top:3px">📅 ${formatarData(p.data_publicacao)}</div>` : ''}
@@ -5059,6 +5060,22 @@ function openModalPost(id, dataPreenchida) {
         </div>
       </div>
 
+      <div>
+        <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px">Formato do Post</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap" id="sp-formato-btns">
+          ${[
+            {v:'estatico',  icon:'🖼',  label:'Estático'},
+            {v:'carrossel', icon:'🎠',  label:'Carrossel'},
+            {v:'reels',     icon:'🎬',  label:'Reels'},
+            {v:'stories',   icon:'⭕',  label:'Stories'},
+          ].map(f => {
+            const sel = (p?.formato || 'estatico') === f.v;
+            return `<button type="button" onclick="selectFormato('${f.v}')" id="fmt-${f.v}" style="padding:7px 14px;border-radius:20px;border:2px solid ${sel?'var(--plum)':'var(--border)'};background:${sel?'var(--plum)':'#fff'};color:${sel?'#fff':'inherit'};font-size:13px;cursor:pointer;transition:all .15s">${f.icon} ${f.label}</button>`;
+          }).join('')}
+        </div>
+        <input type="hidden" id="sp-formato" value="${p?.formato || 'estatico'}">
+      </div>
+
       <div style="display:flex;gap:8px;align-items:flex-end">
         <div style="flex:1">
           <label style="font-size:12px;font-weight:600;color:var(--muted)">Tema / Título</label>
@@ -5105,6 +5122,7 @@ function openModalPost(id, dataPreenchida) {
       data_publicacao: document.getElementById('sp-data').value || null,
       imagem_prompt:   document.getElementById('sp-prompt').value.trim(),
       imagem_url:      document.getElementById('arte-preview')?.dataset?.url || p?.imagem_url || null,
+      formato:         document.getElementById('sp-formato')?.value || 'estatico',
     };
     if (p) {
       await api('PUT', `/posts-sociais/${p.id}`, body);
@@ -5208,6 +5226,18 @@ async function gerarArtePost() {
     if (prev) prev.innerHTML = '';
   }
   if (btn) { btn.disabled = false; btn.textContent = '🖼 Gerar Arte'; }
+}
+
+function selectFormato(v) {
+  document.getElementById('sp-formato').value = v;
+  [['estatico','🖼 Estático'],['carrossel','🎠 Carrossel'],['reels','🎬 Reels'],['stories','⭕ Stories']].forEach(([val]) => {
+    const btn = document.getElementById('fmt-' + val);
+    if (!btn) return;
+    const sel = val === v;
+    btn.style.border    = `2px solid ${sel ? 'var(--plum)' : 'var(--border)'}`;
+    btn.style.background = sel ? 'var(--plum)' : '#fff';
+    btn.style.color      = sel ? '#fff' : 'inherit';
+  });
 }
 
 async function selecionarMidiaFixada(url, tipo) {
