@@ -5065,6 +5065,12 @@ function openModalPost(id, dataPreenchida) {
         <input id="sp-data" type="date" value="${p?.data_publicacao||dataPreenchida||''}" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;margin-top:4px;box-sizing:border-box">
       </div>
 
+      <!-- Preview -->
+      <div style="text-align:center">
+        <button onclick="previewPost()" style="padding:9px 24px;border-radius:8px;border:2px solid var(--plum);background:#fff;color:var(--plum);font-size:13px;font-weight:600;cursor:pointer">👁 Pré-visualizar Post</button>
+      </div>
+      <div id="post-preview-area"></div>
+
       <!-- Gerar Arte -->
       <div style="border:1px solid var(--border);border-radius:10px;padding:12px;background:#f9f5ff">
         <label style="font-size:12px;font-weight:600;color:var(--plum);display:block;margin-bottom:8px">🎨 Gerar Arte com IA (DALL-E 3)</label>
@@ -5094,6 +5100,72 @@ function openModalPost(id, dataPreenchida) {
     }
     loadSocial();
   }, { large: true, saveLabel: p ? 'Salvar' : 'Criar Post' });
+}
+
+function previewPost() {
+  const rede      = document.getElementById('sp-rede')?.value || 'instagram';
+  const tema      = document.getElementById('sp-tema')?.value || '';
+  const texto     = document.getElementById('sp-texto')?.value || '';
+  const hashtags  = document.getElementById('sp-hashtags')?.value || '';
+  const imgEl     = document.querySelector('#arte-preview img');
+  const imgUrl    = imgEl?.src || document.getElementById('arte-preview')?.dataset?.url || '';
+  const cfg       = _config || {};
+  const nome      = cfg.nome_psicologa || 'Elissa Lorenzi';
+  const r         = REDE_COR[rede] || { label: 'Instagram', icon: '📸', bg: 'linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)' };
+
+  const textoFull = [texto, hashtags].filter(Boolean).join('\n\n');
+
+  const estilosRede = {
+    instagram: {
+      wrap: 'background:#fafafa;font-family:-apple-system,BlinkMacSystemFont,sans-serif;max-width:400px;margin:0 auto;border:1px solid #dbdbdb;border-radius:12px;overflow:hidden',
+      header: `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid #efefef">
+        <div style="width:36px;height:36px;border-radius:50%;background:${r.bg};display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px">E</div>
+        <div><div style="font-weight:600;font-size:13px">${nome.toLowerCase().replace(/ /g,'.')}</div><div style="font-size:11px;color:#8e8e8e">Psicóloga</div></div>
+        <div style="margin-left:auto;font-size:18px;color:#262626">⋯</div></div>`,
+      img: imgUrl ? `<img src="${imgUrl}" style="width:100%;aspect-ratio:1;object-fit:cover;display:block">` : `<div style="width:100%;aspect-ratio:1;background:#efefef;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:13px">Sem imagem</div>`,
+      actions: `<div style="padding:8px 12px;display:flex;gap:14px;font-size:22px"><span>🤍</span><span>💬</span><span>📤</span><span style="margin-left:auto">🔖</span></div>`,
+      caption: `<div style="padding:0 12px 12px;font-size:13px;line-height:1.5;color:#262626"><strong>${nome.split(' ')[0].toLowerCase()}</strong> ${textoFull.replace(/\n/g,'<br>').replace(/#(\w+)/g,'<span style="color:#00376b">#$1</span>')}</div>`,
+    },
+    facebook: {
+      wrap: 'background:#fff;font-family:-apple-system,BlinkMacSystemFont,sans-serif;max-width:400px;margin:0 auto;border:1px solid #ddd;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.1)',
+      header: `<div style="display:flex;align-items:center;gap:10px;padding:12px">
+        <div style="width:40px;height:40px;border-radius:50%;background:#1877F2;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px">E</div>
+        <div><div style="font-weight:600;font-size:14px">${nome}</div><div style="font-size:12px;color:#65676b">🌐 Público · Agora</div></div>
+        <div style="margin-left:auto;font-size:18px;color:#65676b">⋯</div></div>`,
+      img: imgUrl ? `<img src="${imgUrl}" style="width:100%;display:block">` : '',
+      actions: `<div style="padding:8px 12px;border-top:1px solid #efefef;display:flex;gap:4px"><button style="flex:1;background:none;border:none;cursor:pointer;padding:8px;border-radius:8px;font-size:13px;color:#65676b">👍 Curtir</button><button style="flex:1;background:none;border:none;cursor:pointer;padding:8px;border-radius:8px;font-size:13px;color:#65676b">💬 Comentar</button><button style="flex:1;background:none;border:none;cursor:pointer;padding:8px;border-radius:8px;font-size:13px;color:#65676b">↗ Compartilhar</button></div>`,
+      caption: `<div style="padding:8px 12px 4px;font-size:14px;line-height:1.5;color:#050505">${textoFull.replace(/\n/g,'<br>').replace(/#(\w+)/g,'<span style="color:#1877F2">#$1</span>')}</div>`,
+    },
+    tiktok: {
+      wrap: 'background:#000;font-family:-apple-system,BlinkMacSystemFont,sans-serif;max-width:280px;margin:0 auto;border-radius:12px;overflow:hidden;position:relative;aspect-ratio:9/16',
+      header: '',
+      img: imgUrl ? `<img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0">` : `<div style="width:100%;height:100%;background:#111;position:absolute;top:0;left:0;display:flex;align-items:center;justify-content:center;color:#555;font-size:13px">Sem imagem</div>`,
+      actions: `<div style="position:absolute;bottom:80px;right:10px;display:flex;flex-direction:column;gap:16px;align-items:center;color:#fff;font-size:11px">
+        <div style="text-align:center"><div style="font-size:26px">❤️</div><div>0</div></div>
+        <div style="text-align:center"><div style="font-size:26px">💬</div><div>0</div></div>
+        <div style="text-align:center"><div style="font-size:26px">↗</div><div>0</div></div></div>`,
+      caption: `<div style="position:absolute;bottom:20px;left:10px;right:50px;color:#fff;font-size:12px;line-height:1.4">
+        <div style="font-weight:700;margin-bottom:4px">@${nome.split(' ')[0].toLowerCase()}</div>
+        <div style="opacity:.9">${(texto.slice(0,120) + (texto.length>120?'...':'')).replace(/#(\w+)/g,'<span style="font-weight:600">#$1</span>')}</div></div>`,
+    }
+  };
+
+  const s = estilosRede[rede];
+  const area = document.getElementById('post-preview-area');
+  if (!area) return;
+
+  area.innerHTML = `
+    <div style="margin-top:4px;padding:12px;background:#f5f5f5;border-radius:10px">
+      <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:10px;text-align:center">${r.icon} Pré-visualização — ${r.label}</div>
+      <div style="${s.wrap};position:${rede==='tiktok'?'relative':'static'}">
+        ${s.header}
+        ${s.img}
+        ${s.caption}
+        ${s.actions}
+      </div>
+    </div>`;
+
+  area.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 async function deletePostSocial(id) {
