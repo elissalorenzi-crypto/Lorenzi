@@ -39,6 +39,7 @@ const migrations = [
   "ALTER TABLE pacientes ADD COLUMN dia_semana INTEGER",
   "ALTER TABLE agendamentos ADD COLUMN data_pagamento TEXT",
   "ALTER TABLE posts_sociais ADD COLUMN formato TEXT DEFAULT 'estatico'",
+  "ALTER TABLE ativ_prof_links ADD COLUMN ativo INTEGER DEFAULT 1",
 ];
 for (const m of migrations) {
   try { db.exec(m); } catch(_) {}
