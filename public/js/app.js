@@ -5018,6 +5018,21 @@ function openModalPost(id, dataPreenchida) {
       <!-- Analisar mídia -->
       <div style="border:1px solid var(--border);border-radius:10px;padding:12px;background:#fff8f0">
         <label style="font-size:12px;font-weight:600;color:#e65100;display:block;margin-bottom:8px">📎 Analisar Imagem ou Vídeo com IA</label>
+        ${(() => {
+          const midias = _config.social_estilo_midias ? JSON.parse(_config.social_estilo_midias) : [];
+          if (!midias.length) return '';
+          return `<div style="margin-bottom:10px">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Suas mídias fixadas — clique para selecionar e analisar:</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              ${midias.map(m => `
+                <div onclick="selecionarMidiaFixada('${m.url}','${m.tipo}')" style="cursor:pointer;border-radius:8px;overflow:hidden;border:2px solid transparent;transition:border .15s" onmouseover="this.style.border='2px solid #e65100'" onmouseout="this.style.border='2px solid transparent'" id="mid-fix-${m.url.split('/').pop().replace(/\./g,'_')}">
+                  ${m.tipo === 'video'
+                    ? `<video src="${m.url}" style="width:80px;height:80px;object-fit:cover;display:block" muted></video>`
+                    : `<img src="${m.url}" style="width:80px;height:80px;object-fit:cover;display:block">`}
+                </div>`).join('')}
+            </div>
+          </div>`;
+        })()}
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <input type="file" id="sp-midia" accept="image/*,video/*" onchange="previewMidia(this)" style="flex:1;font-size:12px;border:1px solid var(--border);border-radius:8px;padding:6px;background:#fff">
           <button onclick="analisarMidia()" style="padding:7px 14px;border-radius:8px;border:none;background:#e65100;color:#fff;font-size:13px;cursor:pointer;white-space:nowrap">🔍 Analisar e Preencher</button>
@@ -5193,6 +5208,55 @@ async function gerarArtePost() {
     if (prev) prev.innerHTML = '';
   }
   if (btn) { btn.disabled = false; btn.textContent = '🖼 Gerar Arte'; }
+}
+
+async function selecionarMidiaFixada(url, tipo) {
+  // Marca visualmente como selecionada
+  document.querySelectorAll('[id^="mid-fix-"]').forEach(el => {
+    el.style.border = '2px solid transparent';
+  });
+  const id = 'mid-fix-' + url.split('/').pop().replace(/\./g, '_');
+  const el = document.getElementById(id);
+  if (el) el.style.border = '2px solid #e65100';
+
+  // Mostra preview
+  const prev = document.getElementById('midia-preview');
+  if (prev) {
+    prev.innerHTML = tipo === 'video'
+      ? `<video src="${url}" style="max-height:120px;border-radius:8px;border:1px solid var(--border)" controls muted></video>`
+      : `<img src="${url}" style="max-height:120px;border-radius:8px;border:1px solid var(--border)">`;
+  }
+
+  // Busca a imagem como base64 do servidor e dispara análise
+  const btn = document.querySelector('#modal-body button[onclick="analisarMidia()"]');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Analisando…'; }
+  try {
+    const resp = await fetch(url);
+    const blob = await resp.blob();
+    const base64 = await new Promise(r => {
+      const reader = new FileReader();
+      reader.onload = e => r(e.target.result.split(',')[1]);
+      reader.readAsDataURL(blob);
+    });
+    const mimeType = blob.type || 'image/jpeg';
+    const rede = document.getElementById('sp-rede')?.value || '';
+    const estilo = _config.social_estilo || '';
+    const r = await api('POST', '/analisar-midia', { base64, mimeType, rede, estilo });
+    if (r.tema)       document.getElementById('sp-tema').value     = r.tema;
+    if (r.texto)      document.getElementById('sp-texto').value    = r.texto;
+    if (r.hashtags)   document.getElementById('sp-hashtags').value = r.hashtags;
+    if (r.prompt_arte) document.getElementById('sp-prompt').value  = r.prompt_arte;
+    // Usa a imagem fixada como arte do post
+    const artePrev = document.getElementById('arte-preview');
+    if (artePrev && tipo === 'imagem') {
+      artePrev.innerHTML = `<img src="${url}" style="max-width:100%;border-radius:8px">`;
+      artePrev.dataset.url = url;
+    }
+    toast('✅ Campos preenchidos pela IA!');
+  } catch(e) {
+    toast('Erro ao analisar: ' + e.message, 'error');
+  }
+  if (btn) { btn.disabled = false; btn.textContent = '🔍 Analisar e Preencher'; }
 }
 
 function previewMidia(input) {
