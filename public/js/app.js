@@ -3557,6 +3557,7 @@ async function salvarDataPagamento(agId, data) {
   try {
     const ag = await api('GET', `/agendamentos/${agId}`);
     await api('PUT', `/agendamentos/${agId}`, { ...ag, data_pagamento: data || null });
+    toast('Data de recebimento salva');
   } catch(e) {
     toast('Erro ao salvar data', 'error');
   }
