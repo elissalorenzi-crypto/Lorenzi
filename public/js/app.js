@@ -1212,11 +1212,11 @@ async function verDetalhePaciente(id) {
       <div>
         <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
           <div class="stat-card rose" style="padding:14px">
-            <div class="stat-label">Total Sessões</div>
-            <div class="stat-value" style="font-size:22px">${total}</div>
+            <div class="stat-label">Sessões Previstas</div>
+            <div class="stat-value" style="font-size:22px">${p.total_sessoes || '—'}</div>
           </div>
           <div class="stat-card sage" style="padding:14px">
-            <div class="stat-label">Realizadas</div>
+            <div class="stat-label">Sessões Realizadas</div>
             <div class="stat-value" style="font-size:22px">${realiz}</div>
           </div>
           <div class="stat-card" style="padding:14px;background:#e8f5e9">
