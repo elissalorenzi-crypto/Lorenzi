@@ -658,7 +658,7 @@
     if (convite.nome_paciente) document.getElementById('f-nome').value = convite.nome_paciente;
     renderClausulas(modelo, _valorSessao);
     // Mostrar opção de remarcar quando há token (reserva feita pela agenda pública)
-    if (token) document.getElementById('box-remarcar').style.display = 'block';
+    if (_token) document.getElementById('box-remarcar').style.display = 'block';
   });
 
   function toggleFreqMensal() {
