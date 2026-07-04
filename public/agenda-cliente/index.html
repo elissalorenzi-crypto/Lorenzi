@@ -488,7 +488,14 @@ async function confirmar() {
       if (r.status === 409) { fecharModal(); await carregar(); }
       return;
     }
-    window.location.href = data.contratoLink;
+    if (window !== window.top) {
+      window.open(data.contratoLink, '_blank');
+      btn.disabled = false;
+      btn.textContent = 'Confirmar e Assinar Contrato →';
+      fecharModal();
+    } else {
+      window.location.href = data.contratoLink;
+    }
   } catch(e) {
     btn.disabled = false;
     btn.textContent = 'Confirmar e Assinar Contrato →';
