@@ -1213,7 +1213,7 @@ async function verDetalhePaciente(id) {
         <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
           <div class="stat-card rose" style="padding:14px">
             <div class="stat-label">Sessões Previstas</div>
-            <div class="stat-value" style="font-size:22px">${p.total_sessoes || '—'}</div>
+            <div class="stat-value" style="font-size:22px">${p.total_sessoes || ags.length}</div>
           </div>
           <div class="stat-card sage" style="padding:14px">
             <div class="stat-label">Sessões Realizadas</div>
@@ -1674,7 +1674,7 @@ function pacienteFormHtml(p = {}) {
       </div>
       <div class="form-group">
         <label>Total de sessões</label>
-        <input type="number" id="fp-total-sessoes" value="${p.total_sessoes||12}" min="1" step="1">
+        <input type="number" id="fp-total-sessoes" value="${p.total_sessoes||''}" min="1" step="1" placeholder="Automático">
       </div>
       <div class="form-group">
         <label>Frequência</label>
@@ -1776,7 +1776,7 @@ function openModalPaciente(p = {}) {
       freq_pgto:       document.getElementById('fp-freqpgto').value  || null,
       nota_fiscal:     p.nota_fiscal || 'nao',
       sessao_atual:    parseInt(document.getElementById('fp-sessao-atual').value) || 1,
-      total_sessoes:   parseInt(document.getElementById('fp-total-sessoes').value) || 12,
+      total_sessoes:   parseInt(document.getElementById('fp-total-sessoes').value) || null,
       hora_sessao:     document.getElementById('fp-hora-sessao').value || null,
       dia_semana:      document.getElementById('fp-dia-semana').value !== '' ? parseInt(document.getElementById('fp-dia-semana').value) : null,
     };

@@ -54,6 +54,15 @@ try {
   }
 } catch(_) {}
 
+// Limpeza única: zera total_sessoes=12 (default errado da migration) para todas as pacientes
+try {
+  const flag = db.prepare("SELECT valor FROM configuracoes WHERE chave='_total_sessoes_reset_20260704'").get();
+  if (!flag) {
+    db.prepare("UPDATE pacientes SET total_sessoes = NULL WHERE total_sessoes = 12").run();
+    db.prepare("INSERT OR REPLACE INTO configuracoes (chave, valor) VALUES ('_total_sessoes_reset_20260704', '1')").run();
+  }
+} catch(_) {}
+
 // Migração: remove modelo_contrato salvo sem __VALOR_SESSAO__ para usar MODELO_DEFAULT atualizado
 try {
   const cfgRow = db.prepare("SELECT valor FROM configuracoes WHERE chave='modelo_contrato'").get();
