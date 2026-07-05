@@ -3426,6 +3426,7 @@ function finListaFiltrar() {
 }
 
 function _pendRenderizar() {
+  if (!document.getElementById('fin-pendentes-tbody')) return;
   const pixKey     = _config?.chave_pix      || '';
   const pixKeyCnpj = _config?.chave_pix_cnpj || '';
 
