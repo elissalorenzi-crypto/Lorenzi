@@ -914,6 +914,19 @@ app.post('/api/nfse/emitir', async (req, res) => {
   }
 });
 
+app.post('/api/nfse/marcar', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  const { paciente_id, ano, mes, ids } = req.body;
+  const ref = `psi-${paciente_id}-${ano}${String(mes).padStart(2,'0')}`;
+  try {
+    const { sessoes } = db.getNfseData(Number(paciente_id), Number(ano), Number(mes), ids?.length ? ids : null);
+    db.marcarNfseEmitida(sessoes.map(s => s.id), ref, null);
+    res.json({ ok: true, ref });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.get('/api/nfse/status/:ref', async (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
   const cfg = db.getConfig();

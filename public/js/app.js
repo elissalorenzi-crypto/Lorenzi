@@ -3574,6 +3574,20 @@ async function nfseCopiar(elId, btn) {
   } catch(e) { toast('Erro ao copiar', 'error'); }
 }
 
+async function marcarNfseManual(pacienteId, ano, mes, ids = null) {
+  try {
+    const r = await api('POST', '/nfse/marcar', { paciente_id: pacienteId, ano, mes, ids });
+    const ref = r.ref || `psi-${pacienteId}-${ano}${String(mes).padStart(2,'0')}`;
+    const _s = _sortState['fin-lista-tbody'];
+    if (_s) {
+      const _mark = row => { if (row.paciente_id == pacienteId) row.nfse_ref = ref; };
+      _s.dados.forEach(_mark);
+      if (_s.dadosFiltrados) _s.dadosFiltrados.forEach(_mark);
+      _sortRender('fin-lista-tbody');
+    }
+  } catch(_) {}
+}
+
 async function emitirNfseFocus(pacienteId, ano, mes, uid, ids = null) {
   const btn      = document.querySelector(`[data-nfse-uid="${uid}"]`);
   const statusEl = document.getElementById(`nfse-emit-status-${uid}`);
@@ -3659,6 +3673,7 @@ function _gerarDescricaoNfse(p, sessoes, cfg) {
 }
 
 async function abrirModalNfse(pacienteId, ano, mes, ids = null) {
+  marcarNfseManual(pacienteId, ano, mes, ids);
   let dados;
   try {
     const idsParam = ids?.length ? `&ids=${ids.join(',')}` : '';
