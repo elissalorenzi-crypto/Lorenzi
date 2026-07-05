@@ -3730,7 +3730,9 @@ async function marcarPendente(agId) {
   const ag = await api('GET', `/agendamentos/${agId}`);
   await api('PUT', `/agendamentos/${agId}`, { ...ag, pago: 0, data_pagamento: null });
   toast('Marcado como pendente');
-  loadFinanceiro();
+  refreshAll();
+  const dv = document.getElementById('pacientes-detail-view');
+  if (dv && dv.style.display !== 'none' && ag.paciente_id) verDetalhePaciente(ag.paciente_id);
 }
 
 async function salvarStatusSessao(agId, status, pacienteId) {
@@ -3793,6 +3795,8 @@ async function marcarPago(id) {
     toast('Pagamento registrado! 💰');
     closeModal();
     refreshAll();
+    const dv = document.getElementById('pacientes-detail-view');
+    if (dv && dv.style.display !== 'none' && ag.paciente_id) verDetalhePaciente(ag.paciente_id);
   }, { saveLabel: '💰 Confirmar Recebimento' });
 }
 
