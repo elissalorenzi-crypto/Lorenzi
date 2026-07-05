@@ -3288,13 +3288,9 @@ function finListaChkChanged() {
   if (!bar) return;
   if (!checked.length) { bar.style.display = 'none'; return; }
   bar.style.display = 'flex';
-  const pids  = [...new Set(checked.map(c => c.dataset.pid))];
-  const allNf = checked.every(c => c.dataset.nf === 'sim');
+  const pids = [...new Set(checked.map(c => c.dataset.pid))];
   if (pids.length > 1) {
-    info.textContent = `${checked.length} sessões · ${pids.length} clientes diferentes — selecione só um`;
-    btn.disabled = true;
-  } else if (!allNf) {
-    info.textContent = `${checked.length} sessão(ões) selecionada(s) — cliente não emite NF`;
+    info.textContent = `${checked.length} sessões · ${pids.length} clientes — selecione só um`;
     btn.disabled = true;
   } else {
     info.textContent = `${checked.length} sessão(ões) · ${checked[0].dataset.pnome}`;
@@ -3310,12 +3306,16 @@ function finListaDesmarcar() {
   if (bar) bar.style.display = 'none';
 }
 
-function finListaNfseSelected() {
+async function finListaNfseSelected() {
   const checked = [...document.querySelectorAll('.fin-lista-chk:checked')];
   if (!checked.length) return;
   const ids        = checked.map(c => Number(c.dataset.id));
   const pacienteId = Number(checked[0].dataset.pid);
-  abrirModalNfse(pacienteId, _finAno, _finMes, ids);
+  try {
+    await abrirModalNfse(pacienteId, _finAno, _finMes, ids);
+  } catch(e) {
+    toast('Erro ao abrir NFS-e: ' + e.message, 'error');
+  }
 }
 
 let _pendDados = [];

@@ -704,18 +704,12 @@
                 </tr>
               </thead>
               <tbody id="fin-lista-tbody"></tbody>
-              <tfoot>
-                <tr>
-                  <td colspan="9" style="padding:0">
-                    <div id="fin-nfse-sel-bar" style="display:none;align-items:center;gap:10px;padding:10px 16px;background:linear-gradient(135deg,#eef2ff,#f5f0ff);border-top:1px solid #c7d2fe">
-                      <span id="fin-nfse-sel-info" style="font-size:13px;color:var(--plum);font-weight:600;flex:1"></span>
-                      <button id="fin-nfse-sel-btn" class="btn btn-primary btn-sm" onclick="finListaNfseSelected()">📄 Emitir NFS-e</button>
-                      <button class="btn btn-outline btn-sm" onclick="finListaDesmarcar()">✕</button>
-                    </div>
-                  </td>
-                </tr>
-              </tfoot>
             </table>
+          </div>
+          <div id="fin-nfse-sel-bar" style="display:none;align-items:center;gap:10px;padding:10px 16px;background:linear-gradient(135deg,#eef2ff,#f5f0ff);border-top:1px solid #c7d2fe;border-radius:0 0 10px 10px">
+            <span id="fin-nfse-sel-info" style="font-size:13px;color:var(--plum);font-weight:600;flex:1"></span>
+            <button id="fin-nfse-sel-btn" class="btn btn-primary btn-sm" onclick="finListaNfseSelected()">📄 Emitir NFS-e</button>
+            <button class="btn btn-outline btn-sm" onclick="finListaDesmarcar()">✕</button>
           </div>
         </div>
       </div>
