@@ -1253,7 +1253,9 @@ async function verDetalhePaciente(id) {
                 <td><select onchange="salvarStatusSessao(${a.id},this.value,${p.id})" style="border:1px solid #e0d5cb;border-radius:5px;padding:2px 4px;font-size:11px;background:#faf8f6;color:var(--plum);font-weight:600;cursor:pointer">
                   ${['agendado','confirmado','realizado','cancelado','falta'].map(s=>`<option value="${s}"${a.status===s?' selected':''}>${STATUS_LABEL[s]||s}</option>`).join('')}
                 </select></td>
-                <td>${a.pago ? '<span class="badge badge-realizado" style="font-size:11px">✓ Pago</span>' : `<button class="btn btn-xs" style="background:#e8f5e9;color:#388e3c;border:1.5px solid #388e3c;font-weight:700;padding:2px 8px" onclick="pagarRapido(${a.id})" title="Registrar recebimento">✓ Pago</button>`}</td>
+                <td>${a.pago
+                  ? `<button class="btn btn-xs" style="background:#fff3e0;color:#e65100;border:1.5px solid #e65100;font-weight:700;padding:2px 8px" onclick="marcarPendente(${a.id})" title="Desfazer recebimento">↩ Pendente</button>`
+                  : `<button class="btn btn-xs" style="background:#e8f5e9;color:#388e3c;border:1.5px solid #388e3c;font-weight:700;padding:2px 8px" onclick="pagarRapido(${a.id})" title="Registrar recebimento">✓ Pago</button>`}</td>
                 <td><input type="date" value="${a.data_pagamento||''}" onchange="salvarDataPagamento(${a.id},this.value)" style="border:1px solid #e0d5cb;border-radius:5px;padding:2px 6px;font-size:11px;color:var(--muted);background:transparent;width:118px"></td>
                 <td style="font-size:12px">${a.forma_pgto && a.pago ? ({pix:'PIX',dinheiro:'Dinheiro',credito:'Crédito',debito:'Débito',transferencia:'Transf.',convenio:'Convênio'}[a.forma_pgto]||a.forma_pgto) : '—'}</td>
                 <td class="text-right">${a.valor ? BRL(a.valor) : '—'}</td>
