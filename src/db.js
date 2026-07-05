@@ -40,6 +40,8 @@ const migrations = [
   "ALTER TABLE agendamentos ADD COLUMN data_pagamento TEXT",
   "ALTER TABLE posts_sociais ADD COLUMN formato TEXT DEFAULT 'estatico'",
   "ALTER TABLE ativ_prof_links ADD COLUMN ativo INTEGER DEFAULT 1",
+  "ALTER TABLE agendamentos ADD COLUMN nfse_ref TEXT",
+  "ALTER TABLE agendamentos ADD COLUMN nfse_numero TEXT",
 ];
 for (const m of migrations) {
   try { db.exec(m); } catch(_) {}
@@ -1091,6 +1093,12 @@ const setSession    = (token, expiry) => db.prepare("INSERT OR REPLACE INTO sess
 const getSession    = (token)         => db.prepare("SELECT expiry FROM sessions WHERE token=?").get(token);
 const deleteSession = (token)         => db.prepare("DELETE FROM sessions WHERE token=?").run(token);
 
+const marcarNfseEmitida = (ids, ref, numero) => {
+  if (!ids?.length) return;
+  const ph = ids.map(() => '?').join(',');
+  db.prepare(`UPDATE agendamentos SET nfse_ref = ?, nfse_numero = ? WHERE id IN (${ph})`).run(ref, numero || null, ...ids);
+};
+
 module.exports = {
   getPacientes, getPacienteById, getPacienteByCpf, createPaciente, updatePaciente, deletePaciente,
   getAgendamentos, getAgendamentoById, createAgendamento, updateAgendamento, deleteAgendamento,
@@ -1102,7 +1110,7 @@ module.exports = {
   createConvite, getConvites, getConviteByToken, usarConvite, deleteConvite,
   limparZoomLinks,
   createNotificacao, getNotificacoes, marcarNotificacaoLida, getAgendamentoByZoomMeetingId,
-  getNfseData,
+  getNfseData, marcarNfseEmitida,
   getTarefas, createTarefa, updateTarefa, deleteTarefa, resetTarefasDiarias,
   deletarSessoesFuturas, restaurarSessoesFuturas,
   gerarLinkAtivProf, getLinkAtivProf, getInfoAtivProf, salvarRespostaAtivProf, getRespostasAtivProf,

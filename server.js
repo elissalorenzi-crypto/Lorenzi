@@ -906,6 +906,7 @@ app.post('/api/nfse/emitir', async (req, res) => {
       const msg = data.mensagem || (data.erros && data.erros[0]?.mensagem) || JSON.stringify(data);
       return res.status(resp.status).json({ error: msg, detalhes: data });
     }
+    db.marcarNfseEmitida(sessoes.map(s => s.id), ref, data.numero_nfs_e || null);
     res.json({ ok: true, ref, ambiente, status: data.status,
                numero: data.numero_nfs_e, link_pdf: data.caminho_nfse_pdf || null, dados: data });
   } catch(e) {

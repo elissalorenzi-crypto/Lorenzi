@@ -3301,16 +3301,15 @@ let _finPixKey = '';
 let _finPixKeyCnpj = '';
 const _finFormaLabel = { dinheiro:'Dinheiro', pix:'PIX', credito:'Crédito', debito:'Débito', convenio:'Convênio', transferencia:'TED/PIX' };
 function _renderFinRow(a) {
-  const nfCell = a.paciente_nota_fiscal === 'sim'
-    ? `<button class="btn-nfse" onclick="abrirModalNfse(${a.paciente_id},${_finAno},${_finMes})" title="Emitir NFS-e">📄 NFS-e</button>`
-    : '<span style="color:var(--muted);font-size:11px">—</span>';
-  const usaCnpj  = a.paciente_nota_fiscal === 'sim';
-  const pixTipo  = usaCnpj ? 'cnpj' : 'cpf';
-  const pixLabel = usaCnpj ? 'CNPJ 📋' : 'CPF 📋';
-  const pixAtivo = usaCnpj ? _finPixKeyCnpj : _finPixKey;
-  const pixCell  = pixAtivo
-    ? `<button class="btn-pix-copy" title="PIX ${pixTipo.toUpperCase()}" onclick="copiarPixKey('${pixTipo}')">${pixLabel}</button>`
-    : '<span style="color:var(--muted);font-size:11px">—</span>';
+  let nfseCell;
+  if (a.nfse_ref) {
+    const label = a.nfse_numero ? `✓ NFS-e nº ${a.nfse_numero}` : '✓ NFS-e emitida';
+    nfseCell = `<span style="background:#e8f5e9;color:#388e3c;border:1.5px solid #388e3c;font-weight:700;padding:2px 8px;border-radius:5px;font-size:11px;white-space:nowrap">${label}</span>`;
+  } else if (a.paciente_nota_fiscal === 'sim') {
+    nfseCell = `<button class="btn-nfse" onclick="abrirModalNfse(${a.paciente_id},${_finAno},${_finMes})" title="Emitir NFS-e">📄 Emitir NFS-e</button>`;
+  } else {
+    nfseCell = '<span style="color:var(--muted);font-size:11px">—</span>';
+  }
   const nomeSafe = (a.paciente_nome || '').replace(/'/g, '');
   return `
     <tr>
@@ -3324,8 +3323,7 @@ function _renderFinRow(a) {
         : `<button class="btn btn-xs" style="background:#fff3e0;color:#e65100;border:1.5px solid #e65100;font-weight:700;padding:2px 8px" onclick="pagarRapido(${a.id})" title="Registrar recebimento">Pendente</button>`}</td>
       <td style="font-size:12px;color:var(--muted)">${a.data_pagamento ? fmtData(a.data_pagamento) : '—'}</td>
       <td>${_finFormaLabel[a.forma_pgto] || a.forma_pgto || '—'}</td>
-      <td>${nfCell}</td>
-      <td>${pixCell}</td>
+      <td>${nfseCell}</td>
     </tr>
   `;
 }
