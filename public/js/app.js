@@ -3304,7 +3304,7 @@ function _renderFinRow(a) {
       <td class="text-right fw-bold">${BRL(a.valor)}</td>
       <td>${a.pago
         ? `<button class="btn btn-xs" style="background:#fff3e0;color:#e65100;border:1.5px solid #e65100;font-weight:700;padding:2px 8px" onclick="marcarPendente(${a.id})" title="Desfazer recebimento">↩ Pendente</button>`
-        : `<button class="btn btn-sage btn-xs" onclick="marcarPago(${a.id})" title="Registrar recebimento">✓ Receber</button>`}</td>
+        : `<button class="btn btn-sage btn-xs" onclick="pagarRapido(${a.id})" title="Registrar recebimento">✓ Receber</button>`}</td>
       <td>${_finFormaLabel[a.forma_pgto] || a.forma_pgto || '—'}</td>
       <td>${nfCell}</td>
       <td>${pixCell}</td>
