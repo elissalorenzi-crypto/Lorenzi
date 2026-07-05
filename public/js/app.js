@@ -3301,7 +3301,9 @@ function _renderFinRow(a) {
       <td>${a.hora}</td>
       <td>${a.paciente_nome || '—'}</td>
       <td class="text-right fw-bold">${BRL(a.valor)}</td>
-      <td>${a.pago ? '<span style="color:var(--sage);font-weight:700">Recebido ✓</span>' : '<span style="color:var(--peach)">Pendente</span>'}</td>
+      <td>${a.pago
+        ? `<button class="btn btn-xs" style="background:#fff3e0;color:#e65100;border:1.5px solid #e65100;font-weight:700;padding:2px 8px" onclick="marcarPendente(${a.id})" title="Desfazer recebimento">↩ Pendente</button>`
+        : `<button class="btn btn-sage btn-xs" onclick="marcarPago(${a.id})" title="Registrar recebimento">✓ Receber</button>`}</td>
       <td>${_finFormaLabel[a.forma_pgto] || a.forma_pgto || '—'}</td>
       <td>${nfCell}</td>
       <td>${pixCell}</td>
@@ -3722,6 +3724,13 @@ async function pagarRapido(agId) {
   refreshAll();
   const dv = document.getElementById('pacientes-detail-view');
   if (dv && dv.style.display !== 'none' && ag.paciente_id) verDetalhePaciente(ag.paciente_id);
+}
+
+async function marcarPendente(agId) {
+  const ag = await api('GET', `/agendamentos/${agId}`);
+  await api('PUT', `/agendamentos/${agId}`, { ...ag, pago: 0, data_pagamento: null });
+  toast('Marcado como pendente');
+  loadFinanceiro();
 }
 
 async function salvarStatusSessao(agId, status, pacienteId) {
