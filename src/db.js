@@ -571,8 +571,8 @@ const getFinanceiro = (ano, mes) => {
     SELECT a.*, p.nome as paciente_nome, p.nota_fiscal as paciente_nota_fiscal
     FROM agendamentos a
     LEFT JOIN pacientes p ON p.id = a.paciente_id
-    WHERE a.data >= ? AND a.data <= ? AND a.status = 'realizado'
-    ORDER BY a.data, a.hora
+    WHERE COALESCE(a.data_pagamento, a.data) >= ? AND COALESCE(a.data_pagamento, a.data) <= ? AND a.status = 'realizado'
+    ORDER BY COALESCE(a.data_pagamento, a.data), a.hora
   `).all(de, ate);
 
   const pendentes = db.prepare(`
