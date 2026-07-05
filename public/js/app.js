@@ -3766,8 +3766,12 @@ async function salvarStatusSessao(agId, status, pacienteId) {
 async function salvarDataPagamento(agId, data) {
   try {
     const ag = await api('GET', `/agendamentos/${agId}`);
-    await api('PUT', `/agendamentos/${agId}`, { ...ag, data_pagamento: data || null });
-    toast('Data de recebimento salva');
+    const pago = data ? 1 : 0;
+    await api('PUT', `/agendamentos/${agId}`, { ...ag, data_pagamento: data || null, pago });
+    toast(data ? '💰 Pagamento registrado' : 'Data de recebimento removida');
+    refreshAll();
+    const dv = document.getElementById('pacientes-detail-view');
+    if (dv && dv.style.display !== 'none' && ag.paciente_id) verDetalhePaciente(ag.paciente_id);
   } catch(e) {
     toast('Erro ao salvar data', 'error');
   }
