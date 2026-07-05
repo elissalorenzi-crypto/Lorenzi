@@ -3587,6 +3587,7 @@ async function emitirNfseFocus(pacienteId, ano, mes, uid, ids = null) {
       if (btn) { btn.textContent = '✅ Nota Emitida!'; btn.style.background = 'var(--sage)'; }
       if (statusEl) statusEl.innerHTML = `NFS-e nº <strong>${r.numero || '—'}</strong>${r.link_pdf ? ` &nbsp;·&nbsp; <a href="${r.link_pdf}" target="_blank">📥 PDF</a>` : ''}`;
       toast('NFS-e emitida com sucesso!');
+      loadFinanceiro();
     } else if (r.status && (r.status.includes('processando') || r.status === 'recebido')) {
       if (btn) btn.textContent = '⏳ Processando...';
       if (statusEl) statusEl.textContent = 'Aguardando autorização...';
@@ -3614,6 +3615,7 @@ async function _pollNfseStatus(ref, btn, statusEl, tentativas) {
       if (btn) { btn.textContent = '✅ Nota Emitida!'; btn.style.background = 'var(--sage)'; }
       if (statusEl) statusEl.innerHTML = `NFS-e nº <strong>${r.numero || '—'}</strong>${r.link_pdf ? ` &nbsp;·&nbsp; <a href="${r.link_pdf}" target="_blank">📥 PDF</a>` : ''}`;
       toast('NFS-e emitida com sucesso!');
+      loadFinanceiro();
     } else if (r.status && r.status.startsWith('erro')) {
       if (btn) { btn.disabled = false; btn.textContent = '🚀 Emitir NFS-e Automaticamente'; }
       if (statusEl) statusEl.textContent = r.status;
