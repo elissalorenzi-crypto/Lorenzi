@@ -3040,10 +3040,44 @@ function exportarFiltradoCSV() {
   _downloadCSV(linhas, 'relatorio_filtrado');
 }
 
+const _finFiltros = new Set();
+
+function finToggleFiltro(nome) {
+  // Semana e Ano são mutuamente exclusivos e recarregam dados
+  if (nome === 'semana' || nome === 'ano') {
+    const outro = nome === 'semana' ? 'ano' : 'semana';
+    if (_finFiltros.has(outro)) {
+      _finFiltros.delete(outro);
+      document.getElementById('ff-' + outro)?.classList.remove('ativo');
+    }
+    if (_finFiltros.has(nome)) {
+      _finFiltros.delete(nome);
+      document.getElementById('ff-' + nome)?.classList.remove('ativo');
+      if (nome === 'ano') { const n = new Date(); _finMes = n.getMonth()+1; _finAno = n.getFullYear(); }
+    } else {
+      _finFiltros.add(nome);
+      document.getElementById('ff-' + nome)?.classList.add('ativo');
+      if (nome === 'ano') _finMes = 0;
+    }
+    loadFinanceiro();
+    return;
+  }
+  // Outros filtros: client-side
+  if (_finFiltros.has(nome)) {
+    _finFiltros.delete(nome);
+    document.getElementById('ff-' + nome)?.classList.remove('ativo');
+  } else {
+    _finFiltros.add(nome);
+    document.getElementById('ff-' + nome)?.classList.add('ativo');
+  }
+  finListaFiltrar();
+}
+
 async function loadFinanceiro() {
   updateFinMesLabel();
+  const mesParam = _finFiltros.has('ano') ? 0 : _finMes;
   const [data, prevPgto, proj] = await Promise.all([
-    api('GET', `/financeiro?ano=${_finAno}&mes=${_finMes}`),
+    api('GET', `/financeiro?ano=${_finAno}&mes=${mesParam}`),
     api('GET', `/financeiro/previsao-pgto?hoje=${HOJE()}`),
     api('GET', `/financeiro/projecao-recorrente`)
   ]);
@@ -3339,7 +3373,37 @@ function finListaFiltrar() {
   const s = _sortState['fin-lista-tbody'];
   if (!s) return;
   const termo = (document.getElementById('fin-lista-busca')?.value || '').toLowerCase().trim();
-  s.dadosFiltrados = termo ? s.dados.filter(a => (a.paciente_nome || '').toLowerCase().includes(termo)) : null;
+  let f = s.dados;
+  if (termo) f = f.filter(a => (a.paciente_nome || '').toLowerCase().includes(termo));
+
+  // Semana: filtra para a semana atual (seg–dom)
+  if (_finFiltros.has('semana')) {
+    const hoje = new Date();
+    const dow = hoje.getDay();
+    const seg = new Date(hoje); seg.setDate(hoje.getDate() - (dow === 0 ? 6 : dow - 1));
+    const dom = new Date(seg); dom.setDate(seg.getDate() + 6);
+    const de  = seg.toISOString().slice(0,10);
+    const ate = dom.toISOString().slice(0,10);
+    f = f.filter(a => a.data >= de && a.data <= ate);
+  }
+
+  // Recebido / Pendente
+  const hasRec = _finFiltros.has('recebido'), hasPend = _finFiltros.has('pendente');
+  if (hasRec && !hasPend)  f = f.filter(a => a.pago === 1);
+  if (hasPend && !hasRec)  f = f.filter(a => !a.pago);
+
+  // Com NFS-e / Sem nota
+  const hasNf = _finFiltros.has('comnfse'), hasSem = _finFiltros.has('semnota');
+  if (hasNf  && !hasSem)   f = f.filter(a => a.paciente_nota_fiscal === 'sim');
+  if (hasSem && !hasNf)    f = f.filter(a => a.paciente_nota_fiscal !== 'sim');
+
+  // PIX / Cartão
+  const hasPix = _finFiltros.has('pix'), hasCart = _finFiltros.has('cartao');
+  if (hasPix && !hasCart)  f = f.filter(a => a.forma_pgto === 'pix');
+  if (hasCart && !hasPix)  f = f.filter(a => ['credito','debito'].includes(a.forma_pgto));
+  if (hasPix && hasCart)   f = f.filter(a => a.forma_pgto === 'pix' || ['credito','debito'].includes(a.forma_pgto));
+
+  s.dadosFiltrados = f.length < s.dados.length || termo ? f : null;
   _sortRender('fin-lista-tbody');
 }
 
@@ -3738,7 +3802,9 @@ function finIrMesAtual() {
 }
 
 function updateFinMesLabel() {
-  document.getElementById('fin-mes-label').textContent = `${MESES[_finMes-1]} / ${_finAno}`;
+  const el = document.getElementById('fin-mes-label');
+  if (!el) return;
+  el.textContent = _finFiltros.has('ano') ? `${_finAno} — Ano completo` : `${MESES[_finMes-1]} / ${_finAno}`;
 }
 
 // ── Financeiro: drag & expand ─────────────────────────────────

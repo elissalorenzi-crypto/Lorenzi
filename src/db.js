@@ -541,9 +541,9 @@ const getDashboard = (hoje) => {
 // FINANCEIRO
 // ============================================================
 const getFinanceiro = (ano, mes) => {
-  const prefixo = `${ano}-${String(mes).padStart(2,'0')}`;
-  const de = `${prefixo}-01`;
-  const ate = `${prefixo}-31`;
+  // mes=0 → ano completo
+  const de  = mes ? `${ano}-${String(mes).padStart(2,'0')}-01` : `${ano}-01-01`;
+  const ate = mes ? `${ano}-${String(mes).padStart(2,'0')}-31` : `${ano}-12-31`;
 
   const resumo = db.prepare(`
     SELECT
