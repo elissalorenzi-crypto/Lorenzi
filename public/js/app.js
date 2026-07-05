@@ -3579,6 +3579,7 @@ async function emitirNfseFocus(pacienteId, ano, mes, uid, ids = null) {
   const statusEl = document.getElementById(`nfse-emit-status-${uid}`);
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Enviando...'; }
   if (statusEl) statusEl.innerHTML = '';
+  closeModal();
   try {
     const body = { paciente_id: pacienteId, ano, mes };
     if (ids?.length) body.agendamento_ids = ids;
@@ -3683,7 +3684,7 @@ async function abrirModalNfse(pacienteId, ano, mes, ids = null) {
       </div>
 
       <div class="nfse-portal-bar">
-        <a href="${_NFSE_PORTAL()}" target="_blank" class="btn btn-outline btn-sm">🌐 Abrir Portal Manual</a>
+        <a href="${_NFSE_PORTAL()}" target="_blank" class="btn btn-outline btn-sm" onclick="closeModal()">🌐 Abrir Portal Manual</a>
         <span style="font-size:12px;color:var(--muted)">Login: CPF <strong>${_config?.nfse_cpf || '—'}</strong></span>
       </div>
 
