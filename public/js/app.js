@@ -3449,6 +3449,56 @@ async function nfseCopiar(elId, btn) {
   } catch(e) { toast('Erro ao copiar', 'error'); }
 }
 
+async function emitirNfseFocus(pacienteId, ano, mes, uid) {
+  const btn      = document.querySelector(`[data-nfse-uid="${uid}"]`);
+  const statusEl = document.getElementById(`nfse-emit-status-${uid}`);
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Enviando...'; }
+  if (statusEl) statusEl.innerHTML = '';
+  try {
+    const r = await api('POST', '/nfse/emitir', { paciente_id: pacienteId, ano, mes });
+    if (r.status === 'autorizado') {
+      if (btn) { btn.textContent = '✅ Nota Emitida!'; btn.style.background = 'var(--sage)'; }
+      if (statusEl) statusEl.innerHTML = `NFS-e nº <strong>${r.numero || '—'}</strong>${r.link_pdf ? ` &nbsp;·&nbsp; <a href="${r.link_pdf}" target="_blank">📥 PDF</a>` : ''}`;
+      toast('NFS-e emitida com sucesso!');
+    } else if (r.status && (r.status.includes('processando') || r.status === 'recebido')) {
+      if (btn) btn.textContent = '⏳ Processando...';
+      if (statusEl) statusEl.textContent = 'Aguardando autorização...';
+      setTimeout(() => _pollNfseStatus(r.ref, btn, statusEl, 0), 3000);
+    } else {
+      if (btn) { btn.disabled = false; btn.textContent = '🚀 Emitir NFS-e Automaticamente'; }
+      if (statusEl) statusEl.textContent = 'Status: ' + r.status;
+      toast('NFS-e retornou: ' + r.status, 'error');
+    }
+  } catch(e) {
+    if (btn) { btn.disabled = false; btn.textContent = '🚀 Emitir NFS-e Automaticamente'; }
+    toast('Erro ao emitir NFS-e: ' + e.message, 'error');
+  }
+}
+
+async function _pollNfseStatus(ref, btn, statusEl, tentativas) {
+  if (tentativas >= 12) {
+    if (statusEl) statusEl.textContent = 'Timeout. Verifique no portal Focus NFe.';
+    if (btn) { btn.disabled = false; btn.textContent = '🚀 Emitir NFS-e Automaticamente'; }
+    return;
+  }
+  try {
+    const r = await api('GET', `/nfse/status/${encodeURIComponent(ref)}`);
+    if (r.status === 'autorizado') {
+      if (btn) { btn.textContent = '✅ Nota Emitida!'; btn.style.background = 'var(--sage)'; }
+      if (statusEl) statusEl.innerHTML = `NFS-e nº <strong>${r.numero || '—'}</strong>${r.link_pdf ? ` &nbsp;·&nbsp; <a href="${r.link_pdf}" target="_blank">📥 PDF</a>` : ''}`;
+      toast('NFS-e emitida com sucesso!');
+    } else if (r.status && r.status.startsWith('erro')) {
+      if (btn) { btn.disabled = false; btn.textContent = '🚀 Emitir NFS-e Automaticamente'; }
+      if (statusEl) statusEl.textContent = r.status;
+      toast('Erro na autorização: ' + r.status, 'error');
+    } else {
+      setTimeout(() => _pollNfseStatus(ref, btn, statusEl, tentativas + 1), 3000);
+    }
+  } catch(_) {
+    setTimeout(() => _pollNfseStatus(ref, btn, statusEl, tentativas + 1), 3000);
+  }
+}
+
 function _gerarDescricaoNfse(p, sessoes, cfg) {
   if (!sessoes.length) return '';
   const datas = sessoes.map(s => {
@@ -3486,8 +3536,15 @@ async function abrirModalNfse(pacienteId, ano, mes) {
 
   const html = `
     <div class="nfse-modal">
+      <div class="nfse-emitir-bar">
+        <button class="btn btn-primary" data-nfse-uid="${uid}" onclick="emitirNfseFocus(${pacienteId},${ano},${mes},'${uid}')">
+          🚀 Emitir NFS-e Automaticamente
+        </button>
+        <span id="nfse-emit-status-${uid}" class="nfse-emit-status"></span>
+      </div>
+
       <div class="nfse-portal-bar">
-        <a href="${_NFSE_PORTAL()}" target="_blank" class="btn btn-primary btn-sm">🌐 Abrir Portal NFS-e</a>
+        <a href="${_NFSE_PORTAL()}" target="_blank" class="btn btn-outline btn-sm">🌐 Abrir Portal Manual</a>
         <span style="font-size:12px;color:var(--muted)">Login: CPF <strong>${_config?.nfse_cpf || '—'}</strong></span>
       </div>
 
@@ -3770,6 +3827,12 @@ async function loadConfiguracoes() {
   document.getElementById('cfg-nfse-senha').value          = cfg.nfse_senha           || '';
   document.getElementById('cfg-nfse-contribuinte').value   = cfg.nfse_contribuinte    || '';
   document.getElementById('cfg-nfse-ramal').value          = cfg.nfse_ramal           || '';
+  document.getElementById('cfg-focusnfe-token').value      = cfg.focusnfe_token             || '';
+  document.getElementById('cfg-focusnfe-cnpj-cpf').value   = cfg.focusnfe_cnpj_cpf         || '';
+  document.getElementById('cfg-focusnfe-inscricao').value  = cfg.focusnfe_inscricao_municipal || '';
+  document.getElementById('cfg-focusnfe-ambiente').value   = cfg.focusnfe_ambiente           || 'homologacao';
+  document.getElementById('cfg-focusnfe-simples').value    = cfg.focusnfe_simples_nacional   || '3';
+  document.getElementById('cfg-focusnfe-aliquota').value   = cfg.focusnfe_aliquota_iss       || '3.62';
 }
 
 async function preencherEnderecosPorCep() {
@@ -3825,6 +3888,12 @@ async function salvarConfiguracoes() {
     nfse_senha:           document.getElementById('cfg-nfse-senha').value.trim(),
     nfse_contribuinte:    document.getElementById('cfg-nfse-contribuinte').value.trim(),
     nfse_ramal:           document.getElementById('cfg-nfse-ramal').value.trim(),
+    focusnfe_token:              document.getElementById('cfg-focusnfe-token').value.trim(),
+    focusnfe_cnpj_cpf:           document.getElementById('cfg-focusnfe-cnpj-cpf').value.trim(),
+    focusnfe_inscricao_municipal:document.getElementById('cfg-focusnfe-inscricao').value.trim(),
+    focusnfe_ambiente:           document.getElementById('cfg-focusnfe-ambiente').value,
+    focusnfe_simples_nacional:   document.getElementById('cfg-focusnfe-simples').value,
+    focusnfe_aliquota_iss:       document.getElementById('cfg-focusnfe-aliquota').value,
   };
   try {
     await api('POST', '/configuracoes', body);

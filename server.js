@@ -813,6 +813,120 @@ app.get('/api/nfse/dados', (req, res) => {
   res.json({ ...dados, config: { nome_psicologa: cfg.nome_psicologa, crp: cfg.crp } });
 });
 
+function gerarDescricaoNfse(p, sessoes, cfg) {
+  const datas = sessoes.map(s => {
+    const d = new Date(s.data + 'T12:00:00');
+    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getFullYear()).slice(2)}`;
+  });
+  const datasStr = datas.length === 1 ? datas[0]
+    : datas.length === 2 ? `${datas[0]} e ${datas[1]}`
+    : datas.slice(0,-1).join(', ') + ' e ' + datas.at(-1);
+  const valor  = parseFloat(sessoes[0]?.valor) || parseFloat(p.valor_sessao) || 0;
+  const total  = sessoes.reduce((acc, s) => acc + (parseFloat(s.valor) || 0), 0);
+  const n      = sessoes.length;
+  const nomePsi = (cfg.nome_psicologa || 'ELISSA CATARINA RAMOS PEREIRA LORENZI').toUpperCase();
+  const crp    = cfg.crp || '06/91616';
+  const brl    = v => v.toFixed(2).replace('.', ',');
+  return `SESSÃO DE PSICOTERAPIA: ${datasStr}. PACIENTE: ${p.nome.toUpperCase()} PSICOLOGA: ${nomePsi} CRP: ${crp} VALOR DA SESSÃO: R$${brl(valor)} VALOR TOTAL DE ${n} ${n === 1 ? 'SESSÃO' : 'SESSÕES'}: R$${brl(total)}. Alíquota Efetiva: 2,0100000000%.`;
+}
+
+app.post('/api/nfse/emitir', async (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  const { paciente_id, ano, mes } = req.body;
+  if (!paciente_id || !ano || !mes)
+    return res.status(400).json({ error: 'Parâmetros obrigatórios: paciente_id, ano, mes' });
+
+  const cfg = db.getConfig();
+  if (!cfg.focusnfe_token)
+    return res.status(400).json({ error: 'Token Focus NFe não configurado. Acesse ⚙ Configurações → NFS-e API.' });
+
+  const { paciente: p, sessoes } = db.getNfseData(Number(paciente_id), Number(ano), Number(mes));
+  if (!p) return res.status(404).json({ error: 'Paciente não encontrado' });
+  if (!sessoes.length) return res.status(400).json({ error: 'Nenhuma sessão realizada neste mês para este paciente' });
+
+  const total    = sessoes.reduce((acc, s) => acc + (parseFloat(s.valor) || 0), 0);
+  const ref      = `psi-${paciente_id}-${ano}${String(mes).padStart(2,'0')}`;
+  const dataComp = `${ano}-${String(mes).padStart(2,'0')}-01`;
+  const brDate   = new Date(Date.now() - 3 * 60 * 60 * 1000);
+  const dataEmissao = brDate.toISOString().replace(/\.\d{3}Z$/, '') + '-0300';
+
+  const ambiente = cfg.focusnfe_ambiente === 'producao' ? 'producao' : 'homologacao';
+  const baseUrl  = ambiente === 'producao'
+    ? 'https://api.focusnfe.com.br'
+    : 'https://homologacao.focusnfe.com.br';
+
+  const cnpjCpf = (cfg.focusnfe_cnpj_cpf || '').replace(/\D/g, '');
+  const isCnpj  = cnpjCpf.length === 14;
+
+  const payload = {
+    data_emissao:                        dataEmissao,
+    data_competencia:                    dataComp,
+    codigo_municipio_emissora:           3507001,
+    ...(isCnpj ? { cnpj_prestador: cnpjCpf } : { cpf_prestador: cnpjCpf }),
+    inscricao_municipal_prestador:       cfg.focusnfe_inscricao_municipal || '',
+    codigo_opcao_simples_nacional:       Number(cfg.focusnfe_simples_nacional) || 3,
+    regime_tributario_simples_nacional:  1,
+    regime_especial_tributacao:          0,
+    ...(p.cpf         ? { cpf_tomador:        p.cpf.replace(/\D/g,'') }  : {}),
+    razao_social_tomador:                p.nome?.toUpperCase() || '',
+    codigo_municipio_tomador:            3507001,
+    ...(p.nf_cep         ? { cep_tomador:        p.nf_cep.replace(/\D/g,'') } : {}),
+    ...(p.nf_logradouro  ? { logradouro_tomador: p.nf_logradouro }             : {}),
+    ...(p.nf_numero      ? { numero_tomador:     p.nf_numero }                 : {}),
+    ...(p.nf_complemento ? { complemento_tomador:p.nf_complemento }            : {}),
+    ...(p.nf_bairro      ? { bairro_tomador:     p.nf_bairro }                 : {}),
+    ...(p.email          ? { email_tomador:      p.email }                     : {}),
+    codigo_municipio_prestacao:          3507001,
+    codigo_tributacao_nacional_iss:      cfg.focusnfe_codigo_servico || '060201',
+    codigo_nbs:                          cfg.focusnfe_codigo_nbs     || '1.2301.9.80.00',
+    descricao_servico:                   gerarDescricaoNfse(p, sessoes, cfg),
+    valor_servico:                       total,
+    percentual_aliquota_relativa_municipio: parseFloat(cfg.focusnfe_aliquota_iss) || 3.62,
+    tributacao_iss:                      1,
+    tipo_retencao_iss:                   1,
+    indicador_total_tributacao:          '0',
+  };
+
+  try {
+    const auth = 'Basic ' + Buffer.from(cfg.focusnfe_token + ':').toString('base64');
+    const resp = await fetch(`${baseUrl}/v2/nfsen?ref=${ref}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': auth },
+      body: JSON.stringify(payload),
+    });
+    const data = await resp.json();
+    if (!resp.ok) {
+      const msg = data.mensagem || (data.erros && data.erros[0]?.mensagem) || JSON.stringify(data);
+      return res.status(resp.status).json({ error: msg, detalhes: data });
+    }
+    res.json({ ok: true, ref, ambiente, status: data.status,
+               numero: data.numero_nfs_e, link_pdf: data.caminho_nfse_pdf || null, dados: data });
+  } catch(e) {
+    res.status(500).json({ error: 'Erro ao comunicar com Focus NFe: ' + e.message });
+  }
+});
+
+app.get('/api/nfse/status/:ref', async (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  const cfg = db.getConfig();
+  if (!cfg.focusnfe_token) return res.status(400).json({ error: 'Token Focus NFe não configurado' });
+  const ambiente = cfg.focusnfe_ambiente === 'producao' ? 'producao' : 'homologacao';
+  const baseUrl  = ambiente === 'producao'
+    ? 'https://api.focusnfe.com.br'
+    : 'https://homologacao.focusnfe.com.br';
+  try {
+    const auth = 'Basic ' + Buffer.from(cfg.focusnfe_token + ':').toString('base64');
+    const resp = await fetch(`${baseUrl}/v2/nfsen/${encodeURIComponent(req.params.ref)}`, {
+      headers: { 'Authorization': auth }
+    });
+    const data = await resp.json();
+    res.json({ status: data.status, numero: data.numero_nfs_e,
+               link_pdf: data.caminho_nfse_pdf || null, dados: data });
+  } catch(e) {
+    res.status(500).json({ error: 'Erro ao consultar Focus NFe: ' + e.message });
+  }
+});
+
 // ── BULK CEP ENRICHMENT ───────────────────────────────────────
 app.post('/api/admin/enrich-cep', async (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });

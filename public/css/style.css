@@ -398,9 +398,18 @@ tbody tr:hover { background: var(--rose-pale); }
 
 /* NFS-e Modal */
 .nfse-modal { display: flex; flex-direction: column; gap: 16px; }
+.nfse-emitir-bar {
+  display: flex; align-items: center; gap: 14px;
+  background: linear-gradient(135deg, #eef2ff, #f5f0ff);
+  border-radius: 10px; padding: 14px 18px;
+  border: 1px solid #c7d2fe;
+}
+.nfse-emit-status {
+  font-size: 13px; font-weight: 600; color: var(--plum); flex: 1;
+}
 .nfse-portal-bar {
   display: flex; align-items: center; gap: 14px;
-  background: var(--bg-alt); border-radius: 8px; padding: 12px 16px;
+  background: var(--bg-alt); border-radius: 8px; padding: 10px 14px;
   border: 1px solid var(--border);
 }
 .nfse-secao { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
