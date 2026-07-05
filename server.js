@@ -896,7 +896,12 @@ app.post('/api/nfse/emitir', async (req, res) => {
       headers: { 'Content-Type': 'application/json', 'Authorization': auth },
       body: JSON.stringify(payload),
     });
-    const data = await resp.json();
+    const text = await resp.text();
+    let data;
+    try { data = JSON.parse(text); }
+    catch(_) {
+      return res.status(502).json({ error: `Focus NFe retornou HTTP ${resp.status}: ${text.slice(0, 300)}` });
+    }
     if (!resp.ok) {
       const msg = data.mensagem || (data.erros && data.erros[0]?.mensagem) || JSON.stringify(data);
       return res.status(resp.status).json({ error: msg, detalhes: data });
@@ -921,7 +926,12 @@ app.get('/api/nfse/status/:ref', async (req, res) => {
     const resp = await fetch(`${baseUrl}/v2/nfsen/${encodeURIComponent(req.params.ref)}`, {
       headers: { 'Authorization': auth }
     });
-    const data = await resp.json();
+    const text = await resp.text();
+    let data;
+    try { data = JSON.parse(text); }
+    catch(_) {
+      return res.status(502).json({ error: `Focus NFe HTTP ${resp.status}: ${text.slice(0, 300)}` });
+    }
     res.json({ status: data.status, numero: data.numero_nfs_e,
                link_pdf: data.caminho_nfse_pdf || null, dados: data });
   } catch(e) {
