@@ -3041,28 +3041,29 @@ function exportarFiltradoCSV() {
 }
 
 const _finFiltros = new Set();
+let _finPeriodo = 'mes'; // 'ano' | 'mes' | 'semana'
+
+function finSetPeriodo(p) {
+  _finPeriodo = p;
+  _finFiltros.delete('semana');
+  _finFiltros.delete('ano');
+  if (p === 'ano')    _finFiltros.add('ano');
+  if (p === 'semana') _finFiltros.add('semana');
+  if (p === 'mes') { const n = new Date(); _finMes = n.getMonth()+1; _finAno = n.getFullYear(); }
+  loadFinanceiro();
+}
+
+function finNavPeriodo(delta) {
+  if (_finPeriodo === 'ano') {
+    _finAno += delta;
+    loadFinanceiro();
+  } else {
+    finNavMes(delta);
+  }
+}
 
 function finToggleFiltro(nome) {
-  // Semana e Ano são mutuamente exclusivos e recarregam dados
-  if (nome === 'semana' || nome === 'ano') {
-    const outro = nome === 'semana' ? 'ano' : 'semana';
-    if (_finFiltros.has(outro)) {
-      _finFiltros.delete(outro);
-      document.getElementById('ff-' + outro)?.classList.remove('ativo');
-    }
-    if (_finFiltros.has(nome)) {
-      _finFiltros.delete(nome);
-      document.getElementById('ff-' + nome)?.classList.remove('ativo');
-      if (nome === 'ano') { const n = new Date(); _finMes = n.getMonth()+1; _finAno = n.getFullYear(); }
-    } else {
-      _finFiltros.add(nome);
-      document.getElementById('ff-' + nome)?.classList.add('ativo');
-      if (nome === 'ano') _finMes = 0;
-    }
-    loadFinanceiro();
-    return;
-  }
-  // Outros filtros: client-side
+  // Apenas filtros client-side (recebido/pendente/comnfse/semnota/pix/cartao)
   if (_finFiltros.has(nome)) {
     _finFiltros.delete(nome);
     document.getElementById('ff-' + nome)?.classList.remove('ativo');
@@ -3075,7 +3076,7 @@ function finToggleFiltro(nome) {
 
 async function loadFinanceiro() {
   updateFinMesLabel();
-  const mesParam = _finFiltros.has('ano') ? 0 : _finMes;
+  const mesParam = _finPeriodo === 'ano' ? 0 : _finMes;
   const [data, prevPgto, proj] = await Promise.all([
     api('GET', `/financeiro?ano=${_finAno}&mes=${mesParam}`),
     api('GET', `/financeiro/previsao-pgto?hoje=${HOJE()}`),
@@ -3817,7 +3818,17 @@ function finIrMesAtual() {
 function updateFinMesLabel() {
   const el = document.getElementById('fin-mes-label');
   if (!el) return;
-  el.textContent = _finFiltros.has('ano') ? `${_finAno} — Ano completo` : `${MESES[_finMes-1]} / ${_finAno}`;
+  // Sync segment buttons
+  ['ano','mes','semana'].forEach(s =>
+    document.getElementById('fsc-' + s)?.classList.toggle('ativo', s === _finPeriodo)
+  );
+  // Show/hide nav arrows
+  const nav = document.getElementById('fin-nav-ctrl');
+  if (nav) nav.style.display = _finPeriodo === 'semana' ? 'none' : 'flex';
+  // Label
+  if (_finPeriodo === 'ano')    el.textContent = `${_finAno}`;
+  else if (_finPeriodo === 'semana') el.textContent = '';
+  else                          el.textContent = `${MESES[_finMes-1]} / ${_finAno}`;
 }
 
 // ── Financeiro: drag & expand ─────────────────────────────────

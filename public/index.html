@@ -578,13 +578,17 @@
     <div class="section" id="section-financeiro">
       <!-- Navegador de mês + filtros -->
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
-        <button class="btn btn-outline btn-sm" onclick="finNavMes(-1)">&#8249;</button>
-        <span id="fin-mes-label" style="font-size:16px;font-weight:800;color:var(--plum);min-width:150px;text-align:center"></span>
-        <button class="btn btn-outline btn-sm" onclick="finNavMes(1)">&#8250;</button>
-        <button class="btn btn-ghost btn-sm" onclick="finIrMesAtual()">Mês atual</button>
-        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-left:6px;align-items:center">
-          <button class="fin-chip" id="ff-semana"   onclick="finToggleFiltro('semana')">Semana</button>
-          <button class="fin-chip" id="ff-ano"      onclick="finToggleFiltro('ano')">Ano</button>
+        <div class="fin-seg-ctrl">
+          <button id="fsc-ano"    class="fin-seg" onclick="finSetPeriodo('ano')">Ano</button>
+          <button id="fsc-mes"    class="fin-seg" onclick="finSetPeriodo('mes')">Mês</button>
+          <button id="fsc-semana" class="fin-seg" onclick="finSetPeriodo('semana')">Semana</button>
+        </div>
+        <div id="fin-nav-ctrl" style="display:flex;align-items:center;gap:6px">
+          <button class="btn btn-outline btn-sm" onclick="finNavPeriodo(-1)">&#8249;</button>
+          <span id="fin-mes-label" style="font-size:16px;font-weight:800;color:var(--plum);min-width:150px;text-align:center"></span>
+          <button class="btn btn-outline btn-sm" onclick="finNavPeriodo(1)">&#8250;</button>
+        </div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center">
           <span style="color:var(--border);font-size:14px">|</span>
           <button class="fin-chip" id="ff-recebido" onclick="finToggleFiltro('recebido')">Recebido</button>
           <button class="fin-chip" id="ff-pendente" onclick="finToggleFiltro('pendente')">Pendente</button>
