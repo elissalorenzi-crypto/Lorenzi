@@ -634,30 +634,6 @@
           </div>
         </div>
 
-        <!-- Pendências -->
-        <div class="card fin-card" draggable="true" data-fin-id="pendencias">
-          <div class="card-header">
-            <span class="fin-drag-handle" title="Arrastar">⣿</span>
-            <span class="card-title">💸 Pendências</span>
-            <input id="pend-busca" type="search" placeholder="Buscar cliente…" oninput="pendFiltrar()" style="margin-left:8px;padding:3px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;width:160px;outline:none">
-            <button class="btn btn-sm" style="margin-left:8px;background:var(--sage);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer" onclick="dispararCobrancas()">📲 Cobrar selecionados</button>
-            <button class="fin-expand-btn" onclick="finToggleExpand('pendencias')">⊞ Ampliar</button>
-          </div>
-          <div id="fin-pendentes-wrap">
-            <div class="table-wrap">
-              <table>
-                <thead><tr>
-  <th style="width:32px"><input type="checkbox" id="pend-chk-all" onchange="pendSelecionarTodos(this)" title="Selecionar todos"></th>
-  <th class="th-sort" onclick="pendOrdenar('data')" title="Ordenar por data">Data <span id="pend-sort-data"></span></th>
-  <th class="th-sort" onclick="pendOrdenar('nome')" title="Ordenar por nome">Cliente <span id="pend-sort-nome"></span></th>
-  <th class="th-sort text-right" onclick="pendOrdenar('valor')" title="Ordenar por valor">Valor <span id="pend-sort-valor"></span></th>
-  <th>NFS-e</th><th>PIX</th><th>Ação</th>
-</tr></thead>
-                <tbody id="fin-pendentes-tbody"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
 
         <!-- Receita por dia -->
         <div class="card fin-card" draggable="true" data-fin-id="pordia">
@@ -714,19 +690,6 @@
           </div>
         </div>
 
-        <!-- Previsão por pgto -->
-        <div class="card fin-card" draggable="true" data-fin-id="previsaopgto">
-          <div class="card-header">
-            <span class="fin-drag-handle" title="Arrastar">⣿</span>
-            <span class="card-title">💳 Previsão por Pgto</span>
-            <div style="display:flex;gap:12px;margin-left:12px">
-              <button id="tab-pgto-sem" class="btn btn-primary btn-sm" onclick="switchTabPgto('semanal')">Semana</button>
-              <button id="tab-pgto-mes" class="btn btn-outline btn-sm" onclick="switchTabPgto('mensal')">Mês</button>
-            </div>
-            <button class="fin-expand-btn" onclick="finToggleExpand('previsaopgto')">⊞ Ampliar</button>
-          </div>
-          <div id="fin-previsao-pgto-body"></div>
-        </div>
 
       </div>
 
