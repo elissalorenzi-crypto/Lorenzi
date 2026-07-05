@@ -261,6 +261,16 @@ try { db.prepare("ALTER TABLE pacientes ADD COLUMN forma_pgto TEXT").run(); } ca
 try { db.prepare("ALTER TABLE pacientes ADD COLUMN frequencia TEXT").run(); } catch(e) {}
 try { db.prepare("ALTER TABLE pacientes ADD COLUMN freq_pgto TEXT").run(); } catch(e) {}
 
+// Sessões autenticadas persistidas no banco (sobrevivem a restarts/deploys)
+db.exec(`
+  CREATE TABLE IF NOT EXISTS sessions (
+    token  TEXT PRIMARY KEY,
+    expiry INTEGER NOT NULL
+  );
+`);
+// Limpa sessões expiradas ao iniciar
+try { db.prepare("DELETE FROM sessions WHERE expiry < ?").run(Date.now()); } catch(_) {}
+
 // Seed configurações padrão
 const cfgCount = db.prepare('SELECT COUNT(*) as n FROM configuracoes').get().n;
 if (cfgCount === 0) {
@@ -1064,6 +1074,13 @@ const updatePostSocial = (id, d) => { db.prepare(
 ).run(d.rede, d.tema||null, d.texto||null, d.hashtags||null, d.data_publicacao||null, d.status||'rascunho', d.imagem_url||null, d.imagem_prompt||null, d.formato||'estatico', id); };
 const deletePostSocial = (id) => { db.prepare('DELETE FROM posts_sociais WHERE id=?').run(id); };
 
+// ============================================================
+// SESSIONS
+// ============================================================
+const setSession    = (token, expiry) => db.prepare("INSERT OR REPLACE INTO sessions (token, expiry) VALUES (?,?)").run(token, expiry);
+const getSession    = (token)         => db.prepare("SELECT expiry FROM sessions WHERE token=?").get(token);
+const deleteSession = (token)         => db.prepare("DELETE FROM sessions WHERE token=?").run(token);
+
 module.exports = {
   getPacientes, getPacienteById, getPacienteByCpf, createPaciente, updatePaciente, deletePaciente,
   getAgendamentos, getAgendamentoById, createAgendamento, updateAgendamento, deleteAgendamento,
@@ -1079,5 +1096,6 @@ module.exports = {
   getTarefas, createTarefa, updateTarefa, deleteTarefa, resetTarefasDiarias,
   deletarSessoesFuturas, restaurarSessoesFuturas,
   gerarLinkAtivProf, getLinkAtivProf, getInfoAtivProf, salvarRespostaAtivProf, getRespostasAtivProf,
-  getPostsSociais, getPostSocialById, createPostSocial, updatePostSocial, deletePostSocial
+  getPostsSociais, getPostSocialById, createPostSocial, updatePostSocial, deletePostSocial,
+  setSession, getSession, deleteSession
 };

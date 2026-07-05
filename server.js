@@ -47,7 +47,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // ── AUTH ─────────────────────────────────────────────────────
 const hashSenha = s => crypto.createHash('sha256').update(s + 'psi2024').digest('hex');
-const _tokens   = new Map(); // token → expiry
+const SESSION_TTL = 8 * 60 * 60 * 1000; // 8 horas
 
 app.post('/api/auth/login', (req, res) => {
   const { senha } = req.body || {};
@@ -55,20 +55,20 @@ app.post('/api/auth/login', (req, res) => {
   const hash = cfg.senha_admin || hashSenha('2207');
   if (hashSenha(senha) !== hash) return res.status(401).json({ error: 'Senha incorreta' });
   const token = crypto.randomBytes(32).toString('hex');
-  _tokens.set(token, Date.now() + 8 * 60 * 60 * 1000);
+  db.setSession(token, Date.now() + SESSION_TTL);
   res.json({ token });
 });
 
 app.post('/api/auth/logout', (req, res) => {
-  _tokens.delete((req.headers.authorization || '').replace('Bearer ', ''));
+  db.deleteSession((req.headers.authorization || '').replace('Bearer ', ''));
   res.json({ ok: true });
 });
 
 app.post('/api/auth/verificar', (req, res) => {
-  const token  = (req.headers.authorization || '').replace('Bearer ', '');
-  const expiry = _tokens.get(token);
-  if (!token || !expiry || Date.now() > expiry) return res.status(401).json({ ok: false });
-  _tokens.set(token, Date.now() + 8 * 60 * 60 * 1000);
+  const token = (req.headers.authorization || '').replace('Bearer ', '');
+  const row   = token ? db.getSession(token) : null;
+  if (!row || Date.now() > row.expiry) return res.status(401).json({ ok: false });
+  db.setSession(token, Date.now() + SESSION_TTL);
   res.json({ ok: true });
 });
 
@@ -83,9 +83,9 @@ app.post('/api/auth/senha', (req, res) => {
 
 // Valida token em rotas individuais que precisam de proteção
 function authOk(req) {
-  const token  = (req.headers.authorization || '').replace('Bearer ', '');
-  const expiry = _tokens.get(token);
-  return !!(token && expiry && Date.now() <= expiry);
+  const token = (req.headers.authorization || '').replace('Bearer ', '');
+  const row   = token ? db.getSession(token) : null;
+  return !!(row && Date.now() <= row.expiry);
 }
 
 // Download do banco para backup
