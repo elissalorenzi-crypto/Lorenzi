@@ -3583,6 +3583,15 @@ async function emitirNfseFocus(pacienteId, ano, mes, uid, ids = null) {
     const body = { paciente_id: pacienteId, ano, mes };
     if (ids?.length) body.agendamento_ids = ids;
     const r = await api('POST', '/nfse/emitir', body);
+    // Atualiza célula NFS-e Emitida imediatamente nos dados em memória
+    const _nfRef = r.ref || `psi-${pacienteId}-${ano}${String(mes).padStart(2,'0')}`;
+    const _s = _sortState['fin-lista-tbody'];
+    if (_s) {
+      const _mark = row => { if (row.paciente_id == pacienteId) { row.nfse_ref = _nfRef; if (r.numero) row.nfse_numero = r.numero; } };
+      _s.dados.forEach(_mark);
+      if (_s.dadosFiltrados) _s.dadosFiltrados.forEach(_mark);
+      _sortRender('fin-lista-tbody');
+    }
     loadFinanceiro();
     if (r.status === 'autorizado') {
       if (btn) { btn.textContent = '✅ Nota Emitida!'; btn.style.background = 'var(--sage)'; }
