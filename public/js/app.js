@@ -3043,12 +3043,21 @@ function exportarFiltradoCSV() {
 const _finFiltros = new Set();
 let _finPeriodo = 'mes'; // 'ano' | 'mes' | 'semana'
 
+function _finSemanaSegunda() {
+  const hoje = new Date();
+  const dow = hoje.getDay();
+  const seg = new Date(hoje);
+  seg.setDate(hoje.getDate() - (dow === 0 ? 6 : dow - 1));
+  return seg.toISOString().slice(0, 10);
+}
+let _finSemanaIni = _finSemanaSegunda();
+
 function finSetPeriodo(p) {
   _finPeriodo = p;
   _finFiltros.delete('semana');
   _finFiltros.delete('ano');
   if (p === 'ano')    _finFiltros.add('ano');
-  if (p === 'semana') _finFiltros.add('semana');
+  if (p === 'semana') { _finFiltros.add('semana'); _finSemanaIni = _finSemanaSegunda(); }
   if (p === 'mes') { const n = new Date(); _finMes = n.getMonth()+1; _finAno = n.getFullYear(); }
   loadFinanceiro();
 }
@@ -3056,6 +3065,11 @@ function finSetPeriodo(p) {
 function finNavPeriodo(delta) {
   if (_finPeriodo === 'ano') {
     _finAno += delta;
+    loadFinanceiro();
+  } else if (_finPeriodo === 'semana') {
+    const d = new Date(_finSemanaIni + 'T12:00:00');
+    d.setDate(d.getDate() + delta * 7);
+    _finSemanaIni = d.toISOString().slice(0, 10);
     loadFinanceiro();
   } else {
     finNavMes(delta);
@@ -3076,7 +3090,7 @@ function finToggleFiltro(nome) {
 
 async function loadFinanceiro() {
   updateFinMesLabel();
-  const mesParam = _finPeriodo === 'ano' ? 0 : _finMes;
+  const mesParam = (_finPeriodo === 'ano' || _finPeriodo === 'semana') ? 0 : _finMes;
   const [data, prevPgto, proj] = await Promise.all([
     api('GET', `/financeiro?ano=${_finAno}&mes=${mesParam}`),
     api('GET', `/financeiro/previsao-pgto?hoje=${HOJE()}`),
@@ -3379,14 +3393,12 @@ function finListaFiltrar() {
   let f = s.dados;
   if (termo) f = f.filter(a => (a.paciente_nome || '').toLowerCase().includes(termo));
 
-  // Semana: filtra para a semana atual (seg–dom)
+  // Semana: filtra pela semana navegada
   if (_finFiltros.has('semana')) {
-    const hoje = new Date();
-    const dow = hoje.getDay();
-    const seg = new Date(hoje); seg.setDate(hoje.getDate() - (dow === 0 ? 6 : dow - 1));
+    const seg = new Date(_finSemanaIni + 'T12:00:00');
     const dom = new Date(seg); dom.setDate(seg.getDate() + 6);
-    const de  = seg.toISOString().slice(0,10);
-    const ate = dom.toISOString().slice(0,10);
+    const de  = _finSemanaIni;
+    const ate = dom.toISOString().slice(0, 10);
     f = f.filter(a => a.data >= de && a.data <= ate);
   }
 
@@ -3822,13 +3834,17 @@ function updateFinMesLabel() {
   ['ano','mes','semana'].forEach(s =>
     document.getElementById('fsc-' + s)?.classList.toggle('ativo', s === _finPeriodo)
   );
-  // Show/hide nav arrows
-  const nav = document.getElementById('fin-nav-ctrl');
-  if (nav) nav.style.display = _finPeriodo === 'semana' ? 'none' : 'flex';
   // Label
-  if (_finPeriodo === 'ano')    el.textContent = `${_finAno}`;
-  else if (_finPeriodo === 'semana') el.textContent = '';
-  else                          el.textContent = `${MESES[_finMes-1]} / ${_finAno}`;
+  if (_finPeriodo === 'ano') {
+    el.textContent = `${_finAno}`;
+  } else if (_finPeriodo === 'semana') {
+    const seg = new Date(_finSemanaIni + 'T12:00:00');
+    const dom = new Date(seg); dom.setDate(seg.getDate() + 6);
+    const fmt = d => `${d.getDate()} ${MESES[d.getMonth()].slice(0,3)}`;
+    el.textContent = `${fmt(seg)} – ${fmt(dom)}`;
+  } else {
+    el.textContent = `${MESES[_finMes-1]} / ${_finAno}`;
+  }
 }
 
 // ── Financeiro: drag & expand ─────────────────────────────────
