@@ -958,16 +958,26 @@ const getAgendamentoByZoomMeetingId = (meetingId) =>
   db.prepare("SELECT * FROM agendamentos WHERE zoom_link LIKE ? LIMIT 1")
     .get(`%/j/${meetingId}%`);
 
-const getNfseData = (pacienteId, ano, mes) => {
-  const de  = `${ano}-${String(mes).padStart(2,'0')}-01`;
-  const ult = new Date(ano, mes, 0).getDate();
-  const ate = `${ano}-${String(mes).padStart(2,'0')}-${String(ult).padStart(2,'0')}`;
+const getNfseData = (pacienteId, ano, mes, ids = null) => {
   const paciente = db.prepare('SELECT * FROM pacientes WHERE id = ?').get(pacienteId);
-  const sessoes  = db.prepare(`
-    SELECT * FROM agendamentos
-    WHERE paciente_id = ? AND data >= ? AND data <= ? AND status = 'realizado'
-    ORDER BY data, hora
-  `).all(pacienteId, de, ate);
+  let sessoes;
+  if (ids && ids.length) {
+    const ph = ids.map(() => '?').join(',');
+    sessoes = db.prepare(`
+      SELECT * FROM agendamentos
+      WHERE paciente_id = ? AND id IN (${ph}) AND status = 'realizado'
+      ORDER BY data, hora
+    `).all(pacienteId, ...ids);
+  } else {
+    const de  = `${ano}-${String(mes).padStart(2,'0')}-01`;
+    const ult = new Date(ano, mes, 0).getDate();
+    const ate = `${ano}-${String(mes).padStart(2,'0')}-${String(ult).padStart(2,'0')}`;
+    sessoes = db.prepare(`
+      SELECT * FROM agendamentos
+      WHERE paciente_id = ? AND data >= ? AND data <= ? AND status = 'realizado'
+      ORDER BY data, hora
+    `).all(pacienteId, de, ate);
+  }
   return { paciente, sessoes };
 };
 

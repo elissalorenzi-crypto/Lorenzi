@@ -3259,8 +3259,10 @@ function _renderFinRow(a) {
   const pixCell  = pixAtivo
     ? `<button class="btn-pix-copy" title="PIX ${pixTipo.toUpperCase()}" onclick="copiarPixKey('${pixTipo}')">${pixLabel}</button>`
     : '<span style="color:var(--muted);font-size:11px">—</span>';
+  const nomeSafe = (a.paciente_nome || '').replace(/'/g, '');
   return `
     <tr>
+      <td style="width:30px;text-align:center"><input type="checkbox" class="fin-lista-chk" data-id="${a.id}" data-pid="${a.paciente_id}" data-pnome="${nomeSafe}" data-nf="${a.paciente_nota_fiscal||''}" onchange="finListaChkChanged()" style="cursor:pointer"></td>
       <td>${fmtData(a.data)}</td>
       <td>${a.hora}</td>
       <td>${a.paciente_nome || '—'}</td>
@@ -3271,6 +3273,49 @@ function _renderFinRow(a) {
       <td>${pixCell}</td>
     </tr>
   `;
+}
+
+function finListaChkAll(chk) {
+  document.querySelectorAll('.fin-lista-chk').forEach(c => c.checked = chk.checked);
+  finListaChkChanged();
+}
+
+function finListaChkChanged() {
+  const checked = [...document.querySelectorAll('.fin-lista-chk:checked')];
+  const bar  = document.getElementById('fin-nfse-sel-bar');
+  const info = document.getElementById('fin-nfse-sel-info');
+  const btn  = document.getElementById('fin-nfse-sel-btn');
+  if (!bar) return;
+  if (!checked.length) { bar.style.display = 'none'; return; }
+  bar.style.display = 'flex';
+  const pids  = [...new Set(checked.map(c => c.dataset.pid))];
+  const allNf = checked.every(c => c.dataset.nf === 'sim');
+  if (pids.length > 1) {
+    info.textContent = `${checked.length} sessões · ${pids.length} clientes diferentes — selecione só um`;
+    btn.disabled = true;
+  } else if (!allNf) {
+    info.textContent = `${checked.length} sessão(ões) selecionada(s) — cliente não emite NF`;
+    btn.disabled = true;
+  } else {
+    info.textContent = `${checked.length} sessão(ões) · ${checked[0].dataset.pnome}`;
+    btn.disabled = false;
+  }
+}
+
+function finListaDesmarcar() {
+  document.querySelectorAll('.fin-lista-chk').forEach(c => c.checked = false);
+  const chkAll = document.getElementById('fin-lista-chk-all');
+  if (chkAll) chkAll.checked = false;
+  const bar = document.getElementById('fin-nfse-sel-bar');
+  if (bar) bar.style.display = 'none';
+}
+
+function finListaNfseSelected() {
+  const checked = [...document.querySelectorAll('.fin-lista-chk:checked')];
+  if (!checked.length) return;
+  const ids        = checked.map(c => Number(c.dataset.id));
+  const pacienteId = Number(checked[0].dataset.pid);
+  abrirModalNfse(pacienteId, _finAno, _finMes, ids);
 }
 
 let _pendDados = [];
@@ -3449,13 +3494,15 @@ async function nfseCopiar(elId, btn) {
   } catch(e) { toast('Erro ao copiar', 'error'); }
 }
 
-async function emitirNfseFocus(pacienteId, ano, mes, uid) {
+async function emitirNfseFocus(pacienteId, ano, mes, uid, ids = null) {
   const btn      = document.querySelector(`[data-nfse-uid="${uid}"]`);
   const statusEl = document.getElementById(`nfse-emit-status-${uid}`);
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Enviando...'; }
   if (statusEl) statusEl.innerHTML = '';
   try {
-    const r = await api('POST', '/nfse/emitir', { paciente_id: pacienteId, ano, mes });
+    const body = { paciente_id: pacienteId, ano, mes };
+    if (ids?.length) body.agendamento_ids = ids;
+    const r = await api('POST', '/nfse/emitir', body);
     if (r.status === 'autorizado') {
       if (btn) { btn.textContent = '✅ Nota Emitida!'; btn.style.background = 'var(--sage)'; }
       if (statusEl) statusEl.innerHTML = `NFS-e nº <strong>${r.numero || '—'}</strong>${r.link_pdf ? ` &nbsp;·&nbsp; <a href="${r.link_pdf}" target="_blank">📥 PDF</a>` : ''}`;
@@ -3519,10 +3566,11 @@ function _gerarDescricaoNfse(p, sessoes, cfg) {
   return `SESSÃO DE PSICOTERAPIA: ${datasStr}. PACIENTE: ${p.nome.toUpperCase()} PSICOLOGA: ${nomePsi} CRP: ${crp} VALOR DA SESSÃO: R$${brl(valor)} VALOR TOTAL DE ${n} ${n === 1 ? 'SESSÃO' : 'SESSÕES'}: R$${brl(total)}. Alíquota Efetiva: 2,0100000000%.`;
 }
 
-async function abrirModalNfse(pacienteId, ano, mes) {
+async function abrirModalNfse(pacienteId, ano, mes, ids = null) {
   let dados;
   try {
-    dados = await api('GET', `/nfse/dados?paciente_id=${pacienteId}&ano=${ano}&mes=${mes}`);
+    const idsParam = ids?.length ? `&ids=${ids.join(',')}` : '';
+    dados = await api('GET', `/nfse/dados?paciente_id=${pacienteId}&ano=${ano}&mes=${mes}${idsParam}`);
   } catch(e) {
     return toast('Erro ao carregar dados NFS-e: ' + e.message, 'error');
   }
@@ -3537,7 +3585,7 @@ async function abrirModalNfse(pacienteId, ano, mes) {
   const html = `
     <div class="nfse-modal">
       <div class="nfse-emitir-bar">
-        <button class="btn btn-primary" data-nfse-uid="${uid}" onclick="emitirNfseFocus(${pacienteId},${ano},${mes},'${uid}')">
+        <button class="btn btn-primary" data-nfse-uid="${uid}" onclick="emitirNfseFocus(${pacienteId},${ano},${mes},'${uid}',${ids ? JSON.stringify(ids) : 'null'})">
           🚀 Emitir NFS-e Automaticamente
         </button>
         <span id="nfse-emit-status-${uid}" class="nfse-emit-status"></span>

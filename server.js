@@ -806,10 +806,11 @@ app.post('/api/notificacoes/:id/lida', (req, res) => {
 // ── NFS-e HELPER ──────────────────────────────────────────────
 app.get('/api/nfse/dados', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
-  const { paciente_id, ano, mes } = req.query;
+  const { paciente_id, ano, mes, ids } = req.query;
   if (!paciente_id || !ano || !mes) return res.status(400).json({ error: 'Parâmetros obrigatórios: paciente_id, ano, mes' });
-  const dados = db.getNfseData(Number(paciente_id), Number(ano), Number(mes));
-  const cfg   = db.getConfig();
+  const idsArr = ids ? ids.split(',').map(Number).filter(Boolean) : null;
+  const dados  = db.getNfseData(Number(paciente_id), Number(ano), Number(mes), idsArr);
+  const cfg    = db.getConfig();
   res.json({ ...dados, config: { nome_psicologa: cfg.nome_psicologa, crp: cfg.crp } });
 });
 
@@ -832,7 +833,7 @@ function gerarDescricaoNfse(p, sessoes, cfg) {
 
 app.post('/api/nfse/emitir', async (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
-  const { paciente_id, ano, mes } = req.body;
+  const { paciente_id, ano, mes, agendamento_ids } = req.body;
   if (!paciente_id || !ano || !mes)
     return res.status(400).json({ error: 'Parâmetros obrigatórios: paciente_id, ano, mes' });
 
@@ -840,7 +841,8 @@ app.post('/api/nfse/emitir', async (req, res) => {
   if (!cfg.focusnfe_token)
     return res.status(400).json({ error: 'Token Focus NFe não configurado. Acesse ⚙ Configurações → NFS-e API.' });
 
-  const { paciente: p, sessoes } = db.getNfseData(Number(paciente_id), Number(ano), Number(mes));
+  const ids = agendamento_ids?.length ? agendamento_ids.map(Number) : null;
+  const { paciente: p, sessoes } = db.getNfseData(Number(paciente_id), Number(ano), Number(mes), ids);
   if (!p) return res.status(404).json({ error: 'Paciente não encontrado' });
   if (!sessoes.length) return res.status(400).json({ error: 'Nenhuma sessão realizada neste mês para este paciente' });
 
