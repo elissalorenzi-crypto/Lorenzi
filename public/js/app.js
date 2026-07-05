@@ -3245,12 +3245,13 @@ async function loadFinanceiro() {
 
   // Lista completa
   if (!data.lista.length) {
-    document.getElementById('fin-lista-tbody').innerHTML = `<tr><td colspan="8" class="text-muted" style="text-align:center;padding:20px">Nenhuma sessão realizada neste mês</td></tr>`;
+    document.getElementById('fin-lista-tbody').innerHTML = `<tr><td colspan="8" class="text-muted" style="text-align:center;padding:20px">Nenhuma sessão realizada neste período</td></tr>`;
     _sortState['fin-lista-tbody'] = null;
   } else {
     _finPixKey = pixKey;
     _finPixKeyCnpj = pixKeyCnpj;
     _sortInit('fin-lista-tbody', data.lista, _renderFinRow, 'data');
+    finListaFiltrar();
   }
 
   _finIniciarDrag();
