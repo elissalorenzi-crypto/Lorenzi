@@ -3583,11 +3583,11 @@ async function emitirNfseFocus(pacienteId, ano, mes, uid, ids = null) {
     const body = { paciente_id: pacienteId, ano, mes };
     if (ids?.length) body.agendamento_ids = ids;
     const r = await api('POST', '/nfse/emitir', body);
+    loadFinanceiro();
     if (r.status === 'autorizado') {
       if (btn) { btn.textContent = '✅ Nota Emitida!'; btn.style.background = 'var(--sage)'; }
       if (statusEl) statusEl.innerHTML = `NFS-e nº <strong>${r.numero || '—'}</strong>${r.link_pdf ? ` &nbsp;·&nbsp; <a href="${r.link_pdf}" target="_blank">📥 PDF</a>` : ''}`;
       toast('NFS-e emitida com sucesso!');
-      loadFinanceiro();
     } else if (r.status && (r.status.includes('processando') || r.status === 'recebido')) {
       if (btn) btn.textContent = '⏳ Processando...';
       if (statusEl) statusEl.textContent = 'Aguardando autorização...';
