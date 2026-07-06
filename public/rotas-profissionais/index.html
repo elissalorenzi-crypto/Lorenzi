@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Conhecendo as Rotas Profissionais</title>
+<style>
+:root{
+  --plum:#4A3728;--plum-mid:#6B4F3A;--plum-light:#8C6E57;
+  --rose:#C4956A;--rose-soft:#D4A87A;--rose-pale:#FBF3F9;
+  --lavender:#F1E4EE;--border:#E8D5E4;--bg:#FFFFFF;--bg-alt:#FBF3F9;
+  --sage:#2A6B4A;--muted:#9A7D8E;--text:#4A3728;
+  --shadow:0 2px 8px rgba(74,55,40,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg-alt);min-height:100vh;color:var(--text)}
+
+header{background:linear-gradient(135deg,var(--plum) 0%,var(--plum-mid) 100%);color:#fff;padding:22px 16px;text-align:center}
+header h1{font-size:20px;font-weight:800;margin-bottom:4px;letter-spacing:-.3px}
+header p{font-size:13px;opacity:.8}
+
+.container{max-width:860px;margin:0 auto;padding:20px 16px 40px}
+.card{background:var(--bg);border-radius:14px;padding:20px 18px;margin-bottom:16px;box-shadow:var(--shadow);border:1px solid var(--border)}
+
+/* herda variáveis usadas pelo conteúdo da biblioteca */
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🛤️ Conhecendo as Rotas Profissionais</h1>
+  <p>Orientação Profissional · Elissa Catarina Lorenzi</p>
+</header>
+
+<div class="container">
+  <div class="card" id="conteudo-rotas">
+    <p style="color:#aaa;font-size:13px">Carregando conteúdo...</p>
+  </div>
+</div>
+
+<script src="/js/biblioteca.js"></script>
+<script>
+(function(){
+  const area  = BIB_CARDS.find(c => c.id === 'op-rotas-mercado');
+  const pasta = area?.pastas?.[0];
+  const atv   = pasta?.atividades?.[0];
+  const el    = document.getElementById('conteudo-rotas');
+  if (atv && atv.conteudo) {
+    el.innerHTML = atv.conteudo;
+  } else {
+    el.innerHTML = '<p style="color:#c00">Conteúdo não encontrado.</p>';
+  }
+})();
+</script>
+</body>
+</html>

@@ -1118,6 +1118,7 @@ function _renderPacienteRow(p, i) {
           <button class="btn btn-outline btn-xs" onclick="verDetalhePaciente(${p.id})">👁</button>
           <button class="btn btn-outline btn-xs" onclick="editPaciente(${p.id})">✏️</button>
           <button class="btn btn-outline btn-xs" title="Enviar Lista de Profissões" onclick="enviarListaProfissoes(${p.id})">📋</button>
+          <button class="btn btn-outline btn-xs" title="Enviar Rotas Profissionais" onclick="enviarRotasProfissionais(${p.id})">🛤️</button>
           <button class="btn btn-ghost btn-xs" style="color:var(--red)" onclick="deletePacienteItem(${p.id})">🗑</button>
         </div>
       </td>
@@ -1134,6 +1135,29 @@ function renderPacientesTable(data) {
   if (contadorEl) contadorEl.textContent = `${data.length} cliente${data.length !== 1 ? 's' : ''}`;
   _pacientesData = data;
   _sortInit('pacientes-tbody', data, _renderPacienteRow, 'nome');
+}
+
+async function enviarRotasProfissionais(id) {
+  try {
+    const base = location.origin;
+    const p = await api('GET', `/pacientes/${id}`);
+    const nome = p.nome, whatsapp = p.whatsapp || '';
+    const url = base + '/rotas-profissionais/';
+    const waNome = p.apelido || nome.split(' ')[0];
+    const waMsg = encodeURIComponent('Olá, ' + waNome + '! 😊\nSegue o link do material sobre as Rotas Profissionais:\n' + url + '\n\nExplore cada rota e observe qual delas mais combina com você. Qualquer dúvida me chame! 🌟');
+    const waLink = whatsapp ? 'https://wa.me/' + toWaNum(whatsapp) + '?text=' + waMsg : '';
+    window._urlRotas = url;
+    openModal('🛤️ Rotas Profissionais — ' + nome, `
+      <p style="margin-bottom:12px;font-size:14px;color:#555">Envie o link do material de Rotas Profissionais para <strong>${nome}</strong>.</p>
+      <div style="background:#f8f4ff;border:1.5px solid #d8b8ff;border-radius:8px;padding:10px 14px;font-size:12px;word-break:break-all;margin-bottom:14px;color:#5c35a0">${url}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="navigator.clipboard.writeText(window._urlRotas).then(function(){toast('Link copiado!')})">📋 Copiar link</button>
+        ${waLink ? '<a href="' + waLink + '" target="_blank" class="btn btn-primary" style="background:#25d366;border-color:#25d366;text-decoration:none">💬 Enviar pelo WhatsApp</a>' : '<span style="color:#999;font-size:13px">WhatsApp não cadastrado</span>'}
+      </div>
+    `, null);
+  } catch(e) {
+    toast('Erro: ' + e.message, 'error');
+  }
 }
 
 async function enviarListaProfissoes(id) {
@@ -1326,6 +1350,7 @@ async function verDetalhePaciente(id) {
       <button class="btn btn-ghost" style="color:var(--red);border-color:var(--red)" onclick="limparSessoesFuturas(${p.id},'${(p.apelido||p.nome.split(' ')[0]).replace(/'/g,"\\'")}')">🗑 Cancelar série</button>
       <button class="btn btn-ghost" style="color:var(--sage);border-color:var(--sage)" onclick="restaurarSessoesFuturas(${p.id},'${(p.apelido||p.nome.split(' ')[0]).replace(/'/g,"\\'")}')">↩ Restaurar série</button>
       <button class="btn btn-outline" onclick="enviarListaProfissoes(${p.id})">📋 Enviar Lista de Profissões</button>
+      <button class="btn btn-outline" onclick="enviarRotasProfissionais(${p.id})">🛤️ Enviar Rotas Profissionais</button>
     </div>
   `;
 
