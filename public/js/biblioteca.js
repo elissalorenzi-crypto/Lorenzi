@@ -866,52 +866,124 @@ tr[data-desc] .mp-pnome:hover{color:#4527a0;text-decoration:underline}
     </div>
   </details>
 
-  <!-- CONCURSO PÚBLICO -->
+  <!-- SERVIÇO PÚBLICO -->
   <details style="border:1.5px solid #a8d5c2;border-radius:10px;overflow:hidden">
     <summary style="padding:13px 16px;font-weight:700;font-size:14px;color:#2A6B4A;cursor:pointer;background:#f0fdf4;list-style:none;display:flex;justify-content:space-between;align-items:center">
-      🏛️ Concurso Público <span style="font-size:11px;font-weight:400;color:#888">clique para expandir</span>
+      🏛️ Serviço Público <span style="font-size:11px;font-weight:400;color:#888">clique para expandir</span>
     </summary>
-    <div style="padding:18px 20px;font-size:13px;line-height:1.75;color:#333">
-      <p>Ingresso por <strong>concurso público</strong> em órgãos do governo federal, estadual ou municipal. Após aprovação e nomeação, o servidor público tem <strong>estabilidade no emprego</strong> após o período probatório (geralmente 3 anos).</p>
+    <div style="padding:18px 20px;font-size:13px;line-height:1.75;color:#333;max-height:60vh;overflow-y:auto">
 
-      <h4 style="color:#2A6B4A;font-size:13px;margin:14px 0 8px">🏗️ Como funciona o ingresso?</h4>
-      <ol style="padding-left:18px;margin:0 0 14px;font-size:13px;line-height:1.8">
-        <li>Publicação do edital com vagas, requisitos e conteúdo das provas</li>
-        <li>Inscrição e pagamento da taxa</li>
-        <li>Estudo e preparação (pode levar meses ou anos)</li>
-        <li>Provas escritas (objetiva e/ou dissertativa)</li>
-        <li>Outras etapas: prova física, psicológica, título, entrevista (varia por cargo)</li>
-        <li>Nomeação, posse e exercício do cargo</li>
-      </ol>
+      <p>A <strong>rota do serviço público</strong> é um caminho profissional voltado para trabalhar em órgãos e instituições do Estado, prestando serviços que beneficiam diretamente a população.</p>
+      <p>Ao contrário das empresas privadas, os órgãos públicos existem para oferecer serviços essenciais à sociedade, como saúde, educação, segurança, justiça, infraestrutura, fiscalização, pesquisa científica e administração pública.</p>
 
-      <h4 style="color:#2A6B4A;font-size:13px;margin:14px 0 8px">📚 Exemplos de carreiras</h4>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
-        ${['Professor da rede pública','Policial Civil/Militar','Fiscal da Receita Federal','Agente de Saúde','Juiz / Promotor','Auditor Fiscal','Técnico do INSS','Agente Administrativo','Militar das Forças Armadas','Delegado','Defensor Público','Analista Judiciário'].map(d=>`<span style="background:#f0fdf4;border:1.5px solid #a8d5c2;border-radius:20px;padding:3px 10px;font-size:11.5px;font-weight:600;color:#2A6B4A">${d}</span>`).join('')}
+      <h4 style="color:#2A6B4A;font-size:13px;margin:14px 0 8px">🏗️ Onde o servidor público pode atuar?</h4>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px">
+        ${['Prefeituras','Governos estaduais','Governo Federal','Tribunais','Ministérios','Escolas públicas','Universidades públicas','Hospitais públicos','Delegacias','Agências reguladoras','Ministério Público','Defensorias','Receita Federal','Banco Central','INSS','IBGE','Polícia Federal','Polícia Civil','Corpo de Bombeiros','Bancos públicos','Institutos de pesquisa'].map(d=>`<span style="background:#f0fdf4;border:1.5px solid #a8d5c2;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;color:#2A6B4A">${d}</span>`).join('')}
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <hr style="border:none;border-top:1px solid #eee;margin:14px 0">
+      <h4 style="color:#2A6B4A;font-size:13px;margin:0 0 10px">📋 Como costuma ser a rotina?</h4>
+
+      <details style="border:1px solid #c8e6c9;border-radius:8px;margin-bottom:8px;overflow:hidden">
+        <summary style="padding:10px 14px;font-weight:700;font-size:12.5px;cursor:pointer;background:#f1f8e9;list-style:none">👥 Atendimento à população</summary>
+        <div style="padding:10px 14px;font-size:12.5px;line-height:1.7">Dependendo da profissão pode envolver: atendimento ao público, análise de processos, elaboração de documentos, fiscalização, ensino, atendimento em saúde, investigação, emissão de pareceres, gestão de políticas públicas, desenvolvimento de pesquisas e planejamento de projetos públicos.</div>
+      </details>
+
+      <details style="border:1px solid #c8e6c9;border-radius:8px;margin-bottom:8px;overflow:hidden">
+        <summary style="padding:10px 14px;font-weight:700;font-size:12.5px;cursor:pointer;background:#f1f8e9;list-style:none">⚖️ Trabalho baseado em leis e normas</summary>
+        <div style="padding:10px 14px;font-size:12.5px;line-height:1.7">Praticamente todas as atividades precisam seguir a legislação: leis, decretos, regulamentos, normas técnicas, procedimentos administrativos e princípios da administração pública. Isso exige responsabilidade, organização e atenção aos detalhes.</div>
+      </details>
+
+      <details style="border:1px solid #c8e6c9;border-radius:8px;margin-bottom:8px;overflow:hidden">
+        <summary style="padding:10px 14px;font-weight:700;font-size:12.5px;cursor:pointer;background:#f1f8e9;list-style:none">📂 Processos administrativos</summary>
+        <div style="padding:10px 14px;font-size:12.5px;line-height:1.7">É comum lidar com: processos administrativos, documentos oficiais, protocolos, pareceres técnicos, sistemas informatizados, registros, auditorias e prestação de contas. Dependendo da área, existe um nível maior ou menor de burocracia.</div>
+      </details>
+
+      <details style="border:1px solid #c8e6c9;border-radius:8px;margin-bottom:8px;overflow:hidden">
+        <summary style="padding:10px 14px;font-weight:700;font-size:12.5px;cursor:pointer;background:#f1f8e9;list-style:none">🌍 Responsabilidade social</summary>
+        <div style="padding:10px 14px;font-size:12.5px;line-height:1.7">O servidor pode contribuir para: melhorar a educação, cuidar da saúde da população, promover justiça, proteger o meio ambiente, garantir segurança, desenvolver pesquisas, administrar recursos públicos e formular políticas públicas. Para muitas pessoas, esse propósito é um dos principais atrativos da carreira.</div>
+      </details>
+
+      <details style="border:1px solid #c8e6c9;border-radius:8px;margin-bottom:8px;overflow:hidden">
+        <summary style="padding:10px 14px;font-weight:700;font-size:12.5px;cursor:pointer;background:#f1f8e9;list-style:none">💻 Uso de tecnologia</summary>
+        <div style="padding:10px 14px;font-size:12.5px;line-height:1.7">Cada vez mais o serviço público utiliza ferramentas digitais: sistemas eletrônicos de processos, bancos de dados, planilhas, documentos digitais, assinaturas eletrônicas, softwares específicos e plataformas de atendimento ao cidadão.</div>
+      </details>
+
+      <details style="border:1px solid #c8e6c9;border-radius:8px;margin-bottom:8px;overflow:hidden">
+        <summary style="padding:10px 14px;font-weight:700;font-size:12.5px;cursor:pointer;background:#f1f8e9;list-style:none">📚 Capacitação contínua</summary>
+        <div style="padding:10px 14px;font-size:12.5px;line-height:1.7">É comum participar de: cursos internos, capacitações, especializações, treinamentos, atualizações sobre legislação, congressos e programas de desenvolvimento profissional. Em diversas carreiras públicas, manter-se atualizado é fundamental.</div>
+      </details>
+
+      <hr style="border:none;border-top:1px solid #eee;margin:14px 0">
+      <h4 style="color:#2A6B4A;font-size:13px;margin:0 0 10px">🎓 Tipos de cargos</h4>
+
+      <details style="border:1px solid #c8e6c9;border-radius:8px;margin-bottom:8px;overflow:hidden">
+        <summary style="padding:10px 14px;font-weight:700;font-size:12.5px;cursor:pointer;background:#f1f8e9;list-style:none">📌 Cargos efetivos (concurso público)</summary>
+        <div style="padding:10px 14px;font-size:12.5px;line-height:1.7">São os cargos ocupados por pessoas aprovadas em concurso público. Após cumprir o estágio probatório e atender aos requisitos legais, o servidor adquire <strong>estabilidade</strong>, podendo construir uma carreira de longo prazo. Essa é a forma mais comum de ingresso.</div>
+      </details>
+
+      <details style="border:1px solid #c8e6c9;border-radius:8px;margin-bottom:8px;overflow:hidden">
+        <summary style="padding:10px 14px;font-weight:700;font-size:12.5px;cursor:pointer;background:#f1f8e9;list-style:none">📌 Cargos comissionados (confiança)</summary>
+        <div style="padding:10px 14px;font-size:12.5px;line-height:1.7">Destinados a funções de liderança, coordenação, direção e assessoramento. <strong>Não exigem concurso público</strong> — a escolha é feita pela autoridade responsável. São de livre nomeação e exoneração, sem estabilidade. Costumam envolver maior responsabilidade na gestão de equipes e tomada de decisões.</div>
+      </details>
+
+      <details style="border:1px solid #c8e6c9;border-radius:8px;margin-bottom:8px;overflow:hidden">
+        <summary style="padding:10px 14px;font-weight:700;font-size:12.5px;cursor:pointer;background:#f1f8e9;list-style:none">📌 Contratos temporários</summary>
+        <div style="padding:10px 14px;font-size:12.5px;line-height:1.7">Para situações específicas: substituição de servidores, emergências, projetos específicos ou aumento temporário de demanda. Possuem prazo determinado e seguem regras previstas em lei.</div>
+      </details>
+
+      <hr style="border:none;border-top:1px solid #eee;margin:14px 0">
+      <h4 style="color:#2A6B4A;font-size:13px;margin:0 0 8px">🎯 Como ingressar — Concurso Público</h4>
+      <p style="font-size:12.5px;margin-bottom:8px">O concurso público pode incluir:</p>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px">
+        ${['Prova objetiva','Prova discursiva','Redação','Prova prática','Teste físico','Avaliação psicológica','Investigação social','Avaliação de títulos','Curso de formação'].map(e=>`<span style="background:#f0fdf4;border:1.5px solid #a8d5c2;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;color:#2A6B4A">${e}</span>`).join('')}
+      </div>
+      <p style="font-size:12.5px;margin-bottom:4px"><strong>Exige faculdade?</strong> Depende do cargo. Existem concursos para nível fundamental, médio, técnico e superior. Algumas carreiras exigem formação específica (Medicina, Direito, Psicologia, Engenharia etc.), outras aceitam qualquer graduação.</p>
+
+      <hr style="border:none;border-top:1px solid #eee;margin:14px 0">
+      <h4 style="color:#2A6B4A;font-size:13px;margin:0 0 8px">🗂️ Principais áreas do serviço público</h4>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px">
+        ${['Administração Pública','Gestão','Educação','Saúde','Segurança Pública','Justiça','Fiscal e Tributária','Controle e Auditoria','Tecnologia da Informação','Meio Ambiente','Engenharia','Pesquisa Científica','Diplomacia','Comunicação','Cultura','Assistência Social','Bancos Públicos','Agências Reguladoras','Forças Armadas','Polícia','Corpo de Bombeiros'].map(a=>`<span style="background:#f0fdf4;border:1.5px solid #a8d5c2;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;color:#2A6B4A">${a}</span>`).join('')}
+      </div>
+
+      <h4 style="color:#2A6B4A;font-size:13px;margin:0 0 8px">🧩 Habilidades valorizadas</h4>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px">
+        ${['Ética e responsabilidade','Seguir normas e procedimentos','Organização','Atenção aos detalhes','Decisões baseadas em lei','Comunicação clara','Atendimento respeitoso','Trabalho em equipe','Imparcialidade','Compromisso com o interesse coletivo'].map(h=>`<span style="background:#e8f5e9;border:1.5px solid #a8d5c2;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;color:#2A6B4A">${h}</span>`).join('')}
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
         <div style="background:#e8f5e9;border:1.5px solid #a8d5c2;border-radius:8px;padding:12px 14px">
           <div style="font-weight:700;font-size:12.5px;color:#2A6B4A;margin-bottom:6px">✅ Vantagens</div>
           <ul style="margin:0;padding-left:16px;font-size:12px;line-height:1.8">
-            <li>Estabilidade no emprego</li>
-            <li>Plano de carreira definido</li>
-            <li>Aposentadoria pelo regime próprio</li>
+            <li>Estabilidade profissional (efetivos)</li>
+            <li>Carreira de longo prazo</li>
             <li>Salários competitivos em muitas áreas</li>
-            <li>Benefícios e adicional de férias</li>
-            <li>Impacto social direto</li>
+            <li>Benefícios previstos em lei</li>
+            <li>Jornada definida em muitos cargos</li>
+            <li>Progressão na carreira</li>
+            <li>Impacto positivo na sociedade</li>
+            <li>Diversidade de áreas e profissões</li>
           </ul>
         </div>
         <div style="background:#fff5f5;border:1.5px solid #f4a7a7;border-radius:8px;padding:12px 14px">
           <div style="font-weight:700;font-size:12.5px;color:#a00;margin-bottom:6px">⚠️ Desafios</div>
           <ul style="margin:0;padding-left:16px;font-size:12px;line-height:1.8">
-            <li>Longa preparação e dedicação</li>
-            <li>Alta concorrência em alguns cargos</li>
-            <li>Burocracia e processos lentos</li>
-            <li>Menos flexibilidade de horário em alguns cargos</li>
-            <li>Progressão pode ser lenta</li>
+            <li>Alta concorrência nos concursos</li>
+            <li>Meses ou anos de preparação</li>
+            <li>Processos burocráticos</li>
+            <li>Mudanças na legislação exigem atualização</li>
+            <li>Limitações orçamentárias em alguns órgãos</li>
+            <li>Crescimento pode ser mais lento</li>
+            <li>Grande responsabilidade perante a sociedade</li>
           </ul>
         </div>
       </div>
+
+      <div style="background:#f0fdf4;border:1.5px solid #a8d5c2;border-radius:10px;padding:14px 16px">
+        <div style="font-weight:700;font-size:12.5px;color:#2A6B4A;margin-bottom:6px">👤 Para quem essa rota costuma combinar?</div>
+        <p style="font-size:12.5px;margin:0;line-height:1.7">Pessoas que gostam de <strong>contribuir para a sociedade</strong>, trabalhar com propósito e impacto social, atuar em ambientes organizados e regulamentados, construir uma carreira estável e de longo prazo, estudar continuamente, e que têm compromisso com ética e responsabilidade perante a população.</p>
+      </div>
+
     </div>
   </details>
 
