@@ -3944,7 +3944,7 @@ async function salvarStatusSessao(agId, status, pacienteId) {
             `<p style="margin-bottom:12px"><strong>${nome}</strong> completou as <strong>${p.total_sessoes} sessões</strong> previstas.</p>
              <p style="margin-bottom:16px">Deseja aumentar o número total de sessões?</p>
              <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">Novo total:</label>
-             <input type="number" id="novo-total-sessoes" min="${p.total_sessoes + 1}" value="${p.total_sessoes + 4}"
+             <input type="number" id="novo-total-sessoes" min="${p.total_sessoes + 1}" value="${p.total_sessoes + 10}"
                     style="width:120px;padding:6px 10px;border:1px solid #e0d5cb;border-radius:6px;font-size:14px">`,
             async () => {
               const novoTotal = Number(document.getElementById('novo-total-sessoes').value);
