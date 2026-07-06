@@ -755,7 +755,34 @@ async function openModalAgendamento(ag = null, dataPreset = null, pacienteIdPres
       const dv = document.getElementById('pacientes-detail-view');
       const detailWasOpen = dv && dv.style.display !== 'none';
       if (isEdit) { await api('PUT', `/agendamentos/${ag.id}`, body); toast('Agendamento atualizado!'); }
-      else        { await api('POST', '/agendamentos', body);          toast('Sessão agendada!'); }
+      else {
+        await api('POST', '/agendamentos', body);
+        toast('Sessão agendada!');
+        if (body.paciente_id) {
+          try {
+            const diasPorFreq = { '2x-mes': 14, '1x-mes': 30 };
+            const p = await api('GET', `/pacientes/${body.paciente_id}`);
+            const dias = diasPorFreq[p.frequencia];
+            if (dias) {
+              const proxData = new Date(body.data + 'T12:00:00');
+              proxData.setDate(proxData.getDate() + dias);
+              const proxDataStr = proxData.toISOString().slice(0, 10);
+              const todas = await api('GET', `/pacientes/${body.paciente_id}/agendamentos`);
+              const jaExiste = todas.some(a => a.data === proxDataStr && a.hora === body.hora);
+              if (!jaExiste) {
+                await api('POST', '/agendamentos', {
+                  paciente_id: body.paciente_id, data: proxDataStr, hora: body.hora,
+                  duracao: body.duracao, tipo: body.tipo, status: 'agendado',
+                  valor: body.valor, pago: 0,
+                });
+                const dd = String(proxData.getDate()).padStart(2,'0');
+                const mm = String(proxData.getMonth()+1).padStart(2,'0');
+                toast(`📅 Próxima sessão agendada para ${dd}/${mm}`);
+              }
+            }
+          } catch(_) {}
+        }
+      }
       closeModal();
       await refreshAll();
       if (detailWasOpen && savedPacId) {
