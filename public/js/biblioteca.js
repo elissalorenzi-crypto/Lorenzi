@@ -754,63 +754,211 @@ tr[data-desc] .mp-pnome:hover{color:#4527a0;text-decoration:underline}
             subtitulo: 'Áreas, cursos, sequências e conhecimento',
             icone: '🛤️',
             conteudo: `
-<h3 style="color:var(--plum);margin-bottom:4px">🏢 Tipos de áreas do mercado de trabalho</h3>
-<p style="font-size:13px;color:#666;margin-bottom:14px">💡 Clique em cada área para saber mais sobre ela.</p>
+<h3 style="color:var(--plum);margin-bottom:4px">🛤️ Tipos de Rotas do Mercado de Trabalho</h3>
+<p style="font-size:13px;color:#666;margin-bottom:14px">💡 Clique em cada rota para saber mais sobre ela.</p>
 
-<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px">
+<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px">
 
+  <!-- CORPORATIVO -->
   <details style="border:1.5px solid #c8a8d5;border-radius:10px;overflow:hidden">
-    <summary style="padding:12px 16px;font-weight:700;font-size:13.5px;color:var(--plum);cursor:pointer;background:#f5f0f7;list-style:none;display:flex;justify-content:space-between;align-items:center">
-      💼 Empregado CLT <span style="font-size:11px;font-weight:400;color:#888">clique para expandir</span>
+    <summary style="padding:13px 16px;font-weight:700;font-size:14px;color:var(--plum);cursor:pointer;background:#f5f0f7;list-style:none;display:flex;justify-content:space-between;align-items:center">
+      🏢 Corporativo <span style="font-size:11px;font-weight:400;color:#888">clique para expandir</span>
     </summary>
-    <div style="padding:14px 16px;font-size:13px;line-height:1.7;color:#333">
-      <p>Trabalho com <strong>carteira assinada</strong> em empresa privada. O empregado tem vínculo empregatício formal e direitos garantidos pela CLT (Consolidação das Leis do Trabalho).</p>
-      <p><strong>Vantagens:</strong> estabilidade de renda mensal, benefícios como plano de saúde, vale-alimentação, FGTS, 13º salário e férias remuneradas.</p>
-      <p><strong>Exemplos de cargos:</strong> analista, assistente, coordenador, gerente, operador, técnico em empresas privadas de qualquer setor.</p>
+    <div style="padding:18px 20px;font-size:13px;line-height:1.75;color:#333;max-height:60vh;overflow-y:auto">
+
+      <h4 style="color:var(--plum);font-size:14px;margin:0 0 8px">O que é uma rotina corporativa?</h4>
+      <p>Quando falamos que uma pessoa trabalha no <strong>mercado corporativo</strong>, significa que ela atua dentro de uma empresa (pequena, média ou grande), ocupando um cargo e fazendo parte de uma equipe que trabalha para atingir os objetivos do negócio.</p>
+      <p>A rotina corporativa costuma ser mais estruturada do que em outros tipos de trabalho. Existem metas, processos, responsabilidades definidas, líderes, colegas de equipe e uma organização clara sobre quem faz o quê.</p>
+      <p>Em vez de trabalhar de forma totalmente independente, o profissional normalmente faz parte de um departamento, como:</p>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 14px">
+        ${['Marketing','Recursos Humanos','Financeiro','Tecnologia','Comercial','Engenharia','Jurídico','Comunicação','Operações','Pesquisa e Desenvolvimento','Logística','Atendimento ao Cliente','Produto'].map(d=>`<span style="background:#f5f0f7;border:1.5px solid #c8a8d5;border-radius:20px;padding:3px 10px;font-size:11.5px;font-weight:600;color:var(--plum)">${d}</span>`).join('')}
+      </div>
+
+      <hr style="border:none;border-top:1px solid #eee;margin:14px 0">
+      <h4 style="color:var(--plum);font-size:14px;margin:0 0 10px">Como costuma ser a rotina corporativa?</h4>
+
+      <details style="border:1px solid #e0d5cb;border-radius:8px;margin-bottom:8px;overflow:hidden">
+        <summary style="padding:10px 14px;font-weight:700;font-size:12.5px;cursor:pointer;background:#faf8f6;list-style:none">🤝 Trabalho em equipe</summary>
+        <div style="padding:10px 14px;font-size:12.5px">Grande parte das atividades depende da colaboração entre diferentes pessoas. É comum participar de reuniões, trocar informações, pedir apoio para outros setores, compartilhar ideias e desenvolver projetos em conjunto. Poucos cargos são totalmente individuais.</div>
+      </details>
+
+      <details style="border:1px solid #e0d5cb;border-radius:8px;margin-bottom:8px;overflow:hidden">
+        <summary style="padding:10px 14px;font-weight:700;font-size:12.5px;cursor:pointer;background:#faf8f6;list-style:none">🎯 Metas e objetivos</summary>
+        <div style="padding:10px 14px;font-size:12.5px">Na maioria das empresas existem metas que precisam ser alcançadas: aumentar vendas, reduzir custos, entregar projetos no prazo, melhorar indicadores, atender clientes, desenvolver novos produtos, aumentar a qualidade dos serviços. O desempenho costuma ser acompanhado periodicamente.</div>
+      </details>
+
+      <details style="border:1px solid #e0d5cb;border-radius:8px;margin-bottom:8px;overflow:hidden">
+        <summary style="padding:10px 14px;font-weight:700;font-size:12.5px;cursor:pointer;background:#faf8f6;list-style:none">📋 Processos e organização</summary>
+        <div style="padding:10px 14px;font-size:12.5px">As empresas possuem procedimentos definidos para cada atividade: fluxos de trabalho, regras, prazos, padrões de qualidade, documentos, sistemas internos e aprovações. Em muitas situações o profissional não decide sozinho, pois existem processos estabelecidos pela empresa.</div>
+      </details>
+
+      <details style="border:1px solid #e0d5cb;border-radius:8px;margin-bottom:8px;overflow:hidden">
+        <summary style="padding:10px 14px;font-weight:700;font-size:12.5px;cursor:pointer;background:#faf8f6;list-style:none">🏗️ Hierarquia</summary>
+        <div style="padding:10px 14px;font-size:12.5px">
+          As empresas possuem uma estrutura organizacional com diferentes níveis:
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px">
+            ${['Estagiário','Analista Jr.','Analista Pl.','Analista Sr.','Especialista','Coordenador','Gerente','Diretor','Presidência'].map((n,i,a)=>`<span style="background:#f5f0f7;border:1.5px solid #c8a8d5;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;color:var(--plum)">${n}</span>${i<a.length-1?'<span style="color:#bbb;font-size:10px;align-self:center">›</span>':''}`).join('')}
+          </div>
+        </div>
+      </details>
+
+      <details style="border:1px solid #e0d5cb;border-radius:8px;margin-bottom:8px;overflow:hidden">
+        <summary style="padding:10px 14px;font-weight:700;font-size:12.5px;cursor:pointer;background:#faf8f6;list-style:none">📅 Reuniões frequentes</summary>
+        <div style="padding:10px 14px;font-size:12.5px">Reuniões servem para: alinhar atividades, discutir projetos, acompanhar resultados, resolver problemas, definir prioridades e tomar decisões. Dependendo da função, algumas pessoas participam de poucas reuniões; outras passam boa parte do dia nelas.</div>
+      </details>
+
+      <details style="border:1px solid #e0d5cb;border-radius:8px;margin-bottom:8px;overflow:hidden">
+        <summary style="padding:10px 14px;font-weight:700;font-size:12.5px;cursor:pointer;background:#faf8f6;list-style:none">💻 Uso intenso de tecnologia</summary>
+        <div style="padding:10px 14px;font-size:12.5px">Ferramentas comuns: Excel, PowerPoint, Word, Google Workspace, Teams, Slack, Outlook, CRMs, ERPs e softwares específicos da área. Muitas empresas utilizam Inteligência Artificial para apoiar diversas atividades.</div>
+      </details>
+
+      <details style="border:1px solid #e0d5cb;border-radius:8px;margin-bottom:8px;overflow:hidden">
+        <summary style="padding:10px 14px;font-weight:700;font-size:12.5px;cursor:pointer;background:#faf8f6;list-style:none">📣 Comunicação constante</summary>
+        <div style="padding:10px 14px;font-size:12.5px">Mesmo profissionais técnicos precisam se comunicar: escrever e-mails, participar de reuniões, apresentar projetos, conversar com clientes, explicar resultados, negociar prioridades e elaborar relatórios. Comunicação costuma ser uma habilidade valorizada em praticamente todas as áreas.</div>
+      </details>
+
+      <details style="border:1px solid #e0d5cb;border-radius:8px;margin-bottom:8px;overflow:hidden">
+        <summary style="padding:10px 14px;font-weight:700;font-size:12.5px;cursor:pointer;background:#faf8f6;list-style:none">⏰ Cumprimento de prazos</summary>
+        <div style="padding:10px 14px;font-size:12.5px">Boa parte das atividades possui datas definidas para entrega. Organização, planejamento e gestão do tempo são habilidades muito importantes para conseguir cumprir essas demandas.</div>
+      </details>
+
+      <details style="border:1px solid #e0d5cb;border-radius:8px;margin-bottom:8px;overflow:hidden">
+        <summary style="padding:10px 14px;font-weight:700;font-size:12.5px;cursor:pointer;background:#faf8f6;list-style:none">📈 Aprendizado contínuo</summary>
+        <div style="padding:10px 14px;font-size:12.5px">O mercado muda constantemente. É comum participar de treinamentos, cursos, certificações, workshops, programas de desenvolvimento, eventos e congressos. Em muitas empresas espera-se que o profissional esteja sempre aprendendo.</div>
+      </details>
+
+      <details style="border:1px solid #e0d5cb;border-radius:8px;margin-bottom:8px;overflow:hidden">
+        <summary style="padding:10px 14px;font-weight:700;font-size:12.5px;cursor:pointer;background:#faf8f6;list-style:none">⭐ Avaliação de desempenho</summary>
+        <div style="padding:10px 14px;font-size:12.5px">Grande parte das empresas realiza avaliações periódicas considerando: qualidade das entregas, alcance de metas, relacionamento com a equipe, iniciativa, capacidade de resolver problemas e desenvolvimento profissional. Essas avaliações costumam influenciar promoções e aumentos salariais.</div>
+      </details>
+
+      <hr style="border:none;border-top:1px solid #eee;margin:14px 0">
+      <h4 style="color:var(--plum);font-size:14px;margin:0 0 8px">🧩 Habilidades valorizadas</h4>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px">
+        ${['Trabalho em equipe','Comunicação clara','Resolução de problemas','Organização','Cumprimento de prazos','Aprendizado rápido','Adaptabilidade','Lidar com pressão','Tomada de decisão','Negociação','Gestão de conflitos','Responsabilidade'].map(h=>`<span style="background:#e8f5e9;border:1.5px solid #a8d5c2;border-radius:20px;padding:3px 10px;font-size:11.5px;font-weight:600;color:#2A6B4A">${h}</span>`).join('')}
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="background:#e8f5e9;border:1.5px solid #a8d5c2;border-radius:8px;padding:12px 14px">
+          <div style="font-weight:700;font-size:12.5px;color:#2A6B4A;margin-bottom:6px">✅ Vantagens</div>
+          <ul style="margin:0;padding-left:16px;font-size:12px;line-height:1.8">
+            <li>Plano de crescimento profissional</li>
+            <li>Benefícios (saúde, alimentação, bônus)</li>
+            <li>Contato com diversas áreas</li>
+            <li>Aprendizado constante</li>
+            <li>Projetos de grande impacto</li>
+            <li>Ampliação de rede de contatos</li>
+          </ul>
+        </div>
+        <div style="background:#fff5f5;border:1.5px solid #f4a7a7;border-radius:8px;padding:12px 14px">
+          <div style="font-weight:700;font-size:12.5px;color:#a00;margin-bottom:6px">⚠️ Desafios</div>
+          <ul style="margin:0;padding-left:16px;font-size:12px;line-height:1.8">
+            <li>Cobrança por resultados e metas</li>
+            <li>Processos burocráticos</li>
+            <li>Dependência de aprovações</li>
+            <li>Competitividade por promoções</li>
+            <li>Necessidade de atualização constante</li>
+            <li>Múltiplas demandas simultâneas</li>
+          </ul>
+        </div>
+      </div>
+
     </div>
   </details>
 
+  <!-- CONCURSO PÚBLICO -->
   <details style="border:1.5px solid #a8d5c2;border-radius:10px;overflow:hidden">
-    <summary style="padding:12px 16px;font-weight:700;font-size:13.5px;color:#2A6B4A;cursor:pointer;background:#f0fdf4;list-style:none;display:flex;justify-content:space-between;align-items:center">
-      🏛️ Servidor Público <span style="font-size:11px;font-weight:400;color:#888">clique para expandir</span>
+    <summary style="padding:13px 16px;font-weight:700;font-size:14px;color:#2A6B4A;cursor:pointer;background:#f0fdf4;list-style:none;display:flex;justify-content:space-between;align-items:center">
+      🏛️ Concurso Público <span style="font-size:11px;font-weight:400;color:#888">clique para expandir</span>
     </summary>
-    <div style="padding:14px 16px;font-size:13px;line-height:1.7;color:#333">
-      <p>Ingresso por <strong>concurso público</strong> em órgãos do governo federal, estadual ou municipal. Oferece <strong>estabilidade</strong> após o período probatório.</p>
-      <p><strong>Vantagens:</strong> estabilidade de emprego, plano de carreira definido, aposentadoria pelo regime próprio, salários competitivos em muitas áreas.</p>
-      <p><strong>Exemplos:</strong> professor da rede pública, policial, fiscal, agente de saúde, juiz, promotor, auditor fiscal, militar.</p>
+    <div style="padding:18px 20px;font-size:13px;line-height:1.75;color:#333">
+      <p>Ingresso por <strong>concurso público</strong> em órgãos do governo federal, estadual ou municipal. Após aprovação e nomeação, o servidor público tem <strong>estabilidade no emprego</strong> após o período probatório (geralmente 3 anos).</p>
+
+      <h4 style="color:#2A6B4A;font-size:13px;margin:14px 0 8px">🏗️ Como funciona o ingresso?</h4>
+      <ol style="padding-left:18px;margin:0 0 14px;font-size:13px;line-height:1.8">
+        <li>Publicação do edital com vagas, requisitos e conteúdo das provas</li>
+        <li>Inscrição e pagamento da taxa</li>
+        <li>Estudo e preparação (pode levar meses ou anos)</li>
+        <li>Provas escritas (objetiva e/ou dissertativa)</li>
+        <li>Outras etapas: prova física, psicológica, título, entrevista (varia por cargo)</li>
+        <li>Nomeação, posse e exercício do cargo</li>
+      </ol>
+
+      <h4 style="color:#2A6B4A;font-size:13px;margin:14px 0 8px">📚 Exemplos de carreiras</h4>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
+        ${['Professor da rede pública','Policial Civil/Militar','Fiscal da Receita Federal','Agente de Saúde','Juiz / Promotor','Auditor Fiscal','Técnico do INSS','Agente Administrativo','Militar das Forças Armadas','Delegado','Defensor Público','Analista Judiciário'].map(d=>`<span style="background:#f0fdf4;border:1.5px solid #a8d5c2;border-radius:20px;padding:3px 10px;font-size:11.5px;font-weight:600;color:#2A6B4A">${d}</span>`).join('')}
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="background:#e8f5e9;border:1.5px solid #a8d5c2;border-radius:8px;padding:12px 14px">
+          <div style="font-weight:700;font-size:12.5px;color:#2A6B4A;margin-bottom:6px">✅ Vantagens</div>
+          <ul style="margin:0;padding-left:16px;font-size:12px;line-height:1.8">
+            <li>Estabilidade no emprego</li>
+            <li>Plano de carreira definido</li>
+            <li>Aposentadoria pelo regime próprio</li>
+            <li>Salários competitivos em muitas áreas</li>
+            <li>Benefícios e adicional de férias</li>
+            <li>Impacto social direto</li>
+          </ul>
+        </div>
+        <div style="background:#fff5f5;border:1.5px solid #f4a7a7;border-radius:8px;padding:12px 14px">
+          <div style="font-weight:700;font-size:12.5px;color:#a00;margin-bottom:6px">⚠️ Desafios</div>
+          <ul style="margin:0;padding-left:16px;font-size:12px;line-height:1.8">
+            <li>Longa preparação e dedicação</li>
+            <li>Alta concorrência em alguns cargos</li>
+            <li>Burocracia e processos lentos</li>
+            <li>Menos flexibilidade de horário em alguns cargos</li>
+            <li>Progressão pode ser lenta</li>
+          </ul>
+        </div>
+      </div>
     </div>
   </details>
 
+  <!-- EMPREENDEDORISMO / AUTÔNOMO -->
   <details style="border:1.5px solid #f4c77a;border-radius:10px;overflow:hidden">
-    <summary style="padding:12px 16px;font-weight:700;font-size:13.5px;color:#8a5a00;cursor:pointer;background:#fffbf0;list-style:none;display:flex;justify-content:space-between;align-items:center">
-      🧑‍💻 Autônomo / Freelancer <span style="font-size:11px;font-weight:400;color:#888">clique para expandir</span>
+    <summary style="padding:13px 16px;font-weight:700;font-size:14px;color:#8a5a00;cursor:pointer;background:#fffbf0;list-style:none;display:flex;justify-content:space-between;align-items:center">
+      🚀 Empreendedorismo / Autônomo <span style="font-size:11px;font-weight:400;color:#888">clique para expandir</span>
     </summary>
-    <div style="padding:14px 16px;font-size:13px;line-height:1.7;color:#333">
-      <p>Trabalha <strong>por conta própria</strong>, prestando serviços a diferentes clientes sem vínculo empregatício fixo. Define seus próprios horários e valores.</p>
-      <p><strong>Vantagens:</strong> liberdade, flexibilidade de horário, potencial de ganho variável (pode ganhar mais que um empregado), variedade de projetos.</p>
-      <p><strong>Exemplos:</strong> designer gráfico freelancer, psicólogo com consultório próprio, fotógrafo, eletricista autônomo, nutricionista independente.</p>
-    </div>
-  </details>
+    <div style="padding:18px 20px;font-size:13px;line-height:1.75;color:#333">
+      <p>Engloba duas modalidades de trabalho independente: o <strong>autônomo</strong>, que presta serviços sem vínculo empregatício, e o <strong>empreendedor</strong>, que cria e gere seu próprio negócio.</p>
 
-  <details style="border:1.5px solid #f4a7a7;border-radius:10px;overflow:hidden">
-    <summary style="padding:12px 16px;font-weight:700;font-size:13.5px;color:#a00;cursor:pointer;background:#fff5f5;list-style:none;display:flex;justify-content:space-between;align-items:center">
-      🚀 Empreendedor <span style="font-size:11px;font-weight:400;color:#888">clique para expandir</span>
-    </summary>
-    <div style="padding:14px 16px;font-size:13px;line-height:1.7;color:#333">
-      <p>Cria e gere <strong>seu próprio negócio</strong>, assumindo os riscos e os benefícios do empreendimento. Pode começar pequeno (MEI) e crescer.</p>
-      <p><strong>Vantagens:</strong> autonomia total, potencial de crescimento ilimitado, possibilidade de impactar muitas pessoas, construção de patrimônio.</p>
-      <p><strong>Exemplos:</strong> dono de restaurante, criador de startup de tecnologia, loja online, agência de marketing, clínica de saúde.</p>
-    </div>
-  </details>
+      <h4 style="color:#8a5a00;font-size:13px;margin:14px 0 8px">🧑‍💻 Autônomo / Freelancer</h4>
+      <p style="font-size:13px;margin-bottom:10px">Trabalha <strong>por conta própria</strong> oferecendo serviços a diferentes clientes. Define seus próprios horários, valores e forma de trabalho. Pode ser formalizado como <strong>MEI</strong> (Microempreendedor Individual).</p>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
+        ${['Designer Gráfico','Fotógrafo','Psicólogo CLínico','Nutricionista','Arquiteto','Programador','Marceneiro','Eletricista','Cabeleireiro','Personal Trainer','Consultor','Tradutora'].map(d=>`<span style="background:#fffbf0;border:1.5px solid #f4c77a;border-radius:20px;padding:3px 10px;font-size:11.5px;font-weight:600;color:#8a5a00">${d}</span>`).join('')}
+      </div>
 
-  <details style="border:1.5px solid #9ec8f5;border-radius:10px;overflow:hidden">
-    <summary style="padding:12px 16px;font-weight:700;font-size:13.5px;color:#0a4a8a;cursor:pointer;background:#f0f7ff;list-style:none;display:flex;justify-content:space-between;align-items:center">
-      🤝 Terceiro Setor <span style="font-size:11px;font-weight:400;color:#888">clique para expandir</span>
-    </summary>
-    <div style="padding:14px 16px;font-size:13px;line-height:1.7;color:#333">
-      <p>Trabalho em <strong>ONGs, fundações, institutos e associações</strong> sem fins lucrativos, com foco em causas sociais, ambientais, culturais ou educacionais.</p>
-      <p><strong>Vantagens:</strong> propósito claro, impacto social direto, ambiente colaborativo, possibilidade de atuar em áreas de interesse pessoal.</p>
-      <p><strong>Exemplos:</strong> gestor de projetos sociais, captador de recursos, educador social, psicólogo social, comunicador em ONG.</p>
+      <h4 style="color:#8a5a00;font-size:13px;margin:14px 0 8px">🏗️ Empreendedor</h4>
+      <p style="font-size:13px;margin-bottom:10px">Cria e gere <strong>seu próprio negócio</strong>, assumindo os riscos e os benefícios do empreendimento. Pode começar pequeno (MEI, ME) e crescer gradualmente.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
+        ${['Dono de restaurante','Startup de tecnologia','Loja online','Agência de marketing','Clínica de saúde','Escola de idiomas','Estúdio de design','Serviço de delivery'].map(d=>`<span style="background:#fffbf0;border:1.5px solid #f4c77a;border-radius:20px;padding:3px 10px;font-size:11.5px;font-weight:600;color:#8a5a00">${d}</span>`).join('')}
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="background:#e8f5e9;border:1.5px solid #a8d5c2;border-radius:8px;padding:12px 14px">
+          <div style="font-weight:700;font-size:12.5px;color:#2A6B4A;margin-bottom:6px">✅ Vantagens</div>
+          <ul style="margin:0;padding-left:16px;font-size:12px;line-height:1.8">
+            <li>Autonomia e liberdade</li>
+            <li>Flexibilidade de horário</li>
+            <li>Potencial de ganho variável</li>
+            <li>Construção de patrimônio próprio</li>
+            <li>Possibilidade de impactar muitas pessoas</li>
+            <li>Variedade de projetos e clientes</li>
+          </ul>
+        </div>
+        <div style="background:#fff5f5;border:1.5px solid #f4a7a7;border-radius:8px;padding:12px 14px">
+          <div style="font-weight:700;font-size:12.5px;color:#a00;margin-bottom:6px">⚠️ Desafios</div>
+          <ul style="margin:0;padding-left:16px;font-size:12px;line-height:1.8">
+            <li>Renda variável e instável no início</li>
+            <li>Responsabilidade total pelo negócio</li>
+            <li>Sem benefícios CLT automáticos</li>
+            <li>Necessidade de autogestão e disciplina</li>
+            <li>Captação contínua de clientes</li>
+            <li>Riscos financeiros</li>
+          </ul>
+        </div>
+      </div>
     </div>
   </details>
 
