@@ -738,8 +738,8 @@ tr[data-desc] .mp-pnome:hover{color:#4527a0;text-decoration:underline}
   },
   {
     id: 'op-rotas-mercado',
-    titulo: 'Orientação Profissional',
-    subtitulo: 'Conhecendo as Rotas Profissionais',
+    titulo: 'Mercado de Trabalho',
+    subtitulo: 'Orientação Profissional',
     icone: '🛤️',
     cor: 'bib-op',
     pastas: [
