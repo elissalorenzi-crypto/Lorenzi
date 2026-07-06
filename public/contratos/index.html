@@ -329,11 +329,6 @@
     <div class="psico-nome" id="psico-nome">Psi. Elissa Catarina Lorenzi</div>
     <div class="crp" id="psico-crp">CRP 06/91616</div>
   </div>
-  <!-- Opção de remarcar -->
-  <div id="box-remarcar" style="display:none;background:#FBF3F9;border-bottom:1.5px solid #E8D5E4;padding:10px 24px;text-align:center;font-size:13px;color:#5B4466">
-    Deseja escolher outro horário?
-    <a href="#" onclick="voltarAgenda(event)" style="margin-left:8px;color:#C96A84;font-weight:700;text-decoration:underline">Clique aqui para remarcar</a>
-  </div>
 
   <!-- Título -->
   <div class="termo-titulo">
@@ -657,8 +652,6 @@
     _valorSessao = convite.valor || Number(cfg.valor_sessao_padrao) || 0;
     if (convite.nome_paciente) document.getElementById('f-nome').value = convite.nome_paciente;
     renderClausulas(modelo, _valorSessao);
-    // Mostrar opção de remarcar quando há token (reserva feita pela agenda pública)
-    if (_token) document.getElementById('box-remarcar').style.display = 'block';
   });
 
   function toggleFreqMensal() {
