@@ -3916,11 +3916,12 @@ async function salvarStatusSessao(agId, status, pacienteId) {
       const diasPorFreq = { '2x-mes': 14, '1x-mes': 30 };
       const p = await api('GET', `/pacientes/${pacienteId}`);
       const dias = diasPorFreq[p.frequencia];
+      const todas = await api('GET', `/pacientes/${pacienteId}/agendamentos`);
+
       if (dias) {
         const proxData = new Date(ag.data + 'T12:00:00');
         proxData.setDate(proxData.getDate() + dias);
         const proxDataStr = proxData.toISOString().slice(0, 10);
-        const todas = await api('GET', `/pacientes/${pacienteId}/agendamentos`);
         const jaExiste = todas.some(a => a.data === proxDataStr && a.hora === ag.hora);
         if (!jaExiste) {
           await api('POST', '/agendamentos', {
@@ -3931,6 +3932,29 @@ async function salvarStatusSessao(agId, status, pacienteId) {
           const dd = String(proxData.getDate()).padStart(2,'0');
           const mm = String(proxData.getMonth()+1).padStart(2,'0');
           toast(`📅 Próxima sessão agendada para ${dd}/${mm}`);
+        }
+      }
+
+      if (p.total_sessoes) {
+        const realizadas = todas.filter(a => a.status === 'realizado').length;
+        if (realizadas >= p.total_sessoes) {
+          const nome = p.apelido || p.nome.split(' ')[0];
+          setTimeout(() => openModal(
+            '📊 Limite de sessões atingido',
+            `<p style="margin-bottom:12px"><strong>${nome}</strong> completou as <strong>${p.total_sessoes} sessões</strong> previstas.</p>
+             <p style="margin-bottom:16px">Deseja aumentar o número total de sessões?</p>
+             <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">Novo total:</label>
+             <input type="number" id="novo-total-sessoes" min="${p.total_sessoes + 1}" value="${p.total_sessoes + 4}"
+                    style="width:120px;padding:6px 10px;border:1px solid #e0d5cb;border-radius:6px;font-size:14px">`,
+            async () => {
+              const novoTotal = Number(document.getElementById('novo-total-sessoes').value);
+              if (novoTotal > p.total_sessoes) {
+                await api('PUT', `/pacientes/${pacienteId}`, { ...p, total_sessoes: novoTotal });
+                toast(`Total de sessões atualizado para ${novoTotal}`);
+                verDetalhePaciente(pacienteId);
+              }
+            }
+          ), 600);
         }
       }
     }
