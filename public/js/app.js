@@ -3804,6 +3804,30 @@ async function salvarStatusSessao(agId, status, pacienteId) {
     const ag = await api('GET', `/agendamentos/${agId}`);
     await api('PUT', `/agendamentos/${agId}`, { ...ag, status });
     toast('Status atualizado');
+
+    if (status === 'realizado') {
+      const diasPorFreq = { 'semanal': 7, '4x-mes': 7, '2x-mes': 14, '1x-mes': 30 };
+      const p = await api('GET', `/pacientes/${pacienteId}`);
+      const dias = diasPorFreq[p.frequencia];
+      if (dias) {
+        const proxData = new Date(ag.data + 'T12:00:00');
+        proxData.setDate(proxData.getDate() + dias);
+        const proxDataStr = proxData.toISOString().slice(0, 10);
+        const todas = await api('GET', `/pacientes/${pacienteId}/agendamentos`);
+        const jaExiste = todas.some(a => a.data === proxDataStr && a.hora === ag.hora);
+        if (!jaExiste) {
+          await api('POST', '/agendamentos', {
+            paciente_id: pacienteId, data: proxDataStr, hora: ag.hora,
+            duracao: ag.duracao, tipo: ag.tipo, status: 'agendado',
+            valor: ag.valor, pago: 0,
+          });
+          const dd = String(proxData.getDate()).padStart(2,'0');
+          const mm = String(proxData.getMonth()+1).padStart(2,'0');
+          toast(`📅 Próxima sessão agendada para ${dd}/${mm}`);
+        }
+      }
+    }
+
     verDetalhePaciente(pacienteId);
   } catch(e) {
     toast('Erro ao salvar status', 'error');
