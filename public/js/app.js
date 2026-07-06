@@ -4965,6 +4965,11 @@ function abrirBiblioteca(areaId) {
     abrirAtividade(areaId, card.pastas[0].id, card.pastas[0].atividades[0].id);
     return;
   }
+  // Se tiver exatamente 1 pasta, vai direto para a lista de atividades
+  if (card.pastas?.length === 1) {
+    abrirPasta(areaId, card.pastas[0].id);
+    return;
+  }
 
   const bc = document.getElementById('bib-breadcrumb');
   const ct = document.getElementById('bib-conteudo');
