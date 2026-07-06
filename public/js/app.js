@@ -5002,6 +5002,12 @@ function abrirPasta(areaId, pastaId) {
   const card   = cards.find(c => c.id === areaId);
   const pasta  = card?.pastas.find(p => p.id === pastaId);
   if (!card || !pasta) return;
+
+  if (pasta.atividades?.length === 1) {
+    abrirAtividade(areaId, pastaId, pasta.atividades[0].id);
+    return;
+  }
+
   const bc = document.getElementById('bib-breadcrumb');
   const ct = document.getElementById('bib-conteudo');
 
