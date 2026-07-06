@@ -754,7 +754,36 @@ tr[data-desc] .mp-pnome:hover{color:#4527a0;text-decoration:underline}
             subtitulo: 'Áreas, cursos, sequências e conhecimento',
             icone: '🛤️',
             conteudo: `
-<h3 style="color:var(--plum);margin-bottom:4px">🛤️ Tipos de Rotas do Mercado de Trabalho</h3>
+<h3 style="color:var(--plum);margin-bottom:12px">🛤️ Rotas do Mercado de Trabalho</h3>
+
+<div style="background:#f9f7fc;border:1.5px solid #d8c8e8;border-radius:12px;padding:20px 22px;margin-bottom:24px;font-size:13px;line-height:1.8;color:#333">
+  <p style="margin:0 0 12px">Antes de escolher uma profissão, é importante entender que <strong>uma mesma profissão pode ser exercida de diferentes formas</strong>. O ambiente de trabalho, a rotina, a forma de contratação, o nível de autonomia, as responsabilidades e o estilo de vida podem variar bastante dependendo da rota profissional escolhida.</p>
+  <p style="margin:0 0 12px">Por exemplo, um psicólogo pode trabalhar em uma empresa (rota corporativa), prestar concurso e atuar em um órgão público (rota do serviço público) ou abrir seu próprio consultório (rota do empreendedorismo). Embora a profissão seja a mesma, a rotina e a experiência de trabalho serão muito diferentes.</p>
+  <p style="margin:0 0 12px">Por isso, além de pesquisar as profissões que despertam seu interesse, é fundamental conhecer as principais rotas do mercado de trabalho e refletir sobre qual delas combina mais com as suas preferências profissionais.</p>
+
+  <p style="margin:0 0 8px;font-weight:700;color:var(--plum)">Ao estudar cada rota, procure observar aspectos como:</p>
+  <ul style="margin:0 0 14px;padding-left:20px;line-height:2">
+    <li>Como costuma ser a rotina de trabalho.</li>
+    <li>O nível de autonomia e flexibilidade.</li>
+    <li>O ambiente em que o profissional trabalha.</li>
+    <li>A forma de ingresso na carreira.</li>
+    <li>As possibilidades de crescimento.</li>
+    <li>As principais vantagens e desafios.</li>
+    <li>O estilo de trabalho que aquela rota proporciona.</li>
+  </ul>
+
+  <p style="margin:0 0 8px">Em seguida, compare essas características com as preferências profissionais que você mapeou durante o processo de orientação. Pergunte-se:</p>
+  <ul style="margin:0 0 14px;padding-left:20px;line-height:2">
+    <li>Eu me imagino trabalhando dessa forma todos os dias?</li>
+    <li>Esse tipo de rotina combina com o ambiente em que gostaria de trabalhar?</li>
+    <li>O nível de autonomia dessa rota faz sentido para mim?</li>
+    <li>Os desafios dessa carreira parecem compatíveis com o que estou disposto(a) a enfrentar?</li>
+  </ul>
+
+  <p style="margin:0 0 12px">Essa reflexão é muito importante, pois a satisfação profissional depende não apenas da profissão escolhida, mas também da forma como ela será exercida.</p>
+  <p style="margin:0;color:#666">Ao longo desta página, você conhecerá as principais rotas do mercado de trabalho, entenderá como funciona a rotina de cada uma delas e poderá identificar quais apresentam maior compatibilidade com suas preferências profissionais.</p>
+</div>
+
 <p style="font-size:13px;color:#666;margin-bottom:14px">💡 Clique em cada rota para saber mais sobre ela.</p>
 
 <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px">
