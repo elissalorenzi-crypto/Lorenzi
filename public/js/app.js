@@ -2204,10 +2204,65 @@ function prontuarioFormHtml(r = {}, agendamentos = []) {
       <textarea id="pr-tecnicas" rows="2" spellcheck="true" lang="pt-BR" placeholder="Ex: TCC, reestruturação cognitiva, mindfulness...">${r.tecnicas||''}</textarea>
     </div>
     <div class="form-group">
-      <label>Tarefas / Homework</label>
-      <textarea id="pr-tarefas" rows="2" spellcheck="true" lang="pt-BR" placeholder="Atividades propostas para a próxima semana...">${r.tarefas||''}</textarea>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <label style="margin:0">Tarefas / Homework</label>
+        <button type="button" class="btn btn-outline btn-xs" onclick="abrirPickerBiblioteca()" style="font-size:11px">📚 Selecionar da Biblioteca</button>
+      </div>
+      <textarea id="pr-tarefas" rows="3" spellcheck="true" lang="pt-BR" placeholder="Atividades propostas para a próxima semana...">${r.tarefas||''}</textarea>
     </div>
   `;
+}
+
+function abrirPickerBiblioteca() {
+  const todas = [];
+  const cards = typeof BIB_CARDS !== 'undefined' ? BIB_CARDS : [];
+  for (const area of cards) {
+    for (const pasta of (area.pastas || [])) {
+      for (const atv of (pasta.atividades || [])) {
+        todas.push({ area: area.titulo, pasta: pasta.nome, id: atv.id, titulo: atv.titulo, subtitulo: atv.subtitulo || '' });
+      }
+    }
+  }
+  // Atividades salvas no localStorage
+  try {
+    const custom = JSON.parse(localStorage.getItem('bib_custom') || '[]');
+    for (const atv of custom) todas.push({ area: atv.area || 'Personalizado', pasta: atv.pasta || '', id: atv.id, titulo: atv.titulo, subtitulo: atv.subtitulo || '' });
+  } catch(_) {}
+
+  const html = `
+    <div style="margin-bottom:12px">
+      <input type="search" id="bib-picker-busca" oninput="filtrarPickerBib(this.value)"
+        placeholder="🔍 Buscar atividade..." style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
+    </div>
+    <div id="bib-picker-lista" style="max-height:420px;overflow-y:auto;display:flex;flex-direction:column;gap:6px">
+      ${todas.map(a => `
+        <div class="bib-pick-item" data-titulo="${a.titulo}" data-sub="${a.subtitulo}"
+          style="padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:background .1s"
+          onmouseover="this.style.background='#f5f0fb'" onmouseout="this.style.background=''"
+          onclick="inserirAtividadeHomework('${a.titulo.replace(/'/g,"\\'")}','${a.subtitulo.replace(/'/g,"\\'")}')">
+          <div style="font-weight:600;font-size:13px;color:var(--plum)">${a.titulo}</div>
+          ${a.subtitulo ? `<div style="font-size:11.5px;color:var(--muted)">${a.area} · ${a.subtitulo}</div>` : `<div style="font-size:11.5px;color:var(--muted)">${a.area}</div>`}
+        </div>`).join('')}
+    </div>`;
+
+  openModal('📚 Selecionar Atividade de Homework', html, null, { saveLabel: null });
+  setTimeout(() => document.getElementById('bib-picker-busca')?.focus(), 100);
+}
+
+function filtrarPickerBib(q) {
+  const termo = q.toLowerCase();
+  document.querySelectorAll('.bib-pick-item').forEach(el => {
+    const txt = (el.dataset.titulo + ' ' + el.dataset.sub).toLowerCase();
+    el.style.display = txt.includes(termo) ? '' : 'none';
+  });
+}
+
+function inserirAtividadeHomework(titulo, subtitulo) {
+  const ta = document.getElementById('pr-tarefas');
+  if (!ta) return;
+  const linha = subtitulo ? `${titulo} — ${subtitulo}` : titulo;
+  ta.value = ta.value ? ta.value + '\n' + linha : linha;
+  closeModal();
 }
 
 async function corrigirProntuario() {
