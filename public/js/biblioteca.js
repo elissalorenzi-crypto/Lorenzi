@@ -1426,60 +1426,6 @@ tr[data-desc] .mp-pnome:hover{color:#4527a0;text-decoration:underline}
 
 </div>
 `
-          },
-          {
-            id: 'ia-caminhos-profissionais',
-            titulo: 'Comando de IA — Mapear Caminhos Profissionais',
-            subtitulo: 'Use com ChatGPT, Gemini ou outro assistente',
-            icone: '🤖',
-            conteudo: `
-<h3 style="color:var(--plum);margin-bottom:8px">🤖 Comando de IA — Mapear Caminhos Profissionais</h3>
-<p style="font-size:13px;color:#666;margin-bottom:18px">Use este prompt com <strong>ChatGPT</strong>, <strong>Gemini</strong>, <strong>Claude</strong> ou outro assistente de IA. Cole o comando, adicione as preferências profissionais do cliente e receba uma análise detalhada dos caminhos profissionais mais alinhados ao perfil.</p>
-
-<div style="background:#f5f0f7;border:2px solid #c8a8d5;border-radius:12px;overflow:hidden;margin-bottom:16px">
-  <div style="background:var(--plum);padding:10px 16px;display:flex;justify-content:space-between;align-items:center">
-    <span style="color:#fff;font-weight:700;font-size:13px">📋 Prompt para copiar</span>
-    <button onclick="(function(){const t=document.getElementById('ia-prompt-text').innerText;navigator.clipboard.writeText(t).then(function(){const b=document.getElementById('ia-copy-btn');b.textContent='✅ Copiado!';setTimeout(function(){b.textContent='📋 Copiar prompt'},2000)}).catch(function(){alert('Não foi possível copiar automaticamente. Selecione o texto manualmente.');})})()" id="ia-copy-btn" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:#fff;padding:5px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600">📋 Copiar prompt</button>
-  </div>
-  <div id="ia-prompt-text" style="padding:16px 18px;font-size:12.5px;line-height:1.85;color:#333;white-space:pre-wrap;font-family:'Segoe UI',system-ui,sans-serif">Você é um especialista em mercado de trabalho, orientação profissional, e de carreira. Conhece o mercado de trabalho de todas as rotas profissionais.
-Vou fornecer abaixo um conjunto de preferências profissionais mapeadas em um processo de orientação profissional.
-Sua missão é identificar os CAMINHOS PROFISSIONAIS MAIS CENTRAIS E alinhados a essas preferencias profissionais.
-
-IMPORTANTE:
-* Analise o conjunto completo das preferências profissionais.
-* Considere a combinação entre ambiente de trabalho, objetos e conteúdos de trabalho, atividades profissionais, rotina desejada e frutos do trabalho.
-* Não faça associações superficiais baseadas em palavras isoladas.
-* Agrupe profissões semelhantes dentro de um mesmo caminho profissional.
-* Evite redundâncias.
-* Se duas profissões levam a uma experiência profissional muito parecida, mantenha apenas um caminho.
-* Priorize os caminhos que melhor representam a essência do perfil.
-* Considere possibilidades tradicionais, corporativas, empreendedoras, digitais e híbridas.
-* Considere tendências futuras do mercado de trabalho.
-* Pense como um orientador profissional experiente que precisa ajudar um cliente a focar sua exploração profissional.
-
-ANÁLISE DETALHADA
-Para cada caminho apresente:
-1. Nome do caminho profissional
-2. Justificativa da aderência
-   Explique detalhadamente quais preferências profissionais sustentam esse caminho.
-3. Exemplos de profissões e atuações dentro desse caminho
-4. Como seria o dia a dia de trabalho
-5. Quais preferências profissionais seriam plenamente atendidas
-
-[COLE AQUI AS PREFERÊNCIAS PROFISSIONAIS DO CLIENTE]</div>
-</div>
-
-<div style="background:#fff9e6;border:1.5px solid #f4c77a;border-radius:10px;padding:14px 16px;font-size:13px;line-height:1.75;color:#6b4a00">
-  <strong>💡 Como usar:</strong>
-  <ol style="margin:8px 0 0;padding-left:20px;line-height:2">
-    <li>Clique em <strong>📋 Copiar prompt</strong></li>
-    <li>Abra o ChatGPT, Gemini ou Claude</li>
-    <li>Cole o prompt</li>
-    <li>Substitua o trecho <em>[COLE AQUI AS PREFERÊNCIAS PROFISSIONAIS DO CLIENTE]</em> pelas preferências mapeadas na sessão</li>
-    <li>Envie e analise os caminhos sugeridos junto com o cliente</li>
-  </ol>
-</div>
-`
           }
         ]
       },
@@ -1515,6 +1461,67 @@ Para cada caminho apresente:
 
 <div style="background:#fff9e6;border:1.5px solid #f4c77a;border-radius:10px;padding:14px 16px;font-size:13px;line-height:1.75;color:#6b4a00">
   <strong>💡 Dica de uso:</strong> Peça ao cliente para marcar as profissões que <em>chamam atenção</em> — mesmo sem saber exatamente por quê. O objetivo é levantar dados brutos para análise, não tomar uma decisão. Quanto mais marcações, mais rico será o material para trabalhar em sessão.
+</div>
+`
+          }
+        ]
+      },
+      {
+        id: 'pasta-comando-ia',
+        nome: 'Comando de IA',
+        icone: '🤖',
+        atividades: [
+          {
+            id: 'ia-caminhos-profissionais',
+            titulo: 'Comando de IA — Mapear Caminhos Profissionais',
+            subtitulo: 'Use com ChatGPT, Gemini ou outro assistente',
+            icone: '🤖',
+            conteudo: `
+<h3 style="color:var(--plum);margin-bottom:8px">🤖 Comando de IA — Mapear Caminhos Profissionais</h3>
+<p style="font-size:13px;color:#666;margin-bottom:18px">Use este prompt com <strong>ChatGPT</strong>, <strong>Gemini</strong>, <strong>Claude</strong> ou outro assistente de IA. Cole o comando, adicione as preferências profissionais do cliente e receba uma análise detalhada dos caminhos profissionais mais alinhados ao perfil.</p>
+
+<div style="background:#f5f0f7;border:2px solid #c8a8d5;border-radius:12px;overflow:hidden;margin-bottom:16px">
+  <div style="background:var(--plum);padding:10px 16px;display:flex;justify-content:space-between;align-items:center">
+    <span style="color:#fff;font-weight:700;font-size:13px">📋 Prompt para copiar</span>
+    <button onclick="(function(){const t=document.getElementById('ia-prompt-text').innerText;navigator.clipboard.writeText(t).then(function(){const b=document.getElementById('ia-copy-btn');b.textContent='✅ Copiado!';setTimeout(function(){b.textContent='📋 Copiar prompt'},2000)}).catch(function(){alert('Não foi possível copiar automaticamente. Selecione o texto manualmente.');})})()" id="ia-copy-btn" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:#fff;padding:5px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600">📋 Copiar prompt</button>
+  </div>
+  <div id="ia-prompt-text" style="padding:16px 18px;font-size:12.5px;line-height:1.85;color:#333;white-space:pre-wrap;font-family:'Segoe UI',system-ui,sans-serif">Você é um especialista em mercado de trabalho, orientação profissional, e de carreira. Conhece o mercado de trabalho de todas as rotas profissionais.
+Vou fornecer abaixo um conjunto de preferências profissionais mapeadas em um processo de orientação profissional.
+Sua missão é identificar os CAMINHOS PROFISSIONAIS MAIS CENTRAIS E alinhados a esseas preferencias profissionais.
+
+IMPORTANTE:
+* Analise o conjunto completo das preferências profissionais.
+* Considere a combinação entre ambiente de trabalho, objetos e conteúdos de trabalho, atividades profissionais, rotina desejada e frutos do trabalho.
+* Não faça associações superficiais baseadas em palavras isoladas.
+* Agrupe profissões semelhantes dentro de um mesmo caminho profissional.
+* Evite redundâncias.
+* Se duas profissões levam a uma experiência profissional muito parecida, mantenha apenas um caminho.
+* Priorize os caminhos que melhor representam a essência do perfil.
+* Considere possibilidades tradicionais, corporativas, empreendedoras, digitais e híbridas.
+* Considere tendências futuras do mercado de trabalho.
+* Pense como um orientador profissional experiente que precisa ajudar um cliente a focar sua exploração profissional.
+
+ANÁLISE DETALHADA
+Para cada caminho apresente:
+1. Nome do caminho profissional
+2. Justificativa da aderência
+   Explique detalhadamente quais preferências profissionais sustentam esse caminho.
+3. Exemplos de profissões e atuações dentro desse caminho
+4. Como seria o dia a dia de trabalho
+5. Quais preferências profissionais seriam plenamente atendidas
+
+[COLE AQUI AS PREFERÊNCIAS PROFISSIONAIS DO CLIENTE]</div>
+</div>
+
+<div style="background:#fff9e6;border:1.5px solid #f4c77a;border-radius:10px;padding:14px 16px;font-size:13px;line-height:1.75;color:#6b4a00">
+  <strong>💡 Como usar:</strong>
+  <ol style="margin:8px 0 0;padding-left:20px;line-height:2">
+    <li>Clique em <strong>📋 Copiar prompt</strong></li>
+    <li>Abra o ChatGPT, Gemini ou Claude</li>
+    <li>Cole o prompt</li>
+    <li>Substitua o trecho <em>[COLE AQUI AS PREFERÊNCIAS PROFISSIONAIS DO CLIENTE]</em> pelas preferências mapeadas na sessão</li>
+    <li>Envie e analise os caminhos sugeridos junto com o cliente</li>
+  </ol>
 </div>
 `
           }
