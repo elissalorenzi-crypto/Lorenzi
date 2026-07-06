@@ -4597,7 +4597,7 @@ const MODELO_DEFAULT = {
       "Por se tratar de um serviço psicológico, não há garantia ou promessa de resultados específicos. O resultado do processo está diretamente relacionado ao comprometimento e à participação ativa do contratante nas reflexões e atividades propostas."
     ]},
     { titulo: "Sobre as Sessões", itens: [
-      "A frequência do processo será acordada entre as partes, preferencialmente acontecerá semanal, uma vez por semana.",
+      "A frequência do processo será acordada entre as partes, preferencialmente acontecerá semanal, ou seja, uma vez por semana.",
       "Havendo necessidade, a frequência dos encontros semanais poderá ser aumentada ou espaçada, sendo isso previamente combinado entre as partes.",
       "Cada sessão terá duração de 50 minutos, sendo realizada em horário previamente combinado.",
       "O número de sessões pode variar de acordo com a necessidade do cliente, o nível de maturidade em relação ao objetivo trabalhado e a evolução do cliente ao longo das etapas."

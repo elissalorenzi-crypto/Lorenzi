@@ -430,6 +430,26 @@
         <input type="hidden" id="f-endereco">
       </div>
 
+      <!-- Meio de pagamento -->
+      <div style="margin-top:22px">
+        <div style="font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Escolha sua forma de pagamento *</div>
+        <div class="pgto-opcoes">
+          <div class="pgto-opcao">
+            <input type="radio" name="meio_pgto" id="meio-pix" value="Pix">
+            <div style="flex:1"><label for="meio-pix">Pix</label></div>
+          </div>
+          <div class="pgto-opcao">
+            <input type="radio" name="meio_pgto" id="meio-cartao" value="Cartão de crédito">
+            <div style="flex:1"><label for="meio-cartao">Cartão de crédito</label></div>
+          </div>
+          <div class="pgto-opcao">
+            <input type="radio" name="meio_pgto" id="meio-transferencia" value="Transferência bancária">
+            <div style="flex:1"><label for="meio-transferencia">Transferência bancária</label></div>
+          </div>
+        </div>
+        <span class="erro-msg" id="erro-meio-pgto" style="display:none">Selecione uma forma de pagamento</span>
+      </div>
+
       <!-- Forma de pagamento -->
       <div style="margin-top:22px">
         <div style="font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Forma de Pagamento Preferida *</div>
@@ -534,7 +554,7 @@
         "Por se tratar de um serviço psicológico, não há garantia ou promessa de resultados específicos. O resultado do processo está diretamente relacionado ao comprometimento e à participação ativa do contratante nas reflexões e atividades propostas."
       ]},
       { titulo: "Sobre as Sessões", itens: [
-        "A frequência do processo será acordada entre as partes, preferencialmente acontecerá semanal, uma vez por semana.",
+        "A frequência do processo será acordada entre as partes, preferencialmente acontecerá semanal, ou seja, uma vez por semana.",
         "Havendo necessidade, a frequência dos encontros semanais poderá ser aumentada ou espaçada, sendo isso previamente combinado entre as partes.",
         "Cada sessão terá duração de 50 minutos, sendo realizada em horário previamente combinado.",
         "O número de sessões pode variar de acordo com a necessidade do cliente, o nível de maturidade em relação ao objetivo trabalhado e a evolução do cliente ao longo das etapas."
@@ -725,6 +745,11 @@
       });
     }
 
+    const meio = document.querySelector('input[name="meio_pgto"]:checked');
+    const erroMeio = document.getElementById('erro-meio-pgto');
+    if (!meio) { erroMeio.style.display = 'block'; ok = false; }
+    else { erroMeio.style.display = 'none'; }
+
     const pgto = document.querySelector('input[name="forma_pgto"]:checked');
     const erroPgto = document.getElementById('erro-pgto');
     if (!pgto) { erroPgto.style.display = 'block'; ok = false; }
@@ -778,7 +803,7 @@
       end_cidade:      document.getElementById('f-cidade').value.trim(),
       end_uf:          document.getElementById('f-uf').value.trim(),
       end_cep:         document.getElementById('f-cep').value.trim(),
-      forma_pgto:      document.querySelector('input[name="forma_pgto"]:checked').value,
+      forma_pgto:      document.querySelector('input[name="forma_pgto"]:checked').value + ' · ' + (document.querySelector('input[name="meio_pgto"]:checked')?.value || ''),
       freq_sessoes:    document.querySelector('input[name="freq_mensal"]:checked')?.value || null,
       nome_responsavel: menor ? document.getElementById('f-nome-resp').value.trim() : null,
       cpf_responsavel:  menor ? document.getElementById('f-cpf-resp').value.trim()  : null,

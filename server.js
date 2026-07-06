@@ -643,7 +643,8 @@ app.post('/api/contratos', (req, res) => {
 
         // Mapeia forma_pgto do contrato → campos do paciente
         const freqPgtoMap = { 'mensal': 'fp-mensal', 'por sessão': 'por-sessao' };
-        const freqPgto = freqPgtoMap[forma_pgto] || null;
+        const freqBase = forma_pgto?.split(' · ')[0] || forma_pgto;
+        const freqPgto = freqPgtoMap[freqBase] || null;
 
         const dadosPaciente = {
           nome,
