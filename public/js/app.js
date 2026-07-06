@@ -751,10 +751,14 @@ async function openModalAgendamento(ag = null, dataPreset = null, pacienteIdPres
     };
     if (!body.data || !body.hora) return toast('Data e hora são obrigatórios', 'error') || false;
     try {
+      const savedPacId = body.paciente_id;
+      const dv = document.getElementById('pacientes-detail-view');
+      const detailWasOpen = dv && dv.style.display !== 'none';
       if (isEdit) { await api('PUT', `/agendamentos/${ag.id}`, body); toast('Agendamento atualizado!'); }
       else        { await api('POST', '/agendamentos', body);          toast('Sessão agendada!'); }
       closeModal();
-      refreshAll();
+      await refreshAll();
+      if (detailWasOpen && savedPacId) verDetalhePaciente(savedPacId);
     } catch(e) { toast(e.message, 'error'); }
   });
 }
