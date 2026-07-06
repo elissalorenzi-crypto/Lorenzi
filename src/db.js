@@ -65,6 +65,23 @@ try {
   }
 } catch(_) {}
 
+// Seed único: sessões da Aline Aparecida Santana
+try {
+  const flag = db.prepare("SELECT valor FROM configuracoes WHERE chave='_seed_aline_sessoes_20260706'").get();
+  if (!flag) {
+    const aline = db.prepare("SELECT id, valor_sessao FROM pacientes WHERE nome LIKE '%Aline Aparecida Santana%' LIMIT 1").get();
+    if (aline) {
+      const datas = ['2025-12-03','2025-12-11','2025-12-17','2026-01-21','2026-01-28','2026-02-04'];
+      const ins = db.prepare("INSERT INTO agendamentos (paciente_id,data,hora,duracao,tipo,status,valor,pago) VALUES (?,?,'20:00',50,'sessao','realizado',?,1)");
+      for (const data of datas) {
+        const existe = db.prepare("SELECT id FROM agendamentos WHERE paciente_id=? AND data=? AND hora='20:00'").get(aline.id, data);
+        if (!existe) ins.run(aline.id, data, aline.valor_sessao || 0);
+      }
+      db.prepare("INSERT OR REPLACE INTO configuracoes (chave, valor) VALUES ('_seed_aline_sessoes_20260706', '1')").run();
+    }
+  }
+} catch(_) {}
+
 // Migração: remove modelo_contrato salvo sem __VALOR_SESSAO__ para usar MODELO_DEFAULT atualizado
 try {
   const cfgRow = db.prepare("SELECT valor FROM configuracoes WHERE chave='modelo_contrato'").get();
