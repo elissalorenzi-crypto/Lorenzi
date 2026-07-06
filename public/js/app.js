@@ -1266,7 +1266,10 @@ async function verDetalhePaciente(id) {
                 <td><input type="date" value="${a.data_pagamento||''}" onchange="salvarDataPagamento(${a.id},this.value)" style="border:1px solid #e0d5cb;border-radius:5px;padding:2px 6px;font-size:11px;color:var(--muted);background:transparent;width:118px"></td>
                 <td style="font-size:12px">${a.forma_pgto && a.pago ? ({pix:'PIX',dinheiro:'Dinheiro',credito:'Crédito',debito:'Débito',transferencia:'Transf.',convenio:'Convênio'}[a.forma_pgto]||a.forma_pgto) : '—'}</td>
                 <td class="text-right">${a.valor ? BRL(a.valor) : '—'}</td>
-                <td><button class="btn btn-ghost btn-xs" onclick="editAgendamento(${a.id})" title="Editar">✏️</button></td>
+                <td style="white-space:nowrap">
+                  <button class="btn btn-ghost btn-xs" onclick="editAgendamento(${a.id})" title="Editar">✏️</button>
+                  <button class="btn btn-ghost btn-xs" onclick="deletarSessaoHistorico(${a.id},${p.id})" title="Excluir" style="color:#c62828">🗑️</button>
+                </td>
               </tr>
             `).join('') : `<tr><td colspan="10" class="text-muted" style="text-align:center;padding:16px">Nenhum agendamento</td></tr>`}
           </tbody>
@@ -3781,6 +3784,19 @@ async function marcarPendente(agId) {
   refreshAll();
   const dv = document.getElementById('pacientes-detail-view');
   if (dv && dv.style.display !== 'none' && ag.paciente_id) verDetalhePaciente(ag.paciente_id);
+}
+
+async function deletarSessaoHistorico(agId, pacienteId) {
+  if (!confirm('Excluir esta sessão? Esta ação não pode ser desfeita.')) return;
+  try {
+    await api('DELETE', `/agendamentos/${agId}`);
+    toast('Sessão excluída');
+    await refreshAll();
+    await verDetalhePaciente(pacienteId);
+    document.getElementById('pac-historico-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch(e) {
+    toast('Erro ao excluir sessão', 'error');
+  }
 }
 
 async function salvarStatusSessao(agId, status, pacienteId) {
