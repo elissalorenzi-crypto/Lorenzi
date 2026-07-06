@@ -876,10 +876,10 @@ tr[data-desc] .mp-pnome:hover{color:#4527a0;text-decoration:underline}
       </details>
 
       <hr style="border:none;border-top:1px solid #eee;margin:14px 0">
-      <h4 style="color:var(--plum);font-size:14px;margin:0 0 8px">🧩 Habilidades valorizadas</h4>
-      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px">
-        ${['Trabalho em equipe','Comunicação clara','Resolução de problemas','Organização','Cumprimento de prazos','Aprendizado rápido','Adaptabilidade','Lidar com pressão','Tomada de decisão','Negociação','Gestão de conflitos','Responsabilidade'].map(h=>`<span style="background:#e8f5e9;border:1.5px solid #a8d5c2;border-radius:20px;padding:3px 10px;font-size:11.5px;font-weight:600;color:#2A6B4A">${h}</span>`).join('')}
-      </div>
+      <h4 style="color:var(--plum);font-size:14px;margin:0 0 6px">🧩 Habilidades valorizadas</h4>
+      <p style="font-size:12px;color:#2A6B4A;line-height:2;margin-bottom:14px">
+        ${['Trabalho em equipe','Comunicação clara','Resolução de problemas','Organização','Cumprimento de prazos','Aprendizado rápido','Adaptabilidade','Lidar com pressão','Tomada de decisão','Negociação','Gestão de conflitos','Responsabilidade'].join(' · ')}
+      </p>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div style="background:#e8f5e9;border:1.5px solid #a8d5c2;border-radius:8px;padding:12px 14px">
@@ -1098,10 +1098,10 @@ tr[data-desc] .mp-pnome:hover{color:#4527a0;text-decoration:underline}
         ].map(([nome,desc])=>`<details style="border:1.5px solid #a8d5c2;border-radius:8px;overflow:hidden"><summary style="padding:7px 12px;font-weight:700;font-size:12px;color:#2A6B4A;cursor:pointer;background:#f0fdf4;list-style:none">${nome}</summary><div style="padding:8px 12px;font-size:12px;line-height:1.65;color:#444;background:#f8fffe">${desc}</div></details>`).join('')}
       </div>
 
-      <h4 style="color:#2A6B4A;font-size:13px;margin:0 0 8px">🧩 Habilidades valorizadas</h4>
-      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px">
-        ${['Ética e responsabilidade','Seguir normas e procedimentos','Organização','Atenção aos detalhes','Decisões baseadas em lei','Comunicação clara','Atendimento respeitoso','Trabalho em equipe','Imparcialidade','Compromisso com o interesse coletivo'].map(h=>`<span style="background:#e8f5e9;border:1.5px solid #a8d5c2;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;color:#2A6B4A">${h}</span>`).join('')}
-      </div>
+      <h4 style="color:#2A6B4A;font-size:13px;margin:0 0 6px">🧩 Habilidades valorizadas</h4>
+      <p style="font-size:12px;color:#2A6B4A;line-height:2;margin-bottom:14px">
+        ${['Ética e responsabilidade','Seguir normas e procedimentos','Organização','Atenção aos detalhes','Decisões baseadas em lei','Comunicação clara','Atendimento respeitoso','Trabalho em equipe','Imparcialidade','Compromisso com o interesse coletivo'].join(' · ')}
+      </p>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
         <div style="background:#e8f5e9;border:1.5px solid #a8d5c2;border-radius:8px;padding:12px 14px">
@@ -1378,10 +1378,10 @@ tr[data-desc] .mp-pnome:hover{color:#4527a0;text-decoration:underline}
 
       <!-- HABILIDADES -->
       <div style="margin:14px 0 6px">
-        <div style="font-weight:700;font-size:13px;color:#8a5a00;margin-bottom:8px">🧠 Habilidades Importantes</div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px">
-          ${['Autogestão e disciplina','Comunicação com clientes','Negociação','Planejamento financeiro','Marketing pessoal','Resiliência','Proatividade','Organização','Networking','Visão de negócio','Adaptabilidade','Criatividade','Gestão do tempo','Precificação'].map(d=>`<span style="background:#fffbf0;border:1.5px solid #f4c77a;border-radius:20px;padding:3px 10px;font-size:11.5px;font-weight:600;color:#8a5a00">${d}</span>`).join('')}
-        </div>
+        <div style="font-weight:700;font-size:13px;color:#8a5a00;margin-bottom:6px">🧠 Habilidades Importantes</div>
+        <p style="font-size:12px;color:#8a5a00;line-height:2;margin:0">
+          ${['Autogestão e disciplina','Comunicação com clientes','Negociação','Planejamento financeiro','Marketing pessoal','Resiliência','Proatividade','Organização','Networking','Visão de negócio','Adaptabilidade','Criatividade','Gestão do tempo','Precificação'].join(' · ')}
+        </p>
       </div>
 
       <!-- VANTAGENS E DESAFIOS -->
