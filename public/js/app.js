@@ -758,7 +758,10 @@ async function openModalAgendamento(ag = null, dataPreset = null, pacienteIdPres
       else        { await api('POST', '/agendamentos', body);          toast('Sessão agendada!'); }
       closeModal();
       await refreshAll();
-      if (detailWasOpen && savedPacId) verDetalhePaciente(savedPacId);
+      if (detailWasOpen && savedPacId) {
+        await verDetalhePaciente(savedPacId);
+        document.getElementById('pac-historico-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     } catch(e) { toast(e.message, 'error'); }
   });
 }
@@ -1236,7 +1239,7 @@ async function verDetalhePaciente(id) {
     </div>
 
     <!-- Histórico em largura total -->
-    <div class="card" style="margin-top:16px">
+    <div id="pac-historico-card" class="card" style="margin-top:16px">
       <div class="card-header">
         <span class="card-title">Histórico de Sessões</span>
         <div style="display:flex;gap:8px">
