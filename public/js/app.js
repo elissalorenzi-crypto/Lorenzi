@@ -5058,6 +5058,25 @@ function abrirAtividade(areaId, pastaId, atvId) {
       </div>
       <div class="bib-atv-corpo" id="bib-atv-corpo-atual">${atv.conteudo}</div>
     </div>`;
+
+  _bibAdicionarIndicadoresExpandir(ct.querySelector('.bib-atv-corpo'));
+}
+
+function _bibAdicionarIndicadoresExpandir(container) {
+  if (!container) return;
+  container.querySelectorAll('details > summary').forEach(s => {
+    if (s.textContent.includes('expandir') || s.textContent.includes('clique')) return;
+    const ind = document.createElement('span');
+    ind.style.cssText = 'font-size:10px;font-weight:400;color:#999;margin-left:auto;padding-left:10px;white-space:nowrap;pointer-events:none;flex-shrink:0';
+    ind.textContent = '▼ expandir';
+    s.style.display = 'flex';
+    s.style.justifyContent = 'space-between';
+    s.style.alignItems = 'center';
+    s.appendChild(ind);
+    s.parentElement.addEventListener('toggle', function() {
+      ind.textContent = this.open ? '▲ fechar' : '▼ expandir';
+    });
+  });
 }
 
 function copiarAtividade() {

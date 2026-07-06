@@ -49,7 +49,22 @@ header p{font-size:13px;opacity:.8}
     el.innerHTML = atv.conteudo;
   } else {
     el.innerHTML = '<p style="color:#c00">Conteúdo não encontrado.</p>';
+    return;
   }
+
+  el.querySelectorAll('details > summary').forEach(s => {
+    if (s.textContent.includes('expandir') || s.textContent.includes('clique')) return;
+    const ind = document.createElement('span');
+    ind.style.cssText = 'font-size:10px;font-weight:400;color:#999;margin-left:auto;padding-left:10px;white-space:nowrap;pointer-events:none;flex-shrink:0';
+    ind.textContent = '▼ expandir';
+    s.style.display = 'flex';
+    s.style.justifyContent = 'space-between';
+    s.style.alignItems = 'center';
+    s.appendChild(ind);
+    s.parentElement.addEventListener('toggle', function() {
+      ind.textContent = this.open ? '▲ fechar' : '▼ expandir';
+    });
+  });
 })();
 </script>
 </body>
