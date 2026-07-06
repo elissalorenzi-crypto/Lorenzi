@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Termo de Compromisso — Orientação Profissional de Carreira</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --rose:     #856952;
+      --plum:     #4A3728;
+      --lavender: #c4a882;
+      --sage:     #6B4F3A;
+      --muted:    #9A7D6E;
+      --border:   #E8D5C4;
+      --bg:       #faf6f2;
+      --text:     #4A3728;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.7;
+      padding: 40px 20px 80px;
+    }
+
+    .page {
+      max-width: 760px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 8px 40px rgba(45,27,61,.12);
+      overflow: hidden;
+    }
+
+    /* Cabeçalho */
+    .header {
+      background: linear-gradient(135deg, #856952 0%, #6B4F38 100%);
+      padding: 36px 48px 32px;
+      text-align: center;
+      color: #fff;
+    }
+    .header .logo { font-size: 38px; margin-bottom: 10px; }
+    .header h1 {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #e8d5c4;
+      margin-bottom: 6px;
+    }
+    .header .psico-nome {
+      font-size: 22px;
+      font-weight: 800;
+      color: #fff;
+    }
+    .header .crp {
+      font-size: 13px;
+      color: #d4b89a;
+      margin-top: 4px;
+    }
+
+    /* Título do termo */
+    .termo-titulo {
+      background: linear-gradient(90deg, #f5ede7, #ede5dc);
+      padding: 28px 48px;
+      border-bottom: 2px solid var(--border);
+      text-align: center;
+    }
+    .termo-titulo h2 {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--plum);
+      letter-spacing: .5px;
+    }
+    .termo-titulo .subtitulo {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* Corpo */
+    .body { padding: 40px 48px; }
+
+    .intro {
+      background: #fdf6f0;
+      border-left: 4px solid var(--rose);
+      border-radius: 0 10px 10px 0;
+      padding: 18px 22px;
+      margin-bottom: 32px;
+      font-size: 14.5px;
+      color: #5a3a5a;
+      line-height: 1.8;
+    }
+
+    .secao {
+      margin-bottom: 30px;
+    }
+    .secao-titulo {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--rose);
+      padding: 8px 14px;
+      background: linear-gradient(90deg, #f5ede7, #fff);
+      border-radius: 6px;
+      margin-bottom: 14px;
+      border-left: 3px solid var(--rose);
+    }
+    .secao ol { padding-left: 20px; }
+    .secao li {
+      margin-bottom: 10px;
+      font-size: 14.5px;
+      color: #3d2b3d;
+    }
+
+    /* Destaques */
+    .destaque {
+      background: #fdf0e8;
+      border: 1.5px solid #e8d0b8;
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin: 14px 0;
+      font-size: 14.5px;
+    }
+    .destaque strong { color: var(--rose); }
+
+    /* Divisor */
+    .divider {
+      border: none;
+      border-top: 1.5px solid var(--border);
+      margin: 32px 0;
+    }
+
+    /* Formulário */
+    .form-titulo {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--plum);
+      margin-bottom: 6px;
+    }
+    .form-subtitulo {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-group label {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+    .form-group input, .form-group select, .form-group textarea {
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 13px;
+      font-family: inherit;
+      font-size: 14.5px;
+      color: var(--text);
+      background: #fff;
+      transition: border-color .15s, box-shadow .15s;
+      width: 100%;
+    }
+    .form-group input:focus, .form-group select:focus {
+      outline: none;
+      border-color: var(--rose);
+      box-shadow: 0 0 0 3px rgba(194,101,122,.1);
+    }
+
+    /* Pagamento */
+    .pgto-opcoes { display: flex; gap: 14px; margin-top: 6px; }
+    .pgto-opcao {
+      flex: 1;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: all .15s;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .pgto-opcao input[type="radio"] { accent-color: var(--rose); width: 16px; height: 16px; }
+    .pgto-opcao:has(input:checked) {
+      border-color: var(--rose);
+      background: #fdf0f5;
+    }
+    .pgto-opcao label { cursor: pointer; font-weight: 600; color: var(--plum); font-size: 14px; }
+    .pgto-opcao .pgto-desc { font-size: 12px; color: var(--muted); }
+
+    /* Seção menor de idade */
+    .menor-toggle {
+      margin-bottom: 20px;
+    }
+    .menor-toggle label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--plum);
+    }
+    .menor-toggle input[type="checkbox"] { accent-color: var(--rose); width: 16px; height: 16px; }
+    .menor-campos { display: none; margin-top: 14px; }
+    .menor-campos.visivel { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    /* Aceite */
+    .aceite-box {
+      background: linear-gradient(135deg, #fdf0e8, #f5ede7);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 22px;
+      margin: 28px 0 22px;
+    }
+    .aceite-box label {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      cursor: pointer;
+      font-size: 14.5px;
+      color: var(--plum);
+      line-height: 1.6;
+    }
+    .aceite-box input[type="checkbox"] {
+      accent-color: var(--rose);
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* Botão */
+    .btn-enviar {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #856952 0%, #6B4F38 100%);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: .3px;
+      box-shadow: 0 4px 16px rgba(107,79,56,.35);
+      transition: all .18s;
+    }
+    .btn-enviar:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(107,79,56,.45); }
+    .btn-enviar:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+    /* Link inválido */
+    .link-invalido {
+      display: none;
+      text-align: center;
+      padding: 48px 32px;
+    }
+    .link-invalido .icone { font-size: 52px; margin-bottom: 16px; }
+    .link-invalido h3 { font-size: 20px; font-weight: 800; color: var(--plum); margin-bottom: 8px; }
+    .link-invalido p { color: var(--muted); font-size: 14px; line-height: 1.7; }
+
+    /* Mensagem de sucesso */
+    .sucesso {
+      display: none;
+      text-align: center;
+      padding: 48px 32px;
+    }
+    .sucesso .icone { font-size: 60px; margin-bottom: 16px; }
+    .sucesso h3 { font-size: 22px; font-weight: 800; color: var(--plum); margin-bottom: 8px; }
+    .sucesso p { color: var(--muted); font-size: 15px; line-height: 1.7; }
+
+    /* Erro de validação */
+    .erro-msg {
+      color: #c0425d;
+      font-size: 12.5px;
+      margin-top: 4px;
+      display: none;
+    }
+    .campo-erro input, .campo-erro select { border-color: #c0425d !important; }
+    .campo-erro .erro-msg { display: block; }
+
+    @media (max-width: 600px) {
+      body { padding: 0 0 40px; }
+      .page { border-radius: 0 0 14px 14px; }
+      .header { padding: 26px 18px 22px; }
+      .header .logo { font-size: 30px; margin-bottom: 6px; }
+      .header .psico-nome { font-size: 17px; }
+      .header h1 { font-size: 11px; }
+      .header .crp { font-size: 12px; }
+      .termo-titulo { padding: 16px 18px; }
+      .termo-titulo h2 { font-size: 15px; }
+      .termo-titulo .subtitulo { font-size: 12px; }
+      .body { padding: 20px 16px; }
+      .intro { font-size: 13.5px; padding: 14px 16px; }
+      .secao li { font-size: 13.5px; }
+      .secao-titulo { font-size: 11px; padding: 7px 12px; }
+      .destaque { font-size: 13.5px; padding: 14px 16px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .pgto-opcoes { flex-direction: column; gap: 10px; }
+      .pgto-opcao { padding: 12px 14px; }
+      .menor-campos.visivel { grid-template-columns: 1fr; }
+      .aceite-box { padding: 16px 16px; }
+      .aceite-box label { font-size: 13.5px; }
+      .btn-enviar { font-size: 15px; padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- Botão voltar -->
+  <div style="background:linear-gradient(135deg,#856952 0%,#6B4F38 100%);padding:12px 20px 8px">
+    <a href="#" onclick="voltarAgenda(event)" style="display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;color:rgba(255,255,255,.8);text-decoration:none;background:rgba(255,255,255,.15);border-radius:20px;padding:6px 14px;border:1px solid rgba(255,255,255,.25)" title="Voltar à agenda">
+      ← Voltar
+    </a>
+  </div>
+  <!-- Cabeçalho -->
+  <div class="header">
+    <h1>Consultório de Psicologia</h1>
+    <div class="psico-nome" id="psico-nome">Psi. Elissa Catarina Lorenzi</div>
+    <div class="crp" id="psico-crp">CRP 06/91616</div>
+  </div>
+  <!-- Opção de remarcar -->
+  <div id="box-remarcar" style="display:none;background:#FBF3F9;border-bottom:1.5px solid #E8D5E4;padding:10px 24px;text-align:center;font-size:13px;color:#5B4466">
+    Deseja escolher outro horário?
+    <a href="#" onclick="voltarAgenda(event)" style="margin-left:8px;color:#C96A84;font-weight:700;text-decoration:underline">Clique aqui para remarcar</a>
+  </div>
+
+  <!-- Título -->
+  <div class="termo-titulo">
+    <h2>TERMO DE COMPROMISSO</h2>
+    <div class="subtitulo">Orientação Profissional e de Carreira</div>
+  </div>
+
+  <!-- Corpo do termo -->
+  <div class="body" id="corpo-termo">
+
+    <!-- Conteúdo dinâmico carregado via JS -->
+    <div id="clausulas-dinamicas"></div>
+
+    <hr class="divider">
+
+    <!-- Formulário de dados -->
+    <div id="formulario">
+      <div class="form-titulo">Dados Pessoais</div>
+      <div class="form-subtitulo">Preencha os campos abaixo. Essas informações são necessárias para o prontuário e emissão de nota fiscal.</div>
+
+      <!-- Menor de idade -->
+      <div class="menor-toggle">
+        <label>
+          <input type="checkbox" id="chk-menor" onchange="toggleMenor()">
+          O cliente é menor de idade (preencher dados do responsável)
+        </label>
+        <div class="menor-campos" id="menor-campos">
+          <div class="form-group">
+            <label>Nome completo do responsável *</label>
+            <input type="text" id="f-nome-resp" placeholder="Nome do responsável legal">
+            <span class="erro-msg">Campo obrigatório</span>
+          </div>
+          <div class="form-group">
+            <label>CPF do responsável *</label>
+            <input type="text" id="f-cpf-resp" placeholder="000.000.000-00" oninput="mascCPF(this)">
+            <span class="erro-msg">Campo obrigatório</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Nome completo *</label>
+          <input type="text" id="f-nome" placeholder="Seu nome completo">
+          <span class="erro-msg">Campo obrigatório</span>
+        </div>
+        <div class="form-group">
+          <label>Data de nascimento *</label>
+          <input type="date" id="f-nasc">
+          <span class="erro-msg">Campo obrigatório</span>
+        </div>
+        <div class="form-group">
+          <label>CPF *</label>
+          <input type="text" id="f-cpf" placeholder="000.000.000-00" oninput="mascCPF(this)">
+          <span class="erro-msg">Campo obrigatório</span>
+        </div>
+        <div class="form-group">
+          <label>E-mail *</label>
+          <input type="email" id="f-email" placeholder="seu@email.com">
+          <span class="erro-msg">Campo obrigatório</span>
+        </div>
+        <div class="form-group">
+          <label>Celular *</label>
+          <input type="tel" id="f-celular" placeholder="(00) 00000-0000" oninput="mascTel(this)">
+          <span class="erro-msg">Campo obrigatório</span>
+        </div>
+        <div class="form-group" style="flex:1;min-width:110px;max-width:140px">
+          <label>CEP *</label>
+          <input type="text" id="f-cep" placeholder="00000-000" maxlength="9" oninput="buscarCepContrato(this.value)">
+          <span class="erro-msg">Campo obrigatório</span>
+        </div>
+        <div class="form-group" style="flex:3">
+          <label>Logradouro *</label>
+          <input type="text" id="f-logradouro" placeholder="Rua / Avenida">
+          <span class="erro-msg">Campo obrigatório</span>
+        </div>
+        <div class="form-group" style="flex:1;min-width:80px;max-width:110px">
+          <label>Número *</label>
+          <input type="text" id="f-numero" placeholder="123">
+          <span class="erro-msg">Campo obrigatório</span>
+        </div>
+        <div class="form-group" style="flex:2">
+          <label>Complemento</label>
+          <input type="text" id="f-complemento" placeholder="Apto 45, Bloco B">
+        </div>
+        <div class="form-group" style="flex:2">
+          <label>Bairro</label>
+          <input type="text" id="f-bairro" placeholder="Bairro">
+        </div>
+        <div class="form-group" style="flex:2">
+          <label>Cidade</label>
+          <input type="text" id="f-cidade" placeholder="Cidade">
+        </div>
+        <div class="form-group" style="flex:1;min-width:60px;max-width:80px">
+          <label>UF</label>
+          <input type="text" id="f-uf" placeholder="SP" maxlength="2">
+        </div>
+        <!-- Campo legado oculto — mantém compatibilidade com API -->
+        <input type="hidden" id="f-endereco">
+      </div>
+
+      <!-- Forma de pagamento -->
+      <div style="margin-top:22px">
+        <div style="font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Forma de Pagamento Preferida *</div>
+        <div class="pgto-opcoes">
+          <div class="pgto-opcao">
+            <input type="radio" name="forma_pgto" id="pgto-mensal" value="mensal" onchange="toggleFreqMensal()">
+            <div style="flex:1">
+              <label for="pgto-mensal">Mensal</label>
+              <div class="pgto-desc">Pagamento antecipado até o 5º dia útil, das sessões que serão realizadas naquele mês</div>
+              <div id="pgto-mensal-valores" style="display:none;margin-top:10px">
+                <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Frequência das sessões *</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <label style="flex:1;min-width:120px;cursor:pointer">
+                    <input type="radio" name="freq_mensal" id="freq-semanal" value="semanal" style="accent-color:var(--rose);margin-right:6px" onchange="document.getElementById('pgto-mensal').checked=true;toggleFreqMensal()">
+                    <span style="font-weight:700;color:#14392F">Semanal</span>
+                    <div style="font-size:11px;color:#5B4466;margin-top:4px;opacity:.8">×4 sessões/mês</div>
+                  </label>
+                  <label style="flex:1;min-width:120px;cursor:pointer">
+                    <input type="radio" name="freq_mensal" id="freq-quinzenal" value="quinzenal" style="accent-color:var(--rose);margin-right:6px" onchange="document.getElementById('pgto-mensal').checked=true;toggleFreqMensal()">
+                    <span style="font-weight:700;color:#14392F">Quinzenal</span>
+                    <div style="font-size:11px;color:#5B4466;margin-top:4px;opacity:.8">×2 sessões/mês</div>
+                  </label>
+                </div>
+                <span class="erro-msg" id="erro-freq-mensal" style="display:none">Selecione a frequência das sessões</span>
+              </div>
+            </div>
+          </div>
+          <div class="pgto-opcao">
+            <input type="radio" name="forma_pgto" id="pgto-sessao" value="por sessão">
+            <div style="flex:1">
+              <label for="pgto-sessao">Por Sessão</label>
+              <div class="pgto-desc">Pagamento no dia de cada sessão</div>
+              <div id="pgto-sessao-valores" style="display:none;margin-top:8px">
+                <div style="margin-top:4px;font-size:12px;color:#7a5a7a;background:#fdf5f0;border-left:3px solid #c8a890;padding:7px 10px;border-radius:0 6px 6px 0">
+                  💳 Você poderá receber automaticamente um Pix de cobrança ao final de cada sessão.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <span class="erro-msg" id="erro-pgto" style="display:none">Selecione uma forma de pagamento</span>
+      </div>
+
+      <!-- Aceite -->
+      <div class="aceite-box">
+        <label>
+          <input type="checkbox" id="chk-aceite">
+          Declaro que li todas as informações apresentadas neste Termo de Compromisso e concordo com as condições descritas acima.
+        </label>
+        <span class="erro-msg" id="erro-aceite" style="display:none">Você precisa concordar com os termos para continuar</span>
+      </div>
+
+      <button class="btn-enviar" onclick="enviarContrato()">
+        ✅ Confirmar e Assinar Termo
+      </button>
+    </div>
+
+    <!-- Link inválido -->
+    <div class="link-invalido" id="link-invalido">
+      <div class="icone">🔒</div>
+      <h3>Link inválido</h3>
+      <p id="link-invalido-msg">Este link não é válido.<br>Por favor, solicite um novo link à psicóloga.</p>
+    </div>
+
+    <!-- Mensagem de sucesso -->
+    <div class="sucesso" id="sucesso">
+      <div class="icone">✅</div>
+      <h3>Termo assinado com sucesso!</h3>
+      <p>
+        Obrigada por confirmar seu compromisso.<br>
+        Em breve entrarei em contato para darmos início ao processo.<br><br>
+        <span style="font-size:13px;color:#b0a0c0">Você pode fechar esta página.</span>
+      </p>
+    </div>
+
+  </div><!-- /body -->
+</div><!-- /page -->
+
+<script>
+  let _token = null;
+
+  async function voltarAgenda(e) {
+    e.preventDefault();
+    if (_token) {
+      try {
+        await fetch('/api/agenda-publica/cancelar-reserva', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: _token })
+        });
+      } catch(_) {}
+    }
+    window.location.href = '/agenda-cliente/';
+  }
+  let _valorSessao = 0;
+
+  const MODELO_DEFAULT = {
+    intro: `Seja bem-vindo(a)!\n\nApresento aqui algumas informações importantes para darmos início ao seu processo de Orientação Profissional e de Carreira.\n\nEssas informações têm como objetivo auxiliar o processo, deixando claros os acordos necessários para um bom funcionamento do nosso trabalho em conjunto.\n\nPeço que leia com atenção cada ponto e sinalize com "ciente" caso esteja de acordo. Caso tenha alguma dúvida, fique à vontade para entrar em contato.\n\nAo final deste termo você encontrará algumas perguntas sobre seus dados pessoais. Essas informações são importantes para o seu prontuário, bem como para emissão de notas fiscais referentes aos serviços prestados.`,
+    secoes: [
+      { titulo: "Sobre o Processo de Orientação Profissional e de Carreira", itens: [
+        "O foco específico do processo de orientação profissional e de carreira será definido durante a primeira sessão, a partir da compreensão das necessidades, expectativas, momento profissional e objetivos apresentados pelo(a) cliente. A partir desse levantamento inicial, será elaborado um plano de trabalho personalizado, que poderá ser ajustado ao longo do acompanhamento conforme a evolução do processo e o surgimento de novas demandas.",
+        "Por se tratar de um serviço psicológico, não há garantia ou promessa de resultados específicos. O resultado do processo está diretamente relacionado ao comprometimento e à participação ativa do contratante nas reflexões e atividades propostas."
+      ]},
+      { titulo: "Sobre as Sessões", itens: [
+        "A frequência do processo será acordada entre as partes, preferencialmente acontecerá semanal, uma vez por semana.",
+        "Havendo necessidade, a frequência dos encontros semanais poderá ser aumentada ou espaçada, sendo isso previamente combinado entre as partes.",
+        "Cada sessão terá duração de 50 minutos, sendo realizada em horário previamente combinado.",
+        "O número de sessões pode variar de acordo com a necessidade do cliente, o nível de maturidade em relação ao objetivo trabalhado e a evolução do cliente ao longo das etapas."
+      ]},
+      { titulo: "Sigilo e Confidencialidade", itens: [
+        "Todas as informações compartilhadas durante o processo são protegidas pelo sigilo profissional, conforme o Código de Ética Profissional do Psicólogo.",
+        "O sigilo poderá ser quebrado apenas nas situações previstas legalmente e pelo Código de Ética Profissional do Psicólogo.",
+        "Caso seja necessário contato com familiares, responsáveis ou outros profissionais, ocorrerá somente com consentimento do cliente, exceto nas situações previstas em lei."
+      ]},
+      { titulo: "Horários, Desmarcações e Remarcações", itens: [
+        "O horário das sessões será previamente combinado entre as partes.",
+        "Cancelamentos ou pedidos de alteração deverão ocorrer com antecedência mínima de 24 horas.",
+        "Quando avisadas dentro desse prazo, as sessões poderão ser remarcadas conforme disponibilidade de agenda.",
+        "Mudanças de horário estarão sujeitas à disponibilidade da agenda."
+      ]},
+      { titulo: "Faltas", itens: [
+        "Sessões canceladas com menos de 24 horas de antecedência serão cobradas normalmente.",
+        "Sessões em que houver ausência sem aviso prévio serão cobradas normalmente.",
+        "Situações excepcionais, como problemas de saúde, instabilidade de internet ou outras intercorrências relevantes, serão avaliadas individualmente."
+      ]},
+      { titulo: "Honorários", itens: [
+        "__VALOR_SESSAO__",
+        "O pagamento poderá ocorrer por sessão — realizado no mesmo dia da sessão — ou de forma mensal, em parcela única até o 5º dia útil do mês em que ocorrerão as sessões.",
+        "O pagamento deverá ser realizado via Pix, transferência ou depósito bancário.",
+        "Os dados para pagamento serão disponibilizados pela psicóloga."
+      ]},
+      { titulo: "Atividades Entre Sessões", itens: [
+        "Algumas etapas do processo poderão incluir pesquisas, leituras, exercícios, entrevistas com profissionais ou outras atividades relacionadas à construção do projeto profissional.",
+        "A qualidade das reflexões e decisões construídas durante o processo depende também da realização dessas atividades.",
+        "O comprometimento com as atividades propostas contribui para um melhor aproveitamento do processo."
+      ]},
+      { titulo: "Encerramento do Processo", itens: [
+        "O processo poderá ser encerrado por qualquer das partes mediante comunicação prévia.",
+        "Caso o encerramento seja realizado por iniciativa do cliente, não haverá devolução de valores referentes a sessões já realizadas ou pagamentos já efetuados.",
+        "Sempre que possível, o encerramento será realizado de forma planejada e discutido durante os encontros."
+      ]}
+    ]
+  };
+
+  function valorExtenso(v) {
+    if (!v) return '';
+    return Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  function numPorExtenso(n) {
+    const un = ['','um','dois','três','quatro','cinco','seis','sete','oito','nove','dez',
+      'onze','doze','treze','quatorze','quinze','dezesseis','dezessete','dezoito','dezenove'];
+    const dz = ['','dez','vinte','trinta','quarenta','cinquenta','sessenta','setenta','oitenta','noventa'];
+    const ct = ['','cento','duzentos','trezentos','quatrocentos','quinhentos','seiscentos','setecentos','oitocentos','novecentos'];
+    function dez(x) { return x < 20 ? un[x] : dz[Math.floor(x/10)] + (x%10 ? ' e ' + un[x%10] : ''); }
+    function cem(x) { if (x===100) return 'cem'; return ct[Math.floor(x/100)] + (x%100 ? ' e ' + dez(x%100) : ''); }
+    function words(x) { return x < 100 ? dez(x) : cem(x); }
+    n = Math.round(n * 100);
+    const r = Math.floor(n / 100), c = n % 100;
+    const pr = r > 0 ? words(r) + (r === 1 ? ' real' : ' reais') : '';
+    const pc = c > 0 ? words(c) + (c === 1 ? ' centavo' : ' centavos') : '';
+    return (pr && pc) ? pr + ' e ' + pc : (pr || pc || 'zero reais');
+  }
+
+  function renderClausulas(modelo, valor) {
+    const m = modelo || MODELO_DEFAULT;
+    const introHtml = (m.intro || '').split('\n\n').map(p =>
+      `<p style="margin-bottom:10px">${p.replace(/\n/g,'<br>')}</p>`
+    ).join('');
+
+    const secoesHtml = (m.secoes || []).map(s => {
+      const itensHtml = (s.itens || []).map(it => {
+        if (it === '__VALOR_SESSAO__') {
+          const vFmt = valor
+            ? `<strong>${valorExtenso(valor)}</strong> <span style="font-weight:400">(${numPorExtenso(valor)})</span>`
+            : '<strong>(a combinar com a psicóloga)</strong>';
+          return `<li>O valor da sessão é de ${vFmt}.</li>`;
+        }
+        return `<li>${it}</li>`;
+      }).join('');
+      return `<div class="secao"><div class="secao-titulo">${s.titulo}</div><ol type="a">${itensHtml}</ol></div>`;
+    }).join('');
+
+    document.getElementById('clausulas-dinamicas').innerHTML =
+      `<div class="intro">${introHtml}</div>${secoesHtml}`;
+  }
+
+  // Carrega configurações e valida token em paralelo
+  const _params = new URLSearchParams(window.location.search);
+  _token = _params.get('token');
+
+  Promise.all([
+    fetch('/api/configuracoes').then(r => r.json()).catch(() => ({})),
+    _token ? fetch(`/api/convites/validar/${_token}`).then(r => r.json()).catch(() => ({ error: 'Erro de conexão' })) : Promise.resolve(null)
+  ]).then(([cfg, convite]) => {
+    if (cfg.nome_psicologa) document.getElementById('psico-nome').textContent = cfg.nome_psicologa;
+    if (cfg.crp)            document.getElementById('psico-crp').textContent  = cfg.crp;
+
+    let modelo = MODELO_DEFAULT;
+    try { if (cfg.modelo_contrato) modelo = JSON.parse(cfg.modelo_contrato); } catch(_) {}
+
+    const valorPadrao = Number(cfg.valor_sessao_padrao) || 0;
+
+    if (!_token) {
+      document.getElementById('formulario').style.display = 'none';
+      document.getElementById('link-invalido').style.display = 'block';
+      renderClausulas(modelo, valorPadrao);
+      return;
+    }
+
+    if (!convite || convite.error) {
+      document.getElementById('formulario').style.display = 'none';
+      document.getElementById('link-invalido').style.display = 'block';
+      const msg = (convite?.error || 'Link inválido.') + '\nPor favor, solicite um novo link à psicóloga.';
+      document.getElementById('link-invalido-msg').textContent = msg;
+      renderClausulas(modelo, valorPadrao);
+      return;
+    }
+
+    _valorSessao = convite.valor || Number(cfg.valor_sessao_padrao) || 0;
+    if (convite.nome_paciente) document.getElementById('f-nome').value = convite.nome_paciente;
+    renderClausulas(modelo, _valorSessao);
+    // Mostrar opção de remarcar quando há token (reserva feita pela agenda pública)
+    if (_token) document.getElementById('box-remarcar').style.display = 'block';
+  });
+
+  function toggleFreqMensal() {
+    const mensal = document.getElementById('pgto-mensal').checked;
+    document.getElementById('pgto-mensal-valores').style.display = mensal ? 'block' : 'none';
+    if (!mensal) {
+      document.getElementById('freq-semanal').checked  = false;
+      document.getElementById('freq-quinzenal').checked = false;
+    }
+  }
+
+  function toggleMenor() {
+    const chk = document.getElementById('chk-menor');
+    const campos = document.getElementById('menor-campos');
+    campos.className = 'menor-campos' + (chk.checked ? ' visivel' : '');
+  }
+
+  function mascCPF(el) {
+    let v = el.value.replace(/\D/g, '').slice(0, 11);
+    v = v.replace(/(\d{3})(\d)/, '$1.$2');
+    v = v.replace(/(\d{3})(\d)/, '$1.$2');
+    v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    el.value = v;
+  }
+
+  function mascTel(el) {
+    let v = el.value.replace(/\D/g, '').slice(0, 11);
+    if (v.length > 10) v = v.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+    else               v = v.replace(/^(\d{2})(\d{4})(\d{0,4})$/, '($1) $2-$3');
+    el.value = v;
+  }
+
+  async function buscarCepContrato(valor) {
+    const cep = valor.replace(/\D/g, '');
+    if (cep.length !== 8) return;
+    const cepEl = document.getElementById('f-cep');
+    try {
+      const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      const d = await r.json();
+      if (d.erro) { cepEl.style.borderColor = 'red'; return; }
+      const set = (id, v) => { const el = document.getElementById(id); if (el && v) el.value = v; };
+      set('f-logradouro', d.logradouro);
+      set('f-bairro',     d.bairro);
+      set('f-cidade',     d.localidade);
+      set('f-uf',         d.uf);
+      cepEl.style.borderColor = 'green';
+      cepEl.value = cep.replace(/(\d{5})(\d{3})/, '$1-$2');
+      document.getElementById('f-numero')?.focus();
+    } catch(e) { cepEl.style.borderColor = 'red'; }
+  }
+
+  function validar() {
+    let ok = true;
+
+    const obrigatorios = ['f-nome', 'f-nasc', 'f-cpf', 'f-email', 'f-celular', 'f-cep', 'f-logradouro', 'f-numero'];
+    obrigatorios.forEach(id => {
+      const el = document.getElementById(id);
+      const grupo = el?.closest('.form-group');
+      if (!grupo) return;
+      if (!el.value.trim()) { grupo.classList.add('campo-erro'); ok = false; }
+      else { grupo.classList.remove('campo-erro'); }
+    });
+
+    const menor = document.getElementById('chk-menor').checked;
+    if (menor) {
+      ['f-nome-resp','f-cpf-resp'].forEach(id => {
+        const el = document.getElementById(id);
+        const grupo = el.closest('.form-group');
+        if (!el.value.trim()) { grupo.classList.add('campo-erro'); ok = false; }
+        else { grupo.classList.remove('campo-erro'); }
+      });
+    }
+
+    const pgto = document.querySelector('input[name="forma_pgto"]:checked');
+    const erroPgto = document.getElementById('erro-pgto');
+    if (!pgto) { erroPgto.style.display = 'block'; ok = false; }
+    else { erroPgto.style.display = 'none'; }
+
+    if (pgto?.value === 'mensal') {
+      const freq = document.querySelector('input[name="freq_mensal"]:checked');
+      const erroFreq = document.getElementById('erro-freq-mensal');
+      if (!freq) { erroFreq.style.display = 'block'; ok = false; }
+      else { erroFreq.style.display = 'none'; }
+    }
+
+    const aceite = document.getElementById('chk-aceite');
+    const erroAceite = document.getElementById('erro-aceite');
+    if (!aceite.checked) { erroAceite.style.display = 'block'; ok = false; }
+    else { erroAceite.style.display = 'none'; }
+
+    return ok;
+  }
+
+  async function enviarContrato() {
+    if (!validar()) {
+      document.querySelector('.campo-erro, #erro-pgto[style*="block"], #erro-aceite[style*="block"]')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    const btn = document.querySelector('.btn-enviar');
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+
+    const menor = document.getElementById('chk-menor').checked;
+    const body = {
+      nome:            document.getElementById('f-nome').value.trim(),
+      data_nascimento: document.getElementById('f-nasc').value,
+      cpf:             document.getElementById('f-cpf').value.trim(),
+      email:           document.getElementById('f-email').value.trim(),
+      celular:         document.getElementById('f-celular').value.trim(),
+      endereco:        [
+        document.getElementById('f-logradouro').value.trim(),
+        document.getElementById('f-numero').value.trim(),
+        document.getElementById('f-complemento').value.trim(),
+        document.getElementById('f-bairro').value.trim(),
+        document.getElementById('f-cidade').value.trim() + (document.getElementById('f-uf').value.trim() ? ' — ' + document.getElementById('f-uf').value.trim() : ''),
+        'CEP ' + document.getElementById('f-cep').value.trim()
+      ].filter(Boolean).join(', '),
+      end_logradouro:  document.getElementById('f-logradouro').value.trim(),
+      end_numero:      document.getElementById('f-numero').value.trim(),
+      end_complemento: document.getElementById('f-complemento').value.trim(),
+      end_bairro:      document.getElementById('f-bairro').value.trim(),
+      end_cidade:      document.getElementById('f-cidade').value.trim(),
+      end_uf:          document.getElementById('f-uf').value.trim(),
+      end_cep:         document.getElementById('f-cep').value.trim(),
+      forma_pgto:      document.querySelector('input[name="forma_pgto"]:checked').value,
+      freq_sessoes:    document.querySelector('input[name="freq_mensal"]:checked')?.value || null,
+      nome_responsavel: menor ? document.getElementById('f-nome-resp').value.trim() : null,
+      cpf_responsavel:  menor ? document.getElementById('f-cpf-resp').value.trim()  : null,
+      aceite: 1,
+      token: _token
+    };
+
+    try {
+      const res = await fetch('/api/contratos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erro ao enviar');
+
+      document.getElementById('formulario').style.display = 'none';
+      document.getElementById('sucesso').style.display = 'block';
+      document.getElementById('sucesso').scrollIntoView({ behavior: 'smooth' });
+    } catch(e) {
+      btn.disabled = false;
+      btn.textContent = '✅ Confirmar e Assinar Termo';
+      alert('Erro ao enviar: ' + e.message);
+    }
+  }
+</script>
+</body>
+</html>

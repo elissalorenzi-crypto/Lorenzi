@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Termo de Compromisso — Psi. Elissa Catarina Lorenzi</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 12pt;
+      color: #000;
+      background: #f0f0f0;
+      padding: 20px;
+    }
+
+    .pagina {
+      width: 210mm;
+      min-height: 297mm;
+      background: #fff;
+      margin: 0 auto;
+      padding: 18mm 20mm 18mm 20mm;
+      box-shadow: 0 4px 24px rgba(0,0,0,.15);
+    }
+
+    /* Cabeçalho */
+    .cabecalho {
+      text-align: center;
+      border-bottom: 2px solid #2d1b3d;
+      padding-bottom: 14px;
+      margin-bottom: 18px;
+    }
+    .cabecalho .nome-psi {
+      font-size: 16pt;
+      font-weight: bold;
+      color: #2d1b3d;
+      letter-spacing: .5px;
+    }
+    .cabecalho .crp {
+      font-size: 10pt;
+      color: #5a3a7a;
+      margin-top: 3px;
+    }
+    .cabecalho .titulo-doc {
+      font-size: 13pt;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-top: 12px;
+      color: #000;
+    }
+    .cabecalho .subtitulo-doc {
+      font-size: 10pt;
+      color: #555;
+      margin-top: 3px;
+    }
+
+    /* Seções */
+    .secao { margin-bottom: 14px; }
+    .secao-titulo {
+      font-size: 10.5pt;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #2d1b3d;
+      border-left: 3px solid #c2657a;
+      padding-left: 8px;
+      margin-bottom: 7px;
+    }
+    .secao p, .secao li {
+      font-size: 10.5pt;
+      line-height: 1.65;
+      color: #111;
+      margin-bottom: 5px;
+    }
+    .secao ol { padding-left: 18px; }
+    .secao li { padding-left: 4px; }
+    .destaque-valor {
+      text-align: center;
+      border: 1.5px solid #c2657a;
+      border-radius: 6px;
+      padding: 8px 16px;
+      margin: 6px 0;
+      font-size: 13pt;
+      font-weight: bold;
+      color: #2d1b3d;
+    }
+
+    hr { border: none; border-top: 1px solid #ccc; margin: 16px 0; }
+
+    /* Campos de preenchimento */
+    .dados-titulo {
+      font-size: 12pt;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #2d1b3d;
+      text-align: center;
+      margin-bottom: 14px;
+      border-top: 2px solid #2d1b3d;
+      padding-top: 14px;
+    }
+
+    .campo-linha {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      margin-bottom: 11px;
+    }
+    .campo-label {
+      font-size: 9.5pt;
+      font-weight: bold;
+      color: #555;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .campo-linha-escrita {
+      flex: 1;
+      border-bottom: 1px solid #333;
+      height: 18px;
+    }
+
+    .campos-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 20px;
+    }
+    .campos-grid .full { grid-column: 1 / -1; }
+
+    /* Pagamento */
+    .pgto-opcoes {
+      display: flex;
+      gap: 30px;
+      margin-left: 8px;
+      margin-top: 4px;
+    }
+    .pgto-opcao {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 10.5pt;
+    }
+    .caixa-check {
+      width: 14px;
+      height: 14px;
+      border: 1.5px solid #333;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    /* Aceite e assinatura */
+    .aceite-box {
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 10px 14px;
+      margin: 14px 0;
+      font-size: 10pt;
+      line-height: 1.6;
+    }
+
+    .assinatura-area {
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+    .assinatura-bloco { text-align: center; }
+    .assinatura-linha {
+      border-bottom: 1px solid #333;
+      height: 40px;
+      margin-bottom: 5px;
+    }
+    .assinatura-label { font-size: 9pt; color: #555; }
+
+    .data-linha {
+      margin-top: 18px;
+      font-size: 10.5pt;
+    }
+
+    /* Botão de imprimir (não aparece no PDF) */
+    .btn-print {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: linear-gradient(135deg, #c2657a, #8a3558);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 14px 28px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(194,101,122,.45);
+      font-family: 'Segoe UI', sans-serif;
+      z-index: 999;
+    }
+    .btn-print:hover { transform: translateY(-2px); }
+
+    /* IMPRESSÃO */
+    @media print {
+      body    { background: #fff; padding: 0; }
+      .pagina { box-shadow: none; padding: 12mm 16mm; width: 100%; min-height: auto; }
+      .btn-print { display: none !important; }
+
+      .secao-titulo { color: #000 !important; }
+      .destaque-valor { border-color: #000 !important; }
+    }
+
+    @page {
+      size: A4;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+
+<button class="btn-print" onclick="window.print()">🖨️ Salvar / Imprimir PDF</button>
+
+<div class="pagina">
+
+  <!-- Cabeçalho -->
+  <div class="cabecalho">
+    <div class="nome-psi">Psi. Elissa Catarina Lorenzi</div>
+    <div class="crp">CRP 06/91616 · Psicologia Clínica</div>
+    <div class="titulo-doc">Termo de Compromisso</div>
+    <div class="subtitulo-doc">Orientação Profissional e de Carreira</div>
+  </div>
+
+  <!-- Introdução -->
+  <div class="secao">
+    <p>Seja bem-vindo(a)! Este termo apresenta as informações e acordos necessários para o bom funcionamento do processo de <strong>Orientação Profissional e de Carreira</strong>. Leia com atenção cada item antes de assinar.</p>
+  </div>
+
+  <!-- 1 -->
+  <div class="secao">
+    <div class="secao-titulo">1. Sobre o Processo</div>
+    <ol type="a">
+      <li>O foco do processo será definido na primeira sessão, a partir das necessidades, expectativas e objetivos do(a) cliente, com plano de trabalho personalizado e ajustável.</li>
+      <li>Por se tratar de serviço psicológico, <strong>não há garantia de resultados específicos</strong>. O resultado depende do comprometimento e da participação ativa do(a) cliente.</li>
+    </ol>
+  </div>
+
+  <!-- 2 -->
+  <div class="secao">
+    <div class="secao-titulo">2. Sobre as Sessões</div>
+    <ol type="a">
+      <li>Frequência: preferencialmente <strong>uma vez por semana</strong>, podendo ser ajustada.</li>
+      <li>Duração: <strong>50 minutos</strong> por sessão, em horário previamente combinado.</li>
+      <li>Número de sessões variável conforme necessidade e evolução do(a) cliente.</li>
+    </ol>
+  </div>
+
+  <!-- 3 -->
+  <div class="secao">
+    <div class="secao-titulo">3. Sigilo e Confidencialidade</div>
+    <ol type="a">
+      <li>Todas as informações são protegidas pelo <strong>sigilo profissional</strong>, conforme o Código de Ética Profissional do Psicólogo.</li>
+      <li>O sigilo só poderá ser quebrado nas situações previstas legalmente.</li>
+    </ol>
+  </div>
+
+  <!-- 4 -->
+  <div class="secao">
+    <div class="secao-titulo">4. Cancelamentos e Faltas</div>
+    <ol type="a">
+      <li>Cancelamentos devem ser comunicados com <strong>mínimo de 24 horas de antecedência</strong>.</li>
+      <li>Sessões canceladas com menos de 24h ou faltas sem aviso serão cobradas normalmente.</li>
+      <li>Situações excepcionais serão avaliadas individualmente.</li>
+    </ol>
+  </div>
+
+  <!-- 5 -->
+  <div class="secao">
+    <div class="secao-titulo">5. Honorários e Pagamento</div>
+    <ol type="a">
+      <li>
+        Valor da sessão:
+        <div class="destaque-valor">R$ 350,00 (trezentos e cinquenta reais)</div>
+      </li>
+      <li>Formas de pagamento: <strong>Pix, transferência ou depósito bancário</strong>. Dados enviados via WhatsApp.</li>
+      <li>Pagamento <strong>por sessão</strong>: realizado no mesmo dia da sessão.</li>
+      <li>Pagamento <strong>mensal</strong>: em parcela única até o 5º dia útil do mês.</li>
+    </ol>
+  </div>
+
+  <!-- 6 -->
+  <div class="secao">
+    <div class="secao-titulo">6. Atividades Entre Sessões</div>
+    <p style="padding-left:8px">Algumas etapas poderão incluir pesquisas, leituras, exercícios e outras atividades. O comprometimento com as atividades potencializa os resultados do processo.</p>
+  </div>
+
+  <!-- 7 -->
+  <div class="secao">
+    <div class="secao-titulo">7. Encerramento</div>
+    <p style="padding-left:8px">O processo pode ser encerrado por qualquer das partes mediante aviso prévio. Não haverá devolução de valores de sessões já realizadas ou pagamentos efetuados.</p>
+  </div>
+
+  <hr>
+
+  <!-- Forma de pagamento -->
+  <div class="secao">
+    <div class="secao-titulo">Forma de Pagamento Escolhida</div>
+    <div class="pgto-opcoes">
+      <div class="pgto-opcao"><span class="caixa-check"></span> Mensal (até o 5º dia útil do mês)</div>
+      <div class="pgto-opcao"><span class="caixa-check"></span> Por Sessão (no dia da sessão)</div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- Dados pessoais -->
+  <div class="dados-titulo">Dados Pessoais do Cliente</div>
+
+  <div class="campos-grid">
+    <div class="campo-linha full">
+      <span class="campo-label">Nome completo:</span>
+      <div class="campo-linha-escrita"></div>
+    </div>
+    <div class="campo-linha">
+      <span class="campo-label">Data de nascimento:</span>
+      <div class="campo-linha-escrita"></div>
+    </div>
+    <div class="campo-linha">
+      <span class="campo-label">CPF:</span>
+      <div class="campo-linha-escrita"></div>
+    </div>
+    <div class="campo-linha full">
+      <span class="campo-label">E-mail:</span>
+      <div class="campo-linha-escrita"></div>
+    </div>
+    <div class="campo-linha">
+      <span class="campo-label">Celular:</span>
+      <div class="campo-linha-escrita"></div>
+    </div>
+    <div class="campo-linha">
+      <span class="campo-label">WhatsApp:</span>
+      <div class="campo-linha-escrita"></div>
+    </div>
+    <div class="campo-linha full">
+      <span class="campo-label">Endereço completo (com CEP):</span>
+      <div class="campo-linha-escrita"></div>
+    </div>
+  </div>
+
+  <div style="margin-top:6px">
+    <div class="campo-linha">
+      <span class="campo-label">Nome do responsável (se menor de idade):</span>
+      <div class="campo-linha-escrita"></div>
+    </div>
+    <div class="campo-linha">
+      <span class="campo-label">CPF do responsável:</span>
+      <div class="campo-linha-escrita"></div>
+    </div>
+  </div>
+
+  <!-- Aceite -->
+  <div class="aceite-box">
+    Declaro que li todas as informações apresentadas neste Termo de Compromisso e <strong>concordo com todas as condições descritas acima</strong>.
+  </div>
+
+  <!-- Data e assinaturas -->
+  <div class="data-linha">
+    _____________________________, _______ de __________________________ de ___________.
+  </div>
+
+  <div class="assinatura-area">
+    <div class="assinatura-bloco">
+      <div class="assinatura-linha"></div>
+      <div class="assinatura-label">Assinatura do(a) Cliente</div>
+    </div>
+    <div class="assinatura-bloco">
+      <div class="assinatura-linha"></div>
+      <div class="assinatura-label">Psi. Elissa Catarina Lorenzi — CRP 06/91616</div>
+    </div>
+  </div>
+
+</div><!-- /pagina -->
+
+</body>
+</html>
