@@ -1027,26 +1027,50 @@ tr[data-desc] .mp-pnome:hover{color:#4527a0;text-decoration:underline}
 
       <details style="border:1px solid #c8e6c9;border-radius:8px;margin-bottom:8px;overflow:hidden">
         <summary style="padding:10px 14px;font-weight:700;font-size:12.5px;cursor:pointer;background:#f1f8e9;list-style:none">📌 Cargos efetivos (concurso público)</summary>
-        <div style="padding:10px 14px;font-size:12.5px;line-height:1.7">São os cargos ocupados por pessoas aprovadas em concurso público. Após cumprir o estágio probatório e atender aos requisitos legais, o servidor adquire <strong>estabilidade</strong>, podendo construir uma carreira de longo prazo. Essa é a forma mais comum de ingresso.</div>
+        <div style="padding:12px 14px;font-size:12.5px;line-height:1.7">
+          <p style="margin:0 0 10px">São os cargos ocupados por pessoas aprovadas em concurso público. Após cumprir o estágio probatório e atender aos requisitos legais, o servidor adquire <strong>estabilidade</strong>, podendo construir uma carreira de longo prazo. Essa é a forma mais comum de ingresso.</p>
+          <div style="background:#e8f5e9;border:1px solid #a8d5c2;border-radius:8px;padding:10px 14px">
+            <p style="font-weight:700;font-size:12px;color:#2A6B4A;margin:0 0 8px">🎯 Como ingressar — Concurso Público</p>
+            <p style="font-size:12px;margin:0 0 8px">O concurso público pode incluir:</p>
+            <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">
+              ${['Prova objetiva','Prova discursiva','Redação','Prova prática','Teste físico','Avaliação psicológica','Investigação social','Avaliação de títulos','Curso de formação'].map(e=>`<span style="background:#f0fdf4;border:1px solid #a8d5c2;border-radius:14px;padding:2px 9px;font-size:11px;font-weight:600;color:#2A6B4A">${e}</span>`).join('')}
+            </div>
+            <p style="font-size:12px;margin:0"><strong>Exige faculdade?</strong> Depende do cargo. Existem concursos para nível fundamental, médio, técnico e superior. Algumas carreiras exigem formação específica (Medicina, Direito, Psicologia, Engenharia etc.), outras aceitam qualquer graduação.</p>
+          </div>
+        </div>
       </details>
 
       <details style="border:1px solid #c8e6c9;border-radius:8px;margin-bottom:8px;overflow:hidden">
         <summary style="padding:10px 14px;font-weight:700;font-size:12.5px;cursor:pointer;background:#f1f8e9;list-style:none">📌 Cargos comissionados (confiança)</summary>
-        <div style="padding:10px 14px;font-size:12.5px;line-height:1.7">Destinados a funções de liderança, coordenação, direção e assessoramento. <strong>Não exigem concurso público</strong> — a escolha é feita pela autoridade responsável. São de livre nomeação e exoneração, sem estabilidade. Costumam envolver maior responsabilidade na gestão de equipes e tomada de decisões.</div>
+        <div style="padding:12px 14px;font-size:12.5px;line-height:1.7">
+          <p style="margin:0 0 10px">Destinados a funções de liderança, coordenação, direção e assessoramento. <strong>Não exigem concurso público</strong> — a escolha é feita pela autoridade responsável. São de livre nomeação e exoneração, sem estabilidade. Costumam envolver maior responsabilidade na gestão de equipes e tomada de decisões.</p>
+          <div style="background:#e8f5e9;border:1px solid #a8d5c2;border-radius:8px;padding:10px 14px">
+            <p style="font-weight:700;font-size:12px;color:#2A6B4A;margin:0 0 8px">🎯 Como ingressar — Cargo Comissionado</p>
+            <p style="font-size:12px;margin:0 0 8px">O ingresso é feito por <strong>indicação e nomeação direta</strong> da autoridade competente (ministro, secretário, diretor, prefeito, governador etc.), sem necessidade de concurso público.</p>
+            <p style="font-weight:700;font-size:11.5px;color:#2A6B4A;margin:0 0 6px">O que costuma ser levado em conta na escolha:</p>
+            <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">
+              ${['Experiência profissional','Formação acadêmica','Reputação na área','Rede de contatos','Confiança pessoal','Alinhamento político ou técnico'].map(e=>`<span style="background:#f0fdf4;border:1px solid #a8d5c2;border-radius:14px;padding:2px 9px;font-size:11px;font-weight:600;color:#2A6B4A">${e}</span>`).join('')}
+            </div>
+            <p style="font-size:12px;margin:0"><strong>Atenção:</strong> como não há estabilidade, o cargo pode ser encerrado a qualquer momento. É uma porta de entrada importante para quem já tem carreira consolidada e deseja contribuir com a gestão pública.</p>
+          </div>
+        </div>
       </details>
 
       <details style="border:1px solid #c8e6c9;border-radius:8px;margin-bottom:8px;overflow:hidden">
         <summary style="padding:10px 14px;font-weight:700;font-size:12.5px;cursor:pointer;background:#f1f8e9;list-style:none">📌 Contratos temporários</summary>
-        <div style="padding:10px 14px;font-size:12.5px;line-height:1.7">Para situações específicas: substituição de servidores, emergências, projetos específicos ou aumento temporário de demanda. Possuem prazo determinado e seguem regras previstas em lei.</div>
+        <div style="padding:12px 14px;font-size:12.5px;line-height:1.7">
+          <p style="margin:0 0 10px">Para situações específicas: substituição de servidores, emergências, projetos específicos ou aumento temporário de demanda. Possuem <strong>prazo determinado</strong> e seguem regras previstas em lei.</p>
+          <div style="background:#e8f5e9;border:1px solid #a8d5c2;border-radius:8px;padding:10px 14px">
+            <p style="font-weight:700;font-size:12px;color:#2A6B4A;margin:0 0 8px">🎯 Como ingressar — Contrato Temporário</p>
+            <p style="font-size:12px;margin:0 0 8px">O ingresso ocorre por meio de <strong>processo seletivo simplificado</strong> (sem a complexidade de um concurso público), geralmente composto por:</p>
+            <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">
+              ${['Análise de currículo','Prova de títulos','Entrevista','Análise de experiência','Prova objetiva (em alguns casos)'].map(e=>`<span style="background:#f0fdf4;border:1px solid #a8d5c2;border-radius:14px;padding:2px 9px;font-size:11px;font-weight:600;color:#2A6B4A">${e}</span>`).join('')}
+            </div>
+            <p style="font-size:12px;margin:0 0 6px"><strong>Duração:</strong> geralmente de 6 meses a 2 anos, podendo ser prorrogado conforme a legislação do órgão contratante.</p>
+            <p style="font-size:12px;margin:0"><strong>Atenção:</strong> não gera estabilidade e não conta como tempo de serviço para aposentadoria no serviço público efetivo. É uma boa forma de ter uma primeira experiência no setor público.</p>
+          </div>
+        </div>
       </details>
-
-      <hr style="border:none;border-top:1px solid #eee;margin:14px 0">
-      <h4 style="color:#2A6B4A;font-size:13px;margin:0 0 8px">🎯 Como ingressar — Concurso Público</h4>
-      <p style="font-size:12.5px;margin-bottom:8px">O concurso público pode incluir:</p>
-      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px">
-        ${['Prova objetiva','Prova discursiva','Redação','Prova prática','Teste físico','Avaliação psicológica','Investigação social','Avaliação de títulos','Curso de formação'].map(e=>`<span style="background:#f0fdf4;border:1.5px solid #a8d5c2;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;color:#2A6B4A">${e}</span>`).join('')}
-      </div>
-      <p style="font-size:12.5px;margin-bottom:4px"><strong>Exige faculdade?</strong> Depende do cargo. Existem concursos para nível fundamental, médio, técnico e superior. Algumas carreiras exigem formação específica (Medicina, Direito, Psicologia, Engenharia etc.), outras aceitam qualquer graduação.</p>
 
       <hr style="border:none;border-top:1px solid #eee;margin:14px 0">
       <h4 style="color:#2A6B4A;font-size:13px;margin:0 0 8px">🗂️ Principais áreas do serviço público</h4>
