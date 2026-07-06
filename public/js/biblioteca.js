@@ -737,6 +737,228 @@ tr[data-desc] .mp-pnome:hover{color:#4527a0;text-decoration:underline}
     ]
   },
   {
+    id: 'op-rotas-mercado',
+    titulo: 'Orientação Profissional',
+    subtitulo: 'Rotas e Mercado de Trabalho',
+    icone: '🛤️',
+    cor: 'bib-op',
+    pastas: [
+      {
+        id: 'rotas-mercado',
+        nome: 'Rotas e Mercado de Trabalho',
+        icone: '🗺️',
+        atividades: [
+          {
+            id: 'tipos-rotas-mercado',
+            titulo: 'Tipos de Rotas do Mercado de Trabalho',
+            subtitulo: 'Áreas, cursos, sequências e conhecimento',
+            icone: '🛤️',
+            conteudo: `
+<h3 style="color:var(--plum);margin-bottom:4px">🏢 Tipos de áreas do mercado de trabalho</h3>
+<p style="font-size:13px;color:#666;margin-bottom:14px">💡 Clique em cada área para saber mais sobre ela.</p>
+
+<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px">
+
+  <details style="border:1.5px solid #c8a8d5;border-radius:10px;overflow:hidden">
+    <summary style="padding:12px 16px;font-weight:700;font-size:13.5px;color:var(--plum);cursor:pointer;background:#f5f0f7;list-style:none;display:flex;justify-content:space-between;align-items:center">
+      💼 Empregado CLT <span style="font-size:11px;font-weight:400;color:#888">clique para expandir</span>
+    </summary>
+    <div style="padding:14px 16px;font-size:13px;line-height:1.7;color:#333">
+      <p>Trabalho com <strong>carteira assinada</strong> em empresa privada. O empregado tem vínculo empregatício formal e direitos garantidos pela CLT (Consolidação das Leis do Trabalho).</p>
+      <p><strong>Vantagens:</strong> estabilidade de renda mensal, benefícios como plano de saúde, vale-alimentação, FGTS, 13º salário e férias remuneradas.</p>
+      <p><strong>Exemplos de cargos:</strong> analista, assistente, coordenador, gerente, operador, técnico em empresas privadas de qualquer setor.</p>
+    </div>
+  </details>
+
+  <details style="border:1.5px solid #a8d5c2;border-radius:10px;overflow:hidden">
+    <summary style="padding:12px 16px;font-weight:700;font-size:13.5px;color:#2A6B4A;cursor:pointer;background:#f0fdf4;list-style:none;display:flex;justify-content:space-between;align-items:center">
+      🏛️ Servidor Público <span style="font-size:11px;font-weight:400;color:#888">clique para expandir</span>
+    </summary>
+    <div style="padding:14px 16px;font-size:13px;line-height:1.7;color:#333">
+      <p>Ingresso por <strong>concurso público</strong> em órgãos do governo federal, estadual ou municipal. Oferece <strong>estabilidade</strong> após o período probatório.</p>
+      <p><strong>Vantagens:</strong> estabilidade de emprego, plano de carreira definido, aposentadoria pelo regime próprio, salários competitivos em muitas áreas.</p>
+      <p><strong>Exemplos:</strong> professor da rede pública, policial, fiscal, agente de saúde, juiz, promotor, auditor fiscal, militar.</p>
+    </div>
+  </details>
+
+  <details style="border:1.5px solid #f4c77a;border-radius:10px;overflow:hidden">
+    <summary style="padding:12px 16px;font-weight:700;font-size:13.5px;color:#8a5a00;cursor:pointer;background:#fffbf0;list-style:none;display:flex;justify-content:space-between;align-items:center">
+      🧑‍💻 Autônomo / Freelancer <span style="font-size:11px;font-weight:400;color:#888">clique para expandir</span>
+    </summary>
+    <div style="padding:14px 16px;font-size:13px;line-height:1.7;color:#333">
+      <p>Trabalha <strong>por conta própria</strong>, prestando serviços a diferentes clientes sem vínculo empregatício fixo. Define seus próprios horários e valores.</p>
+      <p><strong>Vantagens:</strong> liberdade, flexibilidade de horário, potencial de ganho variável (pode ganhar mais que um empregado), variedade de projetos.</p>
+      <p><strong>Exemplos:</strong> designer gráfico freelancer, psicólogo com consultório próprio, fotógrafo, eletricista autônomo, nutricionista independente.</p>
+    </div>
+  </details>
+
+  <details style="border:1.5px solid #f4a7a7;border-radius:10px;overflow:hidden">
+    <summary style="padding:12px 16px;font-weight:700;font-size:13.5px;color:#a00;cursor:pointer;background:#fff5f5;list-style:none;display:flex;justify-content:space-between;align-items:center">
+      🚀 Empreendedor <span style="font-size:11px;font-weight:400;color:#888">clique para expandir</span>
+    </summary>
+    <div style="padding:14px 16px;font-size:13px;line-height:1.7;color:#333">
+      <p>Cria e gere <strong>seu próprio negócio</strong>, assumindo os riscos e os benefícios do empreendimento. Pode começar pequeno (MEI) e crescer.</p>
+      <p><strong>Vantagens:</strong> autonomia total, potencial de crescimento ilimitado, possibilidade de impactar muitas pessoas, construção de patrimônio.</p>
+      <p><strong>Exemplos:</strong> dono de restaurante, criador de startup de tecnologia, loja online, agência de marketing, clínica de saúde.</p>
+    </div>
+  </details>
+
+  <details style="border:1.5px solid #9ec8f5;border-radius:10px;overflow:hidden">
+    <summary style="padding:12px 16px;font-weight:700;font-size:13.5px;color:#0a4a8a;cursor:pointer;background:#f0f7ff;list-style:none;display:flex;justify-content:space-between;align-items:center">
+      🤝 Terceiro Setor <span style="font-size:11px;font-weight:400;color:#888">clique para expandir</span>
+    </summary>
+    <div style="padding:14px 16px;font-size:13px;line-height:1.7;color:#333">
+      <p>Trabalho em <strong>ONGs, fundações, institutos e associações</strong> sem fins lucrativos, com foco em causas sociais, ambientais, culturais ou educacionais.</p>
+      <p><strong>Vantagens:</strong> propósito claro, impacto social direto, ambiente colaborativo, possibilidade de atuar em áreas de interesse pessoal.</p>
+      <p><strong>Exemplos:</strong> gestor de projetos sociais, captador de recursos, educador social, psicólogo social, comunicador em ONG.</p>
+    </div>
+  </details>
+
+</div>
+
+<hr style="border:none;border-top:1.5px solid #eee;margin:20px 0">
+
+<h3 style="color:var(--plum);margin-bottom:4px">🎓 Tipos de cursos profissionalizantes</h3>
+<p style="font-size:13px;color:#666;margin-bottom:14px">💡 Clique em cada tipo de curso para saber mais sobre ele.</p>
+
+<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+
+  <details style="border:1.5px solid #c8a8d5;border-radius:10px;overflow:hidden">
+    <summary style="padding:12px 16px;font-weight:700;font-size:13.5px;color:var(--plum);cursor:pointer;background:#f5f0f7;list-style:none;display:flex;justify-content:space-between;align-items:center">
+      🏫 Graduação (Bacharelado / Licenciatura) <span style="font-size:11px;font-weight:400;color:#888">clique para expandir</span>
+    </summary>
+    <div style="padding:14px 16px;font-size:13px;line-height:1.7;color:#333">
+      <p>Curso superior com duração de <strong>4 a 6 anos</strong>. Formação ampla e teórico-prática na área escolhida. Exige aprovação no ENEM/vestibular.</p>
+      <p><strong>Bacharelado:</strong> forma o profissional para atuação no mercado (ex: médico, advogado, psicólogo, engenheiro).</p>
+      <p><strong>Licenciatura:</strong> habilita para lecionar na educação básica (ex: professor de matemática, história, educação física).</p>
+    </div>
+  </details>
+
+  <details style="border:1.5px solid #a8d5c2;border-radius:10px;overflow:hidden">
+    <summary style="padding:12px 16px;font-weight:700;font-size:13.5px;color:#2A6B4A;cursor:pointer;background:#f0fdf4;list-style:none;display:flex;justify-content:space-between;align-items:center">
+      📐 Tecnólogo <span style="font-size:11px;font-weight:400;color:#888">clique para expandir</span>
+    </summary>
+    <div style="padding:14px 16px;font-size:13px;line-height:1.7;color:#333">
+      <p>Curso superior de curta duração: <strong>2 a 3 anos</strong>. Foco prático e técnico em uma área específica. Também exige ENEM/vestibular.</p>
+      <p>Equivale ao bacharelado para fins de mercado de trabalho, mas com formação mais focada.</p>
+      <p><strong>Exemplos:</strong> Tecnólogo em Gestão de RH, Análise e Desenvolvimento de Sistemas, Gastronomia, Logística, Marketing Digital.</p>
+    </div>
+  </details>
+
+  <details style="border:1.5px solid #f4c77a;border-radius:10px;overflow:hidden">
+    <summary style="padding:12px 16px;font-weight:700;font-size:13.5px;color:#8a5a00;cursor:pointer;background:#fffbf0;list-style:none;display:flex;justify-content:space-between;align-items:center">
+      🔧 Curso Técnico <span style="font-size:11px;font-weight:400;color:#888">clique para expandir</span>
+    </summary>
+    <div style="padding:14px 16px;font-size:13px;line-height:1.7;color:#333">
+      <p>Nível médio com duração de <strong>1 a 2 anos</strong>. Pode ser feito junto ao Ensino Médio (integrado) ou após concluí-lo (subsequente).</p>
+      <p>Boa opção para entrar no mercado de trabalho rapidamente com qualificação profissional.</p>
+      <p><strong>Exemplos:</strong> Técnico em Enfermagem, Informática, Administração, Contabilidade, Segurança do Trabalho, Mecânica, Eletrotécnica.</p>
+    </div>
+  </details>
+
+  <details style="border:1.5px solid #9ec8f5;border-radius:10px;overflow:hidden">
+    <summary style="padding:12px 16px;font-weight:700;font-size:13.5px;color:#0a4a8a;cursor:pointer;background:#f0f7ff;list-style:none;display:flex;justify-content:space-between;align-items:center">
+      📚 Curso Livre / Profissionalizante <span style="font-size:11px;font-weight:400;color:#888">clique para expandir</span>
+    </summary>
+    <div style="padding:14px 16px;font-size:13px;line-height:1.7;color:#333">
+      <p>Cursos de <strong>curta duração</strong>, sem exigência de escolaridade mínima. Focados em habilidades específicas e práticas.</p>
+      <p>Ótima forma de se qualificar rapidamente ou complementar uma formação já existente.</p>
+      <p><strong>Exemplos:</strong> curso de informática, inglês, corte e costura, maquiagem, culinária, design gráfico, programação, gestão financeira.</p>
+    </div>
+  </details>
+
+  <details style="border:1.5px solid #f4a7a7;border-radius:10px;overflow:hidden">
+    <summary style="padding:12px 16px;font-weight:700;font-size:13.5px;color:#a00;cursor:pointer;background:#fff5f5;list-style:none;display:flex;justify-content:space-between;align-items:center">
+      🏆 Pós-Graduação <span style="font-size:11px;font-weight:400;color:#888">clique para expandir</span>
+    </summary>
+    <div style="padding:14px 16px;font-size:13px;line-height:1.7;color:#333">
+      <p>Formação após a graduação. Aprofunda conhecimentos e abre portas para posições mais especializadas e salários mais altos.</p>
+      <ul style="margin:8px 0;padding-left:20px">
+        <li><strong>Especialização / MBA:</strong> 1 a 2 anos, foco no mercado</li>
+        <li><strong>Mestrado:</strong> 2 anos, pesquisa + atuação profissional</li>
+        <li><strong>Doutorado:</strong> 4 anos, pesquisa avançada e carreira acadêmica</li>
+      </ul>
+    </div>
+  </details>
+
+</div>
+
+<p style="background:#fff9e6;border:1.5px solid #f4c77a;border-radius:10px;padding:12px 16px;font-size:13px;line-height:1.7;margin-bottom:24px">
+  💡 Além dos cursos formais listados acima, existe a possibilidade de você se profissionalizar com um <strong>treinamento não-formal</strong> — sendo <strong>autodidata</strong> sobre o assunto e estudando sozinho (exemplo: você pode estudar sozinho sobre jardinagem e começar a oferecer esse serviço) ou <strong>aprendendo o ofício com um profissional mais experiente</strong> (exemplo: você pode aprender a arte da marcenaria com o seu tio marceneiro e passar a oferecer esse serviço).
+</p>
+
+<hr style="border:none;border-top:1.5px solid #eee;margin:20px 0">
+
+<h3 style="color:var(--plum);margin-bottom:4px">🔀 Sequência em que dá para seguir essas rotas</h3>
+<p style="background:#f5f0f7;border:1.5px solid #c8a8d5;border-radius:10px;padding:12px 16px;font-size:13px;line-height:1.7;margin-bottom:14px">
+  💡 <strong>Não existe um caminho único ou correto.</strong> Cada pessoa trilha a sua jornada de acordo com os seus interesses e com as possibilidades que ela tem em cada momento da vida.
+</p>
+
+<div style="background:#faf8f6;border:1.5px solid #e0d5cb;border-radius:12px;padding:16px 20px;font-size:13px;line-height:1.9;margin-bottom:24px">
+  <p style="margin:0 0 10px"><strong>Alguns exemplos de sequências possíveis:</strong></p>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span style="background:#f5f0f7;border:1.5px solid #c8a8d5;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:600;color:var(--plum)">Curso Técnico</span>
+      <span style="color:#aaa">→</span>
+      <span style="background:#f5f0f7;border:1.5px solid #c8a8d5;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:600;color:var(--plum)">Emprego CLT</span>
+      <span style="color:#aaa">→</span>
+      <span style="background:#f5f0f7;border:1.5px solid #c8a8d5;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:600;color:var(--plum)">Graduação Noturna</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span style="background:#f0fdf4;border:1.5px solid #a8d5c2;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:600;color:#2A6B4A">Graduação</span>
+      <span style="color:#aaa">→</span>
+      <span style="background:#f0fdf4;border:1.5px solid #a8d5c2;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:600;color:#2A6B4A">Autônomo</span>
+      <span style="color:#aaa">→</span>
+      <span style="background:#f0fdf4;border:1.5px solid #a8d5c2;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:600;color:#2A6B4A">Empreendedor</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span style="background:#fffbf0;border:1.5px solid #f4c77a;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:600;color:#8a5a00">Curso Livre</span>
+      <span style="color:#aaa">→</span>
+      <span style="background:#fffbf0;border:1.5px solid #f4c77a;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:600;color:#8a5a00">Freelancer</span>
+      <span style="color:#aaa">→</span>
+      <span style="background:#fffbf0;border:1.5px solid #f4c77a;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:600;color:#8a5a00">Concurso Público</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span style="background:#fff5f5;border:1.5px solid #f4a7a7;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:600;color:#a00">Aprendiz Informal</span>
+      <span style="color:#aaa">→</span>
+      <span style="background:#fff5f5;border:1.5px solid #f4a7a7;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:600;color:#a00">Autônomo</span>
+      <span style="color:#aaa">→</span>
+      <span style="background:#fff5f5;border:1.5px solid #f4a7a7;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:600;color:#a00">Pequeno Empreendedor</span>
+    </div>
+  </div>
+</div>
+
+<hr style="border:none;border-top:1.5px solid #eee;margin:20px 0">
+
+<h3 style="color:var(--plum);margin-bottom:4px">🧠 Áreas do conhecimento</h3>
+<p style="background:#f5f0f7;border:1.5px solid #c8a8d5;border-radius:10px;padding:12px 16px;font-size:13px;line-height:1.7;margin-bottom:14px">
+  💡 Todo mundo sabe que <strong>as profissões lidam com diferentes áreas do conhecimento</strong>, mas precisamos tomar muito <strong>cuidado para não enxergarmos as profissões em grandes blocos rígidos</strong>.
+</p>
+
+<p style="font-size:13px;line-height:1.8;margin-bottom:10px">
+  <strong>Por exemplo:</strong> muita gente se prende à ideia de que apenas médicos salvam vidas e pensa que, se quer salvar vidas, precisa necessariamente ser médico. Mas outras profissões também fazem isso (direta ou indiretamente), como os engenheiros florestais, os mergulhadores e até os professores.
+</p>
+<p style="font-size:13px;line-height:1.8;margin-bottom:16px">
+  <strong>Outro exemplo:</strong> não são só advogados que defendem os injustiçados. Veterinários também fazem isso, assim como os policiais e até as babás.
+</p>
+<p style="font-size:13px;line-height:1.8;margin-bottom:16px">
+  Para não deixar a sua pesquisa profissional ser prejudicada pelos estereótipos das profissões, assista à aula abaixo que vai <strong>abrir os seus horizontes</strong>:
+</p>
+
+<div style="background:#faf8f6;border:1.5px solid #e0d5cb;border-radius:12px;padding:16px 20px;text-align:center">
+  <p style="font-size:13px;font-weight:700;color:var(--plum);margin-bottom:8px">▶️ Aula — Áreas do Conhecimento e Profissões</p>
+  <a href="https://www.youtube.com/live/TQivAhgKxRQ?feature=share" target="_blank"
+     style="display:inline-block;background:var(--plum);color:#fff;padding:10px 22px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none">
+    🎬 Assistir no YouTube
+  </a>
+</div>
+`
+          }
+        ]
+      }
+    ]
+  },
+  {
     id: 'oc-adulto',
     titulo: 'Orientação de Carreira',
     subtitulo: 'Adulto',
