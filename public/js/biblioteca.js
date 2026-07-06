@@ -1057,7 +1057,17 @@ tr[data-desc] .mp-pnome:hover{color:#4527a0;text-decoration:underline}
     </summary>
     <div style="padding:18px 20px;font-size:13px;line-height:1.75;color:#333">
 
-      <p>O <strong>trabalhador autônomo</strong> presta serviços por conta própria, sem vínculo empregatício, podendo atender pessoas físicas ou jurídicas. Define seus próprios horários, valores e forma de trabalho. Pode ser formalizado como <strong>MEI</strong>, <strong>profissional liberal</strong> ou permanecer como autônomo sem CNPJ.</p>
+      <p>A rota do empreendedorismo reúne diferentes formas de trabalhar por conta própria, sem vínculo empregatício com uma empresa.</p>
+      <p>Nessa rota, o profissional é responsável por construir sua própria carreira, conquistar clientes, organizar sua rotina e administrar sua atividade ou negócio.</p>
+      <p>Existem diferentes maneiras de empreender. Algumas pessoas trabalham sozinhas, prestando serviços diretamente aos clientes. Outras criam uma empresa, contratam funcionários e desenvolvem um negócio que pode crescer ao longo do tempo.</p>
+      <p style="margin-bottom:8px">Dependendo da profissão, do faturamento e da atividade exercida, o empreendedor pode atuar de diferentes formas:</p>
+      <ul style="margin:0 0 12px;padding-left:20px;line-height:2;font-size:13px">
+        <li><strong>Autônomo (Pessoa Física):</strong> trabalha por conta própria, sem vínculo empregatício e sem necessariamente possuir uma empresa.</li>
+        <li><strong>MEI (Microempreendedor Individual):</strong> modelo simplificado de empresa criado para facilitar a formalização de pequenos empreendedores que exercem atividades permitidas pela legislação.</li>
+        <li><strong>Microempresa (ME):</strong> empresa indicada para negócios que possuem faturamento maior ou atividades que não podem ser enquadradas como MEI.</li>
+        <li><strong>Outros tipos de empresa</strong> (como Sociedade Limitada Unipessoal — SLU, Sociedade Limitada — LTDA, Sociedade Simples, entre outras): utilizados por profissionais e empresas que possuem estruturas maiores, sócios ou atividades específicas.</li>
+      </ul>
+      <p>Independentemente da forma jurídica escolhida, o empreendedor é responsável por administrar o próprio trabalho ou negócio, tomar decisões, organizar as finanças, conquistar clientes e buscar o crescimento da sua atividade.</p>
 
       <!-- ROTINA -->
       <details style="border:1px solid #f4c77a;border-radius:8px;margin:14px 0 6px;overflow:hidden">
