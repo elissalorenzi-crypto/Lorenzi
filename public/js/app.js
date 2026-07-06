@@ -3937,11 +3937,15 @@ async function salvarStatusSessao(agId, status, pacienteId) {
 
       if (p.total_sessoes) {
         const realizadas = todas.filter(a => a.status === 'realizado').length;
-        if (realizadas >= p.total_sessoes) {
+        if (realizadas >= p.total_sessoes - 2) {
           const nome = p.apelido || p.nome.split(' ')[0];
+          const restantes = p.total_sessoes - realizadas;
+          const msg = restantes <= 0
+            ? `<strong>${nome}</strong> completou as <strong>${p.total_sessoes} sessões</strong> previstas.`
+            : `<strong>${nome}</strong> está a <strong>${restantes} sessão${restantes > 1 ? 'ões' : ''}</strong> de concluir as ${p.total_sessoes} previstas.`;
           setTimeout(() => openModal(
-            '📊 Limite de sessões atingido',
-            `<p style="margin-bottom:12px"><strong>${nome}</strong> completou as <strong>${p.total_sessoes} sessões</strong> previstas.</p>
+            '📊 Sessões quase concluídas',
+            `<p style="margin-bottom:12px">${msg}</p>
              <p style="margin-bottom:16px">Deseja aumentar o número total de sessões?</p>
              <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">Novo total:</label>
              <input type="number" id="novo-total-sessoes" min="${p.total_sessoes + 1}" value="${p.total_sessoes + 10}"
