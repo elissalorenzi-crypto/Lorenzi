@@ -750,8 +750,8 @@ tr[data-desc] .mp-pnome:hover{color:#4527a0;text-decoration:underline}
         atividades: [
           {
             id: 'tipos-rotas-mercado',
-            titulo: 'Tipos de Rotas do Mercado de Trabalho',
-            subtitulo: 'Áreas, cursos, sequências e conhecimento',
+            titulo: 'Conhecendo as Rotas Profissionais',
+            subtitulo: '',
             icone: '🛤️',
             conteudo: `
 <h3 style="color:var(--plum);margin-bottom:12px">🛤️ Rotas do Mercado de Trabalho</h3>
