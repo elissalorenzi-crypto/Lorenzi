@@ -993,44 +993,259 @@ tr[data-desc] .mp-pnome:hover{color:#4527a0;text-decoration:underline}
       🚀 Empreendedorismo / Autônomo <span style="font-size:11px;font-weight:400;color:#888">clique para expandir</span>
     </summary>
     <div style="padding:18px 20px;font-size:13px;line-height:1.75;color:#333">
-      <p>Engloba duas modalidades de trabalho independente: o <strong>autônomo</strong>, que presta serviços sem vínculo empregatício, e o <strong>empreendedor</strong>, que cria e gere seu próprio negócio.</p>
 
-      <h4 style="color:#8a5a00;font-size:13px;margin:14px 0 8px">🧑‍💻 Autônomo / Freelancer</h4>
-      <p style="font-size:13px;margin-bottom:10px">Trabalha <strong>por conta própria</strong> oferecendo serviços a diferentes clientes. Define seus próprios horários, valores e forma de trabalho. Pode ser formalizado como <strong>MEI</strong> (Microempreendedor Individual).</p>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
-        ${['Designer Gráfico','Fotógrafo','Psicólogo CLínico','Nutricionista','Arquiteto','Programador','Marceneiro','Eletricista','Cabeleireiro','Personal Trainer','Consultor','Tradutora'].map(d=>`<span style="background:#fffbf0;border:1.5px solid #f4c77a;border-radius:20px;padding:3px 10px;font-size:11.5px;font-weight:600;color:#8a5a00">${d}</span>`).join('')}
+      <p>O <strong>trabalhador autônomo</strong> presta serviços por conta própria, sem vínculo empregatício, podendo atender pessoas físicas ou jurídicas. Define seus próprios horários, valores e forma de trabalho. Pode ser formalizado como <strong>MEI</strong>, <strong>profissional liberal</strong> ou permanecer como autônomo sem CNPJ.</p>
+
+      <!-- ROTINA -->
+      <details style="border:1px solid #f4c77a;border-radius:8px;margin:14px 0 6px;overflow:hidden">
+        <summary style="padding:10px 14px;font-weight:700;font-size:13px;color:#8a5a00;cursor:pointer;background:#fffbf0;list-style:none">📅 Rotina do Autônomo / Empreendedor</summary>
+        <div style="padding:14px 16px;font-size:12.5px;line-height:1.8">
+
+          <details style="border:1px solid #e8d5a0;border-radius:6px;margin-bottom:6px;overflow:hidden">
+            <summary style="padding:8px 12px;font-weight:600;cursor:pointer;background:#fdf8ec;font-size:12.5px;list-style:none;color:#6b4a00">🎯 Captação de Clientes</summary>
+            <div style="padding:10px 14px;font-size:12px;line-height:1.8;color:#444">
+              <ul style="margin:0;padding-left:16px">
+                <li>Prospecção ativa: networking, indicações, redes sociais</li>
+                <li>Apresentação de propostas e orçamentos</li>
+                <li>Construção e manutenção de portfólio</li>
+                <li>Follow-up com leads e clientes antigos</li>
+                <li>Participação em eventos e comunidades da área</li>
+              </ul>
+            </div>
+          </details>
+
+          <details style="border:1px solid #e8d5a0;border-radius:6px;margin-bottom:6px;overflow:hidden">
+            <summary style="padding:8px 12px;font-weight:600;cursor:pointer;background:#fdf8ec;font-size:12.5px;list-style:none;color:#6b4a00">🔧 Entrega dos Serviços</summary>
+            <div style="padding:10px 14px;font-size:12px;line-height:1.8;color:#444">
+              <ul style="margin:0;padding-left:16px">
+                <li>Execução do trabalho técnico ou especializado</li>
+                <li>Comunicação contínua com o cliente</li>
+                <li>Cumprimento de prazos e entregas</li>
+                <li>Revisões e ajustes conforme necessário</li>
+                <li>Emissão de notas fiscais e recibos</li>
+              </ul>
+            </div>
+          </details>
+
+          <details style="border:1px solid #e8d5a0;border-radius:6px;margin-bottom:6px;overflow:hidden">
+            <summary style="padding:8px 12px;font-weight:600;cursor:pointer;background:#fdf8ec;font-size:12.5px;list-style:none;color:#6b4a00">💰 Gestão Financeira</summary>
+            <div style="padding:10px 14px;font-size:12px;line-height:1.8;color:#444">
+              <ul style="margin:0;padding-left:16px">
+                <li>Controle de entradas e saídas mensais</li>
+                <li>Separação de conta pessoal e conta do negócio</li>
+                <li>Reserva de emergência (recomenda-se 3–6 meses de custos)</li>
+                <li>Pagamento de impostos e contribuições (INSS, DAS-MEI)</li>
+                <li>Planejamento de precificação considerando todos os custos</li>
+              </ul>
+            </div>
+          </details>
+
+          <details style="border:1px solid #e8d5a0;border-radius:6px;margin-bottom:6px;overflow:hidden">
+            <summary style="padding:8px 12px;font-weight:600;cursor:pointer;background:#fdf8ec;font-size:12.5px;list-style:none;color:#6b4a00">🗂️ Organização e Administração</summary>
+            <div style="padding:10px 14px;font-size:12px;line-height:1.8;color:#444">
+              <ul style="margin:0;padding-left:16px">
+                <li>Gestão de agenda e prioridades</li>
+                <li>Contratos e documentação com clientes</li>
+                <li>Organização de arquivos e registros</li>
+                <li>Avaliação periódica de metas e resultados</li>
+              </ul>
+            </div>
+          </details>
+
+          <details style="border:1px solid #e8d5a0;border-radius:6px;margin-bottom:6px;overflow:hidden">
+            <summary style="padding:8px 12px;font-weight:600;cursor:pointer;background:#fdf8ec;font-size:12.5px;list-style:none;color:#6b4a00">📣 Marketing e Visibilidade</summary>
+            <div style="padding:10px 14px;font-size:12px;line-height:1.8;color:#444">
+              <ul style="margin:0;padding-left:16px">
+                <li>Produção de conteúdo nas redes sociais</li>
+                <li>Manutenção de site ou perfil profissional</li>
+                <li>Coleta e divulgação de depoimentos de clientes</li>
+                <li>Parcerias estratégicas com outros profissionais</li>
+              </ul>
+            </div>
+          </details>
+
+          <details style="border:1px solid #e8d5a0;border-radius:6px;margin-bottom:6px;overflow:hidden">
+            <summary style="padding:8px 12px;font-weight:600;cursor:pointer;background:#fdf8ec;font-size:12.5px;list-style:none;color:#6b4a00">📚 Aprendizado Contínuo</summary>
+            <div style="padding:10px 14px;font-size:12px;line-height:1.8;color:#444">
+              <ul style="margin:0;padding-left:16px">
+                <li>Atualização técnica na área de atuação</li>
+                <li>Desenvolvimento de habilidades de negócios e gestão</li>
+                <li>Participação em cursos, mentorias e comunidades</li>
+                <li>Leitura de tendências do mercado</li>
+              </ul>
+            </div>
+          </details>
+
+          <details style="border:1px solid #e8d5a0;border-radius:6px;overflow:hidden">
+            <summary style="padding:8px 12px;font-weight:600;cursor:pointer;background:#fdf8ec;font-size:12.5px;list-style:none;color:#6b4a00">🧩 Tomada de Decisão</summary>
+            <div style="padding:10px 14px;font-size:12px;line-height:1.8;color:#444">
+              <ul style="margin:0;padding-left:16px">
+                <li>Definição de nicho e posicionamento</li>
+                <li>Escolha de clientes e projetos</li>
+                <li>Decisões sobre expansão, parcerias ou contratações</li>
+                <li>Avaliação de quando formalizar ou mudar de modelo</li>
+              </ul>
+            </div>
+          </details>
+
+        </div>
+      </details>
+
+      <!-- AMBIENTE E PROGRESSÃO -->
+      <details style="border:1px solid #f4c77a;border-radius:8px;margin:6px 0;overflow:hidden">
+        <summary style="padding:10px 14px;font-weight:700;font-size:13px;color:#8a5a00;cursor:pointer;background:#fffbf0;list-style:none">🏠 Ambiente e Progressão de Carreira</summary>
+        <div style="padding:14px 16px;font-size:12.5px;line-height:1.8;color:#444">
+          <p style="margin-bottom:8px"><strong>Ambiente:</strong> Flexível — pode ser home office, coworking, consultório, escritório próprio ou itinerante (vai até o cliente). O ambiente reflete diretamente as escolhas do profissional.</p>
+          <p style="margin-bottom:8px"><strong>Progressão:</strong> Não há hierarquia tradicional. O crescimento acontece por meio de:</p>
+          <ul style="margin:0 0 8px;padding-left:16px">
+            <li>Aumento da carteira de clientes e do valor cobrado</li>
+            <li>Especialização em nichos mais valorizados</li>
+            <li>Transição de autônomo solo para pequena empresa com equipe</li>
+            <li>Criação de produtos digitais (cursos, e-books, mentorias em grupo)</li>
+            <li>Parcerias e expansão para novos mercados</li>
+          </ul>
+        </div>
+      </details>
+
+      <!-- MEI vs PROFISSIONAL LIBERAL vs AUTÔNOMO -->
+      <details style="border:1px solid #f4c77a;border-radius:8px;margin:6px 0;overflow:hidden">
+        <summary style="padding:10px 14px;font-weight:700;font-size:13px;color:#8a5a00;cursor:pointer;background:#fffbf0;list-style:none">📋 Autônomo × Profissional Liberal × MEI</summary>
+        <div style="padding:14px 16px;font-size:12.5px;line-height:1.8;color:#444">
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:12px">
+              <thead>
+                <tr style="background:#fffbf0">
+                  <th style="border:1px solid #f4c77a;padding:8px 10px;text-align:left;color:#6b4a00">Característica</th>
+                  <th style="border:1px solid #f4c77a;padding:8px 10px;text-align:left;color:#6b4a00">Autônomo</th>
+                  <th style="border:1px solid #f4c77a;padding:8px 10px;text-align:left;color:#6b4a00">Prof. Liberal</th>
+                  <th style="border:1px solid #f4c77a;padding:8px 10px;text-align:left;color:#6b4a00">MEI</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">CNPJ</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">Não obrigatório</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">Não obrigatório</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">Sim (simplificado)</td>
+                </tr>
+                <tr style="background:#fdf8ec">
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">Conselho de classe</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">Depende da área</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">Obrigatório</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">Não se aplica</td>
+                </tr>
+                <tr>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">Limite de faturamento</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">Sem limite</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">Sem limite</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">R$ 81.000/ano</td>
+                </tr>
+                <tr style="background:#fdf8ec">
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">Emite nota fiscal</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">Recibo / NFS-e</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">NFS-e</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">NFS-e / NF</td>
+                </tr>
+                <tr>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">Contribuição INSS</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">20% facultativo</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">20% obrigatório</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">DAS fixo mensal (~R$76)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p style="font-size:11.5px;color:#888;margin-top:8px">* Valores de referência — consulte um contador para sua situação específica.</p>
+        </div>
+      </details>
+
+      <!-- QUEM PODE SER MEI -->
+      <details style="border:1px solid #f4c77a;border-radius:8px;margin:6px 0;overflow:hidden">
+        <summary style="padding:10px 14px;font-weight:700;font-size:13px;color:#8a5a00;cursor:pointer;background:#fffbf0;list-style:none">🏷️ Quem Pode (e Não Pode) Ser MEI</summary>
+        <div style="padding:14px 16px;font-size:12.5px;line-height:1.75;color:#444">
+
+          <p style="margin-bottom:10px">O MEI é voltado para atividades de <strong>comércio, indústria e serviços</strong> com faturamento anual até <strong>R$ 81.000</strong>. Profissões que exigem registro em conselho de classe <strong>não podem</strong> ser MEI.</p>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+            <div style="background:#e8f5e9;border:1.5px solid #a8d5c2;border-radius:8px;padding:12px 14px">
+              <div style="font-weight:700;font-size:12px;color:#2A6B4A;margin-bottom:8px">✅ Podem ser MEI</div>
+              <div style="display:flex;flex-wrap:wrap;gap:5px">
+                ${['Cabeleireiro(a)','Manicure','Eletricista','Encanador','Marceneiro','Pedreiro','Costureira','Fotógrafo','Motorista','Personal Trainer','Artesão','Vendedor ambulante','Técnico em informática','Maquiador(a)','Designer gráfico (sem reg.)','Açougueiro','Doceiro(a)','Jardineiro'].map(d=>`<span style="background:#f0fbf5;border:1px solid #a8d5c2;border-radius:14px;padding:2px 9px;font-size:11px;color:#1e5c3a">${d}</span>`).join('')}
+              </div>
+            </div>
+            <div style="background:#fff5f5;border:1.5px solid #f4a7a7;border-radius:8px;padding:12px 14px">
+              <div style="font-weight:700;font-size:12px;color:#a00;margin-bottom:8px">❌ Não podem ser MEI</div>
+              <div style="display:flex;flex-wrap:wrap;gap:5px">
+                ${['Psicólogo(a)','Médico(a)','Advogado(a)','Engenheiro(a)','Arquiteto(a)','Nutricionista','Fisioterapeuta','Farmacêutico(a)','Contador(a)','Enfermeiro(a)','Veterinário(a)','Fonoaudiólogo(a)','Assistente Social','Biólogo(a)'].map(d=>`<span style="background:#fff0f0;border:1px solid #f4a7a7;border-radius:14px;padding:2px 9px;font-size:11px;color:#900">${d}</span>`).join('')}
+              </div>
+              <p style="font-size:11px;color:#888;margin-top:8px;margin-bottom:0">Essas profissões exigem registro em conselho de classe e devem atuar como <em>profissional liberal</em> ou via empresa (ME, LTDA).</p>
+            </div>
+          </div>
+
+          <details style="border:1px solid #e8d5a0;border-radius:6px;overflow:hidden">
+            <summary style="padding:8px 12px;font-weight:600;cursor:pointer;background:#fdf8ec;font-size:12px;list-style:none;color:#6b4a00">📌 Como abrir um MEI (passo a passo)</summary>
+            <div style="padding:10px 14px;font-size:12px;line-height:1.8;color:#444">
+              <ol style="margin:0;padding-left:18px">
+                <li>Acesse o Portal do Empreendedor (gov.br/mei)</li>
+                <li>Faça login com sua conta gov.br</li>
+                <li>Selecione a atividade econômica (CNAE) que deseja exercer</li>
+                <li>Preencha os dados pessoais e o endereço do negócio</li>
+                <li>Gere e imprima o CCMEI (certificado de registro)</li>
+                <li>Abra uma conta bancária PJ (opcional, mas recomendado)</li>
+                <li>Emita o DAS mensalmente e pague até o dia 20 de cada mês</li>
+                <li>Entregue a DASN-SIMEI anualmente (declaração anual — gratuita)</li>
+              </ol>
+            </div>
+          </details>
+
+        </div>
+      </details>
+
+      <!-- HABILIDADES -->
+      <div style="margin:14px 0 6px">
+        <div style="font-weight:700;font-size:13px;color:#8a5a00;margin-bottom:8px">🧠 Habilidades Importantes</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          ${['Autogestão e disciplina','Comunicação com clientes','Negociação','Planejamento financeiro','Marketing pessoal','Resiliência','Proatividade','Organização','Networking','Visão de negócio','Adaptabilidade','Criatividade','Gestão do tempo','Precificação'].map(d=>`<span style="background:#fffbf0;border:1.5px solid #f4c77a;border-radius:20px;padding:3px 10px;font-size:11.5px;font-weight:600;color:#8a5a00">${d}</span>`).join('')}
+        </div>
       </div>
 
-      <h4 style="color:#8a5a00;font-size:13px;margin:14px 0 8px">🏗️ Empreendedor</h4>
-      <p style="font-size:13px;margin-bottom:10px">Cria e gere <strong>seu próprio negócio</strong>, assumindo os riscos e os benefícios do empreendimento. Pode começar pequeno (MEI, ME) e crescer gradualmente.</p>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
-        ${['Dono de restaurante','Startup de tecnologia','Loja online','Agência de marketing','Clínica de saúde','Escola de idiomas','Estúdio de design','Serviço de delivery'].map(d=>`<span style="background:#fffbf0;border:1.5px solid #f4c77a;border-radius:20px;padding:3px 10px;font-size:11.5px;font-weight:600;color:#8a5a00">${d}</span>`).join('')}
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <!-- VANTAGENS E DESAFIOS -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0">
         <div style="background:#e8f5e9;border:1.5px solid #a8d5c2;border-radius:8px;padding:12px 14px">
           <div style="font-weight:700;font-size:12.5px;color:#2A6B4A;margin-bottom:6px">✅ Vantagens</div>
           <ul style="margin:0;padding-left:16px;font-size:12px;line-height:1.8">
-            <li>Autonomia e liberdade</li>
-            <li>Flexibilidade de horário</li>
-            <li>Potencial de ganho variável</li>
-            <li>Construção de patrimônio próprio</li>
-            <li>Possibilidade de impactar muitas pessoas</li>
+            <li>Autonomia total sobre o trabalho</li>
+            <li>Flexibilidade de horário e local</li>
+            <li>Potencial de ganho acima do mercado CLT</li>
             <li>Variedade de projetos e clientes</li>
+            <li>Possibilidade de escolher com quem trabalhar</li>
+            <li>Desenvolvimento de visão empreendedora</li>
+            <li>Crescimento proporcional ao esforço</li>
           </ul>
         </div>
         <div style="background:#fff5f5;border:1.5px solid #f4a7a7;border-radius:8px;padding:12px 14px">
           <div style="font-weight:700;font-size:12.5px;color:#a00;margin-bottom:6px">⚠️ Desafios</div>
           <ul style="margin:0;padding-left:16px;font-size:12px;line-height:1.8">
             <li>Renda variável e instável no início</li>
+            <li>Sem férias, 13º ou FGTS automáticos</li>
             <li>Responsabilidade total pelo negócio</li>
-            <li>Sem benefícios CLT automáticos</li>
+            <li>Captação contínua de novos clientes</li>
             <li>Necessidade de autogestão e disciplina</li>
-            <li>Captação contínua de clientes</li>
-            <li>Riscos financeiros</li>
+            <li>Isolamento social (especialmente home office)</li>
+            <li>Riscos financeiros sem rede de proteção</li>
           </ul>
         </div>
       </div>
+
+      <!-- PERFIL IDEAL -->
+      <div style="background:linear-gradient(135deg,#fffbf0,#fff8e1);border:2px solid #f4c77a;border-radius:10px;padding:14px 16px;margin-top:4px">
+        <div style="font-weight:700;font-size:13px;color:#8a5a00;margin-bottom:8px">👤 Perfil que Combina com essa Rota</div>
+        <p style="font-size:12.5px;line-height:1.75;margin-bottom:8px;color:#444">Pessoas que têm <strong>vontade de ser o próprio chefe</strong>, valorizam a liberdade mais do que a segurança, têm tolerância à incerteza e disposição para assumir riscos calculados. Geralmente têm forte <strong>orientação para resultados</strong>, gostam de criar soluções e não se adaptam bem a ambientes com muitas regras ou hierarquias rígidas.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:5px">
+          ${['Independente','Proativo(a)','Criativo(a)','Resiliente','Autodidata','Orientado(a) a resultados','Gosta de desafios','Tolerante à incerteza','Comunicativo(a)'].map(d=>`<span style="background:#fff3d0;border:1px solid #f4c77a;border-radius:14px;padding:3px 10px;font-size:11.5px;color:#7a4a00;font-weight:600">${d}</span>`).join('')}
+        </div>
+      </div>
+
     </div>
   </details>
 
