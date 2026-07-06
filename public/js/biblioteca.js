@@ -769,9 +769,23 @@ tr[data-desc] .mp-pnome:hover{color:#4527a0;text-decoration:underline}
       <h4 style="color:var(--plum);font-size:14px;margin:0 0 8px">O que é uma rotina corporativa?</h4>
       <p>Quando falamos que uma pessoa trabalha no <strong>mercado corporativo</strong>, significa que ela atua dentro de uma empresa (pequena, média ou grande), ocupando um cargo e fazendo parte de uma equipe que trabalha para atingir os objetivos do negócio.</p>
       <p>A rotina corporativa costuma ser mais estruturada do que em outros tipos de trabalho. Existem metas, processos, responsabilidades definidas, líderes, colegas de equipe e uma organização clara sobre quem faz o quê.</p>
-      <p>Em vez de trabalhar de forma totalmente independente, o profissional normalmente faz parte de um departamento, como:</p>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 14px">
-        ${['Marketing','Recursos Humanos','Financeiro','Tecnologia','Comercial','Engenharia','Jurídico','Comunicação','Operações','Pesquisa e Desenvolvimento','Logística','Atendimento ao Cliente','Produto'].map(d=>`<span style="background:#f5f0f7;border:1.5px solid #c8a8d5;border-radius:20px;padding:3px 10px;font-size:11.5px;font-weight:600;color:var(--plum)">${d}</span>`).join('')}
+      <p>Em vez de trabalhar de forma totalmente independente, o profissional normalmente faz parte de um departamento. <strong>Clique em cada um para saber o que faz:</strong></p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0 14px">
+        ${[
+          ['Marketing','Promove a empresa, seus produtos e serviços. Trabalha com análise de mercado, criação de campanhas, gestão de redes sociais, branding, publicidade e estratégias para atrair e fidelizar clientes.'],
+          ['Recursos Humanos','Cuida das pessoas da organização: recrutamento e seleção, integração de novos colaboradores, treinamento, benefícios, clima organizacional e avaliação de desempenho.'],
+          ['Financeiro','Gerencia o dinheiro da empresa: controle de despesas e receitas, fluxo de caixa, pagamentos, cobranças, demonstrações financeiras e planejamento orçamentário.'],
+          ['Tecnologia','Desenvolve e mantém sistemas, softwares e infraestrutura digital. Pode incluir programação, análise de dados, suporte técnico, segurança da informação e inovação tecnológica.'],
+          ['Comercial / Vendas','Negocia e vende os produtos ou serviços da empresa. Trabalha com prospecção de clientes, gestão de carteira, metas de vendas e relacionamento pós-venda.'],
+          ['Engenharia / Produção','Projeta, planeja e controla processos de fabricação ou desenvolvimento. Atua na otimização de operações, controle de qualidade, manutenção e inovação de processos.'],
+          ['Jurídico','Cuida dos assuntos legais: analisa contratos, garante conformidade com leis, representa a empresa em processos judiciais e orienta sobre riscos trabalhistas e regulatórios.'],
+          ['Comunicação','Gerencia a imagem e reputação da empresa: assessoria de imprensa, relações públicas, comunicação interna, eventos, patrocínios e relacionamento com a mídia.'],
+          ['Operações','Garante o funcionamento eficiente do dia a dia da empresa: coordena processos, recursos, fluxos de trabalho e monitora indicadores de desempenho operacional.'],
+          ['Pesquisa e Desenvolvimento','Inova criando novos produtos, serviços ou processos. Realiza pesquisas, testes, protótipos e estudos para manter a empresa competitiva e atualizada.'],
+          ['Logística','Gerencia o fluxo de produtos desde o fornecedor até o cliente: controla estoque, transporte, armazenagem, distribuição e cadeia de suprimentos.'],
+          ['Atendimento ao Cliente','Relaciona-se diretamente com clientes para resolver dúvidas e problemas, garantindo satisfação. Pode atuar em SAC, suporte técnico, ouvidoria ou pós-venda.'],
+          ['Produto','Define o que a empresa vai criar e como: pesquisa de usuários, definição de funcionalidades, priorização de demandas e interface entre clientes e equipes de desenvolvimento.'],
+        ].map(([nome,desc])=>`<details style="border:1.5px solid #c8a8d5;border-radius:8px;overflow:hidden"><summary style="padding:7px 12px;font-weight:700;font-size:12px;color:var(--plum);cursor:pointer;background:#f5f0f7;list-style:none">${nome}</summary><div style="padding:8px 12px;font-size:12px;line-height:1.65;color:#444;background:#faf8fc">${desc}</div></details>`).join('')}
       </div>
 
       <hr style="border:none;border-top:1px solid #eee;margin:14px 0">
