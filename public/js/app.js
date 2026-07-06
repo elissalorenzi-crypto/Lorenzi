@@ -3800,9 +3800,13 @@ async function salvarDataPagamento(agId, data) {
     const pago = data ? 1 : 0;
     await api('PUT', `/agendamentos/${agId}`, { ...ag, data_pagamento: data || null, pago });
     toast(data ? '💰 Pagamento registrado' : 'Data de recebimento removida');
-    refreshAll();
     const dv = document.getElementById('pacientes-detail-view');
-    if (dv && dv.style.display !== 'none' && ag.paciente_id) verDetalhePaciente(ag.paciente_id);
+    const detailWasOpen = dv && dv.style.display !== 'none';
+    await refreshAll();
+    if (detailWasOpen && ag.paciente_id) {
+      await verDetalhePaciente(ag.paciente_id);
+      document.getElementById('pac-historico-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   } catch(e) {
     toast('Erro ao salvar data', 'error');
   }
