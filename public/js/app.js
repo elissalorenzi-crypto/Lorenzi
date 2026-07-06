@@ -1142,7 +1142,7 @@ async function enviarRotasProfissionais(id) {
     const base = location.origin;
     const p = await api('GET', `/pacientes/${id}`);
     const nome = p.nome, whatsapp = p.whatsapp || '';
-    const url = base + '/rotas-profissionais/';
+    const url = base + '/conhecendo-as-rotas-profissionais/';
     const waNome = p.apelido || nome.split(' ')[0];
     const waMsg = encodeURIComponent('Olá, ' + waNome + '! 😊\nSegue o link do material sobre as Rotas Profissionais:\n' + url + '\n\nExplore cada rota e observe qual delas mais combina com você. Qualquer dúvida me chame! 🌟');
     const waLink = whatsapp ? 'https://wa.me/' + toWaNum(whatsapp) + '?text=' + waMsg : '';
