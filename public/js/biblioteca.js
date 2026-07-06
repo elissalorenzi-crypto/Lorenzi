@@ -1180,50 +1180,63 @@ tr[data-desc] .mp-pnome:hover{color:#4527a0;text-decoration:underline}
         </div>
       </details>
 
-      <!-- MEI vs PROFISSIONAL LIBERAL vs AUTÔNOMO -->
+      <!-- COMPARATIVO FORMAS JURÍDICAS -->
       <details style="border:1px solid #f4c77a;border-radius:8px;margin:6px 0;overflow:hidden">
-        <summary style="padding:10px 14px;font-weight:700;font-size:13px;color:#8a5a00;cursor:pointer;background:#fffbf0;list-style:none">📋 Autônomo × Profissional Liberal × MEI</summary>
+        <summary style="padding:10px 14px;font-weight:700;font-size:13px;color:#8a5a00;cursor:pointer;background:#fffbf0;list-style:none">📋 Autônomo × MEI × Microempresa × Outros</summary>
         <div style="padding:14px 16px;font-size:12.5px;line-height:1.8;color:#444">
           <div style="overflow-x:auto">
-            <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <table style="width:100%;border-collapse:collapse;font-size:11.5px">
               <thead>
                 <tr style="background:#fffbf0">
                   <th style="border:1px solid #f4c77a;padding:8px 10px;text-align:left;color:#6b4a00">Característica</th>
-                  <th style="border:1px solid #f4c77a;padding:8px 10px;text-align:left;color:#6b4a00">Autônomo</th>
-                  <th style="border:1px solid #f4c77a;padding:8px 10px;text-align:left;color:#6b4a00">Prof. Liberal</th>
+                  <th style="border:1px solid #f4c77a;padding:8px 10px;text-align:left;color:#6b4a00">Autônomo (PF)</th>
                   <th style="border:1px solid #f4c77a;padding:8px 10px;text-align:left;color:#6b4a00">MEI</th>
+                  <th style="border:1px solid #f4c77a;padding:8px 10px;text-align:left;color:#6b4a00">Microempresa (ME)</th>
+                  <th style="border:1px solid #f4c77a;padding:8px 10px;text-align:left;color:#6b4a00">Outros (SLU, LTDA…)</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td style="border:1px solid #f4c77a;padding:7px 10px">CNPJ</td>
-                  <td style="border:1px solid #f4c77a;padding:7px 10px">Não obrigatório</td>
-                  <td style="border:1px solid #f4c77a;padding:7px 10px">Não obrigatório</td>
-                  <td style="border:1px solid #f4c77a;padding:7px 10px">Sim (simplificado)</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px;font-weight:600">CNPJ</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">Não necessário</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">Sim (gratuito)</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">Sim</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">Sim</td>
                 </tr>
                 <tr style="background:#fdf8ec">
-                  <td style="border:1px solid #f4c77a;padding:7px 10px">Conselho de classe</td>
-                  <td style="border:1px solid #f4c77a;padding:7px 10px">Depende da área</td>
-                  <td style="border:1px solid #f4c77a;padding:7px 10px">Obrigatório</td>
-                  <td style="border:1px solid #f4c77a;padding:7px 10px">Não se aplica</td>
-                </tr>
-                <tr>
-                  <td style="border:1px solid #f4c77a;padding:7px 10px">Limite de faturamento</td>
-                  <td style="border:1px solid #f4c77a;padding:7px 10px">Sem limite</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px;font-weight:600">Limite de faturamento</td>
                   <td style="border:1px solid #f4c77a;padding:7px 10px">Sem limite</td>
                   <td style="border:1px solid #f4c77a;padding:7px 10px">R$ 81.000/ano</td>
-                </tr>
-                <tr style="background:#fdf8ec">
-                  <td style="border:1px solid #f4c77a;padding:7px 10px">Emite nota fiscal</td>
-                  <td style="border:1px solid #f4c77a;padding:7px 10px">Recibo / NFS-e</td>
-                  <td style="border:1px solid #f4c77a;padding:7px 10px">NFS-e</td>
-                  <td style="border:1px solid #f4c77a;padding:7px 10px">NFS-e / NF</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">Até R$ 360.000/ano (Simples)</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">Sem limite pela forma jurídica</td>
                 </tr>
                 <tr>
-                  <td style="border:1px solid #f4c77a;padding:7px 10px">Contribuição INSS</td>
-                  <td style="border:1px solid #f4c77a;padding:7px 10px">20% facultativo</td>
-                  <td style="border:1px solid #f4c77a;padding:7px 10px">20% obrigatório</td>
-                  <td style="border:1px solid #f4c77a;padding:7px 10px">DAS fixo mensal (~R$76)</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px;font-weight:600">Emite nota fiscal</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">Recibo / RPA</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">NFS-e / NF</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">NFS-e / NF</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">NFS-e / NF</td>
+                </tr>
+                <tr style="background:#fdf8ec">
+                  <td style="border:1px solid #f4c77a;padding:7px 10px;font-weight:600">Impostos / Contribuição</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">INSS 20% (facultativo)</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">DAS fixo (~R$76/mês)</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">Simples Nacional ou outros regimes</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">Simples Nacional ou outros regimes</td>
+                </tr>
+                <tr>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px;font-weight:600">Funcionários</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">Nenhum</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">Até 1</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">Até 9 (comércio/indústria)</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">Sem restrição</td>
+                </tr>
+                <tr style="background:#fdf8ec">
+                  <td style="border:1px solid #f4c77a;padding:7px 10px;font-weight:600">Sócios</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">Não</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">Não</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">Opcional</td>
+                  <td style="border:1px solid #f4c77a;padding:7px 10px">Sim (LTDA) / Não (SLU)</td>
                 </tr>
               </tbody>
             </table>
