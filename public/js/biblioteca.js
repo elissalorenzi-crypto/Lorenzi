@@ -919,9 +919,32 @@ tr[data-desc] .mp-pnome:hover{color:#4527a0;text-decoration:underline}
       <p>A <strong>rota do serviço público</strong> é um caminho profissional voltado para trabalhar em órgãos e instituições do Estado, prestando serviços que beneficiam diretamente a população.</p>
       <p>Ao contrário das empresas privadas, os órgãos públicos existem para oferecer serviços essenciais à sociedade, como saúde, educação, segurança, justiça, infraestrutura, fiscalização, pesquisa científica e administração pública.</p>
 
-      <h4 style="color:#2A6B4A;font-size:13px;margin:14px 0 8px">🏗️ Onde o servidor público pode atuar?</h4>
-      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px">
-        ${['Prefeituras','Governos estaduais','Governo Federal','Tribunais','Ministérios','Escolas públicas','Universidades públicas','Hospitais públicos','Delegacias','Agências reguladoras','Ministério Público','Defensorias','Receita Federal','Banco Central','INSS','IBGE','Polícia Federal','Polícia Civil','Corpo de Bombeiros','Bancos públicos','Institutos de pesquisa'].map(d=>`<span style="background:#f0fdf4;border:1.5px solid #a8d5c2;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;color:#2A6B4A">${d}</span>`).join('')}
+      <h4 style="color:#2A6B4A;font-size:13px;margin:14px 0 4px">🏗️ Onde o servidor público pode atuar?</h4>
+      <p style="font-size:12px;color:#555;margin-bottom:8px">Clique em cada local para saber mais:</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px">
+        ${[
+          ['Prefeituras','Administração municipal — responsável por serviços locais como limpeza urbana, transporte, saúde básica (UBS), educação fundamental, fiscalização, licenciamentos e assistência social.'],
+          ['Governos estaduais','Administração do estado — cuida de segurança pública (PM e PC), saúde de média e alta complexidade, ensino médio, infraestrutura e desenvolvimento econômico regional.'],
+          ['Governo Federal','Formulação e execução de políticas nacionais por meio de ministérios, autarquias e fundações — saúde, educação, previdência, defesa, ciência, economia, relações exteriores, entre outros.'],
+          ['Tribunais','Poder Judiciário — onde são julgados processos civis, criminais, trabalhistas, eleitorais e administrativos. Inclui STF, STJ, TRF, TRT, TRE e tribunais estaduais.'],
+          ['Ministérios','Órgãos do Poder Executivo Federal que formulam e implementam políticas públicas em áreas específicas: Saúde, Educação, Justiça, Fazenda, Meio Ambiente, Agricultura, entre outros.'],
+          ['Escolas públicas','Ensino fundamental e médio mantido pelo poder público municipal ou estadual. Professores e técnicos são concursados e atendem crianças e adolescentes em todo o país.'],
+          ['Universidades públicas','Ensino superior, pesquisa e extensão custeados pelo Estado. Exemplos: USP, UNICAMP, UFRJ, UFMG. Carreiras: docentes (professores) e técnicos administrativos em educação.'],
+          ['Hospitais públicos','Atendimento de saúde pelo SUS: urgência, internação, cirurgias, especialidades. Inclui hospitais universitários, UPAs e hospitais estaduais e municipais.'],
+          ['Delegacias','Unidades da Polícia Civil ou Federal onde são registrados boletins de ocorrência, investigados crimes e conduzidos inquéritos policiais.'],
+          ['Agências reguladoras','Fiscalizam setores estratégicos em nome do Estado. Exemplos: ANATEL (telecom), ANEEL (energia), ANVISA (saúde), ANAC (aviação), ANS (planos de saúde).'],
+          ['Ministério Público','Defende a sociedade, fiscaliza a aplicação das leis e combate a corrupção. Propõe ações judiciais em favor do interesse público. Carreiras: Promotor e Procurador de Justiça.'],
+          ['Defensorias','A Defensoria Pública presta assistência jurídica gratuita a pessoas que não podem pagar advogado. Carreira: Defensor(a) Público(a) — ingresso por concurso.'],
+          ['Receita Federal','Fiscaliza e arrecada impostos federais, combate sonegação e gerencia o comércio exterior (aduana). Carreiras: Auditor-Fiscal e Analista Tributário da Receita Federal.'],
+          ['Banco Central','Regula o sistema financeiro nacional, controla a inflação, emite moeda e fiscaliza bancos e instituições financeiras. Carreira: Analista do Banco Central — concurso muito concorrido.'],
+          ['INSS','Instituto Nacional do Seguro Social — responsável pelo pagamento de aposentadorias, pensões, auxílios e benefícios previdenciários. Carreiras: Técnico e Analista do Seguro Social.'],
+          ['IBGE','Instituto Brasileiro de Geografia e Estatística — realiza censos e pesquisas sobre a população e a economia brasileira. Carreiras: Analista e Técnico de Pesquisa e Informações Geográficas.'],
+          ['Polícia Federal','Investigação de crimes federais: tráfico de drogas, crimes cibernéticos, corrupção e controle das fronteiras. Carreiras: Delegado, Perito, Agente e Escrivão Federal.'],
+          ['Polícia Civil','Investigação de crimes no âmbito estadual e elaboração de inquéritos policiais. Carreiras: Delegado, Investigador, Escrivão e Perito Civil.'],
+          ['Corpo de Bombeiros','Combate a incêndios, resgate de vítimas, atendimento a emergências e prevenção de acidentes. Carreira militar estadual com treinamento técnico especializado.'],
+          ['Bancos públicos','Banco do Brasil, Caixa Econômica Federal, BNDES e bancos estaduais — oferecem crédito e serviços financeiros com foco em desenvolvimento social, habitação e políticas públicas.'],
+          ['Institutos de pesquisa','Produção de conhecimento científico em áreas estratégicas. Exemplos: FIOCRUZ (saúde), EMBRAPA (agropecuária), INPE (espaço e clima), IPEA (políticas econômicas e sociais).'],
+        ].map(([nome,desc])=>`<details style="border:1.5px solid #a8d5c2;border-radius:8px;overflow:hidden"><summary style="padding:7px 12px;font-weight:700;font-size:12px;color:#2A6B4A;cursor:pointer;background:#f0fdf4;list-style:none">${nome}</summary><div style="padding:8px 12px;font-size:12px;line-height:1.65;color:#444;background:#f8fffe">${desc}</div></details>`).join('')}
       </div>
 
       <hr style="border:none;border-top:1px solid #eee;margin:14px 0">
