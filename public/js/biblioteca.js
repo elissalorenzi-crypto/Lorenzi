@@ -1482,6 +1482,43 @@ Para cada caminho apresente:
 `
           }
         ]
+      },
+      {
+        id: 'mapeando-profissoes',
+        nome: 'Mapeando as Profissões',
+        icone: '🗂️',
+        atividades: [
+          {
+            id: 'lista-profissoes',
+            titulo: 'Lista de Profissões',
+            subtitulo: 'Exploração e mapeamento de interesse',
+            icone: '📋',
+            conteudo: `
+<h3 style="color:var(--plum);margin-bottom:8px">📋 Lista de Profissões</h3>
+<p style="font-size:13px;color:#666;margin-bottom:18px">Atividade interativa enviada ao cliente para explorar e mapear profissões de interesse.</p>
+
+<div style="background:#f9f7fc;border:1.5px solid #d8c8e8;border-radius:12px;padding:18px 20px;margin-bottom:18px;font-size:13px;line-height:1.8;color:#333">
+  <p style="margin:0 0 12px"><strong>O que é:</strong> Uma lista com centenas de profissões organizadas por área. O cliente acessa pelo link, explora as profissões e marca as que despertam curiosidade ou interesse.</p>
+  <p style="margin:0 0 12px"><strong>Para que serve:</strong> Ampliar o repertório profissional do cliente, identificar profissões desconhecidas que podem ser relevantes para o perfil dele e trazer material para discussão nas sessões.</p>
+  <p style="margin:0"><strong>Como funciona:</strong> Você gera o link direto no perfil do cliente e envia pelo WhatsApp. As respostas ficam salvas no sistema e aparecem automaticamente no perfil do cliente.</p>
+</div>
+
+<div style="background:#e8f5e9;border:1.5px solid #a8d5c2;border-radius:10px;padding:14px 16px;margin-bottom:18px">
+  <p style="font-weight:700;font-size:13px;color:#2A6B4A;margin-bottom:10px">🚀 Como enviar ao cliente</p>
+  <ol style="margin:0;padding-left:20px;font-size:13px;line-height:2;color:#333">
+    <li>Vá até <strong>Clientes</strong> no menu lateral</li>
+    <li>Abra o perfil do cliente</li>
+    <li>Clique no botão <strong>📋 Enviar Lista de Profissões</strong></li>
+    <li>Copie o link ou clique em <strong>💬 Enviar pelo WhatsApp</strong></li>
+  </ol>
+</div>
+
+<div style="background:#fff9e6;border:1.5px solid #f4c77a;border-radius:10px;padding:14px 16px;font-size:13px;line-height:1.75;color:#6b4a00">
+  <strong>💡 Dica de uso:</strong> Peça ao cliente para marcar as profissões que <em>chamam atenção</em> — mesmo sem saber exatamente por quê. O objetivo é levantar dados brutos para análise, não tomar uma decisão. Quanto mais marcações, mais rico será o material para trabalhar em sessão.
+</div>
+`
+          }
+        ]
       }
     ]
   },
