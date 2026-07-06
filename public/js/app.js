@@ -1377,6 +1377,34 @@ async function verDetalhePaciente(id) {
         </div>
       </div>`;
   }
+
+  // Aviso se faltam menos de 2 sessões para o limite
+  if (p.total_sessoes) {
+    const realizadas = ags.filter(a => a.status === 'realizado').length;
+    const restantes = p.total_sessoes - realizadas;
+    if (restantes < 2) {
+      const nome = p.apelido || p.nome.split(' ')[0];
+      const msg = restantes <= 0
+        ? `<strong>${nome}</strong> já completou as <strong>${p.total_sessoes} sessões</strong> previstas.`
+        : `<strong>${nome}</strong> está a <strong>1 sessão</strong> de concluir as ${p.total_sessoes} previstas.`;
+      setTimeout(() => openModal(
+        '📊 Sessões quase concluídas',
+        `<p style="margin-bottom:12px">${msg}</p>
+         <p style="margin-bottom:16px">Deseja aumentar o número total de sessões?</p>
+         <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">Novo total:</label>
+         <input type="number" id="novo-total-sessoes" min="${p.total_sessoes + 1}" value="${p.total_sessoes + 10}"
+                style="width:120px;padding:6px 10px;border:1px solid #e0d5cb;border-radius:6px;font-size:14px">`,
+        async () => {
+          const novoTotal = Number(document.getElementById('novo-total-sessoes').value);
+          if (novoTotal > p.total_sessoes) {
+            await api('PUT', `/pacientes/${p.id}`, { ...p, total_sessoes: novoTotal });
+            toast(`Total de sessões atualizado para ${novoTotal}`);
+            verDetalhePaciente(p.id);
+          }
+        }
+      ), 400);
+    }
+  }
 }
 
 function voltarListaPacientes() {
