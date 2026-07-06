@@ -985,8 +985,28 @@ tr[data-desc] .mp-pnome:hover{color:#4527a0;text-decoration:underline}
 
       <hr style="border:none;border-top:1px solid #eee;margin:14px 0">
       <h4 style="color:#2A6B4A;font-size:13px;margin:0 0 8px">🗂️ Principais áreas do serviço público</h4>
-      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px">
-        ${['Administração Pública','Gestão','Educação','Saúde','Segurança Pública','Justiça','Fiscal e Tributária','Controle e Auditoria','Tecnologia da Informação','Meio Ambiente','Engenharia','Pesquisa Científica','Diplomacia','Comunicação','Cultura','Assistência Social','Bancos Públicos','Agências Reguladoras','Forças Armadas','Polícia','Corpo de Bombeiros'].map(a=>`<span style="background:#f0fdf4;border:1.5px solid #a8d5c2;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;color:#2A6B4A">${a}</span>`).join('')}
+      <p style="font-size:12px;color:#555;margin-bottom:8px">Clique em cada área para saber mais:</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px">
+        ${[
+          ['Administração Pública e Gestão','Coordena o funcionamento dos órgãos públicos: planejamento, organização, controle de recursos, gestão de equipes, contratações e execução orçamentária. Presente em todos os níveis — municipal, estadual e federal.'],
+          ['Educação','Abrange o ensino em escolas e universidades públicas, além de cargos de gestão pedagógica, supervisão, orientação educacional e formulação de políticas educacionais. Inclui professores, diretores e técnicos administrativos.'],
+          ['Saúde','Atuação em hospitais, UBS, CAPS, vigilâncias sanitária e epidemiológica. Inclui médicos, enfermeiros, psicólogos, fisioterapeutas, farmacêuticos, nutricionistas e agentes de saúde, entre outros.'],
+          ['Segurança Pública','Proteção dos cidadãos e manutenção da ordem. Inclui Polícia Civil, Polícia Militar, Polícia Federal, Polícia Rodoviária Federal, Guarda Municipal e Corpo de Bombeiros.'],
+          ['Forças Armadas','Defesa nacional e soberania do território. Inclui Exército, Marinha e Aeronáutica — com carreiras militares (oficiais e praças) e carreiras civis de apoio técnico e administrativo.'],
+          ['Justiça e Direito','Atuação no Poder Judiciário, Ministério Público, Defensorias e Procuradorias. Inclui magistrados, promotores, defensores, procuradores e servidores administrativos dos tribunais.'],
+          ['Fiscal e Tributária','Fiscalização de tributos, combate à sonegação, controle aduaneiro e arrecadação. Principais órgãos: Receita Federal, Secretarias de Fazenda estaduais e municipais.'],
+          ['Controle e Auditoria','Fiscaliza o uso dos recursos públicos, avalia programas de governo e investiga irregularidades. Principais órgãos: TCU, TCE, CGU e Controladorias estaduais e municipais.'],
+          ['Tecnologia da Informação','Desenvolve, mantém e protege sistemas e infraestruturas digitais dos órgãos públicos: desenvolvimento de software, segurança da informação, banco de dados, suporte e modernização digital.'],
+          ['Meio Ambiente','Fiscalização ambiental, licenciamento, conservação, pesquisa e formulação de políticas ambientais. Principais órgãos: IBAMA, ICMBio, INEA e secretarias ambientais estaduais e municipais.'],
+          ['Engenharia e Infraestrutura','Planejamento, execução e fiscalização de obras públicas: estradas, pontes, saneamento, edificações, energia, transporte e habitação. Presente em prefeituras, estados e governo federal.'],
+          ['Pesquisa Científica','Desenvolvimento de pesquisas em institutos como FIOCRUZ, EMBRAPA, INPE e universidades públicas. Inclui pesquisadores, técnicos de laboratório e docentes de carreira federal ou estadual.'],
+          ['Diplomacia','Representação do Brasil no exterior, negociações internacionais, emissão de vistos e proteção de brasileiros fora do país. Carreira de Diplomata (MRE) — ingresso pelo CACD, concurso altamente concorrido.'],
+          ['Comunicação','Produção de conteúdo, assessoria de imprensa, publicidade institucional e gestão de redes sociais nos órgãos públicos. Atua na divulgação de políticas, serviços e informações à população.'],
+          ['Cultura','Preservação do patrimônio histórico, fomento às artes, gestão de museus, arquivos e bibliotecas públicas, além de políticas culturais. Órgãos: MinC, IPHAN, Funarte e secretarias de cultura.'],
+          ['Assistência Social','Proteção de grupos vulneráveis: crianças, idosos, pessoas em situação de rua e famílias em pobreza. Baseada no SUAS (Sistema Único de Assistência Social), com atuação nos CRAS e CREAS.'],
+          ['Bancos Públicos','Banco do Brasil, Caixa Econômica Federal, BNDES e bancos estaduais. Oferecem crédito, financiamentos e serviços financeiros com foco em desenvolvimento econômico, habitação e políticas sociais.'],
+          ['Agências Reguladoras','Fiscalizam setores estratégicos da economia em nome do Estado. Exemplos: ANATEL (telecomunicações), ANEEL (energia elétrica), ANVISA (saúde), ANAC (aviação civil), ANS (planos de saúde).'],
+        ].map(([nome,desc])=>`<details style="border:1.5px solid #a8d5c2;border-radius:8px;overflow:hidden"><summary style="padding:7px 12px;font-weight:700;font-size:12px;color:#2A6B4A;cursor:pointer;background:#f0fdf4;list-style:none">${nome}</summary><div style="padding:8px 12px;font-size:12px;line-height:1.65;color:#444;background:#f8fffe">${desc}</div></details>`).join('')}
       </div>
 
       <h4 style="color:#2A6B4A;font-size:13px;margin:0 0 8px">🧩 Habilidades valorizadas</h4>
