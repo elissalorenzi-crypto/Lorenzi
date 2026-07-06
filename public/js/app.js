@@ -3806,7 +3806,7 @@ async function salvarStatusSessao(agId, status, pacienteId) {
     toast('Status atualizado');
 
     if (status === 'realizado') {
-      const diasPorFreq = { 'semanal': 7, '4x-mes': 7, '2x-mes': 14, '1x-mes': 30 };
+      const diasPorFreq = { '2x-mes': 14, '1x-mes': 30 };
       const p = await api('GET', `/pacientes/${pacienteId}`);
       const dias = diasPorFreq[p.frequencia];
       if (dias) {
