@@ -469,7 +469,7 @@ app.post('/api/agendamento-links/:token/reservar', (req, res) => {
 
     const conviteToken = db.createConvite(nome, cfg.valor_sessao_padrao || 0);
     const base = `${req.protocol}://${req.get('host')}`;
-    res.json({ success: true, contratoLink: `${base}/contratos/?token=${conviteToken}` });
+    res.json({ success: true, contratoLink: `${base}/contrato-orientacao-profissional/?token=${conviteToken}` });
   } catch(e) { erro(res, e); }
 });
 
@@ -575,7 +575,7 @@ app.post('/api/agenda-publica/reservar', async (req, res) => {
     // Agendamento e paciente só são criados após assinatura do contrato
     const conviteToken = db.createConvite(nome, cfg.valor_sessao_padrao || 0, data, null, hora);
     const base = `${req.protocol}://${req.get('host')}`;
-    res.json({ success: true, contratoLink: `${base}/contratos/?token=${conviteToken}` });
+    res.json({ success: true, contratoLink: `${base}/contrato-orientacao-profissional/?token=${conviteToken}` });
   } catch(e) { erro(res, e); }
 });
 
@@ -597,7 +597,7 @@ app.post('/api/convites', (req, res) => {
     const { nome_paciente, valor, data_inicio } = req.body;
     const token = db.createConvite(nome_paciente, valor, data_inicio);
     const base  = `${req.protocol}://${req.get('host')}`;
-    res.json({ token, link: `${base}/contratos/?token=${token}`, success: true });
+    res.json({ token, link: `${base}/contrato-orientacao-profissional/?token=${token}`, success: true });
   } catch(e) { erro(res, e); }
 });
 
