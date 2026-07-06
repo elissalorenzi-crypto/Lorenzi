@@ -1399,7 +1399,8 @@ async function verDetalhePaciente(id) {
           if (novoTotal > p.total_sessoes) {
             await api('PUT', `/pacientes/${p.id}`, { ...p, total_sessoes: novoTotal });
             toast(`Total de sessões atualizado para ${novoTotal}`);
-            verDetalhePaciente(p.id);
+            const ultimaSessao = [...ags].sort((a,b) => (b.data+b.hora).localeCompare(a.data+a.hora))[0];
+            abrirModalSerie(p.id, realizadas + 1, novoTotal, p.valor_sessao, ultimaSessao?.data || '', ultimaSessao?.hora || '08:00');
           }
         }
       ), 400);
@@ -3983,7 +3984,7 @@ async function salvarStatusSessao(agId, status, pacienteId) {
               if (novoTotal > p.total_sessoes) {
                 await api('PUT', `/pacientes/${pacienteId}`, { ...p, total_sessoes: novoTotal });
                 toast(`Total de sessões atualizado para ${novoTotal}`);
-                verDetalhePaciente(pacienteId);
+                abrirModalSerie(pacienteId, realizadas + 1, novoTotal, p.valor_sessao, ag.data, ag.hora);
               }
             }
           ), 600);
