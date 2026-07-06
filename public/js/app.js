@@ -4621,7 +4621,7 @@ const MODELO_DEFAULT = {
     { titulo: "Honorários", itens: [
       "__VALOR_SESSAO__",
       "O pagamento poderá ocorrer por sessão — realizado no mesmo dia da sessão — ou de forma mensal, em parcela única até o 5º dia útil do mês em que ocorrerão as sessões.",
-      "O pagamento deverá ser realizado via Pix, transferência ou depósito bancário.",
+      "O pagamento poderá ser realizado via Pix, transferência ou cartão de crédito.",
       "Os dados para pagamento serão disponibilizados pela psicóloga."
     ]},
     { titulo: "Atividades Entre Sessões", itens: [
