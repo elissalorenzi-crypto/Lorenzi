@@ -893,6 +893,7 @@ app.post('/api/nfse/emitir', async (req, res) => {
       valor_servicos:               total,
       iss_retido:                   true,
       aliquota,
+      aliquota_efetiva:             aliquota,
       discriminacao:                gerarDescricaoNfse(p, sessoes, cfg),
       item_lista_servico:           '041601',
       codigo_cnae:                  '8650005',
