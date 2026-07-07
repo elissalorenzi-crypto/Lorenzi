@@ -4255,18 +4255,19 @@ async function nfseVerStatus(ref) {
   const r = await api('GET', `/nfse/status/${encodeURIComponent(ref)}`);
   if (r?.error) return toast('Erro ao consultar: ' + r.error, 'error');
 
-  const pdfLink = r.link_pdf
-    ? `<a href="${r.link_pdf}" target="_blank" class="btn btn-primary btn-sm" style="margin-top:16px">📥 Baixar PDF</a>`
-    : '';
   const statusTxt = r.status || '—';
   const numero    = r.numero  || '—';
+  const botoes = [
+    r.link_pdf   ? `<a href="${r.link_pdf}"   target="_blank" class="btn btn-primary btn-sm">📥 Baixar PDF</a>` : '',
+    r.url_nfse   ? `<a href="${r.url_nfse}"   target="_blank" class="btn btn-outline btn-sm">🔗 Consulta Pública</a>` : '',
+  ].filter(Boolean).join(' ');
 
   openModal('🧾 Status da NFS-e', `
     <div style="display:flex;flex-direction:column;gap:10px">
       <div><strong>Referência:</strong> ${ref}</div>
       <div><strong>Número NF:</strong> ${numero}</div>
       <div><strong>Status Focus NFe:</strong> ${statusTxt}</div>
-      ${pdfLink}
+      ${botoes ? `<div style="display:flex;gap:8px;margin-top:8px">${botoes}</div>` : ''}
       ${r.dados ? `<details style="margin-top:8px"><summary style="cursor:pointer;font-size:12px;color:var(--muted)">Dados completos</summary><pre style="font-size:11px;overflow:auto;max-height:300px;margin-top:8px">${JSON.stringify(r.dados, null, 2)}</pre></details>` : ''}
     </div>
   `, null);
