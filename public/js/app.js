@@ -4281,7 +4281,7 @@ async function nfseAbrirPdf(btn, ref, datas, fone) {
     return `${dd}/${m}`;
   }).join(', ');
 
-  const msg = `Oi, segue a Nota Fiscal referente às sessões realizadas nas datas ${datasFormatadas} obrigado.\n📄 ${pdfUrl}`;
+  const msg = `Oi, segue a Nota Fiscal referente às sessões realizadas nas datas ${datasFormatadas}.\n\nClique no link para ter acesso à nota fiscal:\n📄 ${pdfUrl}\n\nObrigado!`;
   const waNum = fone ? toWaNum(fone) : '';
   const waUrl = `https://wa.me/${waNum}?text=${encodeURIComponent(msg)}`;
 
