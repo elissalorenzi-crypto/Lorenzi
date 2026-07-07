@@ -4237,7 +4237,9 @@ async function loadNfse() {
       ? '<span style="background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600">✅ Autorizada</span>'
       : '<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600">📤 Emitida</span>';
     const nome = n.apelido ? `${n.apelido} <span style="color:var(--muted);font-size:12px">(${n.nome})</span>` : n.nome;
-    const refEsc = n.nfse_ref.replace(/'/g, "\\'");
+    const refEsc  = n.nfse_ref.replace(/'/g, "\\'");
+    const datas   = (n.datas || '').replace(/'/g, "\\'");
+    const fone    = (n.whatsapp || n.telefone || '').replace(/'/g, "\\'");
     return `<tr>
       <td style="font-weight:600;color:var(--plum)">${numero}</td>
       <td>${nome}</td>
@@ -4245,12 +4247,62 @@ async function loadNfse() {
       <td style="text-align:center">${n.total_sessoes}</td>
       <td style="text-align:right;font-weight:600">R$ ${brl(n.valor_total)}</td>
       <td>${statusBadge}</td>
+      <td>
+        <button class="btn btn-outline btn-xs" onclick="nfseAbrirPdf(this,'${refEsc}','${datas}','${fone}')" title="Ver opções de PDF">📥 PDF</button>
+      </td>
       <td style="display:flex;gap:4px">
-        <button class="btn btn-ghost btn-xs" onclick="nfseVerStatus('${refEsc}')" title="Consultar status e PDF">🔍 Ver</button>
+        <button class="btn btn-ghost btn-xs" onclick="nfseVerStatus('${refEsc}')" title="Consultar status">🔍 Ver</button>
         <button class="btn btn-ghost btn-xs" onclick="nfseDeletar('${refEsc}')" title="Remover marcação" style="color:var(--rose)">🗑</button>
       </td>
     </tr>`;
   }).join('');
+}
+
+const _nfsePdfCache = {};
+
+async function nfseAbrirPdf(btn, ref, datas, fone) {
+  document.querySelectorAll('.nfse-pdf-drop').forEach(d => d.remove());
+
+  if (!_nfsePdfCache[ref]) {
+    const orig = btn.textContent;
+    btn.textContent = '⏳';
+    btn.disabled = true;
+    const r = await api('GET', `/nfse/status/${encodeURIComponent(ref)}`);
+    btn.textContent = orig;
+    btn.disabled = false;
+    if (r?.error || !r?.link_pdf) return toast('PDF ainda não disponível para esta nota', 'error');
+    _nfsePdfCache[ref] = r.link_pdf;
+  }
+
+  const pdfUrl = _nfsePdfCache[ref];
+
+  const datasFormatadas = datas.split(',').filter(Boolean).map(d => {
+    const [, m, dd] = d.split('-');
+    return `${dd}/${m}`;
+  }).join(', ');
+
+  const msg = `Oi, segue a Nota Fiscal referente às sessões realizadas nas datas ${datasFormatadas} obrigado.`;
+  const waNum = fone ? toWaNum(fone) : '';
+  const waUrl = `https://wa.me/${waNum}?text=${encodeURIComponent(msg)}`;
+
+  const drop = document.createElement('div');
+  drop.className = 'nfse-pdf-drop';
+  drop.style.cssText = 'position:fixed;background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.15);z-index:9999;min-width:200px;overflow:hidden';
+  drop.innerHTML = `
+    <a href="${pdfUrl}" target="_blank" style="display:flex;align-items:center;gap:8px;padding:11px 16px;text-decoration:none;color:inherit;font-size:13px;border-bottom:1px solid var(--border);hover:background:#f5f5f5">📥 Baixar PDF</a>
+    <a href="${waUrl}"  target="_blank" style="display:flex;align-items:center;gap:8px;padding:11px 16px;text-decoration:none;color:inherit;font-size:13px">💬 Enviar por WhatsApp</a>
+  `;
+
+  const rect = btn.getBoundingClientRect();
+  drop.style.top  = (rect.bottom + 4) + 'px';
+  drop.style.left = rect.left + 'px';
+  document.body.appendChild(drop);
+
+  setTimeout(() => {
+    document.addEventListener('click', function fechar(e) {
+      if (!drop.contains(e.target)) { drop.remove(); document.removeEventListener('click', fechar); }
+    });
+  }, 0);
 }
 
 async function nfseDeletar(ref) {

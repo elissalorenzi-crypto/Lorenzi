@@ -1144,10 +1144,15 @@ const getNfseEmitidas = () =>
       p.id   AS paciente_id,
       p.nome,
       p.apelido,
+      p.whatsapp,
+      p.telefone,
       COUNT(a.id)   AS total_sessoes,
       SUM(a.valor)  AS valor_total,
       MIN(a.data)   AS data_ini,
-      MAX(a.data)   AS data_fim
+      MAX(a.data)   AS data_fim,
+      (SELECT GROUP_CONCAT(a2.data, ',')
+       FROM (SELECT data FROM agendamentos WHERE nfse_ref = a.nfse_ref ORDER BY data) a2
+      ) AS datas
     FROM agendamentos a
     JOIN pacientes p ON a.paciente_id = p.id
     WHERE a.nfse_ref IS NOT NULL
