@@ -826,8 +826,9 @@ function gerarDescricaoNfse(p, sessoes, cfg) {
   const valor  = parseFloat(sessoes[0]?.valor) || parseFloat(p.valor_sessao) || 0;
   const total  = sessoes.reduce((acc, s) => acc + (parseFloat(s.valor) || 0), 0);
   const n      = sessoes.length;
-  const nomePsi = (cfg.nome_psicologa || 'ELISSA CATARINA RAMOS PEREIRA LORENZI').toUpperCase();
-  const crp    = cfg.crp || '06/91616';
+  const nomePsi = (cfg.nome_psicologa || 'ELISSA CATARINA RAMOS PEREIRA LORENZI')
+    .replace(/^psi\.?\s*/i, '').replace(/^psicólog[ao]\s*/i, '').toUpperCase();
+  const crp = (cfg.crp || '06/91616').replace(/^crp\s*/i, '');
   const brl    = v => v.toFixed(2).replace('.', ',');
   return `SESSÃO DE PSICOTERAPIA: ${datasStr}. PACIENTE: ${p.nome.toUpperCase()} PSICOLOGA: ${nomePsi} CRP: ${crp} VALOR DA SESSÃO: R$${brl(valor)} VALOR TOTAL DE ${n} ${n === 1 ? 'SESSÃO' : 'SESSÕES'}: R$${brl(total)}.`;
 }
