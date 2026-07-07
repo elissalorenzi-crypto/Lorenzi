@@ -1484,7 +1484,27 @@ function cobranÇaEnviarWa(nome, fone, notaFiscal) {
     ? `Elissa Catarina Ramos Pereira Lorenzi\nSantander\nAgencia: 3822\nConta: 0001300734-14\nCNPJ(pix): ${pixKey}`
     : `Elissa Catarina Ramos Pereira Lorenzi\nSantander\nAgencia: 3822\nConta: 01004845-3\nCPF(pix): ${pixKey}`;
 
-  const msg = `Oi, abaixo dados para pagamento das sessões de orientação profissional:\n\n${linhasSessoes}\n\nTotal: R$ ${brl(total)}\n\nAbaixo dados para transferência:\n\n${dadosBanco}\n\nPor favor, encaminhar o recibo da transferência.\n\nObrigada e um beijo!\n\nAbaixo pix para copiar e colar:\n\n${pixKey}`;
+  const msg = [
+    `Oi, abaixo dados para pagamento das sessões de orientação profissional:`,
+    ``,
+    linhasSessoes,
+    ``,
+    `Total: R$ ${brl(total)}`,
+    ``,
+    ``,
+    `Abaixo dados para transferência:`,
+    ``,
+    dadosBanco,
+    ``,
+    `Por favor, encaminhar o recibo da transferência.`,
+    ``,
+    `Obrigada e um beijo!`,
+    ``,
+    ``,
+    `Abaixo pix para copiar e colar:`,
+    ``,
+    pixKey,
+  ].join('\n');
 
   const waNum = fone ? toWaNum(fone) : '';
   window.open(`https://wa.me/${waNum}?text=${encodeURIComponent(msg)}`, '_blank');
