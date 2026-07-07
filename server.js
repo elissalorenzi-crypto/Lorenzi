@@ -881,8 +881,9 @@ app.post('/api/nfse/emitir', async (req, res) => {
 
   const payload = {
     data_emissao:            dataEmissao,
-    natureza_operacao:       '1',
-    optante_simples_nacional: cfg.focusnfe_simples_nacional !== '0',
+    natureza_operacao:              '1',
+    optante_simples_nacional:       true,
+    codigo_opcao_simples_nacional:  3,
     prestador: {
       ...(isCnpj ? { cnpj: cnpjCpf } : { cpf: cnpjCpf }),
       inscricao_municipal: cfg.focusnfe_inscricao_municipal || '',
