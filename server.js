@@ -829,7 +829,7 @@ function gerarDescricaoNfse(p, sessoes, cfg) {
   const nomePsi = (cfg.nome_psicologa || 'ELISSA CATARINA RAMOS PEREIRA LORENZI').toUpperCase();
   const crp    = cfg.crp || '06/91616';
   const brl    = v => v.toFixed(2).replace('.', ',');
-  return `SESSÃO DE PSICOTERAPIA: ${datasStr}. PACIENTE: ${p.nome.toUpperCase()} PSICOLOGA: ${nomePsi} CRP: ${crp} VALOR DA SESSÃO: R$${brl(valor)} VALOR TOTAL DE ${n} ${n === 1 ? 'SESSÃO' : 'SESSÕES'}: R$${brl(total)}. Alíquota Efetiva: 2,0100000000%.`;
+  return `SESSÃO DE PSICOTERAPIA: ${datasStr}. PACIENTE: ${p.nome.toUpperCase()} PSICOLOGA: ${nomePsi} CRP: ${crp} VALOR DA SESSÃO: R$${brl(valor)} VALOR TOTAL DE ${n} ${n === 1 ? 'SESSÃO' : 'SESSÕES'}: R$${brl(total)}.`;
 }
 
 app.post('/api/nfse/emitir', async (req, res) => {
