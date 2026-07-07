@@ -956,8 +956,9 @@ app.get('/api/nfse/status/:ref', async (req, res) => {
     catch(_) {
       return res.status(502).json({ error: `Focus NFe HTTP ${resp.status}: ${text.slice(0, 300)}` });
     }
-    res.json({ status: data.status, numero: data.numero_nfs_e,
-               link_pdf: data.caminho_nfse_pdf || null, dados: data });
+    const link_pdf = data.caminho_danfse || data.caminho_nfse_pdf || data.caminho_pdf_nota_fiscal || null;
+    res.json({ status: data.status, numero: data.numero_nfs_e || data.numero_nfse || data.numero,
+               link_pdf, dados: data });
   } catch(e) {
     res.status(500).json({ error: 'Erro ao consultar Focus NFe: ' + e.message });
   }
