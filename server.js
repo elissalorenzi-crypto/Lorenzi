@@ -890,6 +890,7 @@ app.post('/api/nfse/emitir', async (req, res) => {
     indicador_total_tributacao:               '0',
     finalidade_emissao:                       0,
     consumidor_final:                         0,
+    indicador_operacao:                       '100401',
     indicador_destinatario:                   1,
     ibs_cbs_situacao_tributaria:              '000',
     ibs_cbs_classificacao_tributaria:         '000001',
