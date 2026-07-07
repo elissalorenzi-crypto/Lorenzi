@@ -915,7 +915,7 @@ app.post('/api/nfse/emitir', async (req, res) => {
       const msg = data.mensagem || (data.erros && data.erros[0]?.mensagem) || JSON.stringify(data);
       return res.status(resp.status).json({ error: msg, detalhes: data });
     }
-    const numero = data.numero_nfse || data.numero_nfs_e || null;
+    const numero = data.numero || data.numero_nfse || data.numero_nfs_e || null;
     const pdfUrl = data.caminho_danfse || data.caminho_nfse_pdf || null;
     db.marcarNfseEmitida(sessoes.map(s => s.id), ref, numero);
     res.json({ ok: true, ref, ambiente, status: data.status, numero, link_pdf: pdfUrl, dados: data });
@@ -963,6 +963,12 @@ app.get('/api/nfse/status/:ref', async (req, res) => {
   } catch(e) {
     res.status(500).json({ error: 'Erro ao consultar Focus NFe: ' + e.message });
   }
+});
+
+app.delete('/api/nfse/:ref', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  db.cancelarNfse(req.params.ref);
+  res.json({ ok: true });
 });
 
 app.get('/api/nfse/lista', (req, res) => {

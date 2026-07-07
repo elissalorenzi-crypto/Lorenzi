@@ -1133,6 +1133,9 @@ const marcarNfseEmitida = (ids, ref, numero) => {
   db.prepare(`UPDATE agendamentos SET nfse_ref = ?, nfse_numero = ? WHERE id IN (${ph})`).run(ref, numero || null, ...ids);
 };
 
+const cancelarNfse = (ref) =>
+  db.prepare("UPDATE agendamentos SET nfse_ref = NULL, nfse_numero = NULL WHERE nfse_ref = ?").run(ref);
+
 const getNfseEmitidas = () =>
   db.prepare(`
     SELECT
@@ -1163,7 +1166,7 @@ module.exports = {
   createConvite, getConvites, getConviteByToken, usarConvite, deleteConvite,
   limparZoomLinks,
   createNotificacao, getNotificacoes, marcarNotificacaoLida, getAgendamentoByZoomMeetingId,
-  getNfseData, marcarNfseEmitida, getNfseEmitidas,
+  getNfseData, marcarNfseEmitida, getNfseEmitidas, cancelarNfse,
   getTarefas, createTarefa, updateTarefa, deleteTarefa, resetTarefasDiarias,
   deletarSessoesFuturas, restaurarSessoesFuturas,
   gerarLinkAtivProf, getLinkAtivProf, getInfoAtivProf, salvarRespostaAtivProf, getRespostasAtivProf,

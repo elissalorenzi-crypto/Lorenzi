@@ -4235,8 +4235,9 @@ async function loadNfse() {
     const numero = n.nfse_numero || '—';
     const statusBadge = n.nfse_numero
       ? '<span style="background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600">✅ Autorizada</span>'
-      : '<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600">⏳ Pendente</span>';
+      : '<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600">📤 Emitida</span>';
     const nome = n.apelido ? `${n.apelido} <span style="color:var(--muted);font-size:12px">(${n.nome})</span>` : n.nome;
+    const refEsc = n.nfse_ref.replace(/'/g, "\\'");
     return `<tr>
       <td style="font-weight:600;color:var(--plum)">${numero}</td>
       <td>${nome}</td>
@@ -4244,11 +4245,20 @@ async function loadNfse() {
       <td style="text-align:center">${n.total_sessoes}</td>
       <td style="text-align:right;font-weight:600">R$ ${brl(n.valor_total)}</td>
       <td>${statusBadge}</td>
-      <td>
-        <button class="btn btn-ghost btn-xs" onclick="nfseVerStatus('${n.nfse_ref}')" title="Consultar status e PDF">🔍 Ver</button>
+      <td style="display:flex;gap:4px">
+        <button class="btn btn-ghost btn-xs" onclick="nfseVerStatus('${refEsc}')" title="Consultar status e PDF">🔍 Ver</button>
+        <button class="btn btn-ghost btn-xs" onclick="nfseDeletar('${refEsc}')" title="Remover marcação" style="color:var(--rose)">🗑</button>
       </td>
     </tr>`;
   }).join('');
+}
+
+async function nfseDeletar(ref) {
+  if (!confirm(`Remover marcação de NFS-e para a referência "${ref}"?\nAs sessões voltarão a ficar disponíveis para emissão.`)) return;
+  const r = await api('DELETE', `/nfse/${encodeURIComponent(ref)}`);
+  if (r?.error) return toast('Erro: ' + r.error, 'error');
+  toast('Marcação removida');
+  loadNfse();
 }
 
 async function nfseVerStatus(ref) {
