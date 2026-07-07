@@ -894,7 +894,7 @@ app.post('/api/nfse/emitir', async (req, res) => {
       iss_retido:          false,
       aliquota,
       discriminacao:       gerarDescricaoNfse(p, sessoes, cfg),
-      item_lista_servico:  '4.13',
+      item_lista_servico:  '041300',
       codigo_cnae:         '8650005',
       codigo_municipio:    '3507001',
     },
