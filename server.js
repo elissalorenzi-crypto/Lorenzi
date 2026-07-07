@@ -860,39 +860,49 @@ app.post('/api/nfse/emitir', async (req, res) => {
 
   const cnpjCpf = (cfg.focusnfe_cnpj_cpf || '').replace(/\D/g, '');
   const isCnpj  = cnpjCpf.length === 14;
+  const aliquota = (parseFloat(cfg.focusnfe_aliquota_iss) || 3.62) / 100;
+
+  const tomador = {
+    ...(p.cpf ? { cpf: p.cpf.replace(/\D/g,'') } : {}),
+    razao_social: p.nome?.toUpperCase() || '',
+    ...(p.email ? { email: p.email } : {}),
+  };
+  if (p.nf_logradouro) {
+    tomador.endereco = {
+      logradouro:   p.nf_logradouro,
+      ...(p.nf_numero      ? { numero:      p.nf_numero }              : {}),
+      ...(p.nf_complemento ? { complemento: p.nf_complemento }         : {}),
+      ...(p.nf_bairro      ? { bairro:      p.nf_bairro }              : {}),
+      ...(p.nf_cep         ? { cep:         p.nf_cep.replace(/\D/g,'') } : {}),
+      codigo_municipio: '3507001',
+      uf: 'SP',
+    };
+  }
 
   const payload = {
-    data_emissao:                        dataEmissao,
-    data_competencia:                    dataComp,
-    codigo_municipio_emissora:           3507001,
-    ...(isCnpj ? { cnpj_prestador: cnpjCpf } : { cpf_prestador: cnpjCpf }),
-    inscricao_municipal_prestador:       cfg.focusnfe_inscricao_municipal || '',
-    codigo_opcao_simples_nacional:       Number(cfg.focusnfe_simples_nacional) || 3,
-    regime_tributario_simples_nacional:  1,
-    regime_especial_tributacao:          0,
-    ...(p.cpf         ? { cpf_tomador:        p.cpf.replace(/\D/g,'') }  : {}),
-    razao_social_tomador:                p.nome?.toUpperCase() || '',
-    codigo_municipio_tomador:            3507001,
-    ...(p.nf_cep         ? { cep_tomador:        p.nf_cep.replace(/\D/g,'') } : {}),
-    ...(p.nf_logradouro  ? { logradouro_tomador: p.nf_logradouro }             : {}),
-    ...(p.nf_numero      ? { numero_tomador:     p.nf_numero }                 : {}),
-    ...(p.nf_complemento ? { complemento_tomador:p.nf_complemento }            : {}),
-    ...(p.nf_bairro      ? { bairro_tomador:     p.nf_bairro }                 : {}),
-    ...(p.email          ? { email_tomador:      p.email }                     : {}),
-    codigo_municipio_prestacao:          3507001,
-    codigo_tributacao_nacional_iss:      cfg.focusnfe_codigo_servico || '060201',
-    codigo_nbs:                          cfg.focusnfe_codigo_nbs     || '1.2301.9.80.00',
-    descricao_servico:                   gerarDescricaoNfse(p, sessoes, cfg),
-    valor_servico:                       total,
-    percentual_aliquota_relativa_municipio: parseFloat(cfg.focusnfe_aliquota_iss) || 3.62,
-    tributacao_iss:                      1,
-    tipo_retencao_iss:                   1,
-    indicador_total_tributacao:          '0',
+    data_emissao:            dataEmissao,
+    natureza_operacao:       '1',
+    optante_simples_nacional: cfg.focusnfe_simples_nacional !== '0',
+    prestador: {
+      ...(isCnpj ? { cnpj: cnpjCpf } : { cpf: cnpjCpf }),
+      inscricao_municipal: cfg.focusnfe_inscricao_municipal || '',
+      codigo_municipio:    '3507001',
+    },
+    tomador,
+    servico: {
+      valor_servicos:      total,
+      iss_retido:          false,
+      aliquota,
+      discriminacao:       gerarDescricaoNfse(p, sessoes, cfg),
+      item_lista_servico:  '4.13',
+      codigo_cnae:         '8650005',
+      codigo_municipio:    '3507001',
+    },
   };
 
   try {
     const auth = 'Basic ' + Buffer.from(cfg.focusnfe_token + ':').toString('base64');
-    const resp = await fetch(`${baseUrl}/v2/nfsen?ref=${ref}`, {
+    const resp = await fetch(`${baseUrl}/v2/nfse?ref=${ref}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': auth },
       body: JSON.stringify(payload),
@@ -907,9 +917,10 @@ app.post('/api/nfse/emitir', async (req, res) => {
       const msg = data.mensagem || (data.erros && data.erros[0]?.mensagem) || JSON.stringify(data);
       return res.status(resp.status).json({ error: msg, detalhes: data });
     }
-    db.marcarNfseEmitida(sessoes.map(s => s.id), ref, data.numero_nfs_e || null);
-    res.json({ ok: true, ref, ambiente, status: data.status,
-               numero: data.numero_nfs_e, link_pdf: data.caminho_nfse_pdf || null, dados: data });
+    const numero = data.numero_nfse || data.numero_nfs_e || null;
+    const pdfUrl = data.caminho_danfse || data.caminho_nfse_pdf || null;
+    db.marcarNfseEmitida(sessoes.map(s => s.id), ref, numero);
+    res.json({ ok: true, ref, ambiente, status: data.status, numero, link_pdf: pdfUrl, dados: data });
   } catch(e) {
     res.status(500).json({ error: 'Erro ao comunicar com Focus NFe: ' + e.message });
   }
