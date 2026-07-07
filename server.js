@@ -860,51 +860,41 @@ app.post('/api/nfse/emitir', async (req, res) => {
 
   const cnpjCpf = (cfg.focusnfe_cnpj_cpf || '').replace(/\D/g, '');
   const isCnpj  = cnpjCpf.length === 14;
-  const aliquota = (parseFloat(cfg.focusnfe_aliquota_iss) || 3.62) / 100;
-
-  const tomador = {
-    ...(p.cpf ? { cpf: p.cpf.replace(/\D/g,'') } : {}),
-    razao_social: p.nome?.toUpperCase() || '',
-    ...(p.email ? { email: p.email } : {}),
-  };
-  if (p.nf_logradouro) {
-    tomador.endereco = {
-      logradouro:   p.nf_logradouro,
-      ...(p.nf_numero      ? { numero:      p.nf_numero }              : {}),
-      ...(p.nf_complemento ? { complemento: p.nf_complemento }         : {}),
-      ...(p.nf_bairro      ? { bairro:      p.nf_bairro }              : {}),
-      ...(p.nf_cep         ? { cep:         p.nf_cep.replace(/\D/g,'') } : {}),
-      codigo_municipio: '3507001',
-      uf: 'SP',
-    };
-  }
+  const aliqPct = parseFloat(cfg.focusnfe_aliquota_iss) || 2.01;
 
   const payload = {
-    data_emissao:            dataEmissao,
-    natureza_operacao:              '1',
-    optante_simples_nacional:       true,
-    codigo_opcao_simples_nacional:  3,
-    prestador: {
-      ...(isCnpj ? { cnpj: cnpjCpf } : { cpf: cnpjCpf }),
-      inscricao_municipal: cfg.focusnfe_inscricao_municipal || '',
-      codigo_municipio:    '3507001',
-    },
-    tomador,
-    servico: {
-      valor_servicos:               total,
-      iss_retido:                   true,
-      aliquota,
-      aliquota_efetiva:             aliquota,
-      discriminacao:                gerarDescricaoNfse(p, sessoes, cfg),
-      item_lista_servico:           '041601',
-      codigo_cnae:                  '8650005',
-      codigo_municipio:             '3507001',
-    },
+    data_emissao:                             dataEmissao,
+    data_competencia:                         dataComp,
+    codigo_municipio_emissora:                '3507001',
+    ...(isCnpj ? { cnpj_prestador: cnpjCpf } : { cpf_prestador: cnpjCpf }),
+    inscricao_municipal_prestador:            cfg.focusnfe_inscricao_municipal || '',
+    codigo_opcao_simples_nacional:            3,
+    regime_especial_tributacao:               0,
+    ...(p.cpf         ? { cpf_tomador:         p.cpf.replace(/\D/g,'') }  : {}),
+    razao_social_tomador:                     p.nome?.toUpperCase() || '',
+    codigo_municipio_tomador:                 '3507001',
+    ...(p.nf_cep         ? { cep_tomador:        p.nf_cep.replace(/\D/g,'') } : {}),
+    ...(p.nf_logradouro  ? { logradouro_tomador: p.nf_logradouro }             : {}),
+    ...(p.nf_numero      ? { numero_tomador:     p.nf_numero }                 : {}),
+    ...(p.nf_complemento ? { complemento_tomador:p.nf_complemento }            : {}),
+    ...(p.nf_bairro      ? { bairro_tomador:     p.nf_bairro }                 : {}),
+    ...(p.email          ? { email_tomador:      p.email }                     : {}),
+    codigo_municipio_prestacao:               '3507001',
+    codigo_tributacao_nacional_iss:           '041601',
+    codigo_nbs:                               '1.2301.9.80.00',
+    descricao_servico:                        gerarDescricaoNfse(p, sessoes, cfg),
+    valor_servico:                            total,
+    percentual_aliquota_relativa_municipio:   aliqPct,
+    tributacao_iss:                           1,
+    tipo_retencao_iss:                        1,
+    indicador_total_tributacao:               '2',
+    ibs_cbs_situacao_tributaria:              '000',
+    ibs_cbs_classificacao_tributaria:         '000001',
   };
 
   try {
     const auth = 'Basic ' + Buffer.from(cfg.focusnfe_token + ':').toString('base64');
-    const resp = await fetch(`${baseUrl}/v2/nfse?ref=${ref}`, {
+    const resp = await fetch(`${baseUrl}/v2/nfsen?ref=${ref}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': auth },
       body: JSON.stringify(payload),
