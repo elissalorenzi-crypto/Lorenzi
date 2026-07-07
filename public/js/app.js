@@ -1447,65 +1447,71 @@ async function abrirModalCobranca(pacienteId) {
       <span style="font-size:13px;color:var(--muted)">Total selecionado:</span>
       <span id="cobr-total" style="font-size:16px;font-weight:700;color:var(--plum)">R$ 0,00</span>
     </div>
+    <div style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:12px;color:var(--muted);font-weight:600">PRÉVIA DA MENSAGEM</span>
+        <button class="btn btn-ghost btn-xs" onclick="cobranÇaCopiar()">📋 Copiar texto</button>
+      </div>
+      <pre id="cobr-preview" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:12px;font-family:inherit;white-space:pre-wrap;word-break:break-word;max-height:220px;overflow-y:auto;margin:0;color:var(--text)"></pre>
+    </div>
     <button class="btn btn-primary" style="width:100%" onclick="cobranÇaEnviarWa('${nome.replace(/'/g,"\\'")}','${fone}','${p.nota_fiscal||'nao'}')">
-      💬 Enviar cobrança por WhatsApp
+      💬 Abrir WhatsApp com mensagem
     </button>
   `, null);
 
   cobranÇaRecalcular();
 }
 
-function cobranÇaRecalcular() {
-  const total = [...document.querySelectorAll('.cobr-chk:checked')]
-    .reduce((s, el) => s + parseFloat(el.dataset.valor || 0), 0);
-  const el = document.getElementById('cobr-total');
-  if (el) el.textContent = 'R$ ' + total.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
-}
-
-function cobranÇaEnviarWa(nome, fone, notaFiscal) {
+function cobranÇaGerarMsg(notaFiscal) {
   const selecionadas = [...document.querySelectorAll('.cobr-chk:checked')];
-  if (!selecionadas.length) return toast('Selecione ao menos uma sessão', 'error');
-
   const fmtData = d => { const [,m,dd] = d.split('-'); return `${dd}/${m}`; };
   const brl = v => Number(v||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
-
-  const linhasSessoes = selecionadas.map(el =>
-    `${fmtData(el.dataset.data)} - R$ ${brl(el.dataset.valor)}`
-  ).join('\n');
-
+  const linhasSessoes = selecionadas.map(el => `${fmtData(el.dataset.data)} - R$ ${brl(el.dataset.valor)}`).join('\n');
   const total = selecionadas.reduce((s, el) => s + parseFloat(el.dataset.valor || 0), 0);
-
   const querNF = notaFiscal === 'sim';
-  const pixKey = querNF
-    ? (_config?.chave_pix_cnpj || '31.879.267/0001-24')
-    : (_config?.chave_pix      || '318.505.928-02');
-
+  const pixKey = querNF ? (_config?.chave_pix_cnpj || '31.879.267/0001-24') : (_config?.chave_pix || '318.505.928-02');
   const dadosBanco = querNF
     ? `Elissa Catarina Ramos Pereira Lorenzi\nSantander\nAgencia: 3822\nConta: 0001300734-14\nCNPJ(pix): ${pixKey}`
     : `Elissa Catarina Ramos Pereira Lorenzi\nSantander\nAgencia: 3822\nConta: 01004845-3\nCPF(pix): ${pixKey}`;
-
-  const msg = [
+  return [
     `Oi, abaixo dados para pagamento das sessões de orientação profissional:`,
-    ``,
-    linhasSessoes,
-    ``,
+    ``, linhasSessoes, ``,
     `Total: R$ ${brl(total)}`,
-    ``,
-    ``,
+    ``, ``,
     `Abaixo dados para transferência:`,
-    ``,
-    dadosBanco,
-    ``,
+    ``, dadosBanco, ``,
     `Por favor, encaminhar o recibo da transferência.`,
-    ``,
-    `Obrigada e um beijo!`,
-    ``,
-    ``,
+    ``, `Obrigada e um beijo!`,
+    ``, ``,
     `Abaixo pix para copiar e colar:`,
-    ``,
-    pixKey,
+    ``, pixKey,
   ].join('\n');
+}
 
+function cobranÇaRecalcular() {
+  const selecionadas = [...document.querySelectorAll('.cobr-chk:checked')];
+  const total = selecionadas.reduce((s, el) => s + parseFloat(el.dataset.valor || 0), 0);
+  const elTotal = document.getElementById('cobr-total');
+  if (elTotal) elTotal.textContent = 'R$ ' + total.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+  const preview = document.getElementById('cobr-preview');
+  const btnWa = document.querySelector('#cobr-preview ~ button');
+  const notaFiscal = btnWa?.getAttribute('onclick')?.match(/'(sim|nao)'/)?.[1] || 'nao';
+  if (preview) preview.textContent = cobranÇaGerarMsg(notaFiscal);
+}
+
+async function cobranÇaCopiar() {
+  const preview = document.getElementById('cobr-preview');
+  if (!preview) return;
+  try {
+    await navigator.clipboard.writeText(preview.textContent);
+    toast('Mensagem copiada!');
+  } catch { toast('Não foi possível copiar', 'error'); }
+}
+
+function cobranÇaEnviarWa(nome, fone, notaFiscal) {
+  if (![...document.querySelectorAll('.cobr-chk:checked')].length)
+    return toast('Selecione ao menos uma sessão', 'error');
+  const msg = cobranÇaGerarMsg(notaFiscal);
   const waNum = fone ? toWaNum(fone) : '';
   window.open(`https://wa.me/${waNum}?text=${encodeURIComponent(msg)}`, '_blank');
 }
