@@ -1297,6 +1297,7 @@ async function verDetalhePaciente(id) {
         <div style="display:flex;gap:8px">
           <button class="btn btn-outline btn-sm" onclick="exportarHistoricoPDF(${p.id})">📄 Exportar PDF</button>
           <button class="btn btn-outline btn-sm" onclick="openModalAgendamento(null,null,${p.id})">+ Agendar</button>
+          <button class="btn btn-primary btn-sm" onclick="abrirModalCobranca(${p.id})">💰 Cobrar</button>
         </div>
       </div>
       <div class="table-wrap">
@@ -1412,6 +1413,73 @@ async function verDetalhePaciente(id) {
 function voltarListaPacientes() {
   document.getElementById('pacientes-list-view').style.display = '';
   document.getElementById('pacientes-detail-view').style.display = 'none';
+}
+
+async function abrirModalCobranca(pacienteId) {
+  const [p, ags] = await Promise.all([
+    api('GET', `/pacientes/${pacienteId}`),
+    api('GET', `/pacientes/${pacienteId}/agendamentos`)
+  ]);
+
+  const pendentes = ags.filter(a => a.status === 'realizado' && !a.pago)
+    .sort((a, b) => (a.data + a.hora).localeCompare(b.data + b.hora));
+
+  if (!pendentes.length) return toast('Nenhuma sessão pendente de pagamento', 'error');
+
+  const fmtData = d => { const [y,m,dd] = d.split('-'); return `${dd}/${m}/${y}`; };
+  const brl = v => Number(v||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+  const nome = p.apelido || p.nome.split(' ')[0];
+  const fone = p.whatsapp || p.telefone || '';
+
+  const linhas = pendentes.map(a => `
+    <label style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--border);cursor:pointer">
+      <input type="checkbox" class="cobr-chk" data-id="${a.id}" data-data="${a.data}" data-valor="${a.valor||0}"
+        style="width:16px;height:16px;accent-color:var(--plum)" checked onchange="cobranÇaRecalcular()">
+      <span style="flex:1;font-size:13px">📅 ${fmtData(a.data)} ${a.hora}</span>
+      <span style="font-weight:600;color:var(--plum)">R$ ${brl(a.valor)}</span>
+    </label>
+  `).join('');
+
+  openModal('💰 Cobrar Sessões', `
+    <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Selecione as sessões para incluir na cobrança:</p>
+    <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:14px">${linhas}</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border-radius:8px;margin-bottom:16px">
+      <span style="font-size:13px;color:var(--muted)">Total selecionado:</span>
+      <span id="cobr-total" style="font-size:16px;font-weight:700;color:var(--plum)">R$ 0,00</span>
+    </div>
+    <button class="btn btn-primary" style="width:100%" onclick="cobranÇaEnviarWa('${nome.replace(/'/g,"\\'")}','${fone}')">
+      💬 Enviar cobrança por WhatsApp
+    </button>
+  `, null);
+
+  cobranÇaRecalcular();
+}
+
+function cobranÇaRecalcular() {
+  const total = [...document.querySelectorAll('.cobr-chk:checked')]
+    .reduce((s, el) => s + parseFloat(el.dataset.valor || 0), 0);
+  const el = document.getElementById('cobr-total');
+  if (el) el.textContent = 'R$ ' + total.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function cobranÇaEnviarWa(nome, fone) {
+  const selecionadas = [...document.querySelectorAll('.cobr-chk:checked')];
+  if (!selecionadas.length) return toast('Selecione ao menos uma sessão', 'error');
+
+  const fmtData = d => { const [,m,dd] = d.split('-'); return `${dd}/${m}`; };
+  const brl = v => Number(v||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+
+  const linhasSessoes = selecionadas.map(el =>
+    `📅 ${fmtData(el.dataset.data)} - R$ ${brl(el.dataset.valor)}`
+  ).join('\n');
+
+  const total = selecionadas.reduce((s, el) => s + parseFloat(el.dataset.valor || 0), 0);
+  const pixKey = _config?.chave_pix || '';
+  const pixLinha = pixKey ? `\n\nPara pagamento via PIX:\n🔑 ${pixKey}` : '';
+
+  const msg = `Olá, ${nome}! Segue o resumo das sessões em aberto:\n\n${linhasSessoes}\n\n💰 Total: R$ ${brl(total)}${pixLinha}\n\nObrigado!`;
+  const waNum = fone ? toWaNum(fone) : '';
+  window.open(`https://wa.me/${waNum}?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
 async function exportarHistoricoPDF(pacienteId) {
