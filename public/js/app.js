@@ -1447,7 +1447,7 @@ async function abrirModalCobranca(pacienteId) {
       <span style="font-size:13px;color:var(--muted)">Total selecionado:</span>
       <span id="cobr-total" style="font-size:16px;font-weight:700;color:var(--plum)">R$ 0,00</span>
     </div>
-    <button class="btn btn-primary" style="width:100%" onclick="cobranÇaEnviarWa('${nome.replace(/'/g,"\\'")}','${fone}')">
+    <button class="btn btn-primary" style="width:100%" onclick="cobranÇaEnviarWa('${nome.replace(/'/g,"\\'")}','${fone}','${p.nota_fiscal||'nao'}')">
       💬 Enviar cobrança por WhatsApp
     </button>
   `, null);
@@ -1462,7 +1462,7 @@ function cobranÇaRecalcular() {
   if (el) el.textContent = 'R$ ' + total.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
 }
 
-function cobranÇaEnviarWa(nome, fone) {
+function cobranÇaEnviarWa(nome, fone, notaFiscal) {
   const selecionadas = [...document.querySelectorAll('.cobr-chk:checked')];
   if (!selecionadas.length) return toast('Selecione ao menos uma sessão', 'error');
 
@@ -1470,14 +1470,22 @@ function cobranÇaEnviarWa(nome, fone) {
   const brl = v => Number(v||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
 
   const linhasSessoes = selecionadas.map(el =>
-    `📅 ${fmtData(el.dataset.data)} - R$ ${brl(el.dataset.valor)}`
+    `${fmtData(el.dataset.data)} - R$ ${brl(el.dataset.valor)}`
   ).join('\n');
 
   const total = selecionadas.reduce((s, el) => s + parseFloat(el.dataset.valor || 0), 0);
-  const pixKey = _config?.chave_pix || '';
-  const pixLinha = pixKey ? `\n\nPara pagamento via PIX:\n🔑 ${pixKey}` : '';
 
-  const msg = `Olá, ${nome}! Segue o resumo das sessões em aberto:\n\n${linhasSessoes}\n\n💰 Total: R$ ${brl(total)}${pixLinha}\n\nObrigado!`;
+  const querNF = notaFiscal === 'sim';
+  const pixKey = querNF
+    ? (_config?.chave_pix_cnpj || '31.879.267/0001-24')
+    : (_config?.chave_pix      || '318.505.928-02');
+
+  const dadosBanco = querNF
+    ? `Elissa Catarina Ramos Pereira Lorenzi\nSantander\nAgencia: 3822\nConta: 0001300734-14\nCNPJ(pix): ${pixKey}`
+    : `Elissa Catarina Ramos Pereira Lorenzi\nSantander\nAgencia: 3822\nConta: 01004845-3\nCPF(pix): ${pixKey}`;
+
+  const msg = `Oi, abaixo dados para pagamento das sessões de orientação profissional:\n\n${linhasSessoes}\n\nTotal: R$ ${brl(total)}\n\nAbaixo dados para transferência:\n\n${dadosBanco}\n\nPor favor, encaminhar o recibo da transferência.\n\nObrigada e um beijo!\n\nAbaixo pix para copiar e colar:\n\n${pixKey}`;
+
   const waNum = fone ? toWaNum(fone) : '';
   window.open(`https://wa.me/${waNum}?text=${encodeURIComponent(msg)}`, '_blank');
 }
