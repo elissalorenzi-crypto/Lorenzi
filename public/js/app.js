@@ -1454,7 +1454,7 @@ async function abrirModalCobranca(pacienteId) {
       </div>
       <pre id="cobr-preview" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:12px;font-family:inherit;white-space:pre-wrap;word-break:break-word;max-height:220px;overflow-y:auto;margin:0;color:var(--text)"></pre>
     </div>
-    <button class="btn btn-primary" style="width:100%" onclick="cobranÇaEnviarWa('${nome.replace(/'/g,"\\'")}','${fone}','${p.nota_fiscal||'nao'}')">
+    <button class="btn btn-primary" style="width:100%" onclick="cobranÇaEnviarWa('${nome.replace(/'/g,"\\'")}','${fone}','${p.nota_fiscal||'nao'}','${p.forma_pgto||''}')">
       💬 Abrir WhatsApp com mensagem
     </button>
   `, null);
@@ -1462,13 +1462,29 @@ async function abrirModalCobranca(pacienteId) {
   cobranÇaRecalcular();
 }
 
-function cobranÇaGerarMsg(notaFiscal) {
+function cobranÇaGerarMsg(notaFiscal, formaPgto) {
   const selecionadas = [...document.querySelectorAll('.cobr-chk:checked')];
   const fmtData = d => { const [,m,dd] = d.split('-'); return `${dd}/${m}`; };
   const brl = v => Number(v||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
   const linhasSessoes = selecionadas.map(el => `${fmtData(el.dataset.data)} - R$ ${brl(el.dataset.valor)}`).join('\n');
   const total = selecionadas.reduce((s, el) => s + parseFloat(el.dataset.valor || 0), 0);
-  const querNF = notaFiscal === 'sim';
+
+  const isCartao = ['credito','debito'].includes(formaPgto);
+  const querNF   = notaFiscal === 'sim';
+
+  if (isCartao) {
+    const linkCartao = _config?.link_cartao || '';
+    return [
+      `Oi, abaixo dados para pagamento das sessões de orientação profissional:`,
+      ``, linhasSessoes, ``,
+      `Total: R$ ${brl(total)}`,
+      ``, ``,
+      `Segue link para pagamento:`,
+      ``, linkCartao || '(link de pagamento não configurado)',
+      ``, `Obrigada e um beijo!`,
+    ].join('\n');
+  }
+
   const pixKey = querNF ? (_config?.chave_pix_cnpj || '31.879.267/0001-24') : (_config?.chave_pix || '318.505.928-02');
   const dadosBanco = querNF
     ? `Elissa Catarina Ramos Pereira Lorenzi\nSantander\nAgencia: 3822\nConta: 0001300734-14\nCNPJ(pix): ${pixKey}`
@@ -1495,8 +1511,10 @@ function cobranÇaRecalcular() {
   if (elTotal) elTotal.textContent = 'R$ ' + total.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
   const preview = document.getElementById('cobr-preview');
   const btnWa = document.querySelector('#cobr-preview ~ button');
-  const notaFiscal = btnWa?.getAttribute('onclick')?.match(/'(sim|nao)'/)?.[1] || 'nao';
-  if (preview) preview.textContent = cobranÇaGerarMsg(notaFiscal);
+  const onclk = btnWa?.getAttribute('onclick') || '';
+  const notaFiscal = onclk.match(/'(sim|nao)'/)?.[1] || 'nao';
+  const formaPgto  = onclk.match(/'[^']*','[^']*','[^']*','([^']*)'/)?.[1] || '';
+  if (preview) preview.textContent = cobranÇaGerarMsg(notaFiscal, formaPgto);
 }
 
 async function cobranÇaCopiar() {
@@ -1508,10 +1526,10 @@ async function cobranÇaCopiar() {
   } catch { toast('Não foi possível copiar', 'error'); }
 }
 
-function cobranÇaEnviarWa(nome, fone, notaFiscal) {
+function cobranÇaEnviarWa(nome, fone, notaFiscal, formaPgto) {
   if (![...document.querySelectorAll('.cobr-chk:checked')].length)
     return toast('Selecione ao menos uma sessão', 'error');
-  const msg = cobranÇaGerarMsg(notaFiscal);
+  const msg = cobranÇaGerarMsg(notaFiscal, formaPgto);
   const waNum = fone ? toWaNum(fone) : '';
   window.open(`https://wa.me/${waNum}?text=${encodeURIComponent(msg)}`, '_blank');
 }
@@ -4459,6 +4477,7 @@ async function loadConfiguracoes() {
   document.getElementById('cfg-zoom-webhook-secret').value = cfg.zoom_webhook_secret  || '';
   document.getElementById('cfg-chave-pix').value           = cfg.chave_pix            || '';
   document.getElementById('cfg-chave-pix-cnpj').value      = cfg.chave_pix_cnpj       || '';
+  document.getElementById('cfg-link-cartao').value         = cfg.link_cartao           || '';
   document.getElementById('cfg-nfse-url').value            = cfg.nfse_url             || 'https://webapp1-boituva.cidade360.cloud/NFSe.Portal/';
   document.getElementById('cfg-nfse-solicitacao').value    = cfg.nfse_solicitacao      || '';
   document.getElementById('cfg-nfse-cpf').value            = cfg.nfse_cpf             || '';
@@ -4520,6 +4539,7 @@ async function salvarConfiguracoes() {
     zoom_webhook_secret:  document.getElementById('cfg-zoom-webhook-secret').value.trim(),
     chave_pix:            document.getElementById('cfg-chave-pix').value.trim(),
     chave_pix_cnpj:       document.getElementById('cfg-chave-pix-cnpj').value.trim(),
+    link_cartao:          document.getElementById('cfg-link-cartao').value.trim(),
     nfse_url:             document.getElementById('cfg-nfse-url').value.trim(),
     nfse_solicitacao:     document.getElementById('cfg-nfse-solicitacao').value.trim(),
     nfse_cpf:             document.getElementById('cfg-nfse-cpf').value.trim(),
