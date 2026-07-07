@@ -870,6 +870,7 @@ app.post('/api/nfse/emitir', async (req, res) => {
     inscricao_municipal_prestador:            cfg.focusnfe_inscricao_municipal || '',
     codigo_opcao_simples_nacional:            3,
     regime_especial_tributacao:               0,
+    regime_tributario_simples_nacional:       1,
     ...(p.cpf         ? { cpf_tomador:         p.cpf.replace(/\D/g,'') }  : {}),
     razao_social_tomador:                     p.nome?.toUpperCase() || '',
     codigo_municipio_tomador:                 '3507001',
@@ -891,7 +892,7 @@ app.post('/api/nfse/emitir', async (req, res) => {
     finalidade_emissao:                       0,
     consumidor_final:                         0,
     codigo_indicador_operacao:                '100401',
-    indicador_destinatario:                   1,
+    indicador_destinatario:                   0,
     ibs_cbs_situacao_tributaria:              '000',
     ibs_cbs_classificacao_tributaria:         '000001',
   };
