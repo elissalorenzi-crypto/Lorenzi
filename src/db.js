@@ -1133,6 +1133,25 @@ const marcarNfseEmitida = (ids, ref, numero) => {
   db.prepare(`UPDATE agendamentos SET nfse_ref = ?, nfse_numero = ? WHERE id IN (${ph})`).run(ref, numero || null, ...ids);
 };
 
+const getNfseEmitidas = () =>
+  db.prepare(`
+    SELECT
+      a.nfse_ref,
+      a.nfse_numero,
+      p.id   AS paciente_id,
+      p.nome,
+      p.apelido,
+      COUNT(a.id)   AS total_sessoes,
+      SUM(a.valor)  AS valor_total,
+      MIN(a.data)   AS data_ini,
+      MAX(a.data)   AS data_fim
+    FROM agendamentos a
+    JOIN pacientes p ON a.paciente_id = p.id
+    WHERE a.nfse_ref IS NOT NULL
+    GROUP BY a.nfse_ref
+    ORDER BY MAX(a.data) DESC
+  `).all();
+
 module.exports = {
   getPacientes, getPacienteById, getPacienteByCpf, createPaciente, updatePaciente, deletePaciente,
   getAgendamentos, getAgendamentoById, createAgendamento, updateAgendamento, deleteAgendamento,
@@ -1144,7 +1163,7 @@ module.exports = {
   createConvite, getConvites, getConviteByToken, usarConvite, deleteConvite,
   limparZoomLinks,
   createNotificacao, getNotificacoes, marcarNotificacaoLida, getAgendamentoByZoomMeetingId,
-  getNfseData, marcarNfseEmitida,
+  getNfseData, marcarNfseEmitida, getNfseEmitidas,
   getTarefas, createTarefa, updateTarefa, deleteTarefa, resetTarefasDiarias,
   deletarSessoesFuturas, restaurarSessoesFuturas,
   gerarLinkAtivProf, getLinkAtivProf, getInfoAtivProf, salvarRespostaAtivProf, getRespostasAtivProf,

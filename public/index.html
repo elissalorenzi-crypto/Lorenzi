@@ -63,6 +63,9 @@
     <a href="#" class="nav-link" data-section="social">
       <span class="icon">📱</span> Social Media
     </a>
+    <a href="#" class="nav-link" data-section="nfse">
+      <span class="icon">🧾</span> NFS-e
+    </a>
     <a href="#" class="nav-link" data-section="configuracoes">
       <span class="icon">⚙️</span> Configurações
     </a>
@@ -756,6 +759,37 @@
         <p style="font-size:12px;color:var(--muted);margin-top:8px;padding:0 4px">
           Tarefas marcadas como <strong>diárias</strong> são reiniciadas automaticamente a cada novo dia.
         </p>
+      </div>
+    </div>
+
+    <!-- ── NFS-e ── -->
+    <div class="section" id="section-nfse">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+        <div>
+          <h2 style="font-size:20px;font-weight:700;color:var(--plum);margin-bottom:2px">🧾 Notas Fiscais Emitidas</h2>
+          <p style="font-size:13px;color:var(--muted)">NFS-e emitidas via Focus NFe</p>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="loadNfse()">↺ Atualizar</button>
+      </div>
+      <div class="card">
+        <div class="card-body" style="padding:0">
+          <table class="table" id="nfse-table">
+            <thead>
+              <tr>
+                <th>Nº NF</th>
+                <th>Paciente</th>
+                <th>Período</th>
+                <th>Sessões</th>
+                <th style="text-align:right">Valor Total</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="nfse-tbody">
+              <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 

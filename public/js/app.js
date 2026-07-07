@@ -156,7 +156,8 @@ function navigate(name) {
     pagamentos:   loadPagamentos,
     tarefas:      loadTarefas,
     configuracoes:loadConfiguracoes,
-    social:       loadSocial
+    social:       loadSocial,
+    nfse:         loadNfse
   };
   loaders[name]?.();
 }
@@ -4198,6 +4199,77 @@ function _restaurarFinLayout() {
       if (card) grid.appendChild(card);
     });
   } catch(e) {}
+}
+
+// ============================================================
+// ── NFS-e ─────────────────────────────────────────────────────
+// ============================================================
+async function loadNfse() {
+  const tbody = document.getElementById('nfse-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">Carregando...</td></tr>';
+
+  const lista = await api('GET', '/nfse/lista');
+  if (!lista?.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">Nenhuma NFS-e emitida ainda.</td></tr>';
+    return;
+  }
+
+  const fmtMes = (d) => {
+    if (!d) return '—';
+    const [y, m] = d.split('-');
+    const nomes = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+    return `${nomes[Number(m)-1]}/${y}`;
+  };
+  const fmtData = (d) => {
+    if (!d) return '—';
+    const [y, m, dd] = d.split('-');
+    return `${dd}/${m}/${y}`;
+  };
+  const brl = (v) => Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  tbody.innerHTML = lista.map(n => {
+    const periodo = n.data_ini === n.data_fim
+      ? fmtData(n.data_ini)
+      : `${fmtData(n.data_ini)} – ${fmtData(n.data_fim)}`;
+    const numero = n.nfse_numero || '—';
+    const statusBadge = n.nfse_numero
+      ? '<span style="background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600">✅ Autorizada</span>'
+      : '<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600">⏳ Pendente</span>';
+    const nome = n.apelido ? `${n.apelido} <span style="color:var(--muted);font-size:12px">(${n.nome})</span>` : n.nome;
+    return `<tr>
+      <td style="font-weight:600;color:var(--plum)">${numero}</td>
+      <td>${nome}</td>
+      <td style="font-size:13px">${periodo}</td>
+      <td style="text-align:center">${n.total_sessoes}</td>
+      <td style="text-align:right;font-weight:600">R$ ${brl(n.valor_total)}</td>
+      <td>${statusBadge}</td>
+      <td>
+        <button class="btn btn-ghost btn-xs" onclick="nfseVerStatus('${n.nfse_ref}')" title="Consultar status e PDF">🔍 Ver</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function nfseVerStatus(ref) {
+  const r = await api('GET', `/nfse/status/${encodeURIComponent(ref)}`);
+  if (r?.error) return toast('Erro ao consultar: ' + r.error, 'error');
+
+  const pdfLink = r.link_pdf
+    ? `<a href="${r.link_pdf}" target="_blank" class="btn btn-primary btn-sm" style="margin-top:16px">📥 Baixar PDF</a>`
+    : '';
+  const statusTxt = r.status || '—';
+  const numero    = r.numero  || '—';
+
+  openModal('🧾 Status da NFS-e', `
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div><strong>Referência:</strong> ${ref}</div>
+      <div><strong>Número NF:</strong> ${numero}</div>
+      <div><strong>Status Focus NFe:</strong> ${statusTxt}</div>
+      ${pdfLink}
+      ${r.dados ? `<details style="margin-top:8px"><summary style="cursor:pointer;font-size:12px;color:var(--muted)">Dados completos</summary><pre style="font-size:11px;overflow:auto;max-height:300px;margin-top:8px">${JSON.stringify(r.dados, null, 2)}</pre></details>` : ''}
+    </div>
+  `, null);
 }
 
 // ============================================================

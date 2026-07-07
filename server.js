@@ -963,6 +963,11 @@ app.get('/api/nfse/status/:ref', async (req, res) => {
   }
 });
 
+app.get('/api/nfse/lista', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  res.json(db.getNfseEmitidas());
+});
+
 // ── BULK CEP ENRICHMENT ───────────────────────────────────────
 app.post('/api/admin/enrich-cep', async (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
