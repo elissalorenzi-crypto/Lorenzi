@@ -42,6 +42,7 @@ const migrations = [
   "ALTER TABLE ativ_prof_links ADD COLUMN ativo INTEGER DEFAULT 1",
   "ALTER TABLE agendamentos ADD COLUMN nfse_ref TEXT",
   "ALTER TABLE agendamentos ADD COLUMN nfse_numero TEXT",
+  "ALTER TABLE agendamentos ADD COLUMN nfse_manual INTEGER DEFAULT 0",
 ];
 for (const m of migrations) {
   try { db.exec(m); } catch(_) {}
@@ -1130,14 +1131,20 @@ const deleteSession = (token)         => db.prepare("DELETE FROM sessions WHERE 
 const marcarNfseEmitida = (ids, ref, numero) => {
   if (!ids?.length) return;
   const ph = ids.map(() => '?').join(',');
-  db.prepare(`UPDATE agendamentos SET nfse_ref = ?, nfse_numero = ? WHERE id IN (${ph})`).run(ref, numero || null, ...ids);
+  db.prepare(`UPDATE agendamentos SET nfse_ref = ?, nfse_numero = ?, nfse_manual = 0 WHERE id IN (${ph})`).run(ref, numero || null, ...ids);
+};
+
+const marcarNfseManualmente = (ids, ref) => {
+  if (!ids?.length) return;
+  const ph = ids.map(() => '?').join(',');
+  db.prepare(`UPDATE agendamentos SET nfse_ref = ?, nfse_numero = NULL, nfse_manual = 1 WHERE id IN (${ph})`).run(ref, ...ids);
 };
 
 const cancelarNfse = (ref) =>
-  db.prepare("UPDATE agendamentos SET nfse_ref = NULL, nfse_numero = NULL WHERE nfse_ref = ?").run(ref);
+  db.prepare("UPDATE agendamentos SET nfse_ref = NULL, nfse_numero = NULL, nfse_manual = 0 WHERE nfse_ref = ?").run(ref);
 
 const cancelarNfseSessao = (id) =>
-  db.prepare("UPDATE agendamentos SET nfse_ref = NULL, nfse_numero = NULL WHERE id = ?").run(id);
+  db.prepare("UPDATE agendamentos SET nfse_ref = NULL, nfse_numero = NULL, nfse_manual = 0 WHERE id = ?").run(id);
 
 const atualizarNfseNumero = (ref, numero) =>
   db.prepare("UPDATE agendamentos SET nfse_numero = ? WHERE nfse_ref = ?").run(numero, ref);
@@ -1177,7 +1184,7 @@ module.exports = {
   createConvite, getConvites, getConviteByToken, usarConvite, deleteConvite,
   limparZoomLinks,
   createNotificacao, getNotificacoes, marcarNotificacaoLida, getAgendamentoByZoomMeetingId,
-  getNfseData, marcarNfseEmitida, getNfseEmitidas, cancelarNfse, cancelarNfseSessao, atualizarNfseNumero,
+  getNfseData, marcarNfseEmitida, marcarNfseManualmente, getNfseEmitidas, cancelarNfse, cancelarNfseSessao, atualizarNfseNumero,
   getTarefas, createTarefa, updateTarefa, deleteTarefa, resetTarefasDiarias,
   deletarSessoesFuturas, restaurarSessoesFuturas,
   gerarLinkAtivProf, getLinkAtivProf, getInfoAtivProf, salvarRespostaAtivProf, getRespostasAtivProf,

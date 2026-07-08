@@ -3572,8 +3572,10 @@ function _renderFinRow(a) {
     ? `<button class="btn-nfse" onclick="abrirModalNfse(${a.paciente_id},${_finAno},${_finMes})" title="Emitir NFS-e">📄 NFS-e</button>`
     : '<span style="color:var(--muted);font-size:11px">—</span>';
   const nfseEmitidaCell = a.nfse_ref
-    ? `<button onclick="nfseToggle(${a.id},${a.paciente_id},true)" style="background:#e8f5e9;color:#388e3c;border:1.5px solid #388e3c;font-weight:700;padding:2px 8px;border-radius:5px;font-size:11px;white-space:nowrap;cursor:pointer;min-width:72px">✓ Emitida</button>`
-    : `<button onclick="nfseToggle(${a.id},${a.paciente_id},false)" style="background:#fff;color:transparent;border:1.5px solid #c8e6c9;padding:2px 8px;border-radius:5px;font-size:11px;cursor:pointer;min-width:72px">✓ Emitida</button>`;
+    ? (a.nfse_manual
+        ? `<button onclick="nfseToggle(${a.id},${a.paciente_id},true)" style="background:#e8eaf6;color:#3949ab;border:1.5px solid #3949ab;font-weight:700;padding:2px 8px;border-radius:5px;font-size:11px;white-space:nowrap;cursor:pointer;min-width:88px">✓ Emitida Manu</button>`
+        : `<button onclick="nfseToggle(${a.id},${a.paciente_id},true)" style="background:#e8f5e9;color:#388e3c;border:1.5px solid #388e3c;font-weight:700;padding:2px 8px;border-radius:5px;font-size:11px;white-space:nowrap;cursor:pointer;min-width:88px">✓ Emitida</button>`)
+    : `<button onclick="nfseToggle(${a.id},${a.paciente_id},false)" style="background:#fff;color:transparent;border:1.5px solid #c8e6c9;padding:2px 8px;border-radius:5px;font-size:11px;cursor:pointer;min-width:88px">✓ Emitida</button>`;
   const nomeSafe = (a.paciente_nome || '').replace(/'/g, '');
   return `
     <tr>

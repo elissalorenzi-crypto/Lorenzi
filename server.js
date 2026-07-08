@@ -929,8 +929,9 @@ app.post('/api/nfse/marcar', (req, res) => {
   const { paciente_id, ano, mes, ids } = req.body;
   const ref = `psi-${paciente_id}-${ano}${String(mes).padStart(2,'0')}`;
   try {
-    const { sessoes } = db.getNfseData(Number(paciente_id), Number(ano), Number(mes), ids?.length ? ids : null);
-    db.marcarNfseEmitida(sessoes.map(s => s.id), ref, null);
+    const idsArr = ids?.length ? ids.map(Number) : null;
+    const { sessoes } = db.getNfseData(Number(paciente_id), Number(ano), Number(mes), idsArr);
+    db.marcarNfseManualmente(idsArr || sessoes.map(s => s.id), ref);
     res.json({ ok: true, ref });
   } catch(e) {
     res.status(500).json({ error: e.message });
