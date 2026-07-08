@@ -965,6 +965,12 @@ app.get('/api/nfse/status/:ref', async (req, res) => {
   }
 });
 
+app.delete('/api/nfse/sessao/:id', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  db.cancelarNfseSessao(Number(req.params.id));
+  res.json({ ok: true });
+});
+
 app.delete('/api/nfse/:ref', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
   db.cancelarNfse(req.params.ref);

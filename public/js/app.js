@@ -3572,8 +3572,8 @@ function _renderFinRow(a) {
     ? `<button class="btn-nfse" onclick="abrirModalNfse(${a.paciente_id},${_finAno},${_finMes})" title="Emitir NFS-e">📄 NFS-e</button>`
     : '<span style="color:var(--muted);font-size:11px">—</span>';
   const nfseEmitidaCell = a.nfse_ref
-    ? `<span style="background:#e8f5e9;color:#388e3c;border:1.5px solid #388e3c;font-weight:700;padding:2px 8px;border-radius:5px;font-size:11px;white-space:nowrap">✓ Emitida</span>`
-    : '';
+    ? `<button onclick="nfseToggle(${a.id},${a.paciente_id},true)" style="background:#e8f5e9;color:#388e3c;border:1.5px solid #388e3c;font-weight:700;padding:2px 8px;border-radius:5px;font-size:11px;white-space:nowrap;cursor:pointer;min-width:72px">✓ Emitida</button>`
+    : `<button onclick="nfseToggle(${a.id},${a.paciente_id},false)" style="background:#fff;color:transparent;border:1.5px solid #c8e6c9;padding:2px 8px;border-radius:5px;font-size:11px;cursor:pointer;min-width:72px">✓ Emitida</button>`;
   const nomeSafe = (a.paciente_nome || '').replace(/'/g, '');
   return `
     <tr>
@@ -4423,6 +4423,15 @@ async function nfseAbrirPdf(btn, ref, datas, fone) {
       if (!drop.contains(e.target)) { drop.remove(); document.removeEventListener('click', fechar); }
     });
   }, 0);
+}
+
+async function nfseToggle(agId, pacienteId, jaEmitida) {
+  if (jaEmitida) {
+    await api('DELETE', `/nfse/sessao/${agId}`);
+  } else {
+    await api('POST', '/nfse/marcar', { paciente_id: pacienteId, ano: _finAno, mes: _finMes, ids: [agId] });
+  }
+  loadFinanceiro();
 }
 
 function nfseEditarCelula(btn, ref, numero) {
