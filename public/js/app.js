@@ -4387,16 +4387,18 @@ async function nfseAbrirPdf(btn, ref, datas, fone) {
     const orig = btn.textContent;
     btn.textContent = '⏳';
     btn.disabled = true;
-    const r = await api('GET', `/nfse/status/${encodeURIComponent(ref)}`);
+    const [r, datasArr] = await Promise.all([
+      api('GET', `/nfse/status/${encodeURIComponent(ref)}`),
+      api('GET', `/nfse/sessoes/${encodeURIComponent(ref)}`)
+    ]);
     btn.textContent = orig;
     btn.disabled = false;
     if (r?.error || !r?.link_pdf) return toast('PDF ainda não disponível para esta nota', 'error');
-    _nfsePdfCache[ref] = r.link_pdf;
+    _nfsePdfCache[ref] = { pdf: r.link_pdf, datas: datasArr || [] };
   }
 
-  const pdfUrl = _nfsePdfCache[ref];
-
-  const datasFormatadas = datas.split(',').filter(Boolean).map(d => {
+  const pdfUrl = _nfsePdfCache[ref].pdf;
+  const datasFormatadas = _nfsePdfCache[ref].datas.map(d => {
     const [, m, dd] = d.split('-');
     return `${dd}/${m}`;
   }).join(', ');
