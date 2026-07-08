@@ -3869,7 +3869,7 @@ async function emitirNfseFocus(pacienteId, ano, mes, uid, ids = null) {
     const _nfRef = r.ref || `psi-${pacienteId}-${ano}${String(mes).padStart(2,'0')}`;
     const _s = _sortState['fin-lista-tbody'];
     if (_s) {
-      const _mark = row => { if (row.paciente_id == pacienteId) { row.nfse_ref = _nfRef; if (r.numero) row.nfse_numero = r.numero; } };
+      const _mark = row => { if (row.paciente_id == pacienteId && (!ids?.length || ids.includes(Number(row.id)))) { row.nfse_ref = _nfRef; if (r.numero) row.nfse_numero = r.numero; } };
       _s.dados.forEach(_mark);
       if (_s.dadosFiltrados) _s.dadosFiltrados.forEach(_mark);
       _sortRender('fin-lista-tbody');
