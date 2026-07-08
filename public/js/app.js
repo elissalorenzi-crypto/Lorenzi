@@ -3571,11 +3571,9 @@ function _renderFinRow(a) {
   const nfCell = a.paciente_nota_fiscal === 'sim'
     ? `<button class="btn-nfse" onclick="abrirModalNfse(${a.paciente_id},${_finAno},${_finMes})" title="Emitir NFS-e">📄 NFS-e</button>`
     : '<span style="color:var(--muted);font-size:11px">—</span>';
-  const refEsc = (a.nfse_ref || '').replace(/'/g, "\\'");
-  const numEsc = (a.nfse_numero || '').replace(/'/g, "\\'");
   const nfseEmitidaCell = a.nfse_ref
-    ? `<button onclick="nfseEditarCelula(this,'${refEsc}','${numEsc}')" style="background:#e8f5e9;color:#388e3c;border:1.5px solid #388e3c;font-weight:700;padding:2px 8px;border-radius:5px;font-size:11px;white-space:nowrap;cursor:pointer" title="Editar">${a.nfse_numero ? `✓ nº ${a.nfse_numero}` : '✓ Emitida'} ✏️</button>`
-    : `<button onclick="abrirModalNfse(${a.paciente_id},${_finAno},${_finMes},[${a.id}])" style="background:transparent;border:1px dashed var(--border);color:var(--muted);padding:2px 8px;border-radius:5px;font-size:11px;cursor:pointer" title="Marcar como emitida">+ Marcar</button>`;
+    ? `<span style="background:#e8f5e9;color:#388e3c;border:1.5px solid #388e3c;font-weight:700;padding:2px 8px;border-radius:5px;font-size:11px;white-space:nowrap">✓ Emitida</span>`
+    : '';
   const nomeSafe = (a.paciente_nome || '').replace(/'/g, '');
   return `
     <tr>
