@@ -4368,7 +4368,7 @@ async function loadNfse() {
       <td style="text-align:right;font-weight:600">R$ ${brl(n.valor_total)}</td>
       <td>${statusBadge}</td>
       <td>
-        <button class="btn btn-outline btn-xs" onclick="nfseAbrirPdf(this,'${refEsc}','${datas}','${fone}')" title="Ver opções de PDF">📥 PDF</button>
+        <button class="btn btn-outline btn-xs nfse-pdf-btn" data-ref="${refEsc}" data-datas="${n.datas||''}" data-fone="${fone}" onclick="nfseAbrirPdf(this)" title="Ver opções de PDF">📥 PDF</button>
       </td>
       <td style="display:flex;gap:4px">
         <button class="btn btn-ghost btn-xs" onclick="nfseVerStatus('${refEsc}')" title="Consultar status">🔍 Ver</button>
@@ -4380,7 +4380,11 @@ async function loadNfse() {
 
 const _nfsePdfCache = {};
 
-async function nfseAbrirPdf(btn, ref, datas, fone) {
+async function nfseAbrirPdf(btn) {
+  const ref   = btn.dataset.ref;
+  const datas = btn.dataset.datas || '';
+  const fone  = btn.dataset.fone  || '';
+
   document.querySelectorAll('.nfse-pdf-drop').forEach(d => d.remove());
 
   if (!_nfsePdfCache[ref]) {
