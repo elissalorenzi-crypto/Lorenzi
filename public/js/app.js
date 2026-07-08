@@ -4383,22 +4383,28 @@ const _nfsePdfCache = {};
 async function nfseAbrirPdf(btn, ref, datas, fone) {
   document.querySelectorAll('.nfse-pdf-drop').forEach(d => d.remove());
 
-  if (!_nfsePdfCache[ref]) {
+  if (!_nfsePdfCache[ref] || typeof _nfsePdfCache[ref] === 'string') {
     const orig = btn.textContent;
     btn.textContent = '⏳';
     btn.disabled = true;
-    const [r, datasArr] = await Promise.all([
-      api('GET', `/nfse/status/${encodeURIComponent(ref)}`),
-      api('GET', `/nfse/sessoes/${encodeURIComponent(ref)}`)
-    ]);
-    btn.textContent = orig;
-    btn.disabled = false;
-    if (r?.error || !r?.link_pdf) return toast('PDF ainda não disponível para esta nota', 'error');
-    _nfsePdfCache[ref] = { pdf: r.link_pdf, datas: datasArr || [] };
+    try {
+      const [r, datasArr] = await Promise.all([
+        api('GET', `/nfse/status/${encodeURIComponent(ref)}`),
+        api('GET', `/nfse/sessoes/${encodeURIComponent(ref)}`).catch(() => [])
+      ]);
+      btn.textContent = orig;
+      btn.disabled = false;
+      if (r?.error || !r?.link_pdf) return toast('PDF ainda não disponível para esta nota', 'error');
+      _nfsePdfCache[ref] = { pdf: r.link_pdf, datas: Array.isArray(datasArr) ? datasArr : [] };
+    } catch(e) {
+      btn.textContent = orig;
+      btn.disabled = false;
+      return toast('Erro ao buscar dados da nota', 'error');
+    }
   }
 
   const pdfUrl = _nfsePdfCache[ref].pdf;
-  const datasFormatadas = _nfsePdfCache[ref].datas.map(d => {
+  const datasFormatadas = (_nfsePdfCache[ref].datas || []).map(d => {
     const [, m, dd] = d.split('-');
     return `${dd}/${m}`;
   }).join(', ');
