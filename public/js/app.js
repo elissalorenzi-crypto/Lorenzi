@@ -4394,7 +4394,8 @@ async function nfseAbrirPdf(btn, ref, datas, fone) {
       btn.textContent = orig;
       btn.disabled = false;
       if (r?.error || !r?.link_pdf) return toast('PDF ainda não disponível para esta nota', 'error');
-      _nfsePdfCache[ref] = { pdf: r.link_pdf, datas: Array.isArray(datasArr) ? datasArr : [] };
+      const datasDoServidor = Array.isArray(datasArr) && datasArr.length ? datasArr : (datas || '').split(',').filter(Boolean);
+      _nfsePdfCache[ref] = { pdf: r.link_pdf, datas: datasDoServidor };
     } catch(e) {
       btn.textContent = orig;
       btn.disabled = false;
