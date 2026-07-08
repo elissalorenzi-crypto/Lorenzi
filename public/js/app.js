@@ -4349,9 +4349,8 @@ async function loadNfse() {
   const brl = (v) => Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   tbody.innerHTML = lista.map(n => {
-    const periodo = n.data_ini === n.data_fim
-      ? fmtData(n.data_ini)
-      : `${fmtData(n.data_ini)} – ${fmtData(n.data_fim)}`;
+    const periodo = (n.datas || '').split(',').filter(Boolean)
+      .map(d => { const [,m,dd] = d.split('-'); return `${dd}/${m}`; }).join(', ') || fmtData(n.data_ini);
     const numero = n.nfse_numero || '—';
     const statusBadge = n.nfse_numero
       ? '<span style="background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600">✅ Autorizada</span>'
