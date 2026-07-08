@@ -1454,11 +1454,13 @@ async function abrirModalCobranca(pacienteId) {
       </div>
       <pre id="cobr-preview" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:12px;font-family:inherit;white-space:pre-wrap;word-break:break-word;max-height:220px;overflow-y:auto;margin:0;color:var(--text)"></pre>
     </div>
-    <button class="btn btn-primary" style="width:100%" onclick="cobranÇaEnviarWa('${nome.replace(/'/g,"\\'")}','${fone}','${p.nota_fiscal||'nao'}','${p.forma_pgto||''}')">
+    <button class="btn btn-primary" style="width:100%" onclick="cobranÇaEnviarWa('${nome.replace(/'/g,"\\'")}','${fone}')">
       💬 Abrir WhatsApp com mensagem
     </button>
   `, null);
 
+  _cobrNF    = p.nota_fiscal || 'nao';
+  _cobrForma = p.forma_pgto  || '';
   cobranÇaRecalcular();
 }
 
@@ -1504,17 +1506,15 @@ function cobranÇaGerarMsg(notaFiscal, formaPgto) {
   ].join('\n');
 }
 
+let _cobrNF = 'nao', _cobrForma = '';
+
 function cobranÇaRecalcular() {
   const selecionadas = [...document.querySelectorAll('.cobr-chk:checked')];
   const total = selecionadas.reduce((s, el) => s + parseFloat(el.dataset.valor || 0), 0);
   const elTotal = document.getElementById('cobr-total');
   if (elTotal) elTotal.textContent = 'R$ ' + total.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
   const preview = document.getElementById('cobr-preview');
-  const btnWa = document.querySelector('#cobr-preview ~ button');
-  const onclk = btnWa?.getAttribute('onclick') || '';
-  const notaFiscal = onclk.match(/'(sim|nao)'/)?.[1] || 'nao';
-  const formaPgto  = onclk.match(/'[^']*','[^']*','[^']*','([^']*)'/)?.[1] || '';
-  if (preview) preview.textContent = cobranÇaGerarMsg(notaFiscal, formaPgto);
+  if (preview) preview.textContent = cobranÇaGerarMsg(_cobrNF, _cobrForma);
 }
 
 async function cobranÇaCopiar() {
@@ -1526,10 +1526,10 @@ async function cobranÇaCopiar() {
   } catch { toast('Não foi possível copiar', 'error'); }
 }
 
-function cobranÇaEnviarWa(nome, fone, notaFiscal, formaPgto) {
+function cobranÇaEnviarWa(nome, fone) {
   if (![...document.querySelectorAll('.cobr-chk:checked')].length)
     return toast('Selecione ao menos uma sessão', 'error');
-  const msg = cobranÇaGerarMsg(notaFiscal, formaPgto);
+  const msg = cobranÇaGerarMsg(_cobrNF, _cobrForma);
   const waNum = fone ? toWaNum(fone) : '';
   window.open(`https://wa.me/${waNum}?text=${encodeURIComponent(msg)}`, '_blank');
 }
