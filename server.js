@@ -971,6 +971,13 @@ app.delete('/api/nfse/:ref', (req, res) => {
   res.json({ ok: true });
 });
 
+app.put('/api/nfse/:ref/numero', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  const { numero } = req.body;
+  db.atualizarNfseNumero(req.params.ref, numero || null);
+  res.json({ ok: true });
+});
+
 app.get('/api/nfse/lista', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
   res.json(db.getNfseEmitidas());

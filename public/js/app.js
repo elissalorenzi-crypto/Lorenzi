@@ -3571,9 +3571,11 @@ function _renderFinRow(a) {
   const nfCell = a.paciente_nota_fiscal === 'sim'
     ? `<button class="btn-nfse" onclick="abrirModalNfse(${a.paciente_id},${_finAno},${_finMes})" title="Emitir NFS-e">📄 NFS-e</button>`
     : '<span style="color:var(--muted);font-size:11px">—</span>';
+  const refEsc = (a.nfse_ref || '').replace(/'/g, "\\'");
+  const numEsc = (a.nfse_numero || '').replace(/'/g, "\\'");
   const nfseEmitidaCell = a.nfse_ref
-    ? `<span style="background:#e8f5e9;color:#388e3c;border:1.5px solid #388e3c;font-weight:700;padding:2px 8px;border-radius:5px;font-size:11px;white-space:nowrap">${a.nfse_numero ? `✓ nº ${a.nfse_numero}` : '✓ Emitida'}</span>`
-    : '';
+    ? `<button onclick="nfseEditarCelula(this,'${refEsc}','${numEsc}')" style="background:#e8f5e9;color:#388e3c;border:1.5px solid #388e3c;font-weight:700;padding:2px 8px;border-radius:5px;font-size:11px;white-space:nowrap;cursor:pointer" title="Editar">${a.nfse_numero ? `✓ nº ${a.nfse_numero}` : '✓ Emitida'} ✏️</button>`
+    : `<button onclick="abrirModalNfse(${a.paciente_id},${_finAno},${_finMes},[${a.id}])" style="background:transparent;border:1px dashed var(--border);color:var(--muted);padding:2px 8px;border-radius:5px;font-size:11px;cursor:pointer" title="Marcar como emitida">+ Marcar</button>`;
   const nomeSafe = (a.paciente_nome || '').replace(/'/g, '');
   return `
     <tr>
@@ -4423,6 +4425,46 @@ async function nfseAbrirPdf(btn, ref, datas, fone) {
       if (!drop.contains(e.target)) { drop.remove(); document.removeEventListener('click', fechar); }
     });
   }, 0);
+}
+
+function nfseEditarCelula(btn, ref, numero) {
+  document.querySelectorAll('.nfse-edit-pop').forEach(d => d.remove());
+
+  const pop = document.createElement('div');
+  pop.className = 'nfse-edit-pop';
+  pop.style.cssText = 'position:fixed;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.15);z-index:9999;padding:14px;min-width:230px';
+  pop.innerHTML = `
+    <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px">Nº da NFS-e</div>
+    <input id="nfse-edit-input" type="text" value="${numero}" placeholder="ex: 34"
+      style="width:100%;border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px;margin-bottom:10px;box-sizing:border-box">
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-primary btn-sm" style="flex:1" onclick="nfseSalvarNumero('${ref}')">💾 Salvar</button>
+      <button class="btn btn-ghost btn-sm" style="color:var(--rose);border-color:var(--rose)" onclick="nfseDeletar('${ref}')">🗑</button>
+    </div>
+  `;
+
+  const rect = btn.getBoundingClientRect();
+  pop.style.top  = (rect.bottom + 4) + 'px';
+  pop.style.left = Math.min(rect.left, window.innerWidth - 250) + 'px';
+  document.body.appendChild(pop);
+  pop.querySelector('input').focus();
+
+  setTimeout(() => {
+    document.addEventListener('click', function fechar(e) {
+      if (!pop.contains(e.target) && e.target !== btn) { pop.remove(); document.removeEventListener('click', fechar); }
+    });
+  }, 0);
+}
+
+async function nfseSalvarNumero(ref) {
+  const input = document.getElementById('nfse-edit-input');
+  const numero = input?.value.trim() || null;
+  const r = await api('PUT', `/nfse/${encodeURIComponent(ref)}/numero`, { numero });
+  if (r?.error) return toast('Erro: ' + r.error, 'error');
+  document.querySelectorAll('.nfse-edit-pop').forEach(d => d.remove());
+  toast('Número salvo');
+  loadFinanceiro();
+  loadNfse();
 }
 
 async function nfseDeletar(ref) {
