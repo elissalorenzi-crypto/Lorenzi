@@ -4419,10 +4419,9 @@ async function nfseAbrirPdf(btn, ref, datas, fone) {
   }
 
   const pdfUrl = _nfsePdfCache[ref].pdf;
-  const datasFormatadas = (_nfsePdfCache[ref].datas || []).map(d => {
-    const [, m, dd] = d.split('-');
-    return `${dd}/${m}`;
-  }).join(', ');
+  const datasEditavel = document.querySelector(`.nfse-datas-edit[data-ref="${ref}"]`)?.textContent?.trim();
+  const datasFormatadas = datasEditavel
+    || (_nfsePdfCache[ref].datas || []).map(d => { const [, m, dd] = d.split('-'); return `${dd}/${m}`; }).join(', ');
 
   const msg = `Oi, segue a Nota Fiscal referente às sessões realizadas nas datas ${datasFormatadas}.\n\nClique no link para ter acesso à nota fiscal:\n📄 ${pdfUrl}\n\nObrigado!`;
   const waNum = fone ? toWaNum(fone) : '';
