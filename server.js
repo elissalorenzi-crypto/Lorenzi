@@ -985,6 +985,13 @@ app.put('/api/nfse/:ref/numero', (req, res) => {
   res.json({ ok: true });
 });
 
+app.put('/api/nfse/:ref/datas', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  const { datas_texto } = req.body;
+  db.upsertNfseDatas(req.params.ref, datas_texto || null);
+  res.json({ ok: true });
+});
+
 app.get('/api/nfse/sessoes/:ref', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
   const rows = db.prepare("SELECT data FROM agendamentos WHERE nfse_ref = ? ORDER BY data").all(req.params.ref);

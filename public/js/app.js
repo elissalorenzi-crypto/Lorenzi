@@ -4351,8 +4351,9 @@ async function loadNfse() {
   const brl = (v) => Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   tbody.innerHTML = lista.map(n => {
-    const periodo = (n.datas || '').split(',').filter(Boolean)
-      .map(d => { const [,m,dd] = d.split('-'); return `${dd}/${m}`; }).join(', ') || fmtData(n.data_ini);
+    const periodo = n.datas_texto
+      || (n.datas || '').split(',').filter(Boolean).map(d => { const [,m,dd] = d.split('-'); return `${dd}/${m}`; }).join(', ')
+      || fmtData(n.data_ini);
     const numero = n.nfse_numero || '—';
     const statusBadge = n.nfse_numero
       ? '<span style="background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600">✅ Autorizada</span>'
@@ -4364,7 +4365,7 @@ async function loadNfse() {
     return `<tr>
       <td style="font-weight:600;color:var(--plum)">${numero}</td>
       <td>${nome}</td>
-      <td style="font-size:13px">${periodo}</td>
+      <td style="font-size:13px"><span contenteditable="true" class="nfse-datas-edit" data-ref="${n.nfse_ref}" style="display:inline-block;min-width:80px;padding:2px 4px;border-radius:4px;outline:none;cursor:text" onblur="nfseSalvarDatas(this)" onfocus="this.style.background='#fafafa';this.style.boxShadow='0 0 0 1.5px var(--plum)'" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">${periodo}</span></td>
       <td style="text-align:center">${n.total_sessoes}</td>
       <td style="text-align:right;font-weight:600">R$ ${brl(n.valor_total)}</td>
       <td>${statusBadge}</td>
@@ -4377,6 +4378,18 @@ async function loadNfse() {
       </td>
     </tr>`;
   }).join('');
+}
+
+async function nfseSalvarDatas(el) {
+  el.style.background = '';
+  el.style.boxShadow = '';
+  const ref = el.dataset.ref;
+  const texto = el.textContent.trim();
+  try {
+    await api('PUT', `/nfse/${encodeURIComponent(ref)}/datas`, { datas_texto: texto || null });
+  } catch(e) {
+    toast('Erro ao salvar datas', 'error');
+  }
 }
 
 const _nfsePdfCache = {};

@@ -48,6 +48,14 @@ for (const m of migrations) {
   try { db.exec(m); } catch(_) {}
 }
 
+db.exec(`CREATE TABLE IF NOT EXISTS nfse_meta (
+  ref TEXT PRIMARY KEY,
+  datas_texto TEXT
+)`);
+
+const upsertNfseDatas = (ref, texto) =>
+  db.prepare("INSERT OR REPLACE INTO nfse_meta (ref, datas_texto) VALUES (?, ?)").run(ref, texto);
+
 // Limpeza única: apaga todos os convites de teste (2026-06-24)
 try {
   const flag = db.prepare("SELECT valor FROM configuracoes WHERE chave='_convites_limpos_20260624'").get();
@@ -1165,9 +1173,11 @@ const getNfseEmitidas = () =>
       MAX(a.data)   AS data_fim,
       (SELECT GROUP_CONCAT(a2.data, ',')
        FROM (SELECT data FROM agendamentos WHERE nfse_ref = a.nfse_ref ORDER BY data) a2
-      ) AS datas
+      ) AS datas,
+      nm.datas_texto
     FROM agendamentos a
     JOIN pacientes p ON a.paciente_id = p.id
+    LEFT JOIN nfse_meta nm ON nm.ref = a.nfse_ref
     WHERE a.nfse_ref IS NOT NULL
     GROUP BY a.nfse_ref
     ORDER BY MAX(a.data) DESC
@@ -1184,7 +1194,7 @@ module.exports = {
   createConvite, getConvites, getConviteByToken, usarConvite, deleteConvite,
   limparZoomLinks,
   createNotificacao, getNotificacoes, marcarNotificacaoLida, getAgendamentoByZoomMeetingId,
-  getNfseData, marcarNfseEmitida, marcarNfseManualmente, getNfseEmitidas, cancelarNfse, cancelarNfseSessao, atualizarNfseNumero,
+  getNfseData, marcarNfseEmitida, marcarNfseManualmente, getNfseEmitidas, upsertNfseDatas, cancelarNfse, cancelarNfseSessao, atualizarNfseNumero,
   getTarefas, createTarefa, updateTarefa, deleteTarefa, resetTarefasDiarias,
   deletarSessoesFuturas, restaurarSessoesFuturas,
   gerarLinkAtivProf, getLinkAtivProf, getInfoAtivProf, salvarRespostaAtivProf, getRespostasAtivProf,
