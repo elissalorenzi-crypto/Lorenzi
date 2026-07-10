@@ -1164,7 +1164,10 @@ async function enviarRotasProfissionais(id) {
 async function enviarListaProfissoes(id) {
   try {
     const base = location.origin;
-    const p = await api('GET', `/pacientes/${id}`);
+    const [p, respostas] = await Promise.all([
+      api('GET', `/pacientes/${id}`),
+      api('GET', `/atividade-profissoes/respostas?paciente_id=${id}`).catch(() => [])
+    ]);
     const nome = p.nome, whatsapp = p.whatsapp || '';
     const r = await api('POST', '/atividade-profissoes/link', { paciente_id: id });
     if (!r || !r.token) { toast('Erro ao gerar link', 'error'); return; }
@@ -1173,6 +1176,22 @@ async function enviarListaProfissoes(id) {
     const waMsg = encodeURIComponent('Olá, ' + waNome + '! 😊\nSegue o link da atividade de Orientação Profissional:\n' + url + '\n\nClique no link, explore as profissões e marque as que você gostaria de conhecer melhor. Qualquer dúvida me chame! 🌟');
     const waLink = whatsapp ? 'https://wa.me/' + toWaNum(whatsapp) + '?text=' + waMsg : '';
     window._urlListaProf = url;
+
+    let respostasHtml = '';
+    if (respostas && respostas.length) {
+      const ultima = respostas[0];
+      const profs = ultima.profissoes || [];
+      const dt = ultima.created_at ? ultima.created_at.slice(0,10).split('-').reverse().join('/') : '';
+      respostasHtml = `
+        <hr style="margin:16px 0;border-color:#e0d0ff">
+        <strong style="color:#7b1fa2;font-size:13px">📋 Respostas recebidas (${dt}) — ${profs.length} profissões marcadas${respostas.length > 1 ? ` · ${respostas.length} envios` : ''}</strong>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">
+          ${profs.map(mp => `<span style="background:#f3e5f5;color:#6a1b9a;padding:3px 10px;border-radius:12px;font-size:12px">${mp}</span>`).join('')}
+        </div>`;
+    } else {
+      respostasHtml = `<hr style="margin:16px 0;border-color:#e0d0ff"><p style="font-size:12px;color:#aaa">Nenhuma resposta recebida ainda.</p>`;
+    }
+
     openModal('📋 Lista de Profissões — ' + nome, `
       <p style="margin-bottom:12px;font-size:14px;color:#555">Link gerado para <strong>${nome}</strong>. Envie pelo WhatsApp ou copie o link.</p>
       <div style="background:#f8f4ff;border:1.5px solid #d8b8ff;border-radius:8px;padding:10px 14px;font-size:12px;word-break:break-all;margin-bottom:14px;color:#5c35a0">${url}</div>
@@ -1180,8 +1199,7 @@ async function enviarListaProfissoes(id) {
         <button class="btn btn-primary" onclick="navigator.clipboard.writeText(window._urlListaProf).then(function(){toast('Link copiado!')})">📋 Copiar link</button>
         ${waLink ? '<a href="' + waLink + '" target="_blank" class="btn btn-primary" style="background:#25d366;border-color:#25d366;text-decoration:none">💬 Enviar pelo WhatsApp</a>' : '<span style="color:#999;font-size:13px">WhatsApp não cadastrado</span>'}
       </div>
-      <hr style="margin:16px 0;border-color:#e0d0ff">
-      <p style="font-size:12px;color:#888">As respostas ficam salvas no sistema. Para ver, abra o perfil do aluno (botão 👁).</p>
+      ${respostasHtml}
     `, null);
   } catch(e) {
     toast('Erro ao gerar link: ' + e.message, 'error');

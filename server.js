@@ -1191,7 +1191,8 @@ app.post('/api/atividade-profissoes/responder/:token', (req, res) => {
 // Admin: ver respostas (todas ou de um aluno)
 app.get('/api/atividade-profissoes/respostas', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
-  res.json(db.getRespostasAtivProf(req.query.paciente_id || null));
+  const pid = req.query.paciente_id ? Number(req.query.paciente_id) : null;
+  res.json(db.getRespostasAtivProf(pid));
 });
 
 // ─── ANÁLISE CLÍNICA IA ──────────────────────────────────────
