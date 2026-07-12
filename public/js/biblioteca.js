@@ -1663,6 +1663,39 @@ Para cada caminho apresente:
                 <span style="margin-left:auto;opacity:.6;font-size:11px">↗ abrir</span>
               </a>
             `
+          },
+          {
+            id: 'profissao-medicina-geral',
+            titulo: 'Medicina Geral',
+            subtitulo: 'Informações sobre a carreira',
+            icone: '🩺',
+            conteudo: `
+              <h3>🩺 Medicina Geral</h3>
+
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
+                <a href="https://wa.me/?text=${encodeURIComponent('Olá! Seguem materiais sobre a profissão de *Medicina*:\n\n🎬 Vídeo 1: https://www.instagram.com/reel/DTyrZsvjdJo/\n🎬 Vídeo 2: https://youtu.be/ShJiFQGeB3w\n\n🌐 Site com mais informações: https://querobolsa.com.br/carreiras-e-profissoes/medico')}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#25d366;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:700">💬 Enviar links por WhatsApp</a>
+                <button onclick="navigator.clipboard.writeText('Olá! Seguem materiais sobre a profissão de Medicina:\\n\\n🎬 Vídeo 1: https://www.instagram.com/reel/DTyrZsvjdJo/\\n🎬 Vídeo 2: https://youtu.be/ShJiFQGeB3w\\n\\n🌐 Site com mais informações: https://querobolsa.com.br/carreiras-e-profissoes/medico').then(()=>toast('Links copiados!'))" style="display:inline-flex;align-items:center;gap:8px;background:#f0f0f0;color:#333;padding:10px 16px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer">📋 Copiar links</button>
+              </div>
+
+              <h3>🎬 Vídeos — Conheça profissionais da área</h3>
+              <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
+                <a href="https://www.instagram.com/reel/DTyrZsvjdJo/?igsh=MWFhem50dXRxOW51eA==" target="_blank" style="display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:#fff;padding:12px 16px;border-radius:10px;text-decoration:none;font-size:13px;font-weight:600">
+                  <span style="font-size:22px">📸</span>
+                  <span>Ver vídeo no Instagram</span>
+                  <span style="margin-left:auto;opacity:.8;font-size:11px">↗ abrir</span>
+                </a>
+                <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.12)">
+                  <iframe src="https://www.youtube.com/embed/ShJiFQGeB3w" title="Medicina Geral" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:10px"></iframe>
+                </div>
+              </div>
+
+              <h3>🌐 Site — Saiba mais sobre a carreira</h3>
+              <a href="https://querobolsa.com.br/carreiras-e-profissoes/medico" target="_blank" style="display:flex;align-items:center;gap:10px;background:#f0f7ff;border:1.5px solid #b3d0f5;color:#1a4f8a;padding:12px 16px;border-radius:10px;text-decoration:none;font-size:13px;font-weight:600">
+                <span style="font-size:20px">📖</span>
+                <span>Quero Bolsa — Medicina</span>
+                <span style="margin-left:auto;opacity:.6;font-size:11px">↗ abrir</span>
+              </a>
+            `
           }
         ]
       }
