@@ -1531,7 +1531,36 @@ Para cada caminho apresente:
         id: 'infos-profissoes',
         nome: 'Informações sobre as profissões',
         icone: '🔍',
-        atividades: []
+        atividades: [
+          {
+            id: 'profissao-marketing',
+            titulo: 'Marketing',
+            subtitulo: 'Informações sobre a carreira',
+            icone: '📣',
+            conteudo: `
+              <h3>📣 Marketing</h3>
+
+              <h3>🎬 Vídeos — Conheça profissionais da área</h3>
+              <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
+                <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.12)">
+                  <iframe src="https://www.youtube.com/embed/yi-22IkcMxo" title="Marketing" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:10px"></iframe>
+                </div>
+                <a href="https://vt.tiktok.com/ZSCkgDgb9/" target="_blank" style="display:flex;align-items:center;gap:10px;background:#010101;color:#fff;padding:12px 16px;border-radius:10px;text-decoration:none;font-size:13px;font-weight:600">
+                  <span style="font-size:22px">🎵</span>
+                  <span>Ver vídeo no TikTok</span>
+                  <span style="margin-left:auto;opacity:.6;font-size:11px">↗ abrir</span>
+                </a>
+              </div>
+
+              <h3>🌐 Site — Saiba mais sobre a carreira</h3>
+              <a href="https://www.guiadacarreira.com.br/blog/marketing" target="_blank" style="display:flex;align-items:center;gap:10px;background:#f0f7ff;border:1.5px solid #b3d0f5;color:#1a4f8a;padding:12px 16px;border-radius:10px;text-decoration:none;font-size:13px;font-weight:600">
+                <span style="font-size:20px">📖</span>
+                <span>Guia da Carreira — Marketing</span>
+                <span style="margin-left:auto;opacity:.6;font-size:11px">↗ abrir</span>
+              </a>
+            `
+          }
+        ]
       }
     ]
   },
