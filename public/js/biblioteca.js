@@ -1665,6 +1665,37 @@ Quero que você me explique de forma clara, prática e realista:
             `
           }
         ]
+      },
+      {
+        id: 'combinados-pesquisar-caminho',
+        nome: 'Pesquisar cada caminho profissional mapeado na sessão',
+        icone: '🔎',
+        atividades: [
+          {
+            id: 'pesquisar-caminho-profissional',
+            titulo: 'Pesquisar cada caminho profissional mapeado na sessão',
+            subtitulo: 'Combinado · Pesquisa',
+            icone: '🔎',
+            conteudo: `
+              <h3>🔎 Pesquisar cada caminho profissional mapeado na sessão</h3>
+
+              <ol style="line-height:2.2;font-size:14px;padding-left:20px">
+                <li>Assistir os vídeos das profissões enviados a seguir</li>
+                <li>Ler as informações da profissão no site enviado a seguir</li>
+                <li>
+                  <strong>Comando de IA:</strong>
+                  <ul style="margin-top:6px;margin-bottom:6px;line-height:2">
+                    <li>Copie o comando de IA enviado</li>
+                    <li>Cole o comando na IA</li>
+                    <li>Substitua o nome da profissão pelo caminho profissional que deseja pesquisar</li>
+                    <li>Leia atentamente todas as informações apresentadas sobre a profissão</li>
+                  </ul>
+                </li>
+                <li>Após a pesquisa, preencha a pasta do <strong>Jogo Critérios para escolhas profissionais</strong> — link foi enviado por e-mail ✉️</li>
+              </ol>
+            `
+          }
+        ]
       }
     ]
   }
