@@ -5429,7 +5429,9 @@ function abrirPasta(areaId, pastaId) {
     return;
   }
 
-  ct.innerHTML = `<div class="bib-grid">${pasta.atividades.map(a => `
+  ct.innerHTML = `
+    <input type="text" id="bib-pasta-busca" placeholder="🔍 Buscar profissão..." oninput="bibFiltrarPasta(this)" style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;outline:none;margin-bottom:16px;display:block">
+    <div class="bib-grid" id="bib-pasta-grid">${pasta.atividades.map(a => `
     <div class="bib-card bib-atv-card" onclick="abrirAtividade('${areaId}','${pastaId}','${a.id}')">
       <div class="bib-card-header ${card.cor || 'bib-op'}" style="cursor:pointer;min-height:72px">
         <span class="bib-icon" style="font-size:26px">${a.icone || '📄'}</span>
@@ -5439,6 +5441,14 @@ function abrirPasta(areaId, pastaId) {
         </div>
       </div>
     </div>`).join('')}</div>`;
+}
+
+function bibFiltrarPasta(input) {
+  const v = input.value.toLowerCase().trim();
+  document.querySelectorAll('#bib-pasta-grid .bib-atv-card').forEach(card => {
+    const titulo = card.querySelector('.bib-titulo')?.textContent.toLowerCase() || '';
+    card.style.display = (!v || titulo.includes(v)) ? '' : 'none';
+  });
 }
 
 function abrirAtividade(areaId, pastaId, atvId) {

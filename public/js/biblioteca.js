@@ -1540,6 +1540,11 @@ Para cada caminho apresente:
             conteudo: `
               <h3>📣 Marketing</h3>
 
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
+                <a href="https://wa.me/?text=${encodeURIComponent('Olá! Seguem materiais sobre a profissão de *Marketing*:\n\n🎬 Vídeo 1: https://youtu.be/yi-22IkcMxo\n🎬 Vídeo 2: https://vt.tiktok.com/ZSCkgDgb9/\n\n🌐 Saiba mais: https://www.guiadacarreira.com.br/blog/marketing')}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#25d366;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:700">💬 Enviar links por WhatsApp</a>
+                <button onclick="navigator.clipboard.writeText('Olá! Seguem materiais sobre a profissão de Marketing:\\n\\n🎬 Vídeo 1: https://youtu.be/yi-22IkcMxo\\n🎬 Vídeo 2: https://vt.tiktok.com/ZSCkgDgb9/\\n\\n🌐 Saiba mais: https://www.guiadacarreira.com.br/blog/marketing').then(()=>toast('Links copiados!'))" style="display:inline-flex;align-items:center;gap:8px;background:#f0f0f0;color:#333;padding:10px 16px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer">📋 Copiar links</button>
+              </div>
+
               <h3>🎬 Vídeos — Conheça profissionais da área</h3>
               <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
                 <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.12)">
@@ -1567,6 +1572,11 @@ Para cada caminho apresente:
             icone: '📢',
             conteudo: `
               <h3>📢 Publicidade e Propaganda</h3>
+
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
+                <a href="https://wa.me/?text=${encodeURIComponent('Olá! Seguem materiais sobre a profissão de *Publicidade e Propaganda*:\n\n🎬 Vídeo 1: https://youtu.be/Eb6xbEmZHHU\n🎬 Vídeo 2: https://vt.tiktok.com/ZSQWjk4jP/\n\n🌐 Saiba mais: https://www.guiadacarreira.com.br/blog/publicidade-propaganda')}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#25d366;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:700">💬 Enviar links por WhatsApp</a>
+                <button onclick="navigator.clipboard.writeText('Olá! Seguem materiais sobre a profissão de Publicidade e Propaganda:\\n\\n🎬 Vídeo 1: https://youtu.be/Eb6xbEmZHHU\\n🎬 Vídeo 2: https://vt.tiktok.com/ZSQWjk4jP/\\n\\n🌐 Saiba mais: https://www.guiadacarreira.com.br/blog/publicidade-propaganda').then(()=>toast('Links copiados!'))" style="display:inline-flex;align-items:center;gap:8px;background:#f0f0f0;color:#333;padding:10px 16px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer">📋 Copiar links</button>
+              </div>
 
               <h3>🎬 Vídeos — Conheça profissionais da área</h3>
               <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
