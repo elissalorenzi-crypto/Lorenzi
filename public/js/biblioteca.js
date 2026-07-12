@@ -1526,6 +1526,12 @@ Para cada caminho apresente:
 `
           }
         ]
+      },
+      {
+        id: 'infos-profissoes',
+        nome: 'Informações sobre as profissões',
+        icone: '🔍',
+        atividades: []
       }
     ]
   },

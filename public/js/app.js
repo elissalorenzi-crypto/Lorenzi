@@ -5424,6 +5424,11 @@ function abrirPasta(areaId, pastaId) {
     <span class="bib-bc-sep">›</span>
     <span class="bib-bc-cur">${pasta.icone || '📁'} ${pasta.nome}</span>`;
 
+  if (!pasta.atividades?.length) {
+    ct.innerHTML = `<div class="empty-state"><span class="empty-icon">📂</span><p>Nenhuma profissão cadastrada ainda.</p></div>`;
+    return;
+  }
+
   ct.innerHTML = `<div class="bib-grid">${pasta.atividades.map(a => `
     <div class="bib-card bib-atv-card" onclick="abrirAtividade('${areaId}','${pastaId}','${a.id}')">
       <div class="bib-card-header ${card.cor || 'bib-op'}" style="cursor:pointer;min-height:72px">
