@@ -1536,5 +1536,46 @@ Para cada caminho apresente:
     icone: '💼',
     cor: 'bib-oc',
     pastas: []
+  },
+  {
+    id: 'combinados-sessao',
+    titulo: 'Combinados da Sessão',
+    subtitulo: 'Tarefas e atividades para casa',
+    icone: '🤝',
+    cor: 'bib-comb',
+    pastas: [
+      {
+        id: 'combinados-pasta',
+        nome: 'Combinados da Sessão',
+        icone: '📋',
+        atividades: [
+          {
+            id: 'classificar-habilidades-pessoal-prof',
+            titulo: 'Classificar habilidades em vida pessoal e profissional',
+            subtitulo: 'Combinado · Workbook',
+            icone: '⚖️',
+            conteudo: `
+              <h3>Objetivo</h3>
+              <p>Classificar as habilidades mapeadas em duas categorias:</p>
+              <ul>
+                <li><strong>Vida pessoal</strong> — habilidades que deseja manter na vida pessoal</li>
+                <li><strong>Vida profissional</strong> — habilidades que consegue imaginar aplicando profissionalmente</li>
+              </ul>
+
+              <h3>Como realizar — Workbook</h3>
+              <p>Para cada habilidade mapeada, avaliar e responder <strong>Sim</strong> ou <strong>Não</strong> para as três questões abaixo:</p>
+
+              <ul>
+                <li>✔️ Quero aplicar essa habilidade na minha vida e na vida das outras pessoas?</li>
+                <li>✔️ Quero dominar essa habilidade mais profundamente e faço questão de ter contato com ela diariamente?</li>
+                <li>✔️ Estou disposta a lidar com a exigência se levar essa habilidade para um trabalho?</li>
+              </ul>
+
+              <p>Com base nas respostas, classificar cada habilidade como <strong>vida pessoal</strong> ou <strong>vida profissional</strong>.</p>
+            `
+          }
+        ]
+      }
+    ]
   }
 ];

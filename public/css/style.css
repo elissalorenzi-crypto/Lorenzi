@@ -974,8 +974,9 @@ tbody tr:hover { background: var(--rose-pale); }
   display: flex; align-items: center; gap: 14px;
   padding: 20px 20px 16px;
 }
-.bib-op  { background: linear-gradient(135deg, #4A3728 0%, #6B4F3A 100%); }
-.bib-oc  { background: linear-gradient(135deg, #C4956A 0%, #A07040 100%); }
+.bib-op   { background: linear-gradient(135deg, #4A3728 0%, #6B4F3A 100%); }
+.bib-oc   { background: linear-gradient(135deg, #C4956A 0%, #A07040 100%); }
+.bib-comb { background: linear-gradient(135deg, #2A6B4A 0%, #1e4d36 100%); }
 .bib-icon { font-size: 32px; flex-shrink: 0; }
 .bib-titulo   { font-size: 15px; font-weight: 700; color: #fff; line-height: 1.2; }
 .bib-subtitulo{ font-size: 12px; color: rgba(255,255,255,.75); margin-top: 2px; }
