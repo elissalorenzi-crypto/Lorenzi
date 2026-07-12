@@ -1573,7 +1573,7 @@ Para cada caminho apresente:
               </ul>
 
               <h3>Prompt de apoio — Exigências reais da habilidade</h3>
-              <p>Comando de IA para te ajudar a mapear as exigências de cada habilidade, caso tenha dificuldade de pensar sozinha — copie, cole na IA e mude o nome da habilidade.</p>
+              <p>Comando de IA para te ajudar a mapear as exigências de cada habilidade — copie, cole na IA e mude o nome da habilidade.</p>
               <p>Cole o texto abaixo no ChatGPT (ou outra IA) substituindo <strong>[COLOCAR HABILIDADE]</strong> pela habilidade que deseja analisar:</p>
               <blockquote style="background:#f8f4ff;border-left:4px solid var(--plum);padding:12px 16px;border-radius:0 8px 8px 0;font-size:13px;line-height:1.8;margin:8px 0;white-space:pre-wrap">Você é um especialista em carreira, mercado de trabalho e desenvolvimento profissional.
 
