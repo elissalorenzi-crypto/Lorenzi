@@ -1570,8 +1570,6 @@ Para cada caminho apresente:
                 <li>✔️ Quero dominar essa habilidade mais profundamente e faço questão de ter contato com ela diariamente?</li>
                 <li>✔️ Estou disposta a lidar com a exigência se levar essa habilidade para um trabalho?</li>
               </ul>
-
-              <p>Com base nas respostas, classificar cada habilidade como <strong>vida pessoal</strong> ou <strong>vida profissional</strong>.</p>
             `
           }
         ]
