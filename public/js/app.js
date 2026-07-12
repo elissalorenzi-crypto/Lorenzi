@@ -1056,71 +1056,70 @@ function _renderPacienteRow(p, i) {
     <tr>
       <td style="text-align:center;color:var(--muted);font-size:11px;font-weight:600;width:28px;padding:0 4px">${i + 1}</td>
       <td>
-        <div style="font-weight:700;color:var(--plum)">${p.nome}</div>
+        <div style="font-weight:700;color:var(--plum);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px" title="${p.nome}">${p.apelido || p.nome.split(' ')[0]} <span style="font-weight:400;color:var(--muted);font-size:11px">${p.nome.split(' ').slice(1,2).join('')}</span></div>
       </td>
-      <td style="font-size:12px;color:var(--muted)">${p.cpf || '—'}</td>
-      <td>
+      <td style="padding:0 4px">
         ${p.frequencia ? `
-        <select class="status-select ${p.frequencia}"
+        <select class="status-select ${p.frequencia}" style="font-size:11px;padding:2px 4px"
                 onchange="this.className='status-select '+this.value;alterarFrequencia(${p.id},this.value)">
-          <option value="4x-mes"  ${(p.frequencia==='4x-mes'||p.frequencia==='semanal') ?'selected':''}>4x ao mês</option>
-          <option value="2x-mes"  ${p.frequencia==='2x-mes'  ?'selected':''}>2x ao mês</option>
-          <option value="1x-mes"  ${p.frequencia==='1x-mes'  ?'selected':''}>1x ao mês</option>
+          <option value="4x-mes"  ${(p.frequencia==='4x-mes'||p.frequencia==='semanal') ?'selected':''}>4x/mês</option>
+          <option value="2x-mes"  ${p.frequencia==='2x-mes'  ?'selected':''}>2x/mês</option>
+          <option value="1x-mes"  ${p.frequencia==='1x-mes'  ?'selected':''}>1x/mês</option>
         </select>` : `
-        <select class="status-select 4x-mes" style="opacity:.5"
+        <select class="status-select 4x-mes" style="font-size:11px;padding:2px 4px;opacity:.5"
                 onchange="this.className='status-select '+this.value;this.style.opacity=1;alterarFrequencia(${p.id},this.value)">
           <option value="" disabled selected>—</option>
-          <option value="4x-mes">4x ao mês</option>
-          <option value="2x-mes">2x ao mês</option>
-          <option value="1x-mes">1x ao mês</option>
+          <option value="4x-mes">4x/mês</option>
+          <option value="2x-mes">2x/mês</option>
+          <option value="1x-mes">1x/mês</option>
         </select>`}
       </td>
-      <td>
+      <td style="padding:0 4px">
         ${p.freq_pgto ? `
-        <select class="status-select ${p.freq_pgto}"
+        <select class="status-select ${p.freq_pgto}" style="font-size:11px;padding:2px 4px"
                 onchange="this.className='status-select '+this.value;alterarFreqPgto(${p.id},this.value)">
-          <option value="por-sessao" ${(p.freq_pgto==='por-sessao'||p.freq_pgto==='fp-semanal')?'selected':''}>Por sessão</option>
+          <option value="por-sessao" ${(p.freq_pgto==='por-sessao'||p.freq_pgto==='fp-semanal')?'selected':''}>Sessão</option>
           <option value="fp-mensal"  ${(p.freq_pgto==='fp-mensal'||p.freq_pgto==='cada4') ?'selected':''}>Mensal</option>
         </select>` : `
-        <select class="status-select fp-mensal" style="opacity:.5"
+        <select class="status-select fp-mensal" style="font-size:11px;padding:2px 4px;opacity:.5"
                 onchange="this.className='status-select '+this.value;this.style.opacity=1;alterarFreqPgto(${p.id},this.value)">
           <option value="" disabled selected>—</option>
-          <option value="por-sessao">Por sessão</option>
+          <option value="por-sessao">Sessão</option>
           <option value="fp-mensal">Mensal</option>
         </select>`}
       </td>
-      <td>
-        <select class="status-select ${p.forma_pgto || 'pix'}"
+      <td style="padding:0 4px">
+        <select class="status-select ${p.forma_pgto || 'pix'}" style="font-size:11px;padding:2px 4px"
                 onchange="this.className='status-select '+this.value;alterarFormaPgto(${p.id},this.value)">
           <option value="pix"          ${p.forma_pgto==='pix'          ?'selected':''}>PIX</option>
-          <option value="credito"      ${p.forma_pgto==='credito'      ?'selected':''}>Crédito</option>
-          <option value="debito"       ${p.forma_pgto==='debito'       ?'selected':''}>Débito</option>
-          <option value="dinheiro"     ${p.forma_pgto==='dinheiro'     ?'selected':''}>Dinheiro</option>
-          <option value="transferencia"${p.forma_pgto==='transferencia'?'selected':''}>Transf.</option>
+          <option value="credito"      ${p.forma_pgto==='credito'      ?'selected':''}>Créd.</option>
+          <option value="debito"       ${p.forma_pgto==='debito'       ?'selected':''}>Déb.</option>
+          <option value="dinheiro"     ${p.forma_pgto==='dinheiro'     ?'selected':''}>Din.</option>
+          <option value="transferencia"${p.forma_pgto==='transferencia'?'selected':''}>TED</option>
         </select>
       </td>
-      <td>
-        <select class="status-select nf ${p.nota_fiscal === 'sim' ? 'sim' : 'nao'}"
+      <td style="padding:0 4px;text-align:center">
+        <select class="status-select nf ${p.nota_fiscal === 'sim' ? 'sim' : 'nao'}" style="font-size:11px;padding:2px 4px"
                 onchange="this.className='status-select nf '+this.value;alterarNotaFiscal(${p.id},this.value)">
           <option value="sim" ${p.nota_fiscal === 'sim' ? 'selected' : ''}>Sim</option>
           <option value="nao" ${p.nota_fiscal !== 'sim' ? 'selected' : ''}>Não</option>
         </select>
       </td>
-      <td class="text-right fw-bold">${BRL(p.valor_sessao)}</td>
-      <td>
-        <select class="status-select ${p.ativo ? 'ativo' : 'finalizado'}"
+      <td class="text-right fw-bold" style="font-size:12px;white-space:nowrap">${BRL(p.valor_sessao)}</td>
+      <td style="padding:0 4px">
+        <select class="status-select ${p.ativo ? 'ativo' : 'finalizado'}" style="font-size:11px;padding:2px 4px"
                 onchange="this.className='status-select '+(this.value==='1'?'ativo':'finalizado');alterarStatusCliente(${p.id}, this.value, this)">
           <option value="1" ${p.ativo ? 'selected' : ''}>Ativo</option>
           <option value="0" ${!p.ativo ? 'selected' : ''}>Finalizado</option>
         </select>
       </td>
-      <td>
-        <div class="inline-actions">
-          <button class="btn btn-outline btn-xs" onclick="verDetalhePaciente(${p.id})">👁</button>
-          <button class="btn btn-outline btn-xs" onclick="editPaciente(${p.id})">✏️</button>
-          <button class="btn btn-outline btn-xs" title="Enviar Lista de Profissões" onclick="enviarListaProfissoes(${p.id})">📋</button>
-          <button class="btn btn-outline btn-xs" title="Enviar Rotas Profissionais" onclick="enviarRotasProfissionais(${p.id})">🛤️</button>
-          <button class="btn btn-ghost btn-xs" style="color:var(--red)" onclick="deletePacienteItem(${p.id})">🗑</button>
+      <td style="padding:0 4px;white-space:nowrap">
+        <div class="inline-actions" style="gap:2px">
+          <button class="btn btn-outline btn-xs" title="Ver detalhes" onclick="verDetalhePaciente(${p.id})">👁</button>
+          <button class="btn btn-outline btn-xs" title="Editar" onclick="editPaciente(${p.id})">✏️</button>
+          <button class="btn btn-outline btn-xs" title="Lista de Profissões" onclick="enviarListaProfissoes(${p.id})">📋</button>
+          <button class="btn btn-outline btn-xs" title="Rotas Profissionais" onclick="enviarRotasProfissionais(${p.id})">🛤️</button>
+          <button class="btn btn-ghost btn-xs" title="Excluir" style="color:var(--red)" onclick="deletePacienteItem(${p.id})">🗑</button>
         </div>
       </td>
     </tr>
