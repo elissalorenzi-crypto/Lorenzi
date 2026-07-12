@@ -1571,6 +1571,23 @@ Para cada caminho apresente:
                 <li>✔️ Quero dominar essa habilidade mais profundamente e faço questão de ter contato com ela diariamente?</li>
                 <li>✔️ Estou disposta a lidar com a exigência se levar essa habilidade para um trabalho?</li>
               </ul>
+
+              <h3>Prompt de apoio — Exigências reais da habilidade</h3>
+              <p>Cole o texto abaixo no ChatGPT (ou outra IA) substituindo <strong>[COLOCAR HABILIDADE]</strong> pela habilidade que deseja analisar:</p>
+              <blockquote style="background:#f8f4ff;border-left:4px solid var(--plum);padding:12px 16px;border-radius:0 8px 8px 0;font-size:13px;line-height:1.8;margin:8px 0;white-space:pre-wrap">Você é um especialista em carreira, mercado de trabalho e desenvolvimento profissional.
+
+Estou fazendo um exercício de orientação profissional para entender melhor quais habilidades eu gostaria de levar para um trabalho futuro.
+
+Quero que você me ajude a refletir sobre as EXIGÊNCIAS REAIS de transformar uma habilidade em algo profissional.
+
+A habilidade que quero analisar é:
+[COLOCAR HABILIDADE]
+
+Quero que você me explique de forma clara, prática e realista:
+
+1. Quais exigências normalmente surgem quando alguém usa essa habilidade profissionalmente
+2. Quais responsabilidades essa habilidade pode trazer no trabalho
+3. Que tipos de pressão, cobranças ou dificuldades podem aparecer</blockquote>
             `
           }
         ]
