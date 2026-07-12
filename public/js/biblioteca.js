@@ -1543,6 +1543,7 @@ Para cada caminho apresente:
     subtitulo: 'Tarefas e atividades para casa',
     icone: '🤝',
     cor: 'bib-comb',
+    semAtalho: true,
     pastas: [
       {
         id: 'combinados-pasta',
