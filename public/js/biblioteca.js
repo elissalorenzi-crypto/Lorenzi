@@ -1546,8 +1546,8 @@ Para cada caminho apresente:
     pastas: [
       {
         id: 'combinados-pasta',
-        nome: 'Combinados da Sessão',
-        icone: '📋',
+        nome: 'Classificar habilidades em vida pessoal e profissional',
+        icone: '⚖️',
         atividades: [
           {
             id: 'classificar-habilidades-pessoal-prof',
