@@ -1556,7 +1556,7 @@ Para cada caminho apresente:
             icone: '⚖️',
             conteudo: `
               <h3>Objetivo</h3>
-              <p>Classificar as habilidades mapeadas em duas categorias:</p>
+              <p>Classificar as habilidades mapeadas em:</p>
               <ul>
                 <li><strong>Vida pessoal</strong> — habilidades que deseja manter na vida pessoal</li>
                 <li><strong>Vida profissional</strong> — habilidades que consegue imaginar aplicando profissionalmente</li>
