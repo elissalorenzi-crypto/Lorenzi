@@ -1739,8 +1739,8 @@ Para cada caminho apresente:
               <h3>🧠 Psicologia</h3>
 
               <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
-                <a href="https://wa.me/?text=${encodeURIComponent('Olá! Seguem materiais sobre a profissão de *Psicologia*:\n\n🎬 Vídeo 1: https://youtu.be/xEMejUFlugQ\n🎬 Vídeo 2: https://vt.tiktok.com/ZSXYxoEfb/\n🎬 Vídeo 3: https://vt.tiktok.com/ZSXYxDMES/\n🎬 Vídeo 4: https://vt.tiktok.com/ZSXYxu4Sk/\n🎬 Vídeo 5: https://vt.tiktok.com/ZSXYxGc8S/')}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#25d366;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:700">💬 Enviar links por WhatsApp</a>
-                <button onclick="navigator.clipboard.writeText('Olá! Seguem materiais sobre a profissão de Psicologia:\\n\\n🎬 Vídeo 1: https://youtu.be/xEMejUFlugQ\\n🎬 Vídeo 2: https://vt.tiktok.com/ZSXYxoEfb/\\n🎬 Vídeo 3: https://vt.tiktok.com/ZSXYxDMES/\\n🎬 Vídeo 4: https://vt.tiktok.com/ZSXYxu4Sk/\\n🎬 Vídeo 5: https://vt.tiktok.com/ZSXYxGc8S/').then(()=>toast('Links copiados!'))" style="display:inline-flex;align-items:center;gap:8px;background:#f0f0f0;color:#333;padding:10px 16px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer">📋 Copiar links</button>
+                <a href="https://wa.me/?text=${encodeURIComponent('Olá! Seguem materiais sobre a profissão de *Psicologia*:\n\n🎬 Vídeo 1: https://youtu.be/xEMejUFlugQ\n🎬 Vídeo 2: https://vt.tiktok.com/ZSXYxoEfb/\n🎬 Vídeo 3: https://vt.tiktok.com/ZSXYxDMES/\n🎬 Vídeo 4: https://vt.tiktok.com/ZSXYxu4Sk/\n🎬 Vídeo 5: https://vt.tiktok.com/ZSXYxGc8S/\n🎬 Vídeo 6: https://vt.tiktok.com/ZSXYQRKT1/')}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#25d366;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:700">💬 Enviar links por WhatsApp</a>
+                <button onclick="navigator.clipboard.writeText('Olá! Seguem materiais sobre a profissão de Psicologia:\\n\\n🎬 Vídeo 1: https://youtu.be/xEMejUFlugQ\\n🎬 Vídeo 2: https://vt.tiktok.com/ZSXYxoEfb/\\n🎬 Vídeo 3: https://vt.tiktok.com/ZSXYxDMES/\\n🎬 Vídeo 4: https://vt.tiktok.com/ZSXYxu4Sk/\\n🎬 Vídeo 5: https://vt.tiktok.com/ZSXYxGc8S/\\n🎬 Vídeo 6: https://vt.tiktok.com/ZSXYQRKT1/').then(()=>toast('Links copiados!'))" style="display:inline-flex;align-items:center;gap:8px;background:#f0f0f0;color:#333;padding:10px 16px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer">📋 Copiar links</button>
               </div>
 
               <h3>🎬 Vídeos — Conheça profissionais da área</h3>
@@ -1759,6 +1759,9 @@ Para cada caminho apresente:
                 </a>
                 <a href="https://vt.tiktok.com/ZSXYxGc8S/" target="_blank" style="display:flex;align-items:center;gap:10px;background:#010101;color:#fff;padding:12px 16px;border-radius:10px;text-decoration:none;font-size:13px;font-weight:600">
                   <span style="font-size:22px">🎵</span><span>Ver vídeo 5 no TikTok</span><span style="margin-left:auto;opacity:.6;font-size:11px">↗ abrir</span>
+                </a>
+                <a href="https://vt.tiktok.com/ZSXYQRKT1/" target="_blank" style="display:flex;align-items:center;gap:10px;background:#010101;color:#fff;padding:12px 16px;border-radius:10px;text-decoration:none;font-size:13px;font-weight:600">
+                  <span style="font-size:22px">🎵</span><span>Ver vídeo 6 no TikTok</span><span style="margin-left:auto;opacity:.6;font-size:11px">↗ abrir</span>
                 </a>
               </div>
             `
