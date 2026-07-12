@@ -1782,8 +1782,8 @@ Para cada caminho apresente:
               <h3>🐾 Medicina Veterinária</h3>
 
               <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
-                <a href="https://wa.me/?text=${encodeURIComponent('Olá! Seguem materiais sobre a profissão de *Medicina Veterinária*:\n\n🎬 Vídeo 1: https://youtu.be/9Ngili1eWXc\n🎬 Vídeo 2: https://youtu.be/-3nIzfiUl_g\n\n🌐 Site com mais informações: https://www.guiadacarreira.com.br/blog/medicina-veterinaria')}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#25d366;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:700">💬 Enviar links por WhatsApp</a>
-                <button onclick="navigator.clipboard.writeText('Olá! Seguem materiais sobre a profissão de Medicina Veterinária:\\n\\n🎬 Vídeo 1: https://youtu.be/9Ngili1eWXc\\n🎬 Vídeo 2: https://youtu.be/-3nIzfiUl_g\\n\\n🌐 Site com mais informações: https://www.guiadacarreira.com.br/blog/medicina-veterinaria').then(()=>toast('Links copiados!'))" style="display:inline-flex;align-items:center;gap:8px;background:#f0f0f0;color:#333;padding:10px 16px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer">📋 Copiar links</button>
+                <a href="https://wa.me/?text=${encodeURIComponent('Olá! Seguem materiais sobre a profissão de *Medicina Veterinária*:\n\n🎬 Vídeo 1: https://youtu.be/9Ngili1eWXc\n🎬 Vídeo 2: https://youtu.be/-3nIzfiUl_g\n🎬 Vídeo 3: https://vt.tiktok.com/ZSXYCkyA3/\n\n🌐 Site com mais informações: https://www.guiadacarreira.com.br/blog/medicina-veterinaria')}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#25d366;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:700">💬 Enviar links por WhatsApp</a>
+                <button onclick="navigator.clipboard.writeText('Olá! Seguem materiais sobre a profissão de Medicina Veterinária:\\n\\n🎬 Vídeo 1: https://youtu.be/9Ngili1eWXc\\n🎬 Vídeo 2: https://youtu.be/-3nIzfiUl_g\\n🎬 Vídeo 3: https://vt.tiktok.com/ZSXYCkyA3/\\n\\n🌐 Site com mais informações: https://www.guiadacarreira.com.br/blog/medicina-veterinaria').then(()=>toast('Links copiados!'))" style="display:inline-flex;align-items:center;gap:8px;background:#f0f0f0;color:#333;padding:10px 16px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer">📋 Copiar links</button>
               </div>
 
               <h3>🎬 Vídeos — Conheça profissionais da área</h3>
@@ -1794,6 +1794,9 @@ Para cada caminho apresente:
                 <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.12)">
                   <iframe src="https://www.youtube.com/embed/-3nIzfiUl_g" title="Medicina Veterinária vídeo 2" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:10px"></iframe>
                 </div>
+                <a href="https://vt.tiktok.com/ZSXYCkyA3/" target="_blank" style="display:flex;align-items:center;gap:10px;background:#010101;color:#fff;padding:12px 16px;border-radius:10px;text-decoration:none;font-size:13px;font-weight:600">
+                  <span style="font-size:22px">🎵</span><span>Ver vídeo 3 no TikTok</span><span style="margin-left:auto;opacity:.6;font-size:11px">↗ abrir</span>
+                </a>
               </div>
 
               <h3>🌐 Site</h3>
