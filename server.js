@@ -42,30 +42,121 @@ const crypto = require('crypto');
 const app  = express();
 const PORT = process.env.PORT || 3001;
 
+// ── SEGURANÇA: HEADERS HTTP ───────────────────────────────────
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  next();
+});
+
+// ── AUTH — funções (definidas antes do static para uso no middleware de arquivos) ──
+const SESSION_TTL = 8 * 60 * 60 * 1000; // 8 horas
+
+// Hash forte com scrypt (Node nativo, sem pacotes externos)
+function hashSenhaNova(senha) {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.scryptSync(senha, salt, 64).toString('hex');
+  return `scrypt:${salt}:${hash}`;
+}
+// Verifica senha: suporta novo scrypt e legado SHA-256 (migração automática)
+function verificarSenha(senha, stored) {
+  if (!stored || typeof senha !== 'string') return false;
+  if (stored.startsWith('scrypt:')) {
+    const parts = stored.split(':');
+    if (parts.length !== 3) return false;
+    try {
+      const derived = crypto.scryptSync(senha, parts[1], 64).toString('hex');
+      return crypto.timingSafeEqual(Buffer.from(derived, 'hex'), Buffer.from(parts[2], 'hex'));
+    } catch { return false; }
+  }
+  // Legado SHA-256 — migra automaticamente no próximo login
+  const legacy = crypto.createHash('sha256').update(senha + 'psi2024').digest('hex');
+  return crypto.timingSafeEqual(Buffer.from(legacy), Buffer.from(stored));
+}
+// Mantido para compatibilidade interna no /api/auth/senha (verificação da senha atual)
+const hashSenha = s => crypto.createHash('sha256').update(s + 'psi2024').digest('hex');
+
+function authOk(req) {
+  const token = (req.headers.authorization || '').replace('Bearer ', '').trim();
+  if (!token || token.length !== 64) return false;
+  const row = db.getSession(token);
+  return !!(row && Date.now() <= row.expiry);
+}
+
+// Aceita token via Authorization header OU query param ?t= (para abrir arquivos no browser)
+function authOkFile(req) {
+  const t = (req.query.t || '').trim()
+         || (req.headers.authorization || '').replace('Bearer ', '').trim();
+  if (!t || t.length !== 64) return false;
+  const row = db.getSession(t);
+  return !!(row && Date.now() <= row.expiry);
+}
+
+// ── RATE LIMIT — login (10 tentativas / 15 min por IP) ───────
+const _loginAttempts = new Map();
+function loginRateOk(ip) {
+  const now = Date.now();
+  let e = _loginAttempts.get(ip);
+  if (!e || now > e.resetAt) { e = { count: 0, resetAt: now + 15 * 60 * 1000 }; }
+  e.count++;
+  _loginAttempts.set(ip, e);
+  return e.count <= 10;
+}
+// Limpa o mapa de rate-limit a cada hora para não crescer indefinidamente
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, e] of _loginAttempts) if (now > e.resetAt) _loginAttempts.delete(ip);
+}, 60 * 60 * 1000);
+
+// ── PROTEGE arquivos de contratos (exige sessão válida) ───────
+app.use('/uploads/contratos', (req, res, next) => {
+  if (!authOkFile(req)) return res.status(401).send('Não autorizado');
+  next();
+});
+
+// ── LIMPEZA PERIÓDICA DE SESSÕES EXPIRADAS ────────────────────
+setInterval(() => {
+  try { db.cleanExpiredSessions(); } catch(_) {}
+}, 60 * 60 * 1000);
+
 app.use(express.json({ limit: '20mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ── AUTH ─────────────────────────────────────────────────────
-const hashSenha = s => crypto.createHash('sha256').update(s + 'psi2024').digest('hex');
-const SESSION_TTL = 8 * 60 * 60 * 1000; // 8 horas
-
+// ── AUTH — endpoints ──────────────────────────────────────────
 app.post('/api/auth/login', (req, res) => {
+  const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  if (!loginRateOk(ip)) return res.status(429).json({ error: 'Muitas tentativas. Aguarde 15 minutos.' });
+
   const { senha } = req.body || {};
+  if (!senha || typeof senha !== 'string' || senha.length > 128)
+    return res.status(400).json({ error: 'Senha inválida' });
+
   const cfg = db.getConfig();
-  const hash = cfg.senha_admin || hashSenha('2207');
-  if (hashSenha(senha) !== hash) return res.status(401).json({ error: 'Senha incorreta' });
+  const stored = cfg.senha_admin || hashSenha('2207');
+
+  if (!verificarSenha(senha, stored)) return res.status(401).json({ error: 'Senha incorreta' });
+
+  // Migra hash legado SHA-256 → scrypt na primeira vez que fizer login
+  if (!stored.startsWith('scrypt:')) {
+    try { db.setConfig('senha_admin', hashSenhaNova(senha)); } catch(_) {}
+  }
+
   const token = crypto.randomBytes(32).toString('hex');
   db.setSession(token, Date.now() + SESSION_TTL);
   res.json({ token });
 });
 
 app.post('/api/auth/logout', (req, res) => {
-  db.deleteSession((req.headers.authorization || '').replace('Bearer ', ''));
+  db.deleteSession((req.headers.authorization || '').replace('Bearer ', '').trim());
   res.json({ ok: true });
 });
 
 app.post('/api/auth/verificar', (req, res) => {
-  const token = (req.headers.authorization || '').replace('Bearer ', '');
+  const token = (req.headers.authorization || '').replace('Bearer ', '').trim();
   const row   = token ? db.getSession(token) : null;
   if (!row || Date.now() > row.expiry) return res.status(401).json({ ok: false });
   db.setSession(token, Date.now() + SESSION_TTL);
@@ -74,19 +165,15 @@ app.post('/api/auth/verificar', (req, res) => {
 
 app.post('/api/auth/senha', (req, res) => {
   const { senha_atual, senha_nova } = req.body || {};
+  if (!senha_nova || typeof senha_nova !== 'string' || senha_nova.length < 6 || senha_nova.length > 128)
+    return res.status(400).json({ error: 'Senha nova deve ter entre 6 e 128 caracteres' });
   const cfg = db.getConfig();
-  if (hashSenha(senha_atual) !== (cfg.senha_admin || hashSenha('2207')))
+  const stored = cfg.senha_admin || hashSenha('2207');
+  if (!verificarSenha(senha_atual, stored))
     return res.status(401).json({ error: 'Senha atual incorreta' });
-  db.setConfig('senha_admin', hashSenha(senha_nova));
+  db.setConfig('senha_admin', hashSenhaNova(senha_nova));
   res.json({ ok: true });
 });
-
-// Valida token em rotas individuais que precisam de proteção
-function authOk(req) {
-  const token = (req.headers.authorization || '').replace('Bearer ', '');
-  const row   = token ? db.getSession(token) : null;
-  return !!(row && Date.now() <= row.expiry);
-}
 
 // Download do banco para backup
 app.get('/api/admin/backup-db', (req, res) => {

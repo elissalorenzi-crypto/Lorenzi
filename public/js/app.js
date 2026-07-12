@@ -5210,8 +5210,9 @@ function _renderContratoRow(c) {
   const [a, m, d] = (c.created_at || '').split(' ')[0]?.split('-') || [];
   const dataFmt = d ? `${d}/${m}/${a}` : '—';
   const valorFmt = c.valor_sessao ? `R$ ${Number(c.valor_sessao).toFixed(2).replace('.',',')}` : '—';
+  const _ft = localStorage.getItem('token') || '';
   const arquivoHtml = c.arquivo
-    ? `<a href="/uploads/contratos/${c.arquivo}" target="_blank" class="btn btn-outline btn-sm" style="margin-right:8px">📄 Ver contrato assinado</a>`
+    ? `<a href="/uploads/contratos/${c.arquivo}?t=${_ft}" target="_blank" class="btn btn-outline btn-sm" style="margin-right:8px">📄 Ver contrato assinado</a>`
     : `<span style="color:var(--muted);font-size:12px">Sem arquivo anexo</span>`;
 
   // Agendamento escolhido pelo cliente

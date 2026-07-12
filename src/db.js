@@ -1132,9 +1132,10 @@ const deletePostSocial = (id) => { db.prepare('DELETE FROM posts_sociais WHERE i
 // ============================================================
 // SESSIONS
 // ============================================================
-const setSession    = (token, expiry) => db.prepare("INSERT OR REPLACE INTO sessions (token, expiry) VALUES (?,?)").run(token, expiry);
-const getSession    = (token)         => db.prepare("SELECT expiry FROM sessions WHERE token=?").get(token);
-const deleteSession = (token)         => db.prepare("DELETE FROM sessions WHERE token=?").run(token);
+const setSession           = (token, expiry) => db.prepare("INSERT OR REPLACE INTO sessions (token, expiry) VALUES (?,?)").run(token, expiry);
+const getSession           = (token)         => db.prepare("SELECT expiry FROM sessions WHERE token=?").get(token);
+const deleteSession        = (token)         => db.prepare("DELETE FROM sessions WHERE token=?").run(token);
+const cleanExpiredSessions = ()              => db.prepare("DELETE FROM sessions WHERE expiry < ?").run(Date.now());
 
 const marcarNfseEmitida = (ids, ref, numero) => {
   if (!ids?.length) return;
@@ -1199,5 +1200,5 @@ module.exports = {
   deletarSessoesFuturas, restaurarSessoesFuturas,
   gerarLinkAtivProf, getLinkAtivProf, getInfoAtivProf, salvarRespostaAtivProf, getRespostasAtivProf,
   getPostsSociais, getPostSocialById, createPostSocial, updatePostSocial, deletePostSocial,
-  setSession, getSession, deleteSession
+  setSession, getSession, deleteSession, cleanExpiredSessions
 };
