@@ -1,8 +1,9 @@
 const { DatabaseSync } = require('node:sqlite');
 const path = require('path');
 
-const DB_PATH = process.env.DATABASE_PATH || path.join(__dirname, '..', 'psicologa.db');
-const db = new DatabaseSync(DB_PATH);
+function createTenantDb(dbPath, { runElissaCleanups = false } = {}) {
+
+const db = new DatabaseSync(dbPath);
 
 db.exec("PRAGMA journal_mode = WAL");
 db.exec("PRAGMA foreign_keys = ON");
@@ -73,74 +74,72 @@ db.exec(`CREATE TABLE IF NOT EXISTS audit_log (
 const upsertNfseDatas = (ref, texto) =>
   db.prepare("INSERT OR REPLACE INTO nfse_meta (ref, datas_texto) VALUES (?, ?)").run(ref, texto);
 
-// Limpeza única: apaga todos os convites de teste (2026-06-24)
-try {
-  const flag = db.prepare("SELECT valor FROM configuracoes WHERE chave='_convites_limpos_20260624'").get();
-  if (!flag) {
-    db.prepare("DELETE FROM convites").run();
-    db.prepare("INSERT OR REPLACE INTO configuracoes (chave, valor) VALUES ('_convites_limpos_20260624', '1')").run();
-  }
-} catch(_) {}
+// Limpezas e seeds exclusivos da instância da Elissa (profissional_id=1)
+if (runElissaCleanups) {
+  try {
+    const flag = db.prepare("SELECT valor FROM configuracoes WHERE chave='_convites_limpos_20260624'").get();
+    if (!flag) {
+      db.prepare("DELETE FROM convites").run();
+      db.prepare("INSERT OR REPLACE INTO configuracoes (chave, valor) VALUES ('_convites_limpos_20260624', '1')").run();
+    }
+  } catch(_) {}
 
-// Limpeza única: zera total_sessoes=12 (default errado da migration) para todas as pacientes
-try {
-  const flag = db.prepare("SELECT valor FROM configuracoes WHERE chave='_total_sessoes_reset_20260704'").get();
-  if (!flag) {
-    db.prepare("UPDATE pacientes SET total_sessoes = NULL WHERE total_sessoes = 12").run();
-    db.prepare("INSERT OR REPLACE INTO configuracoes (chave, valor) VALUES ('_total_sessoes_reset_20260704', '1')").run();
-  }
-} catch(_) {}
+  try {
+    const flag = db.prepare("SELECT valor FROM configuracoes WHERE chave='_total_sessoes_reset_20260704'").get();
+    if (!flag) {
+      db.prepare("UPDATE pacientes SET total_sessoes = NULL WHERE total_sessoes = 12").run();
+      db.prepare("INSERT OR REPLACE INTO configuracoes (chave, valor) VALUES ('_total_sessoes_reset_20260704', '1')").run();
+    }
+  } catch(_) {}
 
-// Seed único: sessões da Aline Aparecida Santana
-try {
-  const flag = db.prepare("SELECT valor FROM configuracoes WHERE chave='_seed_aline_sessoes_20260706'").get();
-  if (!flag) {
-    const aline = db.prepare("SELECT id, valor_sessao FROM pacientes WHERE nome LIKE '%Aline Aparecida Santana%' LIMIT 1").get();
-    if (aline) {
-      const datas = ['2025-12-03','2025-12-11','2025-12-17','2026-01-21','2026-01-28','2026-02-04'];
-      const ins = db.prepare("INSERT INTO agendamentos (paciente_id,data,hora,duracao,tipo,status,valor,pago) VALUES (?,?,'20:00',50,'sessao','realizado',?,1)");
-      for (const data of datas) {
-        const existe = db.prepare("SELECT id FROM agendamentos WHERE paciente_id=? AND data=? AND hora='20:00'").get(aline.id, data);
-        if (!existe) ins.run(aline.id, data, aline.valor_sessao || 0);
+  try {
+    const flag = db.prepare("SELECT valor FROM configuracoes WHERE chave='_seed_aline_sessoes_20260706'").get();
+    if (!flag) {
+      const aline = db.prepare("SELECT id, valor_sessao FROM pacientes WHERE nome LIKE '%Aline Aparecida Santana%' LIMIT 1").get();
+      if (aline) {
+        const datas = ['2025-12-03','2025-12-11','2025-12-17','2026-01-21','2026-01-28','2026-02-04'];
+        const ins = db.prepare("INSERT INTO agendamentos (paciente_id,data,hora,duracao,tipo,status,valor,pago) VALUES (?,?,'20:00',50,'sessao','realizado',?,1)");
+        for (const data of datas) {
+          const existe = db.prepare("SELECT id FROM agendamentos WHERE paciente_id=? AND data=? AND hora='20:00'").get(aline.id, data);
+          if (!existe) ins.run(aline.id, data, aline.valor_sessao || 0);
+        }
+        db.prepare("INSERT OR REPLACE INTO configuracoes (chave, valor) VALUES ('_seed_aline_sessoes_20260706', '1')").run();
       }
-      db.prepare("INSERT OR REPLACE INTO configuracoes (chave, valor) VALUES ('_seed_aline_sessoes_20260706', '1')").run();
     }
-  }
-} catch(_) {}
+  } catch(_) {}
 
-// Seed único: sessões adicionais da Aline Aparecida Santana (fev-jun/2026)
-try {
-  const flag = db.prepare("SELECT valor FROM configuracoes WHERE chave='_seed_aline_sessoes2_20260706'").get();
-  if (!flag) {
-    const aline = db.prepare("SELECT id, valor_sessao FROM pacientes WHERE nome LIKE '%Aline Aparecida Santana%' LIMIT 1").get();
-    if (aline) {
-      const datas = ['2026-02-10','2026-02-25','2026-03-04','2026-03-11','2026-03-25','2026-04-04','2026-04-16','2026-05-13','2026-05-27','2026-06-10'];
-      const ins = db.prepare("INSERT INTO agendamentos (paciente_id,data,hora,duracao,tipo,status,valor,pago) VALUES (?,?,'20:00',50,'sessao','realizado',?,1)");
-      for (const data of datas) {
-        const existe = db.prepare("SELECT id FROM agendamentos WHERE paciente_id=? AND data=? AND hora='20:00'").get(aline.id, data);
-        if (!existe) ins.run(aline.id, data, aline.valor_sessao || 0);
+  try {
+    const flag = db.prepare("SELECT valor FROM configuracoes WHERE chave='_seed_aline_sessoes2_20260706'").get();
+    if (!flag) {
+      const aline = db.prepare("SELECT id, valor_sessao FROM pacientes WHERE nome LIKE '%Aline Aparecida Santana%' LIMIT 1").get();
+      if (aline) {
+        const datas = ['2026-02-10','2026-02-25','2026-03-04','2026-03-11','2026-03-25','2026-04-04','2026-04-16','2026-05-13','2026-05-27','2026-06-10'];
+        const ins = db.prepare("INSERT INTO agendamentos (paciente_id,data,hora,duracao,tipo,status,valor,pago) VALUES (?,?,'20:00',50,'sessao','realizado',?,1)");
+        for (const data of datas) {
+          const existe = db.prepare("SELECT id FROM agendamentos WHERE paciente_id=? AND data=? AND hora='20:00'").get(aline.id, data);
+          if (!existe) ins.run(aline.id, data, aline.valor_sessao || 0);
+        }
+        db.prepare("INSERT OR REPLACE INTO configuracoes (chave, valor) VALUES ('_seed_aline_sessoes2_20260706', '1')").run();
       }
-      db.prepare("INSERT OR REPLACE INTO configuracoes (chave, valor) VALUES ('_seed_aline_sessoes2_20260706', '1')").run();
     }
-  }
-} catch(_) {}
+  } catch(_) {}
 
-// Migração: remove modelo_contrato salvo sem __VALOR_SESSAO__ para usar MODELO_DEFAULT atualizado
-try {
-  const cfgRow = db.prepare("SELECT valor FROM configuracoes WHERE chave='modelo_contrato'").get();
-  if (cfgRow) {
-    let temPlaceholder = false;
-    try {
-      const modelo = JSON.parse(cfgRow.valor);
-      temPlaceholder = (modelo.secoes || []).some(s =>
-        (s.itens || []).includes('__VALOR_SESSAO__')
-      );
-    } catch(_) {}
-    if (!temPlaceholder) {
-      db.prepare("DELETE FROM configuracoes WHERE chave='modelo_contrato'").run();
+  try {
+    const cfgRow = db.prepare("SELECT valor FROM configuracoes WHERE chave='modelo_contrato'").get();
+    if (cfgRow) {
+      let temPlaceholder = false;
+      try {
+        const modelo = JSON.parse(cfgRow.valor);
+        temPlaceholder = (modelo.secoes || []).some(s =>
+          (s.itens || []).includes('__VALOR_SESSAO__')
+        );
+      } catch(_) {}
+      if (!temPlaceholder) {
+        db.prepare("DELETE FROM configuracoes WHERE chave='modelo_contrato'").run();
+      }
     }
-  }
-} catch(_) {}
+  } catch(_) {}
+}
 
 // ============================================================
 // SCHEMA
@@ -337,9 +336,9 @@ try { db.prepare("DELETE FROM sessions WHERE expiry < ?").run(Date.now()); } cat
 const cfgCount = db.prepare('SELECT COUNT(*) as n FROM configuracoes').get().n;
 if (cfgCount === 0) {
   const ins = db.prepare('INSERT OR IGNORE INTO configuracoes (chave, valor) VALUES (?,?)');
-  ins.run('nome_psicologa', 'Psi. Elissa Catarina Lorenzi');
-  ins.run('crp', 'CRP 06/91616');
-  ins.run('valor_sessao_padrao', '180');
+  ins.run('nome_psicologa', '');
+  ins.run('crp', '');
+  ins.run('valor_sessao_padrao', '0');
   ins.run('duracao_sessao', '50');
   ins.run('horario_inicio', '08:00');
   ins.run('horario_fim', '18:00');
@@ -1239,7 +1238,7 @@ const deletarDadosPacienteCompleto = (id) => {
   return { nome: p.nome };
 };
 
-module.exports = {
+return {
   getPacientes, getPacienteById, getPacienteByCpf, createPaciente, updatePaciente, deletePaciente,
   getAgendamentos, getAgendamentoById, createAgendamento, updateAgendamento, deleteAgendamento,
   getProntuarios, createProntuario, updateProntuario, deleteProntuario,
@@ -1259,3 +1258,11 @@ module.exports = {
   createAuditLog, getAuditLog, deletarDadosPacienteCompleto,
   encerrarCaso, reabrirCaso
 };
+
+} // end createTenantDb
+
+// ── Default instance (Elissa / profissional_id=1) ─────────────
+const DB_PATH = process.env.DATABASE_PATH || path.join(__dirname, '..', 'psicologa.db');
+const _inst = createTenantDb(DB_PATH, { runElissaCleanups: true });
+_inst.createTenantDb = createTenantDb;
+module.exports = _inst;

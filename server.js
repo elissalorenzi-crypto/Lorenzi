@@ -1,8 +1,36 @@
-const express = require('express');
+﻿const express = require('express');
 const path    = require('path');
 const multer  = require('multer');
 const db      = require('./src/db');
+const mainDb  = require('./src/main-db');
 const fs      = require('fs');
+
+// ── MULTI-TENANT: cache de instâncias de DB por profissional ──
+const _tenantCache = new Map();
+function getTenantDb(profissionalId) {
+  if (!profissionalId || profissionalId === 1) return db;
+  if (_tenantCache.has(profissionalId)) return _tenantCache.get(profissionalId);
+  const dir = process.env.DATABASE_PATH
+    ? path.dirname(process.env.DATABASE_PATH)
+    : __dirname;
+  const tdb = db.createTenantDb(path.join(dir, `tenant_${profissionalId}.db`));
+  _tenantCache.set(profissionalId, tdb);
+  return tdb;
+}
+
+// Resolve DB de rotas públicas via link_registry (convite/agenda token)
+function getPublicDb(tokenOrReq) {
+  const token = typeof tokenOrReq === 'string'
+    ? tokenOrReq
+    : (tokenOrReq.query?.link || tokenOrReq.body?.token || tokenOrReq.params?.token || '');
+  if (token) {
+    try {
+      const r = mainDb.getProfissionalByToken(token);
+      if (r) return getTenantDb(r.profissional_id);
+    } catch(_) {}
+  }
+  return db; // fallback profissional_id=1
+}
 
 // Carrega .env local se existir (desenvolvimento)
 try {
@@ -83,8 +111,11 @@ const hashSenha = s => crypto.createHash('sha256').update(s + 'psi2024').digest(
 function authOk(req) {
   const token = (req.headers.authorization || '').replace('Bearer ', '').trim();
   if (!token || token.length !== 64) return false;
-  const row = db.getSession(token);
-  return !!(row && Date.now() <= row.expiry);
+  const row = mainDb.getSession(token);
+  if (!row || Date.now() > row.expiry) return false;
+  req.profissionalId = row.profissional_id;
+  req.db = getTenantDb(row.profissional_id);
+  return true;
 }
 const auth = (req, res, next) => authOk(req) ? next() : res.status(401).json({ error: 'Não autorizado' });
 
@@ -93,8 +124,11 @@ function authOkFile(req) {
   const t = (req.query.t || '').trim()
          || (req.headers.authorization || '').replace('Bearer ', '').trim();
   if (!t || t.length !== 64) return false;
-  const row = db.getSession(t);
-  return !!(row && Date.now() <= row.expiry);
+  const row = mainDb.getSession(t);
+  if (!row || Date.now() > row.expiry) return false;
+  req.profissionalId = row.profissional_id;
+  req.db = getTenantDb(row.profissional_id);
+  return true;
 }
 
 // ── RATE LIMIT — login (10 tentativas / 15 min por IP) ───────
@@ -119,69 +153,121 @@ app.use('/uploads/contratos', (req, res, next) => {
   next();
 });
 
-// ── LIMPEZA PERIÓDICA DE SESSÕES EXPIRADAS ────────────────────
-setInterval(() => {
-  try { db.cleanExpiredSessions(); } catch(_) {}
-}, 60 * 60 * 1000);
+// Limpeza periódica de sessões expiradas é feita internamente pelo mainDb
 
 app.use(express.json({ limit: '20mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// req.db padrão = Elissa (profissional_id=1); auth middleware sobrescreve para outros tenants
+app.use((req, res, next) => { if (!req.db) req.db = db; next(); });
 
 // ── AUTH — endpoints ──────────────────────────────────────────
 app.post('/api/auth/login', (req, res) => {
   const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
   if (!loginRateOk(ip)) return res.status(429).json({ error: 'Muitas tentativas. Aguarde 15 minutos.' });
 
-  const { senha } = req.body || {};
+  const { senha, email } = req.body || {};
   if (!senha || typeof senha !== 'string' || senha.length > 128)
     return res.status(400).json({ error: 'Senha inválida' });
 
-  const cfg = db.getConfig();
-  const stored = cfg.senha_admin || hashSenha('2207');
+  let profissional;
+  if (email) {
+    profissional = mainDb.getProfissionalByEmail(email);
+    if (!profissional) return res.status(401).json({ error: 'E-mail não encontrado' });
+  } else {
+    // Compatibilidade: login single-tenant com apenas senha
+    profissional = mainDb.getProfissionalById(1);
+    if (!profissional) return res.status(401).json({ error: 'Sistema não inicializado' });
+  }
 
-  if (!verificarSenha(senha, stored)) return res.status(401).json({ error: 'Senha incorreta' });
+  if (!verificarSenha(senha, profissional.senha))
+    return res.status(401).json({ error: 'Senha incorreta' });
 
   // Migra hash legado SHA-256 → scrypt na primeira vez que fizer login
-  if (!stored.startsWith('scrypt:')) {
-    try { db.setConfig('senha_admin', hashSenhaNova(senha)); } catch(_) {}
+  if (!profissional.senha.startsWith('scrypt:')) {
+    try { mainDb.updateProfissionalSenha(profissional.id, hashSenhaNova(senha)); } catch(_) {}
   }
 
   const token = crypto.randomBytes(32).toString('hex');
-  db.setSession(token, Date.now() + SESSION_TTL);
+  mainDb.setSession(token, profissional.id, Date.now() + SESSION_TTL);
+  req.profissionalId = profissional.id;
+  req.db = getTenantDb(profissional.id);
   logAudit(req, 'login', null, null);
   res.json({ token });
 });
 
 app.post('/api/auth/logout', (req, res) => {
-  db.deleteSession((req.headers.authorization || '').replace('Bearer ', '').trim());
+  mainDb.deleteSession((req.headers.authorization || '').replace('Bearer ', '').trim());
   res.json({ ok: true });
 });
 
 app.post('/api/auth/verificar', (req, res) => {
   const token = (req.headers.authorization || '').replace('Bearer ', '').trim();
-  const row   = token ? db.getSession(token) : null;
+  const row   = token ? mainDb.getSession(token) : null;
   if (!row || Date.now() > row.expiry) return res.status(401).json({ ok: false });
-  db.setSession(token, Date.now() + SESSION_TTL);
+  mainDb.setSession(token, row.profissional_id, Date.now() + SESSION_TTL);
   res.json({ ok: true });
 });
 
 app.post('/api/auth/senha', (req, res) => {
+  const token = (req.headers.authorization || '').replace('Bearer ', '').trim();
+  const session = token ? mainDb.getSession(token) : null;
+  if (!session || Date.now() > session.expiry) return res.status(401).json({ error: 'Não autorizado' });
+
   const { senha_atual, senha_nova } = req.body || {};
   if (!senha_nova || typeof senha_nova !== 'string' || senha_nova.length < 6 || senha_nova.length > 128)
     return res.status(400).json({ error: 'Senha nova deve ter entre 6 e 128 caracteres' });
-  const cfg = db.getConfig();
-  const stored = cfg.senha_admin || hashSenha('2207');
-  if (!verificarSenha(senha_atual, stored))
+  const profissional = mainDb.getProfissionalById(session.profissional_id);
+  if (!profissional) return res.status(401).json({ error: 'Profissional não encontrado' });
+  if (!verificarSenha(senha_atual, profissional.senha))
     return res.status(401).json({ error: 'Senha atual incorreta' });
-  db.setConfig('senha_admin', hashSenhaNova(senha_nova));
+  mainDb.updateProfissionalSenha(profissional.id, hashSenhaNova(senha_nova));
   res.json({ ok: true });
 });
 
-// Helper: registra ação no audit log
+// ── CADASTRO DE NOVO PROFISSIONAL ──────────────────────────────
+app.post('/api/cadastro', async (req, res) => {
+  const { email, senha, nome, crp, conselho, especialidade } = req.body || {};
+  if (!email || !senha) return res.status(400).json({ error: 'E-mail e senha são obrigatórios' });
+  if (senha.length < 6 || senha.length > 128)
+    return res.status(400).json({ error: 'Senha deve ter entre 6 e 128 caracteres' });
+  try {
+    const existente = mainDb.getProfissionalByEmail(email);
+    if (existente) return res.status(409).json({ error: 'E-mail já cadastrado' });
+    const id = mainDb.createProfissional({
+      email, senha: hashSenhaNova(senha), nome, crp, conselho, especialidade
+    });
+    // Inicializa DB do novo profissional
+    const tenantDb = getTenantDb(id);
+    // Preenche nome e crp no DB do novo tenant
+    tenantDb.setConfig('nome_psicologa', nome || '');
+    if (crp) tenantDb.setConfig('crp', crp);
+    const token = crypto.randomBytes(32).toString('hex');
+    mainDb.setSession(token, id, Date.now() + SESSION_TTL);
+    res.json({ ok: true, token, profissional_id: id });
+  } catch(e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+// Helper: registra ação no audit log (usa req.db se disponível, senão fallback para db=Elissa)
 const logAudit = (req, acao, recurso, recurso_id) => {
   const ip = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '').split(',')[0].trim();
-  try { db.createAuditLog(acao, recurso, recurso_id, ip); } catch(_) {}
+  try { (req.db || db).createAuditLog(acao, recurso, recurso_id, ip); } catch(_) {}
 };
+
+// Bootstrap: garante que a Elissa (profissional_id=1) existe no mainDb
+try {
+  const cfg = db.getConfig();
+  mainDb.ensureProfissional1({
+    email: cfg.email_admin || 'elissa@lorenzi.psi',
+    senha: cfg.senha_admin || hashSenha('2207'),
+    nome:  cfg.nome_psicologa || '',
+    crp:   cfg.crp || '',
+  });
+} catch(e) {
+  console.warn('Bootstrap mainDb:', e.message);
+}
 
 // Download do banco para backup
 app.get('/api/admin/backup-db', (req, res) => {
@@ -211,30 +297,30 @@ const erro = (res, e, status = 400) =>
 // ── DASHBOARD ────────────────────────────────────────────────
 app.get('/api/dashboard', auth, (req, res) => {
   const hoje = req.query.hoje || new Date().toISOString().slice(0, 10);
-  res.json(db.getDashboard(hoje));
+  res.json(req.db.getDashboard(hoje));
 });
 
 // ── PACIENTES ────────────────────────────────────────────────
-app.get('/api/pacientes', auth, (req, res) => res.json(db.getPacientes(req.query.todos === '1')));
+app.get('/api/pacientes', auth, (req, res) => res.json(req.db.getPacientes(req.query.todos === '1')));
 
 app.get('/api/pacientes/:id', auth, (req, res) => {
-  const p = db.getPacienteById(req.params.id);
+  const p = req.db.getPacienteById(req.params.id);
   if (!p) return res.status(404).json({ error: 'Paciente não encontrada' });
   res.json(p);
 });
 
 app.post('/api/pacientes', auth, (req, res) => {
-  try { res.json({ id: db.createPaciente(req.body), success: true }); }
+  try { res.json({ id: req.db.createPaciente(req.body), success: true }); }
   catch(e) { erro(res, e); }
 });
 
 app.put('/api/pacientes/:id', auth, (req, res) => {
-  try { db.updatePaciente(req.params.id, req.body); res.json({ success: true }); }
+  try { req.db.updatePaciente(req.params.id, req.body); res.json({ success: true }); }
   catch(e) { erro(res, e); }
 });
 
 app.delete('/api/pacientes/:id', auth, (req, res) => {
-  try { db.deletePaciente(req.params.id); logAudit(req, 'paciente_excluido', 'paciente', req.params.id); res.json({ success: true }); }
+  try { req.db.deletePaciente(req.params.id); logAudit(req, 'paciente_excluido', 'paciente', req.params.id); res.json({ success: true }); }
   catch(e) { erro(res, e); }
 });
 
@@ -243,7 +329,7 @@ app.post('/api/pacientes/:id/encerrar', auth, (req, res) => {
   try {
     const { motivo, data } = req.body;
     if (!motivo) return res.status(400).json({ error: 'Motivo de encerramento obrigatório' });
-    db.encerrarCaso(req.params.id, motivo, data);
+    req.db.encerrarCaso(req.params.id, motivo, data);
     logAudit(req, 'caso_encerrado', 'paciente', req.params.id);
     res.json({ success: true });
   } catch(e) { erro(res, e); }
@@ -251,7 +337,7 @@ app.post('/api/pacientes/:id/encerrar', auth, (req, res) => {
 
 app.post('/api/pacientes/:id/reabrir', auth, (req, res) => {
   try {
-    db.reabrirCaso(req.params.id);
+    req.db.reabrirCaso(req.params.id);
     logAudit(req, 'caso_reaberto', 'paciente', req.params.id);
     res.json({ success: true });
   } catch(e) { erro(res, e); }
@@ -260,51 +346,51 @@ app.post('/api/pacientes/:id/reabrir', auth, (req, res) => {
 // Exclusão completa de dados (LGPD — direito ao esquecimento)
 app.delete('/api/pacientes/:id/dados-lgpd', auth, (req, res) => {
   try {
-    const { nome } = db.deletarDadosPacienteCompleto(req.params.id);
+    const { nome } = req.db.deletarDadosPacienteCompleto(req.params.id);
     logAudit(req, 'dados_excluidos_lgpd', 'paciente', req.params.id);
     res.json({ success: true, nome });
   } catch(e) { erro(res, e); }
 });
 
 app.get('/api/pacientes/:id/prontuarios', auth, (req, res) =>
-  res.json(db.getProntuarios(req.params.id))
+  res.json(req.db.getProntuarios(req.params.id))
 );
 
 app.get('/api/pacientes/:id/agendamentos', auth, (req, res) =>
-  res.json(db.getAgendamentos({ paciente_id: req.params.id }))
+  res.json(req.db.getAgendamentos({ paciente_id: req.params.id }))
 );
 
 // ── AGENDAMENTOS ─────────────────────────────────────────────
 app.get('/api/agendamentos', auth, (req, res) => {
   const { data, data_de, data_ate, paciente_id, status } = req.query;
-  res.json(db.getAgendamentos({ data, data_de, data_ate, paciente_id, status }));
+  res.json(req.db.getAgendamentos({ data, data_de, data_ate, paciente_id, status }));
 });
 
 app.get('/api/agendamentos/:id', auth, (req, res) => {
-  const a = db.getAgendamentoById(req.params.id);
+  const a = req.db.getAgendamentoById(req.params.id);
   if (!a) return res.status(404).json({ error: 'Agendamento não encontrado' });
   res.json(a);
 });
 
 app.post('/api/agendamentos', auth, async (req, res) => {
   try {
-    const id = db.createAgendamento(req.body);
+    const id = req.db.createAgendamento(req.body);
     // Gera link Zoom automaticamente (não bloqueia resposta em caso de falha)
     try {
-      const ag  = db.getAgendamentoById(id);
-      const cfg = db.getConfig();
+      const ag  = req.db.getAgendamentoById(id);
+      const cfg = req.db.getConfig();
       if (cfg.zoom_account_id && ag) {
         const nome = ag.paciente_nome || 'Consulta';
         const link = await criarReuniaozoom(cfg, `Sessão — ${nome}`, `${ag.data}T${ag.hora}:00`, ag.duracao || cfg.duracao_sessao || 50);
-        db.updateAgendamento(id, { ...ag, zoom_link: link });
+        req.db.updateAgendamento(id, { ...ag, zoom_link: link });
       }
     } catch(ze) { console.warn('Zoom (auto):', ze.message); }
     // Auto-preenche data de início do acompanhamento (CFP Res. 001/2009)
     try {
       if (req.body.paciente_id && req.body.data) {
-        const p = db.getPacienteById(req.body.paciente_id);
+        const p = req.db.getPacienteById(req.body.paciente_id);
         if (p && !p.data_inicio_acompanhamento) {
-          db.updatePaciente(req.body.paciente_id, { ...p, data_inicio_acompanhamento: req.body.data });
+          req.db.updatePaciente(req.body.paciente_id, { ...p, data_inicio_acompanhamento: req.body.data });
         }
       }
     } catch(_) {}
@@ -318,13 +404,13 @@ app.post('/api/agendamentos/serie', async (req, res) => {
   try {
     const { paciente_id, data_inicio, hora, quantidade, tipo, valor, duracao, intervalo } = req.body;
     if (!paciente_id || !data_inicio || !hora || !quantidade) return res.status(400).json({ error: 'Dados incompletos' });
-    const cfg = db.getConfig();
+    const cfg = req.db.getConfig();
     const ids = [];
     const dias = intervalo || 7;
     let d = new Date(data_inicio + 'T12:00:00');
     for (let i = 0; i < quantidade; i++) {
       const data = d.toISOString().slice(0, 10);
-      const id = db.createAgendamento({ paciente_id, data, hora, tipo: tipo || 'sessao', status: 'agendado', valor: valor || 0, duracao: duracao || cfg.duracao_sessao || 50 });
+      const id = req.db.createAgendamento({ paciente_id, data, hora, tipo: tipo || 'sessao', status: 'agendado', valor: valor || 0, duracao: duracao || cfg.duracao_sessao || 50 });
       ids.push(id);
       d.setDate(d.getDate() + dias);
     }
@@ -333,7 +419,7 @@ app.post('/api/agendamentos/serie', async (req, res) => {
 });
 
 app.put('/api/agendamentos/:id', auth, (req, res) => {
-  try { db.updateAgendamento(req.params.id, req.body); res.json({ success: true }); }
+  try { req.db.updateAgendamento(req.params.id, req.body); res.json({ success: true }); }
   catch(e) { erro(res, e); }
 });
 
@@ -341,7 +427,7 @@ app.delete('/api/pacientes/:id/sessoes-futuras', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
   try {
     const hoje = new Date().toISOString().slice(0, 10);
-    const cancelados = db.deletarSessoesFuturas(req.params.id, hoje);
+    const cancelados = req.db.deletarSessoesFuturas(req.params.id, hoje);
     res.json({ cancelados });
   } catch(e) { erro(res, e); }
 });
@@ -350,13 +436,13 @@ app.post('/api/pacientes/:id/restaurar-sessoes', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
   try {
     const hoje = new Date().toISOString().slice(0, 10);
-    const restaurados = db.restaurarSessoesFuturas(req.params.id, hoje);
+    const restaurados = req.db.restaurarSessoesFuturas(req.params.id, hoje);
     res.json({ restaurados });
   } catch(e) { erro(res, e); }
 });
 
 app.delete('/api/agendamentos/:id', auth, (req, res) => {
-  try { db.deleteAgendamento(req.params.id); res.json({ success: true }); }
+  try { req.db.deleteAgendamento(req.params.id); res.json({ success: true }); }
   catch(e) { erro(res, e); }
 });
 
@@ -364,21 +450,21 @@ app.delete('/api/agendamentos/:id', auth, (req, res) => {
 app.get('/api/prontuarios', auth, (req, res) => {
   if (!req.query.paciente_id) return res.status(400).json({ error: 'Informe o ID da paciente' });
   logAudit(req, 'prontuario_visualizado', 'paciente', req.query.paciente_id);
-  res.json(db.getProntuarios(req.query.paciente_id));
+  res.json(req.db.getProntuarios(req.query.paciente_id));
 });
 
 app.post('/api/prontuarios', auth, (req, res) => {
   try {
-    const cfg = db.getConfig();
+    const cfg = req.db.getConfig();
     const crp = cfg.crp ? `${cfg.nome_psicologa || ''} CRP ${cfg.crp}`.trim() : (cfg.nome_psicologa || '');
-    const id = db.createProntuario({ ...req.body, criado_por: crp || null });
+    const id = req.db.createProntuario({ ...req.body, criado_por: crp || null });
     logAudit(req, 'prontuario_criado', 'paciente', req.body.paciente_id);
     // Marca a sessão vinculada como realizada automaticamente
     const agId = req.body.agendamento_id;
     if (agId) {
-      const ag = db.getAgendamentoById(agId);
+      const ag = req.db.getAgendamentoById(agId);
       if (ag && ag.status !== 'realizado') {
-        db.updateAgendamento(agId, { ...ag, status: 'realizado' });
+        req.db.updateAgendamento(agId, { ...ag, status: 'realizado' });
       }
     }
     res.json({ id, success: true });
@@ -386,44 +472,44 @@ app.post('/api/prontuarios', auth, (req, res) => {
 });
 
 app.put('/api/prontuarios/:id', auth, (req, res) => {
-  try { db.updateProntuario(req.params.id, req.body); logAudit(req, 'prontuario_atualizado', 'prontuario', req.params.id); res.json({ success: true }); }
+  try { req.db.updateProntuario(req.params.id, req.body); logAudit(req, 'prontuario_atualizado', 'prontuario', req.params.id); res.json({ success: true }); }
   catch(e) { erro(res, e); }
 });
 
 app.delete('/api/prontuarios/:id', auth, (req, res) => {
-  try { db.deleteProntuario(req.params.id); logAudit(req, 'prontuario_excluido', 'prontuario', req.params.id); res.json({ success: true }); }
+  try { req.db.deleteProntuario(req.params.id); logAudit(req, 'prontuario_excluido', 'prontuario', req.params.id); res.json({ success: true }); }
   catch(e) { erro(res, e); }
 });
 
 // ── PAGAMENTOS ───────────────────────────────────────────────
 app.get('/api/pagamentos', auth, (req, res) => {
-  try { res.json(db.getPagamentos(req.query)); }
+  try { res.json(req.db.getPagamentos(req.query)); }
   catch(e) { erro(res, e); }
 });
 
 app.post('/api/pagamentos', auth, (req, res) => {
-  try { res.json({ id: db.createPagamento(req.body), success: true }); }
+  try { res.json({ id: req.db.createPagamento(req.body), success: true }); }
   catch(e) { erro(res, e); }
 });
 
 app.put('/api/pagamentos/:id', auth, (req, res) => {
-  try { db.updatePagamento(req.params.id, req.body); res.json({ success: true }); }
+  try { req.db.updatePagamento(req.params.id, req.body); res.json({ success: true }); }
   catch(e) { erro(res, e); }
 });
 
 app.delete('/api/pagamentos/:id', auth, (req, res) => {
-  try { db.deletePagamento(req.params.id); res.json({ success: true }); }
+  try { req.db.deletePagamento(req.params.id); res.json({ success: true }); }
   catch(e) { erro(res, e); }
 });
 
 // ── RELATÓRIOS ───────────────────────────────────────────────
 app.get('/api/relatorios', auth, (req, res) => {
-  try { res.json(db.getRelatorios()); }
+  try { res.json(req.db.getRelatorios()); }
   catch(e) { erro(res, e); }
 });
 
 app.get('/api/relatorios/filtrado', auth, (req, res) => {
-  try { res.json(db.getRelatorioFiltrado(req.query)); }
+  try { res.json(req.db.getRelatorioFiltrado(req.query)); }
   catch(e) { erro(res, e); }
 });
 
@@ -432,7 +518,7 @@ app.get('/api/financeiro', auth, (req, res) => {
   const now = new Date();
   const ano = parseInt(req.query.ano || now.getFullYear());
   const mes = parseInt(req.query.mes || now.getMonth() + 1);
-  res.json(db.getFinanceiro(ano, mes));
+  res.json(req.db.getFinanceiro(ano, mes));
 });
 
 // ── ZOOM ─────────────────────────────────────────────────────
@@ -478,15 +564,15 @@ async function criarReuniaozoom(cfg, topic, startLocal, durationMin) {
 app.post('/api/admin/gerar-zoom-todos', async (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
   try {
-    const cfg  = db.getConfig();
+    const cfg  = req.db.getConfig();
     const hoje = new Date().toISOString().slice(0, 10);
-    const ags  = db.getAgendamentos({ data_de: hoje })
+    const ags  = req.db.getAgendamentos({ data_de: hoje })
       .filter(a => ['agendado','confirmado'].includes(a.status) && !a.zoom_link);
     const resultados = [];
     for (const ag of ags) {
       try {
         const link = await criarReuniaozoom(cfg, `Sessão — ${ag.paciente_nome}`, `${ag.data}T${ag.hora}:00`, ag.duracao || cfg.duracao_sessao || 50);
-        db.updateAgendamento(ag.id, { ...ag, zoom_link: link });
+        req.db.updateAgendamento(ag.id, { ...ag, zoom_link: link });
         resultados.push({ id: ag.id, nome: ag.paciente_nome, data: ag.data, hora: ag.hora, ok: true });
       } catch(e) {
         resultados.push({ id: ag.id, nome: ag.paciente_nome, data: ag.data, hora: ag.hora, ok: false, erro: e.message });
@@ -498,44 +584,46 @@ app.post('/api/admin/gerar-zoom-todos', async (req, res) => {
 
 app.post('/api/agendamentos/:id/zoom', auth, async (req, res) => {
   try {
-    const ag  = db.getAgendamentoById(req.params.id);
+    const ag  = req.db.getAgendamentoById(req.params.id);
     if (!ag) return res.status(404).json({ error: 'Agendamento não encontrado' });
-    const cfg  = db.getConfig();
+    const cfg  = req.db.getConfig();
     const nome = ag.paciente_nome || 'Consulta';
     const link = await criarReuniaozoom(cfg, `Sessão — ${nome}`, `${ag.data}T${ag.hora}:00`, ag.duracao || cfg.duracao_sessao || 50);
-    db.updateAgendamento(ag.id, { ...ag, zoom_link: link });
+    req.db.updateAgendamento(ag.id, { ...ag, zoom_link: link });
     res.json({ zoom_link: link, success: true });
   } catch(e) { erro(res, e); }
 });
 
 app.get('/api/financeiro/previsao-pgto', auth, (req, res) => {
   const hoje = req.query.hoje || new Date().toISOString().slice(0,10);
-  res.json(db.getPrevisaoPgto(hoje));
+  res.json(req.db.getPrevisaoPgto(hoje));
 });
 
 app.get('/api/financeiro/projecao-recorrente', auth, (req, res) => {
-  res.json(db.getProjecaoRecorrente());
+  res.json(req.db.getProjecaoRecorrente());
 });
 
 // ── LINKS AGENDAMENTO ────────────────────────────────────────
-app.get('/api/agendamento-links', auth, (req, res) => res.json(db.getLinksAgendamento()));
+app.get('/api/agendamento-links', auth, (req, res) => res.json(req.db.getLinksAgendamento()));
 
 app.post('/api/agendamento-links', auth, (req, res) => {
   try {
     const token = require('crypto').randomBytes(12).toString('hex');
-    db.createLinkAgendamento({ token, ...req.body });
+    req.db.createLinkAgendamento({ token, ...req.body });
+    mainDb.registerLink(token, req.profissionalId || 1, 'agenda-link');
     const base = `${req.protocol}://${req.get('host')}`;
     res.json({ token, link: `${base}/agendar/?token=${token}`, success: true });
   } catch(e) { erro(res, e); }
 });
 
 app.delete('/api/agendamento-links/:id', auth, (req, res) => {
-  try { db.desativarLinkAgendamento(req.params.id); res.json({ success: true }); }
+  try { req.db.desativarLinkAgendamento(req.params.id); res.json({ success: true }); }
   catch(e) { erro(res, e); }
 });
 
 app.get('/api/agendamento-links/:token/slots', (req, res) => {
-  const link = db.getLinkAgendamento(req.params.token);
+  req.db = getPublicDb(req);
+  const link = req.db.getLinkAgendamento(req.params.token);
   if (!link) return res.status(404).json({ error: 'Link inválido ou expirado.' });
 
   const dias     = JSON.parse(link.dias);
@@ -549,7 +637,7 @@ app.get('/api/agendamento-links/:token/slots', (req, res) => {
   const hojeStr = hoje.toISOString().slice(0,10);
   const fimStr  = fim.toISOString().slice(0,10);
 
-  const existentes = db.getAgendamentos({ data_de: hojeStr, data_ate: fimStr });
+  const existentes = req.db.getAgendamentos({ data_de: hojeStr, data_ate: fimStr });
   const ocupados   = new Set(existentes.map(a => `${a.data}|${a.hora}`));
 
   const slots = [];
@@ -564,7 +652,7 @@ app.get('/api/agendamento-links/:token/slots', (req, res) => {
     d.setDate(d.getDate() + 1);
   }
 
-  const cfg = db.getConfig();
+  const cfg = req.db.getConfig();
 
   // Remove horários dentro dos intervalos bloqueados
   const bloqueios = [
@@ -579,32 +667,34 @@ app.get('/api/agendamento-links/:token/slots', (req, res) => {
 });
 
 app.post('/api/agendamento-links/:token/reservar', (req, res) => {
-  const link = db.getLinkAgendamento(req.params.token);
+  req.db = getPublicDb(req);
+  const link = req.db.getLinkAgendamento(req.params.token);
   if (!link) return res.status(404).json({ error: 'Link inválido.' });
 
   const { nome, whatsapp, data, hora } = req.body;
   if (!nome || !data || !hora) return res.status(400).json({ error: 'Dados incompletos.' });
 
   try {
-    const existentes = db.getAgendamentos({ data });
+    const existentes = req.db.getAgendamentos({ data });
     if (existentes.find(a => a.hora === hora))
       return res.status(409).json({ error: 'Este horário acabou de ser ocupado. Escolha outro.' });
 
-    const todos = db.getPacientes();
+    const todos = req.db.getPacientes();
     let pac = todos.find(p => p.nome.toLowerCase() === nome.toLowerCase());
     if (!pac) {
-      const id = db.createPaciente({ nome, whatsapp: whatsapp || null });
+      const id = req.db.createPaciente({ nome, whatsapp: whatsapp || null });
       pac = { id, nome };
     }
 
-    const cfg = db.getConfig();
-    db.createAgendamento({
+    const cfg = req.db.getConfig();
+    req.db.createAgendamento({
       paciente_id: pac.id, data, hora,
       tipo: 'sessao', status: 'agendado',
       valor: cfg.valor_sessao_padrao || 180
     });
 
-    const conviteToken = db.createConvite(nome, cfg.valor_sessao_padrao || 0);
+    const conviteToken = req.db.createConvite(nome, cfg.valor_sessao_padrao || 0);
+    mainDb.registerLink(conviteToken, req.profissionalId || 1, 'convite');
     const base = `${req.protocol}://${req.get('host')}`;
     res.json({ success: true, contratoLink: `${base}/termo-de-compromisso-op/?token=${conviteToken}` });
   } catch(e) { erro(res, e); }
@@ -621,7 +711,7 @@ app.get('/api/agenda-publica', (req, res) => {
     return x.toISOString().slice(0, 10);
   });
 
-  const cfg = db.getConfig();
+  const cfg = req.db.getConfig();
   const inicio  = cfg.horario_inicio  || '08:00';
   const fim     = cfg.horario_fim     || '18:00';
   const duracao = parseInt(cfg.duracao_sessao) || 50;
@@ -637,7 +727,7 @@ app.get('/api/agenda-publica', (req, res) => {
   for (let m = 840; m <= 1200; m += 60) baseSlots.push(fromMin(m)); // 14:00–20:00
 
   const hoje = new Date().toISOString().slice(0, 10);
-  const existentes = db.getAgendamentos({ data_de: dias[0], data_ate: dias[dias.length - 1] })
+  const existentes = req.db.getAgendamentos({ data_de: dias[0], data_ate: dias[dias.length - 1] })
     .filter(a => ['agendado', 'confirmado', 'realizado'].includes(a.status));
 
   // Calcula rank futuro por paciente para sessao_calculada progressiva
@@ -696,11 +786,11 @@ app.post('/api/agenda-publica/reservar', async (req, res) => {
   if (!nome || !data || !hora) return res.status(400).json({ error: 'Dados incompletos.' });
 
   try {
-    const cfg = db.getConfig();
+    const cfg = req.db.getConfig();
     const duracao = parseInt(cfg.duracao_sessao) || 50;
     const toMin = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
 
-    const existentes = db.getAgendamentos({ data })
+    const existentes = req.db.getAgendamentos({ data })
       .filter(a => ['agendado', 'confirmado'].includes(a.status));
     const slotMin = toMin(hora), slotFim = slotMin + duracao;
     const conflict = existentes.find(a => {
@@ -710,36 +800,40 @@ app.post('/api/agenda-publica/reservar', async (req, res) => {
     if (conflict) return res.status(409).json({ error: 'Este horário acabou de ser ocupado. Escolha outro.' });
 
     // Agendamento e paciente só são criados após assinatura do contrato
-    const conviteToken = db.createConvite(nome, cfg.valor_sessao_padrao || 0, data, null, hora);
+    const conviteToken = req.db.createConvite(nome, cfg.valor_sessao_padrao || 0, data, null, hora);
+    mainDb.registerLink(conviteToken, 1, 'convite'); // profissional_id=1 na agenda pública
     const base = `${req.protocol}://${req.get('host')}`;
     res.json({ success: true, contratoLink: `${base}/termo-de-compromisso-op/?token=${conviteToken}` });
   } catch(e) { erro(res, e); }
 });
 
 app.post('/api/agenda-publica/cancelar-reserva', (req, res) => {
+  req.db = getPublicDb(req);
   const { token } = req.body || {};
   if (!token) return res.status(400).json({ error: 'Token obrigatório.' });
-  const convite = db.getConviteByToken(token);
+  const convite = req.db.getConviteByToken(token);
   if (!convite) return res.status(404).json({ error: 'Token inválido.' });
   if (convite.usado) return res.status(409).json({ error: 'Contrato já enviado.' });
-  db.deleteConvite(convite.id);
+  req.db.deleteConvite(convite.id);
   res.json({ ok: true });
 });
 
 // ── CONVITES ─────────────────────────────────────────────────
-app.get('/api/convites', auth, (req, res) => res.json(db.getConvites()));
+app.get('/api/convites', auth, (req, res) => res.json(req.db.getConvites()));
 
 app.post('/api/convites', auth, (req, res) => {
   try {
     const { nome_paciente, valor, data_inicio } = req.body;
-    const token = db.createConvite(nome_paciente, valor, data_inicio);
+    const token = req.db.createConvite(nome_paciente, valor, data_inicio);
+    mainDb.registerLink(token, req.profissionalId || 1, 'convite');
     const base  = `${req.protocol}://${req.get('host')}`;
     res.json({ token, link: `${base}/termo-de-compromisso-op/?token=${token}`, success: true });
   } catch(e) { erro(res, e); }
 });
 
 app.get('/api/convites/validar/:token', (req, res) => {
-  const c = db.getConviteByToken(req.params.token);
+  req.db = getPublicDb(req);
+  const c = req.db.getConviteByToken(req.params.token);
   if (!c)        return res.status(404).json({ error: 'Link inválido.' });
   if (c.usado)   return res.status(410).json({ error: 'Este link já foi utilizado.' });
   if (new Date(c.expires_at) < new Date()) return res.status(410).json({ error: 'Este link expirou. Solicite um novo.' });
@@ -747,26 +841,27 @@ app.get('/api/convites/validar/:token', (req, res) => {
 });
 
 app.delete('/api/convites/:id', auth, (req, res) => {
-  try { db.deleteConvite(req.params.id); res.json({ success: true }); }
+  try { req.db.deleteConvite(req.params.id); res.json({ success: true }); }
   catch(e) { erro(res, e); }
 });
 
 // ── CONTRATOS ────────────────────────────────────────────────
-app.get('/api/contratos', auth, (req, res) => res.json(db.getContratos()));
+app.get('/api/contratos', auth, (req, res) => res.json(req.db.getContratos()));
 
 app.get('/api/contratos/novos', auth, (req, res) => {
-  const contratos = db.getContratosNovos();
+  const contratos = req.db.getContratosNovos();
   res.json({ count: contratos.length, contratos });
 });
 
 app.post('/api/contratos/marcar-vistos', auth, (req, res) => {
-  try { db.marcarContratosVistos(); res.json({ success: true }); }
+  try { req.db.marcarContratosVistos(); res.json({ success: true }); }
   catch(e) { erro(res, e); }
 });
 
 app.post('/api/contratos', (req, res) => {
+  req.db = getPublicDb(req); // resolve tenant pelo token do convite
   try {
-    const id = db.createContrato(req.body);
+    const id = req.db.createContrato(req.body);
 
     // Cria ou atualiza paciente automaticamente com os dados do contrato
     try {
@@ -775,7 +870,7 @@ app.post('/api/contratos', (req, res) => {
         // Busca valor_sessao do convite (se existir)
         let valorSessao = 0;
         if (token) {
-          try { const conv = db.getConviteByToken(token); valorSessao = conv?.valor || 0; } catch(_) {}
+          try { const conv = req.db.getConviteByToken(token); valorSessao = conv?.valor || 0; } catch(_) {}
         }
 
         // Mapeia forma_pgto do contrato → campos do paciente
@@ -795,15 +890,15 @@ app.post('/api/contratos', (req, res) => {
           frequencia:       freq_sessoes || 'semanal',
           ...(valorSessao ? { valor_sessao: valorSessao } : {}),
         };
-        const existente = cpf ? db.getPacienteByCpf(cpf) : null;
+        const existente = cpf ? req.db.getPacienteByCpf(cpf) : null;
         if (existente) {
-          db.updatePaciente(existente.id, { ...existente, ...dadosPaciente });
+          req.db.updatePaciente(existente.id, { ...existente, ...dadosPaciente });
         } else {
-          const porNome = db.getPacientes().find(p => p.nome.toLowerCase() === nome.toLowerCase());
+          const porNome = req.db.getPacientes().find(p => p.nome.toLowerCase() === nome.toLowerCase());
           if (porNome) {
-            db.updatePaciente(porNome.id, { ...porNome, ...dadosPaciente });
+            req.db.updatePaciente(porNome.id, { ...porNome, ...dadosPaciente });
           } else {
-            db.createPaciente(dadosPaciente);
+            req.db.createPaciente(dadosPaciente);
           }
         }
       }
@@ -814,12 +909,12 @@ app.post('/api/contratos', (req, res) => {
     // Marca o convite como usado e cria agendamento se veio da agenda pública
     if (req.body.token) {
       try {
-        const conv = db.getConviteByToken(req.body.token);
+        const conv = req.db.getConviteByToken(req.body.token);
         if (conv && conv.data_inicio && conv.hora_inicio && !conv.agendamento_id) {
-          const cfg2 = db.getConfig();
+          const cfg2 = req.db.getConfig();
           const duracao = parseInt(cfg2.duracao_sessao) || 50;
           const toMin = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
-          const existentes = db.getAgendamentos({ data: conv.data_inicio })
+          const existentes = req.db.getAgendamentos({ data: conv.data_inicio })
             .filter(a => ['agendado', 'confirmado'].includes(a.status));
           const slotMin = toMin(conv.hora_inicio), slotFim = slotMin + duracao;
           const conflict = existentes.find(a => {
@@ -828,10 +923,10 @@ app.post('/api/contratos', (req, res) => {
           });
           if (!conflict) {
             // Busca ou usa o paciente já criado pelo contrato
-            const todos = db.getPacientes();
+            const todos = req.db.getPacientes();
             const pac = todos.find(p => p.nome.toLowerCase() === (req.body.nome || '').toLowerCase());
             if (pac) {
-              db.createAgendamento({
+              req.db.createAgendamento({
                 paciente_id: pac.id, data: conv.data_inicio, hora: conv.hora_inicio,
                 tipo: 'sessao', status: 'agendado',
                 valor: conv.valor || cfg2.valor_sessao_padrao || 0
@@ -839,7 +934,7 @@ app.post('/api/contratos', (req, res) => {
             }
           }
         }
-        db.usarConvite(req.body.token, id);
+        req.db.usarConvite(req.body.token, id);
       } catch(e) { console.warn('Aviso ao criar agendamento do contrato:', e.message); }
     }
 
@@ -856,7 +951,7 @@ app.post('/api/contratos/upload', upload.single('arquivo'), (req, res) => {
     const fs   = require('fs');
     const dest = path.join(__dirname, 'public/uploads/contratos/', filename);
     fs.renameSync(req.file.path, dest);
-    const id = db.createContrato({
+    const id = req.db.createContrato({
       nome,
       celular:    req.body.celular   || null,
       email:      req.body.email     || null,
@@ -870,11 +965,11 @@ app.post('/api/contratos/upload', upload.single('arquivo'), (req, res) => {
     try {
       const celular = req.body.celular || null;
       const email   = req.body.email   || null;
-      const porNome = db.getPacientes().find(p => p.nome.toLowerCase() === nome.toLowerCase());
+      const porNome = req.db.getPacientes().find(p => p.nome.toLowerCase() === nome.toLowerCase());
       if (porNome) {
-        db.updatePaciente(porNome.id, { ...porNome, whatsapp: celular || porNome.whatsapp, email: email || porNome.email });
+        req.db.updatePaciente(porNome.id, { ...porNome, whatsapp: celular || porNome.whatsapp, email: email || porNome.email });
       } else {
-        db.createPaciente({ nome, whatsapp: celular, email });
+        req.db.createPaciente({ nome, whatsapp: celular, email });
       }
     } catch(e) {
       console.warn('Aviso: não foi possível criar paciente via upload:', e.message);
@@ -885,12 +980,12 @@ app.post('/api/contratos/upload', upload.single('arquivo'), (req, res) => {
 });
 
 app.put('/api/contratos/:id', auth, (req, res) => {
-  try { db.updateContrato(req.params.id, req.body); res.json({ success: true }); }
+  try { req.db.updateContrato(req.params.id, req.body); res.json({ success: true }); }
   catch(e) { erro(res, e); }
 });
 
 app.delete('/api/contratos/:id', auth, (req, res) => {
-  try { db.deleteContrato(req.params.id); res.json({ success: true }); }
+  try { req.db.deleteContrato(req.params.id); res.json({ success: true }); }
   catch(e) { erro(res, e); }
 });
 
@@ -900,7 +995,7 @@ app.post('/api/admin/limpar-zoom-links', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
   try {
     const { id } = req.body || {};
-    const result = db.limparZoomLinks(id || null);
+    const result = req.db.limparZoomLinks(id || null);
     res.json({ ok: true, alterados: result.changes });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
@@ -915,13 +1010,13 @@ app.post('/api/admin/normalizar-fones', auth, (req, res) => {
       if (d.length === 11) return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
       return fone;
     };
-    const pacientes = db.getPacientes('todos');
+    const pacientes = req.db.getPacientes('todos');
     let atualizados = 0;
     for (const p of pacientes) {
       const wpp = normalize(p.whatsapp);
       const tel = normalize(p.telefone);
       if (wpp !== p.whatsapp || tel !== p.telefone) {
-        db.updatePaciente(p.id, { ...p, whatsapp: wpp, telefone: tel });
+        req.db.updatePaciente(p.id, { ...p, whatsapp: wpp, telefone: tel });
         atualizados++;
       }
     }
@@ -932,12 +1027,12 @@ app.post('/api/admin/normalizar-fones', auth, (req, res) => {
 // ── NOTIFICAÇÕES ──────────────────────────────────────────────
 app.get('/api/notificacoes', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
-  res.json(db.getNotificacoes(req.query.nao_lidas === '1'));
+  res.json(req.db.getNotificacoes(req.query.nao_lidas === '1'));
 });
 
 app.post('/api/notificacoes/:id/lida', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
-  db.marcarNotificacaoLida(Number(req.params.id));
+  req.db.marcarNotificacaoLida(Number(req.params.id));
   res.json({ ok: true });
 });
 
@@ -947,8 +1042,8 @@ app.get('/api/nfse/dados', (req, res) => {
   const { paciente_id, ano, mes, ids } = req.query;
   if (!paciente_id || !ano || !mes) return res.status(400).json({ error: 'Parâmetros obrigatórios: paciente_id, ano, mes' });
   const idsArr = ids ? ids.split(',').map(Number).filter(Boolean) : null;
-  const dados  = db.getNfseData(Number(paciente_id), Number(ano), Number(mes), idsArr);
-  const cfg    = db.getConfig();
+  const dados  = req.db.getNfseData(Number(paciente_id), Number(ano), Number(mes), idsArr);
+  const cfg    = req.db.getConfig();
   res.json({ ...dados, config: { nome_psicologa: cfg.nome_psicologa, crp: cfg.crp } });
 });
 
@@ -976,12 +1071,12 @@ app.post('/api/nfse/emitir', async (req, res) => {
   if (!paciente_id || !ano || !mes)
     return res.status(400).json({ error: 'Parâmetros obrigatórios: paciente_id, ano, mes' });
 
-  const cfg = db.getConfig();
+  const cfg = req.db.getConfig();
   if (!cfg.focusnfe_token)
     return res.status(400).json({ error: 'Token Focus NFe não configurado. Acesse ⚙ Configurações → NFS-e API.' });
 
   const ids = agendamento_ids?.length ? agendamento_ids.map(Number) : null;
-  const { paciente: p, sessoes } = db.getNfseData(Number(paciente_id), Number(ano), Number(mes), ids);
+  const { paciente: p, sessoes } = req.db.getNfseData(Number(paciente_id), Number(ano), Number(mes), ids);
   if (!p) return res.status(404).json({ error: 'Paciente não encontrado' });
   if (!sessoes.length) return res.status(400).json({ error: 'Nenhuma sessão realizada neste mês para este paciente' });
 
@@ -1054,7 +1149,7 @@ app.post('/api/nfse/emitir', async (req, res) => {
     }
     const numero = data.numero || data.numero_nfse || data.numero_nfs_e || null;
     const pdfUrl = data.caminho_danfse || data.caminho_nfse_pdf || null;
-    db.marcarNfseEmitida(sessoes.map(s => s.id), ref, numero);
+    req.db.marcarNfseEmitida(sessoes.map(s => s.id), ref, numero);
     res.json({ ok: true, ref, ambiente, status: data.status, numero, link_pdf: pdfUrl, dados: data });
   } catch(e) {
     res.status(500).json({ error: 'Erro ao comunicar com Focus NFe: ' + e.message });
@@ -1067,8 +1162,8 @@ app.post('/api/nfse/marcar', (req, res) => {
   const ref = `psi-${paciente_id}-${ano}${String(mes).padStart(2,'0')}`;
   try {
     const idsArr = ids?.length ? ids.map(Number) : null;
-    const { sessoes } = db.getNfseData(Number(paciente_id), Number(ano), Number(mes), idsArr);
-    db.marcarNfseManualmente(idsArr || sessoes.map(s => s.id), ref);
+    const { sessoes } = req.db.getNfseData(Number(paciente_id), Number(ano), Number(mes), idsArr);
+    req.db.marcarNfseManualmente(idsArr || sessoes.map(s => s.id), ref);
     res.json({ ok: true, ref });
   } catch(e) {
     res.status(500).json({ error: e.message });
@@ -1077,7 +1172,7 @@ app.post('/api/nfse/marcar', (req, res) => {
 
 app.get('/api/nfse/status/:ref', async (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
-  const cfg = db.getConfig();
+  const cfg = req.db.getConfig();
   if (!cfg.focusnfe_token) return res.status(400).json({ error: 'Token Focus NFe não configurado' });
   const ambiente = cfg.focusnfe_ambiente === 'producao' ? 'producao' : 'homologacao';
   const baseUrl  = ambiente === 'producao'
@@ -1105,45 +1200,45 @@ app.get('/api/nfse/status/:ref', async (req, res) => {
 
 app.delete('/api/nfse/sessao/:id', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
-  db.cancelarNfseSessao(Number(req.params.id));
+  req.db.cancelarNfseSessao(Number(req.params.id));
   res.json({ ok: true });
 });
 
 app.delete('/api/nfse/:ref', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
-  db.cancelarNfse(req.params.ref);
+  req.db.cancelarNfse(req.params.ref);
   res.json({ ok: true });
 });
 
 app.put('/api/nfse/:ref/numero', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
   const { numero } = req.body;
-  db.atualizarNfseNumero(req.params.ref, numero || null);
+  req.db.atualizarNfseNumero(req.params.ref, numero || null);
   res.json({ ok: true });
 });
 
 app.put('/api/nfse/:ref/datas', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
   const { datas_texto } = req.body;
-  db.upsertNfseDatas(req.params.ref, datas_texto || null);
+  req.db.upsertNfseDatas(req.params.ref, datas_texto || null);
   res.json({ ok: true });
 });
 
 app.get('/api/nfse/sessoes/:ref', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
-  const rows = db.prepare("SELECT data FROM agendamentos WHERE nfse_ref = ? ORDER BY data").all(req.params.ref);
+  const rows = req.db.prepare("SELECT data FROM agendamentos WHERE nfse_ref = ? ORDER BY data").all(req.params.ref);
   res.json(rows.map(r => r.data));
 });
 
 app.get('/api/nfse/lista', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
-  res.json(db.getNfseEmitidas());
+  res.json(req.db.getNfseEmitidas());
 });
 
 // ── BULK CEP ENRICHMENT ───────────────────────────────────────
 app.post('/api/admin/enrich-cep', async (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
-  const pacientes = db.getPacientes();
+  const pacientes = req.db.getPacientes();
   const semCep    = pacientes.filter(p => !p.nf_cep);
   const cepRe     = /\b(\d{5}-?\d{3})\b/;
   const log = [];
@@ -1156,7 +1251,7 @@ app.post('/api/admin/enrich-cep', async (req, res) => {
       const r = await fetch(`https://viacep.com.br/ws/${cepRaw}/json/`);
       const d = await r.json();
       if (d.erro) { log.push({ nome: p.nome, cep: cepRaw, status: 'invalido' }); continue; }
-      db.updatePaciente(p.id, {
+      req.db.updatePaciente(p.id, {
         ...p,
         nf_logradouro: d.logradouro || '',
         nf_bairro:     d.bairro     || '',
@@ -1179,7 +1274,7 @@ app.post('/api/admin/enrich-cep', async (req, res) => {
 // ── ZOOM WEBHOOK (sem auth — chamado diretamente pelo Zoom) ───
 app.post('/api/zoom/webhook', express.json(), (req, res) => {
   const body = req.body || {};
-  const cfg    = db.getConfig();
+  const cfg    = req.db.getConfig();
   const secret = cfg.zoom_webhook_secret || '';
 
   // Validação de assinatura (obrigatória quando secret está configurado)
@@ -1202,10 +1297,10 @@ app.post('/api/zoom/webhook', express.json(), (req, res) => {
     const meetingId = String(body.payload?.object?.id || '');
     if (meetingId) {
       try {
-        const ag  = db.getAgendamentoByZoomMeetingId(meetingId);
-        const pac = ag ? db.getPacienteById(ag.paciente_id) : null;
+        const ag  = req.db.getAgendamentoByZoomMeetingId(meetingId);
+        const pac = ag ? req.db.getPacienteById(ag.paciente_id) : null;
         const nome = pac?.apelido || pac?.nome?.split(' ')[0] || 'cliente';
-        db.createNotificacao('zoom_ended',
+        req.db.createNotificacao('zoom_ended',
           `Sessão com ${nome} encerrada — abrir prontuário?`,
           { agendamento_id: ag?.id || null, paciente_id: pac?.id || null, paciente_nome: pac?.nome || null }
         );
@@ -1218,14 +1313,14 @@ app.post('/api/zoom/webhook', express.json(), (req, res) => {
 
 // ── AUDIT LOG ────────────────────────────────────────────────
 app.get('/api/audit-log', auth, (req, res) => {
-  res.json(db.getAuditLog({ limite: parseInt(req.query.limite) || 200, acao: req.query.acao }));
+  res.json(req.db.getAuditLog({ limite: parseInt(req.query.limite) || 200, acao: req.query.acao }));
 });
 
-app.get('/api/configuracoes', auth, (req, res) => res.json(db.getConfig()));
+app.get('/api/configuracoes', auth, (req, res) => res.json(req.db.getConfig()));
 
 app.post('/api/configuracoes', auth, (req, res) => {
   try {
-    Object.entries(req.body).forEach(([k, v]) => db.setConfig(k, v));
+    Object.entries(req.body).forEach(([k, v]) => req.db.setConfig(k, v));
     res.json({ success: true });
   } catch(e) { erro(res, e); }
 });
@@ -1297,9 +1392,9 @@ app.post('/api/atividade-profissoes/link', (req, res) => {
   const { paciente_id } = req.body || {};
   if (!paciente_id) return res.status(400).json({ error: 'paciente_id obrigatório' });
   try {
-    const p = db.getPacienteById(paciente_id);
+    const p = req.db.getPacienteById(paciente_id);
     if (!p) return res.status(404).json({ error: 'Paciente não encontrado' });
-    const token = db.gerarLinkAtivProf(paciente_id, p.nome);
+    const token = req.db.gerarLinkAtivProf(paciente_id, p.nome);
     res.json({ token, url: `/atividade-profissoes/?t=${token}` });
   } catch(e) { erro(res, e); }
 });
@@ -1307,13 +1402,13 @@ app.post('/api/atividade-profissoes/link', (req, res) => {
 // Retorna link existente de um aluno (requer auth)
 app.get('/api/atividade-profissoes/link/:paciente_id', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
-  const link = db.getLinkAtivProf(req.params.paciente_id);
+  const link = req.db.getLinkAtivProf(req.params.paciente_id);
   res.json(link || {});
 });
 
 // Info pública do token (aluno verifica seu nome)
 app.get('/api/atividade-profissoes/info/:token', (req, res) => {
-  const link = db.getInfoAtivProf(req.params.token);
+  const link = req.db.getInfoAtivProf(req.params.token);
   if (!link) return res.status(404).json({ error: 'Link inválido ou expirado' });
   res.json({ paciente_nome: link.paciente_nome });
 });
@@ -1324,7 +1419,7 @@ app.post('/api/atividade-profissoes/responder/:token', (req, res) => {
   if (!Array.isArray(profissoes) || profissoes.length === 0)
     return res.status(400).json({ error: 'Selecione ao menos uma profissão' });
   try {
-    const id = db.salvarRespostaAtivProf(req.params.token, profissoes);
+    const id = req.db.salvarRespostaAtivProf(req.params.token, profissoes);
     if (!id) return res.status(404).json({ error: 'Link inválido' });
     res.json({ ok: true, id });
   } catch(e) { erro(res, e); }
@@ -1334,7 +1429,7 @@ app.post('/api/atividade-profissoes/responder/:token', (req, res) => {
 app.get('/api/atividade-profissoes/respostas', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
   const pid = req.query.paciente_id ? Number(req.query.paciente_id) : null;
-  res.json(db.getRespostasAtivProf(pid));
+  res.json(req.db.getRespostasAtivProf(pid));
 });
 
 // ─── ANÁLISE CLÍNICA IA ──────────────────────────────────────
@@ -1457,24 +1552,24 @@ Diretrizes:
 app.get('/api/tarefas', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
   const hoje = new Date().toISOString().slice(0, 10);
-  db.resetTarefasDiarias(hoje);
-  res.json(db.getTarefas());
+  req.db.resetTarefasDiarias(hoje);
+  res.json(req.db.getTarefas());
 });
 app.post('/api/tarefas', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
   const { titulo, diaria } = req.body || {};
   if (!titulo?.trim()) return res.status(400).json({ error: 'Título obrigatório' });
-  const id = db.createTarefa(titulo.trim(), diaria !== false);
+  const id = req.db.createTarefa(titulo.trim(), diaria !== false);
   res.json({ id });
 });
 app.put('/api/tarefas/:id', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
-  db.updateTarefa(Number(req.params.id), req.body);
+  req.db.updateTarefa(Number(req.params.id), req.body);
   res.json({ ok: true });
 });
 app.delete('/api/tarefas/:id', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
-  db.deleteTarefa(Number(req.params.id));
+  req.db.deleteTarefa(Number(req.params.id));
   res.json({ ok: true });
 });
 
@@ -1521,9 +1616,9 @@ app.post('/api/social/estilo-midia', (req, res) => {
     const url = `/uploads/social/estilo/${file.filename}`;
     const isVideo = file.mimetype.startsWith('video');
     // Salva lista de mídias de referência na configuração
-    const atual = JSON.parse(db.getConfig()['social_estilo_midias'] || '[]');
+    const atual = JSON.parse(req.db.getConfig()['social_estilo_midias'] || '[]');
     atual.push({ url, tipo: isVideo ? 'video' : 'imagem', nome: file.originalname });
-    db.setConfig('social_estilo_midias', JSON.stringify(atual));
+    req.db.setConfig('social_estilo_midias', JSON.stringify(atual));
     res.json({ url, tipo: isVideo ? 'video' : 'imagem' });
   });
 });
@@ -1531,9 +1626,9 @@ app.post('/api/social/estilo-midia', (req, res) => {
 app.delete('/api/social/estilo-midia', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
   const { url } = req.body;
-  const atual = JSON.parse(db.getConfig()['social_estilo_midias'] || '[]');
+  const atual = JSON.parse(req.db.getConfig()['social_estilo_midias'] || '[]');
   const nova = atual.filter(m => m.url !== url);
-  db.setConfig('social_estilo_midias', JSON.stringify(nova));
+  req.db.setConfig('social_estilo_midias', JSON.stringify(nova));
   // Remove arquivo do disco
   try { fs.unlinkSync(path.join(__dirname, 'public', url)); } catch(_) {}
   res.json({ ok: true });
@@ -1550,7 +1645,7 @@ app.post('/api/analisar-midia', async (req, res) => {
   const redesCtx = rede ? ` para ${rede}` : '';
 
   // Monta conteúdo com imagens de referência de estilo (até 3)
-  const midiaRefs = JSON.parse(db.getConfig()['social_estilo_midias'] || '[]');
+  const midiaRefs = JSON.parse(req.db.getConfig()['social_estilo_midias'] || '[]');
   const refsImagem = midiaRefs.filter(m => m.tipo === 'imagem').slice(0, 3);
   const refContent = refsImagem.map(m => {
     try {
@@ -1600,7 +1695,7 @@ app.post('/api/gerar-texto-post', async (req, res) => {
   const redesCtx = rede ? ` para ${rede}` : '';
 
   // Inclui imagens de referência de estilo (até 3)
-  const midiaRefs = JSON.parse(db.getConfig()['social_estilo_midias'] || '[]');
+  const midiaRefs = JSON.parse(req.db.getConfig()['social_estilo_midias'] || '[]');
   const refsImagem = midiaRefs.filter(m => m.tipo === 'imagem').slice(0, 3);
   const refContent = refsImagem.map(m => {
     try {
@@ -1638,21 +1733,21 @@ app.post('/api/gerar-texto-post', async (req, res) => {
 // ── POSTS SOCIAIS ─────────────────────────────────────────────
 app.get('/api/posts-sociais', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
-  res.json(db.getPostsSociais(req.query.rede, req.query.status));
+  res.json(req.db.getPostsSociais(req.query.rede, req.query.status));
 });
 app.post('/api/posts-sociais', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
-  const id = db.createPostSocial(req.body);
+  const id = req.db.createPostSocial(req.body);
   res.json({ id });
 });
 app.put('/api/posts-sociais/:id', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
-  db.updatePostSocial(Number(req.params.id), req.body);
+  req.db.updatePostSocial(Number(req.params.id), req.body);
   res.json({ ok: true });
 });
 app.delete('/api/posts-sociais/:id', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
-  db.deletePostSocial(Number(req.params.id));
+  req.db.deletePostSocial(Number(req.params.id));
   res.json({ ok: true });
 });
 
@@ -1666,6 +1761,22 @@ app.get('/api/debug-env', (req, res) => {
   });
 });
 
+// ── GESTÃO DE PROFISSIONAIS (super-admin: profissional_id=1) ──
+app.get('/api/admin/profissionais', (req, res) => {
+  if (!authOk(req) || req.profissionalId !== 1)
+    return res.status(403).json({ error: 'Acesso restrito ao administrador' });
+  res.json(mainDb.getAllProfissionais());
+});
+
+app.put('/api/admin/profissionais/:id', (req, res) => {
+  if (!authOk(req) || req.profissionalId !== 1)
+    return res.status(403).json({ error: 'Acesso restrito ao administrador' });
+  try {
+    mainDb.updateProfissional(Number(req.params.id), req.body);
+    res.json({ ok: true });
+  } catch(e) { res.status(400).json({ error: e.message }); }
+});
+
 // ─────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log('\n╔══════════════════════════════════════════════╗');
@@ -1673,3 +1784,4 @@ app.listen(PORT, () => {
   console.log('╚══════════════════════════════════════════════╝\n');
   console.log(`  Acesse: http://localhost:${PORT}\n`);
 });
+
