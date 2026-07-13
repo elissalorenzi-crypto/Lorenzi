@@ -862,6 +862,7 @@ tbody tr:hover { background: var(--rose-pale); }
 .status-select.sim        { border-color: var(--sage);  color: var(--sage);  background-color: var(--sage-pale); }
 .status-select.nao        { border-color: var(--muted); color: var(--muted); background-color: var(--bg); }
 .status-select.nf         { min-width: 68px; }
+.table-compact td .status-select { min-width: unset; width: 100%; padding: 3px 18px 3px 7px; font-size: 11px; }
 .status-select.semanal      { border-color: var(--rose);    color: var(--rose);    background-color: var(--rose-pale); }
 .status-select.quinzenal    { border-color: var(--peach);   color: var(--peach);   background-color: var(--peach-pale); }
 .status-select.mensal       { border-color: var(--muted);   color: var(--muted);   background-color: var(--bg); }
