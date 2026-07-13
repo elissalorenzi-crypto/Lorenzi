@@ -1,4 +1,7 @@
-﻿const express = require('express');
+process.on('uncaughtException',  e => console.error('[CRASH] uncaughtException:', e));
+process.on('unhandledRejection', e => console.error('[CRASH] unhandledRejection:', e));
+
+const express = require('express');
 const path    = require('path');
 const multer  = require('multer');
 const db      = require('./src/db');
@@ -1776,6 +1779,8 @@ app.put('/api/admin/profissionais/:id', (req, res) => {
     res.json({ ok: true });
   } catch(e) { res.status(400).json({ error: e.message }); }
 });
+
+app.get('/health', (req, res) => res.json({ ok: true }));
 
 // ─────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
