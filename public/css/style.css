@@ -826,6 +826,8 @@ tbody tr:hover { background: var(--rose-pale); }
 
 /* ── INLINE ACTIONS ──────────────────────────────────────── */
 .inline-actions { display: flex; gap: 4px; }
+.table-compact .inline-actions { gap: 2px; }
+.table-compact .inline-actions .btn-xs { padding: 2px 3px; font-size: 11px; }
 
 /* ── CONFIGURAÇÕES ───────────────────────────────────────── */
 .config-section { margin-bottom: 28px; }
