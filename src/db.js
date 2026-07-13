@@ -43,6 +43,14 @@ const migrations = [
   "ALTER TABLE agendamentos ADD COLUMN nfse_ref TEXT",
   "ALTER TABLE agendamentos ADD COLUMN nfse_numero TEXT",
   "ALTER TABLE agendamentos ADD COLUMN nfse_manual INTEGER DEFAULT 0",
+  // Conformidade CFP
+  "ALTER TABLE prontuarios ADD COLUMN hipotese_trabalho TEXT",
+  "ALTER TABLE prontuarios ADD COLUMN criado_por TEXT",
+  "ALTER TABLE pacientes ADD COLUMN data_inicio_acompanhamento TEXT",
+  "ALTER TABLE pacientes ADD COLUMN data_encerramento TEXT",
+  "ALTER TABLE pacientes ADD COLUMN motivo_encerramento TEXT",
+  "ALTER TABLE agendamentos ADD COLUMN modalidade TEXT DEFAULT 'presencial'",
+  "ALTER TABLE agendamentos ADD COLUMN consentimento_teleconsulta INTEGER DEFAULT 0",
 ];
 for (const m of migrations) {
   try { db.exec(m); } catch(_) {}
@@ -1193,6 +1201,16 @@ const getNfseEmitidas = () =>
     ORDER BY MAX(a.data) DESC
   `).all();
 
+// ── ENCERRAMENTO DE CASO (CFP Res. 001/2009) ─────────────────
+const encerrarCaso = (paciente_id, motivo, data) => {
+  const dataEnc = data || new Date().toISOString().slice(0, 10);
+  db.prepare("UPDATE pacientes SET data_encerramento=?, motivo_encerramento=?, ativo=0 WHERE id=?").run(dataEnc, motivo, paciente_id);
+};
+
+const reabrirCaso = (paciente_id) => {
+  db.prepare("UPDATE pacientes SET data_encerramento=NULL, motivo_encerramento=NULL, ativo=1 WHERE id=?").run(paciente_id);
+};
+
 // ── AUDIT LOG ────────────────────────────────────────────────
 const createAuditLog = (acao, recurso, recurso_id, ip) =>
   db.prepare("INSERT INTO audit_log (acao, recurso, recurso_id, ip) VALUES (?,?,?,?)").run(acao, recurso || null, recurso_id ? String(recurso_id) : null, ip || null);
@@ -1238,5 +1256,6 @@ module.exports = {
   gerarLinkAtivProf, getLinkAtivProf, getInfoAtivProf, salvarRespostaAtivProf, getRespostasAtivProf,
   getPostsSociais, getPostSocialById, createPostSocial, updatePostSocial, deletePostSocial,
   setSession, getSession, deleteSession, cleanExpiredSessions,
-  createAuditLog, getAuditLog, deletarDadosPacienteCompleto
+  createAuditLog, getAuditLog, deletarDadosPacienteCompleto,
+  encerrarCaso, reabrirCaso
 };

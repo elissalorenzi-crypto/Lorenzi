@@ -730,6 +730,19 @@ async function openModalAgendamento(ag = null, dataPreset = null, pacienteIdPres
           <option value="transferencia" ${ag?.forma_pgto==='transferencia'?'selected':''}>Transferência</option>
         </select>
       </div>
+      <div class="form-group">
+        <label>Modalidade <span style="font-size:11px;color:var(--muted)">(CFP Res. 004/2020)</span></label>
+        <select id="ag-modalidade" onchange="toggleConsentTeleconsulta()">
+          <option value="presencial" ${(ag?.modalidade||'presencial')==='presencial'?'selected':''}>Presencial</option>
+          <option value="online"     ${ag?.modalidade==='online'?'selected':''}>Online (Teleconsulta)</option>
+          <option value="hibrido"    ${ag?.modalidade==='hibrido'?'selected':''}>Híbrido</option>
+        </select>
+      </div>
+      <div class="form-group" id="ag-consent-box" style="${ag?.modalidade==='online'?'':'display:none'}">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" id="ag-consent-tele" ${ag?.consentimento_teleconsulta ? 'checked' : ''}> Paciente consentiu com atendimento online
+        </label>
+      </div>
       <div class="form-group full">
         <label>Observações</label>
         <textarea id="ag-obs" rows="2">${ag?.obs || ''}</textarea>
@@ -738,17 +751,20 @@ async function openModalAgendamento(ag = null, dataPreset = null, pacienteIdPres
   `;
 
   openModal(isEdit ? 'Editar Agendamento' : 'Nova Sessão', html, async () => {
+    const modalidade = document.getElementById('ag-modalidade')?.value || 'presencial';
     const body = {
-      paciente_id: document.getElementById('ag-paciente').value || null,
-      data:        document.getElementById('ag-data').value,
-      hora:        document.getElementById('ag-hora').value,
-      duracao:     parseInt(document.getElementById('ag-duracao').value),
-      tipo:        document.getElementById('ag-tipo').value,
-      status:      document.getElementById('ag-status').value,
-      valor:       parseFloat(document.getElementById('ag-valor').value) || 0,
-      pago:        document.getElementById('ag-pago').checked ? 1 : 0,
-      forma_pgto:  document.getElementById('ag-forma').value || null,
-      obs:         document.getElementById('ag-obs').value.trim()
+      paciente_id:              document.getElementById('ag-paciente').value || null,
+      data:                     document.getElementById('ag-data').value,
+      hora:                     document.getElementById('ag-hora').value,
+      duracao:                  parseInt(document.getElementById('ag-duracao').value),
+      tipo:                     document.getElementById('ag-tipo').value,
+      status:                   document.getElementById('ag-status').value,
+      valor:                    parseFloat(document.getElementById('ag-valor').value) || 0,
+      pago:                     document.getElementById('ag-pago').checked ? 1 : 0,
+      forma_pgto:               document.getElementById('ag-forma').value || null,
+      obs:                      document.getElementById('ag-obs').value.trim(),
+      modalidade,
+      consentimento_teleconsulta: modalidade === 'online' && document.getElementById('ag-consent-tele')?.checked ? 1 : 0
     };
     if (!body.data || !body.hora) return toast('Data e hora são obrigatórios', 'error') || false;
     try {
@@ -792,6 +808,11 @@ async function openModalAgendamento(ag = null, dataPreset = null, pacienteIdPres
       }
     } catch(e) { toast(e.message, 'error'); }
   });
+}
+
+function toggleConsentTeleconsulta() {
+  const box = document.getElementById('ag-consent-box');
+  if (box) box.style.display = document.getElementById('ag-modalidade')?.value === 'online' ? '' : 'none';
 }
 
 function autoPreencherAgendamento() {
@@ -1358,7 +1379,34 @@ async function verDetalhePaciente(id) {
 
     <div id="respostas-profissoes-${p.id}" style="margin:16px 0"></div>
 
-    <div style="display:flex;gap:12px;flex-wrap:wrap">
+    <!-- Acompanhamento (CFP Res. 001/2009) -->
+    <div class="card" style="margin-top:16px;border:${p.data_encerramento ? '2px solid #c62828' : '1px solid var(--border)'}">
+      <div class="card-body" style="padding:14px 16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+          <div style="display:flex;gap:24px;flex-wrap:wrap">
+            <div>
+              <div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Início do acompanhamento</div>
+              <div style="font-size:14px;font-weight:600;color:var(--plum)">${p.data_inicio_acompanhamento ? fmtData(p.data_inicio_acompanhamento) : '—'}</div>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Status do caso</div>
+              <div style="font-size:14px;font-weight:600;color:${p.data_encerramento ? '#c62828' : '#388e3c'}">${p.data_encerramento ? `Encerrado em ${fmtData(p.data_encerramento)}` : 'Em andamento'}</div>
+            </div>
+            ${p.motivo_encerramento ? `<div>
+              <div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Motivo do encerramento</div>
+              <div style="font-size:14px;color:#c62828">${p.motivo_encerramento}</div>
+            </div>` : ''}
+          </div>
+          <div style="display:flex;gap:8px">
+            ${p.data_encerramento
+              ? `<button class="btn btn-outline btn-sm" onclick="reabrirCasoPaciente(${p.id})">↩ Reabrir caso</button>`
+              : `<button class="btn btn-ghost btn-sm" style="color:#c62828;border-color:#c62828" onclick="encerrarCasoPaciente(${p.id})">📁 Encerrar caso</button>`}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:16px">
       <button class="btn btn-primary" onclick="editPaciente(${p.id})">✏️ Editar Dados</button>
       <button class="btn btn-lavender" onclick="navigate('prontuarios');setTimeout(()=>{document.getElementById('pront-paciente-select').value=${p.id};loadProntuariosSection();},100)">📋 Ver Prontuários</button>
       ${(() => {
@@ -2076,6 +2124,37 @@ async function deletePacienteItem(id) {
   refreshAll();
 }
 
+async function encerrarCasoPaciente(id) {
+  const motivos = ['Alta clínica', 'Abandono de tratamento', 'Encaminhamento externo', 'Transferência de profissional', 'Conclusão do objetivo terapêutico', 'Óbito', 'Outros'];
+  const html = `<div class="form-group" style="margin-bottom:14px">
+    <label>Motivo do encerramento <span style="color:#c62828">*</span></label>
+    <select id="enc-motivo" style="width:100%">
+      <option value="">— Selecione —</option>
+      ${motivos.map(m => `<option value="${m}">${m}</option>`).join('')}
+    </select>
+  </div>
+  <div class="form-group">
+    <label>Data do encerramento</label>
+    <input type="date" id="enc-data" value="${HOJE()}">
+  </div>
+  <p style="font-size:12px;color:var(--muted);margin-top:10px">⚠ O cliente será movido para inativos. O prontuário permanece arquivado conforme CFP Res. 001/2009.</p>`;
+  openModal('Encerrar Caso', html, async () => {
+    const motivo = document.getElementById('enc-motivo').value;
+    const data   = document.getElementById('enc-data').value;
+    if (!motivo) return toast('Selecione o motivo', 'error') || false;
+    await api('POST', `/pacientes/${id}/encerrar`, { motivo, data });
+    toast('Caso encerrado e registrado');
+    verDetalhePaciente(id);
+  });
+}
+
+async function reabrirCasoPaciente(id) {
+  if (!confirm('Reabrir este caso? O cliente voltará para ativos.')) return;
+  await api('POST', `/pacientes/${id}/reabrir`);
+  toast('Caso reaberto');
+  verDetalhePaciente(id);
+}
+
 async function excluirDadosLGPD(id, nome) {
   const msg = `EXCLUSÃO PERMANENTE — LGPD\n\nEsta ação apagará TODOS os dados de "${nome}":\n• Prontuários\n• Agendamentos\n• Dados pessoais\n\nEsta ação NÃO pode ser desfeita.\n\nDigite CONFIRMAR para prosseguir:`;
   if (prompt(msg) !== 'CONFIRMAR') return toast('Cancelado', 'error');
@@ -2266,6 +2345,11 @@ function renderProntuarios(pronts, pacId) {
             <div class="pront-field-label">Humor / Estado Emocional <span class="pront-edit-hint">✏️ clique para editar</span></div>
             <div class="pront-field-value">${r.humor}</div>
           </div>` : ''}
+        ${r.hipotese_trabalho ? `
+          <div class="pront-field pront-field-edit" onclick="editProntuario(${r.id},${pacId})" title="Clique para editar">
+            <div class="pront-field-label">Hipótese de Trabalho <span class="pront-edit-hint">✏️ clique para editar</span></div>
+            <div class="pront-field-value">${r.hipotese_trabalho.replace(/\n/g,'<br>')}</div>
+          </div>` : ''}
         ${r.tecnicas ? `
           <div class="pront-field pront-field-edit" onclick="editProntuario(${r.id},${pacId})" title="Clique para editar">
             <div class="pront-field-label">Técnicas Utilizadas <span class="pront-edit-hint">✏️ clique para editar</span></div>
@@ -2276,8 +2360,9 @@ function renderProntuarios(pronts, pacId) {
             <div class="pront-field-label">Tarefas / Homework <span class="pront-edit-hint">✏️ clique para editar</span></div>
             <div class="pront-field-value">${r.tarefas}</div>
           </div>` : ''}
-        <div style="padding:12px 0 4px;border-top:1px solid var(--border);margin-top:12px;display:flex;gap:8px">
+        <div style="padding:8px 0 4px;border-top:1px solid var(--border);margin-top:12px;display:flex;gap:8px;align-items:center;justify-content:space-between">
           <button class="btn btn-primary btn-sm" onclick="editProntuario(${r.id},${pacId})">✏️ Editar anotação</button>
+          ${r.criado_por ? `<span style="font-size:11px;color:var(--muted)">🔒 ${r.criado_por}</span>` : ''}
         </div>
         <div class="pront-analise-box" id="analise-box-${r.id}">
           <div class="pront-analise-header">
@@ -2391,6 +2476,7 @@ function prontuarioFormHtml(r = {}, agendamentos = []) {
       <button type="button" class="btn btn-sm btn-outline" id="btn-corrigir-pront" onclick="corrigirProntuario()" title="Organiza e estrutura suas anotações seguindo as diretrizes do CFP, preservando todo o conteúdo que você escreveu">
         📋 Organizar com IA
       </button>
+      <span style="font-size:10px;color:var(--muted);margin-left:6px" title="Conteúdo gerado por IA — revise antes de salvar (Código de Ética CFP, Art. 1º)">⚠ IA assistiva</span>
     </div>
     <div class="form-group" style="margin-bottom:14px">
       <label>Relato / Conteúdo da Sessão</label>
@@ -2399,6 +2485,10 @@ function prontuarioFormHtml(r = {}, agendamentos = []) {
     <div class="form-group" style="margin-bottom:14px">
       <label>Humor / Estado Emocional do Cliente</label>
       <input type="text" id="pr-humor" spellcheck="true" lang="pt-BR" value="${r.humor||''}" placeholder="Ex: Ansiosa, reflexiva, mais tranquila...">
+    </div>
+    <div class="form-group" style="margin-bottom:14px">
+      <label>Hipótese de Trabalho <span style="font-weight:400;color:var(--muted);font-size:11px">(CFP Res. 001/2009)</span></label>
+      <textarea id="pr-hipotese" rows="2" spellcheck="true" lang="pt-BR" placeholder="Hipótese diagnóstica ou de trabalho para este caso...">${r.hipotese_trabalho||''}</textarea>
     </div>
     <div class="form-group" style="margin-bottom:14px">
       <label>Técnicas / Intervenções Utilizadas</label>
@@ -2686,13 +2776,14 @@ async function openModalProntuario(r = {}) {
 
   openModal(r.id ? 'Editar Anotação' : 'Nova Anotação de Sessão', prontuarioFormHtml(r, agendamentos), async () => {
     const body = {
-      paciente_id:    pacId,
-      agendamento_id: document.getElementById('pr-agendamento')?.value || null,
-      data:           document.getElementById('pr-data').value,
-      conteudo:       document.getElementById('pr-conteudo').value.trim(),
-      humor:          document.getElementById('pr-humor').value.trim(),
-      tecnicas:       document.getElementById('pr-tecnicas').value.trim(),
-      tarefas:        document.getElementById('pr-tarefas').value.trim()
+      paciente_id:       pacId,
+      agendamento_id:    document.getElementById('pr-agendamento')?.value || null,
+      data:              document.getElementById('pr-data').value,
+      conteudo:          document.getElementById('pr-conteudo').value.trim(),
+      humor:             document.getElementById('pr-humor').value.trim(),
+      hipotese_trabalho: document.getElementById('pr-hipotese')?.value.trim() || null,
+      tecnicas:          document.getElementById('pr-tecnicas').value.trim(),
+      tarefas:           document.getElementById('pr-tarefas').value.trim()
     };
     if (!body.data) return toast('Data é obrigatória', 'error') || false;
     try {

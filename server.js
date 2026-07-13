@@ -238,6 +238,25 @@ app.delete('/api/pacientes/:id', auth, (req, res) => {
   catch(e) { erro(res, e); }
 });
 
+// Encerramento formal de caso (CFP Res. 001/2009)
+app.post('/api/pacientes/:id/encerrar', auth, (req, res) => {
+  try {
+    const { motivo, data } = req.body;
+    if (!motivo) return res.status(400).json({ error: 'Motivo de encerramento obrigatório' });
+    db.encerrarCaso(req.params.id, motivo, data);
+    logAudit(req, 'caso_encerrado', 'paciente', req.params.id);
+    res.json({ success: true });
+  } catch(e) { erro(res, e); }
+});
+
+app.post('/api/pacientes/:id/reabrir', auth, (req, res) => {
+  try {
+    db.reabrirCaso(req.params.id);
+    logAudit(req, 'caso_reaberto', 'paciente', req.params.id);
+    res.json({ success: true });
+  } catch(e) { erro(res, e); }
+});
+
 // Exclusão completa de dados (LGPD — direito ao esquecimento)
 app.delete('/api/pacientes/:id/dados-lgpd', auth, (req, res) => {
   try {
@@ -280,6 +299,15 @@ app.post('/api/agendamentos', auth, async (req, res) => {
         db.updateAgendamento(id, { ...ag, zoom_link: link });
       }
     } catch(ze) { console.warn('Zoom (auto):', ze.message); }
+    // Auto-preenche data de início do acompanhamento (CFP Res. 001/2009)
+    try {
+      if (req.body.paciente_id && req.body.data) {
+        const p = db.getPacienteById(req.body.paciente_id);
+        if (p && !p.data_inicio_acompanhamento) {
+          db.updatePaciente(req.body.paciente_id, { ...p, data_inicio_acompanhamento: req.body.data });
+        }
+      }
+    } catch(_) {}
     res.json({ id, success: true });
   } catch(e) { erro(res, e); }
 });
@@ -341,7 +369,9 @@ app.get('/api/prontuarios', auth, (req, res) => {
 
 app.post('/api/prontuarios', auth, (req, res) => {
   try {
-    const id = db.createProntuario(req.body);
+    const cfg = db.getConfig();
+    const crp = cfg.crp ? `${cfg.nome_psicologa || ''} CRP ${cfg.crp}`.trim() : (cfg.nome_psicologa || '');
+    const id = db.createProntuario({ ...req.body, criado_por: crp || null });
     logAudit(req, 'prontuario_criado', 'paciente', req.body.paciente_id);
     // Marca a sessão vinculada como realizada automaticamente
     const agId = req.body.agendamento_id;
