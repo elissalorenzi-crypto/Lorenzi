@@ -86,6 +86,7 @@ function authOk(req) {
   const row = db.getSession(token);
   return !!(row && Date.now() <= row.expiry);
 }
+const auth = (req, res, next) => authOk(req) ? next() : res.status(401).json({ error: 'Não autorizado' });
 
 // Aceita token via Authorization header OU query param ?t= (para abrir arquivos no browser)
 function authOkFile(req) {
@@ -200,56 +201,56 @@ const erro = (res, e, status = 400) =>
   res.status(status).json({ error: traduzErro(e.message) });
 
 // ── DASHBOARD ────────────────────────────────────────────────
-app.get('/api/dashboard', (req, res) => {
+app.get('/api/dashboard', auth, (req, res) => {
   const hoje = req.query.hoje || new Date().toISOString().slice(0, 10);
   res.json(db.getDashboard(hoje));
 });
 
 // ── PACIENTES ────────────────────────────────────────────────
-app.get('/api/pacientes', (req, res) => res.json(db.getPacientes(req.query.todos === '1')));
+app.get('/api/pacientes', auth, (req, res) => res.json(db.getPacientes(req.query.todos === '1')));
 
-app.get('/api/pacientes/:id', (req, res) => {
+app.get('/api/pacientes/:id', auth, (req, res) => {
   const p = db.getPacienteById(req.params.id);
   if (!p) return res.status(404).json({ error: 'Paciente não encontrada' });
   res.json(p);
 });
 
-app.post('/api/pacientes', (req, res) => {
+app.post('/api/pacientes', auth, (req, res) => {
   try { res.json({ id: db.createPaciente(req.body), success: true }); }
   catch(e) { erro(res, e); }
 });
 
-app.put('/api/pacientes/:id', (req, res) => {
+app.put('/api/pacientes/:id', auth, (req, res) => {
   try { db.updatePaciente(req.params.id, req.body); res.json({ success: true }); }
   catch(e) { erro(res, e); }
 });
 
-app.delete('/api/pacientes/:id', (req, res) => {
+app.delete('/api/pacientes/:id', auth, (req, res) => {
   try { db.deletePaciente(req.params.id); res.json({ success: true }); }
   catch(e) { erro(res, e); }
 });
 
-app.get('/api/pacientes/:id/prontuarios', (req, res) =>
+app.get('/api/pacientes/:id/prontuarios', auth, (req, res) =>
   res.json(db.getProntuarios(req.params.id))
 );
 
-app.get('/api/pacientes/:id/agendamentos', (req, res) =>
+app.get('/api/pacientes/:id/agendamentos', auth, (req, res) =>
   res.json(db.getAgendamentos({ paciente_id: req.params.id }))
 );
 
 // ── AGENDAMENTOS ─────────────────────────────────────────────
-app.get('/api/agendamentos', (req, res) => {
+app.get('/api/agendamentos', auth, (req, res) => {
   const { data, data_de, data_ate, paciente_id, status } = req.query;
   res.json(db.getAgendamentos({ data, data_de, data_ate, paciente_id, status }));
 });
 
-app.get('/api/agendamentos/:id', (req, res) => {
+app.get('/api/agendamentos/:id', auth, (req, res) => {
   const a = db.getAgendamentoById(req.params.id);
   if (!a) return res.status(404).json({ error: 'Agendamento não encontrado' });
   res.json(a);
 });
 
-app.post('/api/agendamentos', async (req, res) => {
+app.post('/api/agendamentos', auth, async (req, res) => {
   try {
     const id = db.createAgendamento(req.body);
     // Gera link Zoom automaticamente (não bloqueia resposta em caso de falha)
@@ -286,7 +287,7 @@ app.post('/api/agendamentos/serie', async (req, res) => {
   } catch(e) { erro(res, e); }
 });
 
-app.put('/api/agendamentos/:id', (req, res) => {
+app.put('/api/agendamentos/:id', auth, (req, res) => {
   try { db.updateAgendamento(req.params.id, req.body); res.json({ success: true }); }
   catch(e) { erro(res, e); }
 });
@@ -309,18 +310,18 @@ app.post('/api/pacientes/:id/restaurar-sessoes', (req, res) => {
   } catch(e) { erro(res, e); }
 });
 
-app.delete('/api/agendamentos/:id', (req, res) => {
+app.delete('/api/agendamentos/:id', auth, (req, res) => {
   try { db.deleteAgendamento(req.params.id); res.json({ success: true }); }
   catch(e) { erro(res, e); }
 });
 
 // ── PRONTUÁRIOS ──────────────────────────────────────────────
-app.get('/api/prontuarios', (req, res) => {
+app.get('/api/prontuarios', auth, (req, res) => {
   if (!req.query.paciente_id) return res.status(400).json({ error: 'Informe o ID da paciente' });
   res.json(db.getProntuarios(req.query.paciente_id));
 });
 
-app.post('/api/prontuarios', (req, res) => {
+app.post('/api/prontuarios', auth, (req, res) => {
   try {
     const id = db.createProntuario(req.body);
     // Marca a sessão vinculada como realizada automaticamente
@@ -335,50 +336,50 @@ app.post('/api/prontuarios', (req, res) => {
   } catch(e) { erro(res, e); }
 });
 
-app.put('/api/prontuarios/:id', (req, res) => {
+app.put('/api/prontuarios/:id', auth, (req, res) => {
   try { db.updateProntuario(req.params.id, req.body); res.json({ success: true }); }
   catch(e) { erro(res, e); }
 });
 
-app.delete('/api/prontuarios/:id', (req, res) => {
+app.delete('/api/prontuarios/:id', auth, (req, res) => {
   try { db.deleteProntuario(req.params.id); res.json({ success: true }); }
   catch(e) { erro(res, e); }
 });
 
 // ── PAGAMENTOS ───────────────────────────────────────────────
-app.get('/api/pagamentos', (req, res) => {
+app.get('/api/pagamentos', auth, (req, res) => {
   try { res.json(db.getPagamentos(req.query)); }
   catch(e) { erro(res, e); }
 });
 
-app.post('/api/pagamentos', (req, res) => {
+app.post('/api/pagamentos', auth, (req, res) => {
   try { res.json({ id: db.createPagamento(req.body), success: true }); }
   catch(e) { erro(res, e); }
 });
 
-app.put('/api/pagamentos/:id', (req, res) => {
+app.put('/api/pagamentos/:id', auth, (req, res) => {
   try { db.updatePagamento(req.params.id, req.body); res.json({ success: true }); }
   catch(e) { erro(res, e); }
 });
 
-app.delete('/api/pagamentos/:id', (req, res) => {
+app.delete('/api/pagamentos/:id', auth, (req, res) => {
   try { db.deletePagamento(req.params.id); res.json({ success: true }); }
   catch(e) { erro(res, e); }
 });
 
 // ── RELATÓRIOS ───────────────────────────────────────────────
-app.get('/api/relatorios', (req, res) => {
+app.get('/api/relatorios', auth, (req, res) => {
   try { res.json(db.getRelatorios()); }
   catch(e) { erro(res, e); }
 });
 
-app.get('/api/relatorios/filtrado', (req, res) => {
+app.get('/api/relatorios/filtrado', auth, (req, res) => {
   try { res.json(db.getRelatorioFiltrado(req.query)); }
   catch(e) { erro(res, e); }
 });
 
 // ── FINANCEIRO ───────────────────────────────────────────────
-app.get('/api/financeiro', (req, res) => {
+app.get('/api/financeiro', auth, (req, res) => {
   const now = new Date();
   const ano = parseInt(req.query.ano || now.getFullYear());
   const mes = parseInt(req.query.mes || now.getMonth() + 1);
@@ -446,7 +447,7 @@ app.post('/api/admin/gerar-zoom-todos', async (req, res) => {
   } catch(e) { erro(res, e); }
 });
 
-app.post('/api/agendamentos/:id/zoom', async (req, res) => {
+app.post('/api/agendamentos/:id/zoom', auth, async (req, res) => {
   try {
     const ag  = db.getAgendamentoById(req.params.id);
     if (!ag) return res.status(404).json({ error: 'Agendamento não encontrado' });
@@ -458,19 +459,19 @@ app.post('/api/agendamentos/:id/zoom', async (req, res) => {
   } catch(e) { erro(res, e); }
 });
 
-app.get('/api/financeiro/previsao-pgto', (req, res) => {
+app.get('/api/financeiro/previsao-pgto', auth, (req, res) => {
   const hoje = req.query.hoje || new Date().toISOString().slice(0,10);
   res.json(db.getPrevisaoPgto(hoje));
 });
 
-app.get('/api/financeiro/projecao-recorrente', (req, res) => {
+app.get('/api/financeiro/projecao-recorrente', auth, (req, res) => {
   res.json(db.getProjecaoRecorrente());
 });
 
 // ── LINKS AGENDAMENTO ────────────────────────────────────────
-app.get('/api/agendamento-links', (req, res) => res.json(db.getLinksAgendamento()));
+app.get('/api/agendamento-links', auth, (req, res) => res.json(db.getLinksAgendamento()));
 
-app.post('/api/agendamento-links', (req, res) => {
+app.post('/api/agendamento-links', auth, (req, res) => {
   try {
     const token = require('crypto').randomBytes(12).toString('hex');
     db.createLinkAgendamento({ token, ...req.body });
@@ -479,7 +480,7 @@ app.post('/api/agendamento-links', (req, res) => {
   } catch(e) { erro(res, e); }
 });
 
-app.delete('/api/agendamento-links/:id', (req, res) => {
+app.delete('/api/agendamento-links/:id', auth, (req, res) => {
   try { db.desativarLinkAgendamento(req.params.id); res.json({ success: true }); }
   catch(e) { erro(res, e); }
 });
@@ -677,9 +678,9 @@ app.post('/api/agenda-publica/cancelar-reserva', (req, res) => {
 });
 
 // ── CONVITES ─────────────────────────────────────────────────
-app.get('/api/convites', (req, res) => res.json(db.getConvites()));
+app.get('/api/convites', auth, (req, res) => res.json(db.getConvites()));
 
-app.post('/api/convites', (req, res) => {
+app.post('/api/convites', auth, (req, res) => {
   try {
     const { nome_paciente, valor, data_inicio } = req.body;
     const token = db.createConvite(nome_paciente, valor, data_inicio);
@@ -696,20 +697,20 @@ app.get('/api/convites/validar/:token', (req, res) => {
   res.json(c);
 });
 
-app.delete('/api/convites/:id', (req, res) => {
+app.delete('/api/convites/:id', auth, (req, res) => {
   try { db.deleteConvite(req.params.id); res.json({ success: true }); }
   catch(e) { erro(res, e); }
 });
 
 // ── CONTRATOS ────────────────────────────────────────────────
-app.get('/api/contratos', (req, res) => res.json(db.getContratos()));
+app.get('/api/contratos', auth, (req, res) => res.json(db.getContratos()));
 
-app.get('/api/contratos/novos', (req, res) => {
+app.get('/api/contratos/novos', auth, (req, res) => {
   const contratos = db.getContratosNovos();
   res.json({ count: contratos.length, contratos });
 });
 
-app.post('/api/contratos/marcar-vistos', (req, res) => {
+app.post('/api/contratos/marcar-vistos', auth, (req, res) => {
   try { db.marcarContratosVistos(); res.json({ success: true }); }
   catch(e) { erro(res, e); }
 });
@@ -834,12 +835,12 @@ app.post('/api/contratos/upload', upload.single('arquivo'), (req, res) => {
   } catch(e) { erro(res, e); }
 });
 
-app.put('/api/contratos/:id', (req, res) => {
+app.put('/api/contratos/:id', auth, (req, res) => {
   try { db.updateContrato(req.params.id, req.body); res.json({ success: true }); }
   catch(e) { erro(res, e); }
 });
 
-app.delete('/api/contratos/:id', (req, res) => {
+app.delete('/api/contratos/:id', auth, (req, res) => {
   try { db.deleteContrato(req.params.id); res.json({ success: true }); }
   catch(e) { erro(res, e); }
 });
@@ -855,7 +856,7 @@ app.post('/api/admin/limpar-zoom-links', (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-app.post('/api/admin/normalizar-fones', (req, res) => {
+app.post('/api/admin/normalizar-fones', auth, (req, res) => {
   try {
     const normalize = (fone) => {
       if (!fone) return null;
@@ -1166,9 +1167,9 @@ app.post('/api/zoom/webhook', express.json(), (req, res) => {
   res.json({ ok: true });
 });
 
-app.get('/api/configuracoes', (req, res) => res.json(db.getConfig()));
+app.get('/api/configuracoes', auth, (req, res) => res.json(db.getConfig()));
 
-app.post('/api/configuracoes', (req, res) => {
+app.post('/api/configuracoes', auth, (req, res) => {
   try {
     Object.entries(req.body).forEach(([k, v]) => db.setConfig(k, v));
     res.json({ success: true });
@@ -1176,7 +1177,7 @@ app.post('/api/configuracoes', (req, res) => {
 });
 
 // ─── ORGANIZAR PRONTUÁRIO ────────────────────────────────────
-app.post('/api/prontuarios/organizar', async (req, res) => {
+app.post('/api/prontuarios/organizar', auth, async (req, res) => {
   const { conteudo, humor, tecnicas, tarefas, nome_paciente } = req.body || {};
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return res.status(503).json({ error: 'ANTHROPIC_API_KEY não configurada no servidor' });
@@ -1283,7 +1284,7 @@ app.get('/api/atividade-profissoes/respostas', (req, res) => {
 });
 
 // ─── ANÁLISE CLÍNICA IA ──────────────────────────────────────
-app.post('/api/analisar-prontuario', async (req, res) => {
+app.post('/api/analisar-prontuario', auth, async (req, res) => {
   const { conteudo, humor, tecnicas, tarefas, nome_paciente } = req.body || {};
   const partes = [
     conteudo  && `Relato da sessão:\n${conteudo}`,
@@ -1337,7 +1338,7 @@ ${partes.join('\n\n')}`;
 });
 
 // ─── ESTRUTURAR DITADO ──────────────────────────────────────
-app.post('/api/prontuarios/estruturar-ditado', async (req, res) => {
+app.post('/api/prontuarios/estruturar-ditado', auth, async (req, res) => {
   const { transcricao, nome_paciente } = req.body || {};
   if (!transcricao?.trim()) return res.status(400).json({ error: 'Transcrição vazia' });
 
