@@ -148,6 +148,7 @@ app.post('/api/auth/login', (req, res) => {
 
   const token = crypto.randomBytes(32).toString('hex');
   db.setSession(token, Date.now() + SESSION_TTL);
+  logAudit(req, 'login', null, null);
   res.json({ token });
 });
 
@@ -176,12 +177,19 @@ app.post('/api/auth/senha', (req, res) => {
   res.json({ ok: true });
 });
 
+// Helper: registra ação no audit log
+const logAudit = (req, acao, recurso, recurso_id) => {
+  const ip = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '').split(',')[0].trim();
+  try { db.createAuditLog(acao, recurso, recurso_id, ip); } catch(_) {}
+};
+
 // Download do banco para backup
 app.get('/api/admin/backup-db', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
   const dbPath = process.env.DATABASE_PATH || path.join(__dirname, 'psicologa.db');
   if (!fs.existsSync(dbPath)) return res.status(404).json({ error: 'Banco não encontrado' });
   const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  logAudit(req, 'backup_realizado', null, null);
   res.setHeader('Content-Disposition', `attachment; filename="psicologa_${stamp}.db"`);
   res.setHeader('Content-Type', 'application/octet-stream');
   fs.createReadStream(dbPath).pipe(res);
@@ -226,8 +234,17 @@ app.put('/api/pacientes/:id', auth, (req, res) => {
 });
 
 app.delete('/api/pacientes/:id', auth, (req, res) => {
-  try { db.deletePaciente(req.params.id); res.json({ success: true }); }
+  try { db.deletePaciente(req.params.id); logAudit(req, 'paciente_excluido', 'paciente', req.params.id); res.json({ success: true }); }
   catch(e) { erro(res, e); }
+});
+
+// Exclusão completa de dados (LGPD — direito ao esquecimento)
+app.delete('/api/pacientes/:id/dados-lgpd', auth, (req, res) => {
+  try {
+    const { nome } = db.deletarDadosPacienteCompleto(req.params.id);
+    logAudit(req, 'dados_excluidos_lgpd', 'paciente', req.params.id);
+    res.json({ success: true, nome });
+  } catch(e) { erro(res, e); }
 });
 
 app.get('/api/pacientes/:id/prontuarios', auth, (req, res) =>
@@ -318,12 +335,14 @@ app.delete('/api/agendamentos/:id', auth, (req, res) => {
 // ── PRONTUÁRIOS ──────────────────────────────────────────────
 app.get('/api/prontuarios', auth, (req, res) => {
   if (!req.query.paciente_id) return res.status(400).json({ error: 'Informe o ID da paciente' });
+  logAudit(req, 'prontuario_visualizado', 'paciente', req.query.paciente_id);
   res.json(db.getProntuarios(req.query.paciente_id));
 });
 
 app.post('/api/prontuarios', auth, (req, res) => {
   try {
     const id = db.createProntuario(req.body);
+    logAudit(req, 'prontuario_criado', 'paciente', req.body.paciente_id);
     // Marca a sessão vinculada como realizada automaticamente
     const agId = req.body.agendamento_id;
     if (agId) {
@@ -337,12 +356,12 @@ app.post('/api/prontuarios', auth, (req, res) => {
 });
 
 app.put('/api/prontuarios/:id', auth, (req, res) => {
-  try { db.updateProntuario(req.params.id, req.body); res.json({ success: true }); }
+  try { db.updateProntuario(req.params.id, req.body); logAudit(req, 'prontuario_atualizado', 'prontuario', req.params.id); res.json({ success: true }); }
   catch(e) { erro(res, e); }
 });
 
 app.delete('/api/prontuarios/:id', auth, (req, res) => {
-  try { db.deleteProntuario(req.params.id); res.json({ success: true }); }
+  try { db.deleteProntuario(req.params.id); logAudit(req, 'prontuario_excluido', 'prontuario', req.params.id); res.json({ success: true }); }
   catch(e) { erro(res, e); }
 });
 
@@ -1165,6 +1184,11 @@ app.post('/api/zoom/webhook', express.json(), (req, res) => {
   }
 
   res.json({ ok: true });
+});
+
+// ── AUDIT LOG ────────────────────────────────────────────────
+app.get('/api/audit-log', auth, (req, res) => {
+  res.json(db.getAuditLog({ limite: parseInt(req.query.limite) || 200, acao: req.query.acao }));
 });
 
 app.get('/api/configuracoes', auth, (req, res) => res.json(db.getConfig()));

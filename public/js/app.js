@@ -1120,7 +1120,8 @@ function _renderPacienteRow(p, i) {
           <button class="btn btn-outline btn-xs" onclick="editPaciente(${p.id})">✏️</button>
           <button class="btn btn-outline btn-xs" title="Enviar Lista de Profissões" onclick="enviarListaProfissoes(${p.id})">📋</button>
           <button class="btn btn-outline btn-xs" title="Enviar Rotas Profissionais" onclick="enviarRotasProfissionais(${p.id})">🛤️</button>
-          <button class="btn btn-ghost btn-xs" style="color:var(--red)" onclick="deletePacienteItem(${p.id})">🗑</button>
+          <button class="btn btn-ghost btn-xs" style="color:var(--red)" onclick="deletePacienteItem(${p.id})" title="Desativar">🗑</button>
+          <button class="btn btn-ghost btn-xs" style="color:#c0392b;font-size:10px" onclick="excluirDadosLGPD(${p.id},${JSON.stringify(p.nome)})" title="Excluir todos os dados (LGPD)">LGPD</button>
         </div>
       </td>
     </tr>
@@ -2073,6 +2074,13 @@ async function deletePacienteItem(id) {
   await api('DELETE', `/pacientes/${id}`);
   toast('Cliente desativado');
   refreshAll();
+}
+
+async function excluirDadosLGPD(id, nome) {
+  const msg = `EXCLUSÃO PERMANENTE — LGPD\n\nEsta ação apagará TODOS os dados de "${nome}":\n• Prontuários\n• Agendamentos\n• Dados pessoais\n\nEsta ação NÃO pode ser desfeita.\n\nDigite CONFIRMAR para prosseguir:`;
+  if (prompt(msg) !== 'CONFIRMAR') return toast('Cancelado', 'error');
+  const r = await api('DELETE', `/pacientes/${id}/dados-lgpd`);
+  if (r?.success) { toast(`Dados de ${r.nome} excluídos conforme LGPD`); refreshAll(); }
 }
 
 async function alterarFreqPgto(id, valor) {
@@ -4579,6 +4587,29 @@ async function loadConfiguracoes() {
   document.getElementById('cfg-focusnfe-ambiente').value   = cfg.focusnfe_ambiente           || 'homologacao';
   document.getElementById('cfg-focusnfe-simples').value    = cfg.focusnfe_simples_nacional   || '3';
   document.getElementById('cfg-focusnfe-aliquota').value   = cfg.focusnfe_aliquota_iss       || '3.62';
+}
+
+async function loadAuditLog() {
+  const el = document.getElementById('audit-log-table');
+  if (!el) return;
+  el.innerHTML = '<em style="color:var(--text-mid)">Carregando...</em>';
+  const rows = await api('GET', '/audit-log?limite=200');
+  if (!rows?.length) { el.innerHTML = '<em style="color:var(--text-mid)">Nenhum registro ainda.</em>'; return; }
+  const acaoLabel = { login:'Login', prontuario_visualizado:'Prontuário visualizado', prontuario_criado:'Prontuário criado', prontuario_atualizado:'Prontuário atualizado', prontuario_excluido:'Prontuário excluído', paciente_excluido:'Paciente desativado', dados_excluidos_lgpd:'⚠ Exclusão LGPD', backup_realizado:'Backup baixado' };
+  el.innerHTML = `<table style="width:100%;border-collapse:collapse">
+    <thead><tr style="background:var(--bg)">
+      <th style="padding:4px 8px;text-align:left;border-bottom:1px solid var(--border)">Data/Hora</th>
+      <th style="padding:4px 8px;text-align:left;border-bottom:1px solid var(--border)">Ação</th>
+      <th style="padding:4px 8px;text-align:left;border-bottom:1px solid var(--border)">ID</th>
+      <th style="padding:4px 8px;text-align:left;border-bottom:1px solid var(--border)">IP</th>
+    </tr></thead>
+    <tbody>${rows.map(r => `<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:3px 8px;white-space:nowrap">${r.created_at}</td>
+      <td style="padding:3px 8px">${acaoLabel[r.acao] || r.acao}</td>
+      <td style="padding:3px 8px">${r.recurso_id || '-'}</td>
+      <td style="padding:3px 8px;color:var(--text-mid)">${r.ip || '-'}</td>
+    </tr>`).join('')}</tbody>
+  </table>`;
 }
 
 async function preencherEnderecosPorCep() {

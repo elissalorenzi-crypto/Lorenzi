@@ -980,6 +980,20 @@
             <div id="cep-bulk-log" style="display:none;padding:0 20px 16px;font-size:12px;line-height:1.8;color:var(--text-mid);max-height:200px;overflow-y:auto"></div>
           </div>
         </div>
+
+        <!-- LOG DE AUDITORIA LGPD -->
+        <div class="card" style="margin-top:20px">
+          <div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
+            <span>🔒 Log de Auditoria (LGPD)</span>
+            <button class="btn btn-outline btn-sm" onclick="loadAuditLog()">↻ Atualizar</button>
+          </div>
+          <div style="padding:16px">
+            <p style="font-size:12px;color:var(--text-mid);margin-bottom:12px">Registro de todos os acessos a prontuários, logins e exclusões de dados.</p>
+            <div id="audit-log-table" style="font-size:12px;max-height:320px;overflow-y:auto">
+              <em style="color:var(--text-mid)">Clique em Atualizar para carregar.</em>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 

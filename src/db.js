@@ -53,6 +53,15 @@ db.exec(`CREATE TABLE IF NOT EXISTS nfse_meta (
   datas_texto TEXT
 )`);
 
+db.exec(`CREATE TABLE IF NOT EXISTS audit_log (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  acao       TEXT NOT NULL,
+  recurso    TEXT,
+  recurso_id TEXT,
+  ip         TEXT,
+  created_at TEXT DEFAULT (datetime('now','localtime'))
+)`);
+
 const upsertNfseDatas = (ref, texto) =>
   db.prepare("INSERT OR REPLACE INTO nfse_meta (ref, datas_texto) VALUES (?, ?)").run(ref, texto);
 
@@ -1184,6 +1193,34 @@ const getNfseEmitidas = () =>
     ORDER BY MAX(a.data) DESC
   `).all();
 
+// ── AUDIT LOG ────────────────────────────────────────────────
+const createAuditLog = (acao, recurso, recurso_id, ip) =>
+  db.prepare("INSERT INTO audit_log (acao, recurso, recurso_id, ip) VALUES (?,?,?,?)").run(acao, recurso || null, recurso_id ? String(recurso_id) : null, ip || null);
+
+const getAuditLog = ({ limite = 200, acao } = {}) => {
+  if (acao) return db.prepare("SELECT * FROM audit_log WHERE acao = ? ORDER BY id DESC LIMIT ?").all(acao, limite);
+  return db.prepare("SELECT * FROM audit_log ORDER BY id DESC LIMIT ?").all(limite);
+};
+
+// ── EXCLUSÃO LGPD ────────────────────────────────────────────
+const deletarDadosPacienteCompleto = (id) => {
+  const p = db.prepare("SELECT nome, cpf FROM pacientes WHERE id = ?").get(id);
+  if (!p) throw new Error('Paciente não encontrado');
+  db.prepare("DELETE FROM prontuarios WHERE paciente_id = ?").run(id);
+  db.prepare("DELETE FROM agendamentos WHERE paciente_id = ?").run(id);
+  // Anonimiza — preserva ID para integridade referencial e para o log
+  db.prepare(`UPDATE pacientes SET
+    nome='[Dados excluídos - LGPD]', apelido=NULL, cpf=NULL, data_nascimento=NULL,
+    telefone=NULL, whatsapp=NULL, email=NULL, endereco=NULL, ocupacao=NULL,
+    convenio=NULL, num_convenio=NULL, responsavel=NULL, tel_responsavel=NULL,
+    queixa_principal=NULL, encaminhamento=NULL, obs=NULL,
+    nf_logradouro=NULL, nf_bairro=NULL, nf_cidade=NULL, nf_uf=NULL, nf_cep=NULL, nf_numero=NULL, nf_complemento=NULL,
+    ativo=0
+    WHERE id = ?`).run(id);
+  if (p.cpf) db.prepare("UPDATE contratos SET nome='[Excluído]', cpf=NULL, email=NULL, celular=NULL, endereco=NULL WHERE cpf = ?").run(p.cpf);
+  return { nome: p.nome };
+};
+
 module.exports = {
   getPacientes, getPacienteById, getPacienteByCpf, createPaciente, updatePaciente, deletePaciente,
   getAgendamentos, getAgendamentoById, createAgendamento, updateAgendamento, deleteAgendamento,
@@ -1200,5 +1237,6 @@ module.exports = {
   deletarSessoesFuturas, restaurarSessoesFuturas,
   gerarLinkAtivProf, getLinkAtivProf, getInfoAtivProf, salvarRespostaAtivProf, getRespostasAtivProf,
   getPostsSociais, getPostSocialById, createPostSocial, updatePostSocial, deletePostSocial,
-  setSession, getSession, deleteSession, cleanExpiredSessions
+  setSession, getSession, deleteSession, cleanExpiredSessions,
+  createAuditLog, getAuditLog, deletarDadosPacienteCompleto
 };
