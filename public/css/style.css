@@ -165,7 +165,7 @@ nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
 #topbar-actions { display: flex; gap: 10px; align-items: center; }
 
 /* ── CONTENT ─────────────────────────────────────────────── */
-#content { padding: 24px 28px; flex: 1; }
+#content { padding: 20px 14px; flex: 1; }
 
 .section { display: none; }
 .section.active { display: block; }
