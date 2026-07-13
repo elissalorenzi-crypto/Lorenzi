@@ -259,6 +259,13 @@ const logAudit = (req, acao, recurso, recurso_id) => {
   try { (req.db || db).createAuditLog(acao, recurso, recurso_id, ip); } catch(_) {}
 };
 
+// Reset de emergência — remove após uso
+app.get('/api/emergencia/reset-senha', (req, res) => {
+  if (req.query.k !== 'lorenzi-reset-2024') return res.status(403).json({ error: 'Proibido' });
+  mainDb.updateProfissionalSenha(1, hashSenhaNova('2207'));
+  res.json({ ok: true, msg: 'Senha resetada para 2207. Faça login e troque a senha nas configurações.' });
+});
+
 // Bootstrap: garante que a Elissa (profissional_id=1) existe no mainDb
 try {
   const cfg = db.getConfig();
