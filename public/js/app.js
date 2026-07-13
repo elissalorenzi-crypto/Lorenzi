@@ -5373,10 +5373,125 @@ function _renderContratoRow(c) {
             return `<span style="font-size:13px;color:var(--plum);font-weight:700">📅 ${dow}, ${dd}/${mm}/${aa} às ${c.agend_hora || '—'}</span>`;
           })() : '<span style="color:var(--muted);font-size:12px">Sem agendamento vinculado</span>'}
           ${arquivoHtml}
+          <button class="btn btn-outline btn-sm" onclick="gerarTermoCompromisso(${c.id})">📋 Gerar Termo</button>
         </div>
       </td>
     </tr>
   `;
+}
+
+function gerarTermoCompromisso(id) {
+  const c = _contratos.find(x => x.id === id);
+  if (!c) return;
+  const cfg = _config || {};
+  const psi   = cfg.nome_psicologa || 'Psi. Elissa Catarina Lorenzi';
+  const crp   = cfg.crp || 'CRP 06/91616';
+  const valor = c.valor_sessao ? `R$ ${Number(c.valor_sessao).toFixed(2).replace('.',',')}` : '___________';
+  const pgto  = ({ mensal: 'mensal', 'por sessão': 'por sessão' }[c.forma_pgto] || c.forma_pgto || 'a combinar');
+  const hoje  = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
+
+  const fmtNasc = (() => {
+    if (!c.data_nascimento) return '___________';
+    const [a,m,d] = c.data_nascimento.split('-');
+    return `${d}/${m}/${a}`;
+  })();
+
+  const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Termo de Compromisso — ${c.nome}</title>
+<style>
+  @page { size: A4; margin: 2.5cm 2cm; }
+  * { box-sizing: border-box; }
+  body { font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.7; color: #222; }
+  h1 { text-align: center; font-size: 14pt; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  h2 { text-align: center; font-size: 11pt; font-weight: normal; margin-top: 0; margin-bottom: 24px; color: #555; }
+  .section { margin-bottom: 10px; }
+  .section strong { display: block; margin-bottom: 2px; }
+  table.dados { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+  table.dados td { padding: 4px 8px; border: 1px solid #ccc; font-size: 11pt; vertical-align: top; }
+  table.dados td:first-child { width: 38%; background: #f5f5f5; font-weight: bold; }
+  .clausula { margin-bottom: 12px; text-align: justify; }
+  .clausula-num { font-weight: bold; }
+  .assinaturas { margin-top: 50px; display: flex; justify-content: space-between; gap: 40px; }
+  .assin-bloco { flex: 1; text-align: center; }
+  .assin-linha { border-top: 1px solid #333; margin-bottom: 6px; }
+  .assin-nome { font-size: 11pt; }
+  .assin-crp { font-size: 10pt; color: #666; }
+  .rodape { margin-top: 40px; text-align: center; font-size: 9pt; color: #999; border-top: 1px solid #ddd; padding-top: 8px; }
+  @media print { button { display: none; } }
+</style>
+</head>
+<body>
+<div style="text-align:center;margin-bottom:24px">
+  <h1>Termo de Compromisso</h1>
+  <h2>Prestação de Serviços de Psicologia</h2>
+</div>
+
+<p class="clausula">Pelo presente instrumento, as partes abaixo identificadas celebram o presente Termo de Compromisso de Prestação de Serviços de Psicologia, que se regerá pelas seguintes cláusulas e condições:</p>
+
+<p style="font-weight:bold;margin-bottom:6px">IDENTIFICAÇÃO DAS PARTES</p>
+<table class="dados">
+  <tr><td>Psicóloga</td><td>${psi}</td></tr>
+  <tr><td>Registro profissional</td><td>${crp}</td></tr>
+  <tr><td>Cliente</td><td>${c.nome || '___________'}</td></tr>
+  <tr><td>CPF</td><td>${c.cpf || '___________'}</td></tr>
+  <tr><td>Data de nascimento</td><td>${fmtNasc}</td></tr>
+  <tr><td>E-mail</td><td>${c.email || '___________'}</td></tr>
+  <tr><td>Telefone/WhatsApp</td><td>${c.celular || '___________'}</td></tr>
+  <tr><td>Endereço</td><td>${c.endereco || '___________'}</td></tr>
+  ${c.nome_responsavel ? `<tr><td>Responsável legal</td><td>${c.nome_responsavel}${c.cpf_responsavel ? ' — CPF: '+c.cpf_responsavel : ''}</td></tr>` : ''}
+</table>
+
+<p class="clausula"><span class="clausula-num">1. DO OBJETO.</span> A psicóloga se compromete a prestar atendimento psicológico ao(à) cliente, em regime de sessões individuais, conforme as diretrizes éticas do Conselho Federal de Psicologia (CFP) e do Código de Ética Profissional do Psicólogo.</p>
+
+<p class="clausula"><span class="clausula-num">2. DA PERIODICIDADE E DURAÇÃO.</span> As sessões terão duração de aproximadamente 50 (cinquenta) minutos, com frequência e horário a serem definidos de comum acordo entre as partes. Alterações de horário devem ser comunicadas com antecedência mínima de 24 (vinte e quatro) horas.</p>
+
+<p class="clausula"><span class="clausula-num">3. DO CANCELAMENTO.</span> Cancelamentos com menos de 24 horas de antecedência implicarão a cobrança integral da sessão, salvo em casos de força maior, comprovados e comunicados à psicóloga. Faltas sem aviso prévio também serão cobradas integralmente.</p>
+
+<p class="clausula"><span class="clausula-num">4. DOS HONORÁRIOS.</span> O valor acordado por sessão é de <strong>${valor}</strong>, com pagamento <strong>${pgto}</strong>. O não pagamento na data ajustada poderá acarretar a suspensão dos atendimentos até a regularização.</p>
+
+<p class="clausula"><span class="clausula-num">5. DO SIGILO PROFISSIONAL.</span> A psicóloga está vinculada ao sigilo profissional, nos termos do Art. 9º do Código de Ética do Psicólogo, somente podendo revelá-lo nas hipóteses previstas em lei ou quando necessário para prevenir grave ameaça à vida do(a) cliente ou de terceiros.</p>
+
+<p class="clausula"><span class="clausula-num">6. DOS REGISTROS.</span> A psicóloga manterá prontuário atualizado conforme exigido pelas Resoluções do CFP. Os dados pessoais do(a) cliente serão tratados em conformidade com a Lei Geral de Proteção de Dados (LGPD — Lei 13.709/2018).</p>
+
+<p class="clausula"><span class="clausula-num">7. DO ENCERRAMENTO.</span> Qualquer das partes poderá encerrar o acompanhamento, sendo recomendável comunicar a decisão com antecedência para que seja realizado o processo de encerramento terapêutico adequado.</p>
+
+<p class="clausula"><span class="clausula-num">8. DO FORO.</span> Eventuais conflitos serão resolvidos prioritariamente por meio de diálogo. Na impossibilidade, as partes elegem o foro da Comarca de Boituva/SP.</p>
+
+<p style="margin-top:28px">Boituva/SP, ${hoje}.</p>
+
+<div class="assinaturas">
+  <div class="assin-bloco">
+    <div class="assin-linha"></div>
+    <div class="assin-nome">${psi}</div>
+    <div class="assin-crp">${crp}</div>
+  </div>
+  <div class="assin-bloco">
+    <div class="assin-linha"></div>
+    <div class="assin-nome">${c.nome || 'Cliente'}</div>
+    <div class="assin-crp">CPF: ${c.cpf || '___________'}</div>
+  </div>
+  ${c.nome_responsavel ? `
+  <div class="assin-bloco">
+    <div class="assin-linha"></div>
+    <div class="assin-nome">${c.nome_responsavel}</div>
+    <div class="assin-crp">Responsável legal</div>
+  </div>` : ''}
+</div>
+
+<div class="rodape">Documento gerado em ${hoje} · ${psi} · ${crp}</div>
+
+<div style="text-align:center;margin-top:20px">
+  <button onclick="window.print()" style="padding:10px 28px;background:#7c4e7e;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer">🖨️ Imprimir / Salvar PDF</button>
+</div>
+</body>
+</html>`;
+
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
 }
 
 function renderContratosTable(data) {
