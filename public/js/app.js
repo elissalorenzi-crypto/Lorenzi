@@ -1228,11 +1228,61 @@ async function enviarListaProfissoes(id) {
   }
 }
 
+async function enviarMonitoramentoCapacidade(id) {
+  try {
+    const base = location.origin;
+    const [p, respostas] = await Promise.all([
+      api('GET', `/pacientes/${id}`),
+      api('GET', `/monitoramento-capacidade/respostas?paciente_id=${id}`).catch(() => [])
+    ]);
+    const nome = p.nome, whatsapp = p.whatsapp || '';
+    const r = await api('POST', '/monitoramento-capacidade/link', { paciente_id: id });
+    if (!r || !r.token) { toast('Erro ao gerar link', 'error'); return; }
+    const url = base + '/monitoramento-capacidade/?t=' + r.token;
+    const waNome = (p.apelido || '').trim() || nome.split(' ')[0];
+    const waMsg = encodeURIComponent('Oi, ' + waNome + '! 😊\nSegue o link do Monitoramento da Percepção de Capacidade:\n' + url + '\n\nÉ só clicar no link e preencher, dia a dia, o quanto você se sentiu capaz e o que aconteceu. Você pode preencher aos poucos e enviar quando quiser!');
+    const waLink = whatsapp ? 'https://wa.me/' + toWaNum(whatsapp) + '?text=' + waMsg : '';
+    window._urlMonitCap = url;
+
+    let respostasHtml = '';
+    if (respostas && respostas.length) {
+      const ultima = respostas[0];
+      const diasResp = ultima.dias || [];
+      respostasHtml = `
+        <hr style="margin:16px 0;border-color:#c8e6c9">
+        <strong style="color:#2A6B4A;font-size:13px">📈 Respostas recebidas — ${diasResp.length} dia(s) preenchido(s)${respostas.length > 1 ? ` · ${respostas.length} envios` : ''}</strong>
+        <div class="table-wrap" style="margin-top:8px">
+          <table>
+            <thead><tr><th>Data</th><th>Dia</th><th>%</th><th>O que aconteceu</th></tr></thead>
+            <tbody>
+              ${diasResp.map(d => `<tr><td>${d.data}</td><td>${d.dia_semana}</td><td style="font-weight:700;color:#2A6B4A">${d.percentual}%</td><td>${d.relato}</td></tr>`).join('')}
+            </tbody>
+          </table>
+        </div>`;
+    } else {
+      respostasHtml = `<hr style="margin:16px 0;border-color:#c8e6c9"><p style="font-size:12px;color:#aaa">Nenhuma resposta recebida ainda.</p>`;
+    }
+
+    openModal('📈 Monitoramento da Percepção de Capacidade — ' + nome, `
+      <p style="margin-bottom:12px;font-size:14px;color:#555">Link gerado para <strong>${nome}</strong>. Envie pelo WhatsApp ou copie o link.</p>
+      <div style="background:#f1f8f2;border:1.5px solid #a5d6a7;border-radius:8px;padding:10px 14px;font-size:12px;word-break:break-all;margin-bottom:14px;color:#2A6B4A">${url}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="navigator.clipboard.writeText(window._urlMonitCap).then(function(){toast('Link copiado!')})">📋 Copiar link</button>
+        ${waLink ? '<a href="' + waLink + '" target="_blank" class="btn btn-primary" style="background:#25d366;border-color:#25d366;text-decoration:none">💬 Enviar pelo WhatsApp</a>' : '<span style="color:#999;font-size:13px">WhatsApp não cadastrado</span>'}
+      </div>
+      ${respostasHtml}
+    `, null);
+  } catch(e) {
+    toast('Erro ao gerar link: ' + e.message, 'error');
+  }
+}
+
 async function verDetalhePaciente(id) {
   const p = await api('GET', `/pacientes/${id}`);
-  const [ags, respostas] = await Promise.all([
+  const [ags, respostas, respostasMonit] = await Promise.all([
     api('GET', `/pacientes/${id}/agendamentos`),
-    api('GET', `/atividade-profissoes/respostas?paciente_id=${id}`).catch(() => [])
+    api('GET', `/atividade-profissoes/respostas?paciente_id=${id}`).catch(() => []),
+    api('GET', `/monitoramento-capacidade/respostas?paciente_id=${id}`).catch(() => [])
   ]);
 
   document.getElementById('pacientes-list-view').style.display = 'none';
@@ -1379,6 +1429,7 @@ async function verDetalhePaciente(id) {
     </div>
 
     <div id="respostas-profissoes-${p.id}" style="margin:16px 0"></div>
+    <div id="respostas-monitcap-${p.id}" style="margin:16px 0"></div>
 
     <!-- Acompanhamento (CFP Res. 001/2009) -->
     <div class="card" style="margin-top:16px;border:${p.data_encerramento ? '2px solid #c62828' : '1px solid var(--border)'}">
@@ -1421,6 +1472,7 @@ async function verDetalhePaciente(id) {
       <button class="btn btn-ghost" style="color:var(--sage);border-color:var(--sage)" onclick="restaurarSessoesFuturas(${p.id},'${(p.apelido||p.nome.split(' ')[0]).replace(/'/g,"\\'")}')">↩ Restaurar série</button>
       <button class="btn btn-outline" onclick="enviarListaProfissoes(${p.id})">📋 Enviar Lista de Profissões</button>
       <button class="btn btn-outline" onclick="enviarRotasProfissionais(${p.id})">🛤️ Enviar Rotas Profissionais</button>
+      <button class="btn btn-outline" onclick="enviarMonitoramentoCapacidade(${p.id})">📈 Enviar Monitoramento de Capacidade</button>
     </div>
   `;
 
@@ -1444,6 +1496,37 @@ async function verDetalhePaciente(id) {
             }).join('')}
           </div>
           ${respostas.length > 1 ? `<p style="font-size:11px;color:#aaa;margin-top:8px">Mostrando resposta mais recente. Total: ${respostas.length} envios.</p>` : ''}
+        </div>
+      </div>`;
+  }
+
+  // Render respostas do Monitoramento da Percepção de Capacidade
+  const elRespMonit = document.getElementById('respostas-monitcap-' + p.id);
+  if (elRespMonit && respostasMonit && respostasMonit.length) {
+    const ultimaMonit = respostasMonit[0];
+    const diasResp = ultimaMonit.dias || [];
+    elRespMonit.innerHTML = `
+      <div class="card" style="border:2px solid #2A6B4A">
+        <div class="card-body">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <strong style="color:#2A6B4A">📈 Monitoramento de Capacidade — Respostas</strong>
+            <span style="font-size:12px;color:#888">${diasResp.length} dia(s) preenchido(s)${respostasMonit.length > 1 ? ` · ${respostasMonit.length} envios` : ''}</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Data</th><th>Dia</th><th>%</th><th>O que aconteceu</th></tr></thead>
+              <tbody>
+                ${diasResp.map(d => `
+                  <tr>
+                    <td>${d.data}</td>
+                    <td>${d.dia_semana}</td>
+                    <td style="font-weight:700;color:#2A6B4A">${d.percentual}%</td>
+                    <td>${d.relato}</td>
+                  </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>
+          ${respostasMonit.length > 1 ? `<p style="font-size:11px;color:#aaa;margin-top:8px">Mostrando envio mais recente. Total: ${respostasMonit.length} envios.</p>` : ''}
         </div>
       </div>`;
   }

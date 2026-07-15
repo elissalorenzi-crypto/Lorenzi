@@ -1127,6 +1127,54 @@ const getRespostasAtivProf = (paciente_id) => {
   return rows.map(r => ({ ...r, profissoes: JSON.parse(r.profissoes || '[]') }));
 };
 
+// ============================================================
+// ATIVIDADE — MONITORAMENTO DA PERCEPÇÃO DE CAPACIDADE
+// ============================================================
+db.exec(`
+  CREATE TABLE IF NOT EXISTS monit_cap_links (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    token         TEXT NOT NULL UNIQUE,
+    paciente_id   INTEGER NOT NULL,
+    paciente_nome TEXT NOT NULL,
+    ativo         INTEGER DEFAULT 1,
+    created_at    TEXT DEFAULT (datetime('now','localtime')),
+    FOREIGN KEY (paciente_id) REFERENCES pacientes(id)
+  );
+  CREATE TABLE IF NOT EXISTS monit_cap_respostas (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    token         TEXT NOT NULL,
+    paciente_id   INTEGER NOT NULL,
+    paciente_nome TEXT NOT NULL,
+    dias          TEXT NOT NULL,
+    created_at    TEXT DEFAULT (datetime('now','localtime'))
+  );
+`);
+
+const gerarLinkMonitCap = (paciente_id, paciente_nome) => {
+  const token = require('crypto').randomBytes(20).toString('hex');
+  db.prepare('INSERT INTO monit_cap_links (token, paciente_id, paciente_nome) VALUES (?,?,?)').run(token, paciente_id, paciente_nome);
+  return token;
+};
+
+const getLinkMonitCap = (paciente_id) =>
+  db.prepare('SELECT * FROM monit_cap_links WHERE paciente_id=? AND ativo=1 ORDER BY id DESC LIMIT 1').get(paciente_id);
+
+const getInfoMonitCap = (token) =>
+  db.prepare('SELECT * FROM monit_cap_links WHERE token=? AND ativo=1').get(token);
+
+const salvarRespostaMonitCap = (token, dias) => {
+  const link = db.prepare('SELECT * FROM monit_cap_links WHERE token=?').get(token);
+  if (!link) return null;
+  return rid(db.prepare('INSERT INTO monit_cap_respostas (token, paciente_id, paciente_nome, dias) VALUES (?,?,?,?)').run(token, link.paciente_id, link.paciente_nome, JSON.stringify(dias)));
+};
+
+const getRespostasMonitCap = (paciente_id) => {
+  const rows = paciente_id
+    ? db.prepare('SELECT * FROM monit_cap_respostas WHERE paciente_id=? ORDER BY created_at DESC').all(paciente_id)
+    : db.prepare('SELECT * FROM monit_cap_respostas ORDER BY created_at DESC').all();
+  return rows.map(r => ({ ...r, dias: JSON.parse(r.dias || '[]') }));
+};
+
 // ── POSTS SOCIAIS ────────────────────────────────────────────
 const getPostsSociais = (rede, status) => {
   let q = 'SELECT * FROM posts_sociais WHERE 1=1';
@@ -1253,6 +1301,7 @@ return {
   getTarefas, createTarefa, updateTarefa, deleteTarefa, resetTarefasDiarias,
   deletarSessoesFuturas, restaurarSessoesFuturas,
   gerarLinkAtivProf, getLinkAtivProf, getInfoAtivProf, salvarRespostaAtivProf, getRespostasAtivProf,
+  gerarLinkMonitCap, getLinkMonitCap, getInfoMonitCap, salvarRespostaMonitCap, getRespostasMonitCap,
   getPostsSociais, getPostSocialById, createPostSocial, updatePostSocial, deletePostSocial,
   setSession, getSession, deleteSession, cleanExpiredSessions,
   createAuditLog, getAuditLog, deletarDadosPacienteCompleto,

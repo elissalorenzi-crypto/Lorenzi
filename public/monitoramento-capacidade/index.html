@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Monitoramento da Percepção de Capacidade</title>
+<style>
+:root{
+  --plum:#4A3728;--plum-mid:#6B4F3A;--plum-light:#8C6E57;
+  --rose:#C4956A;--rose-soft:#D4A87A;--rose-pale:#FBF3F9;
+  --lavender:#F1E4EE;--border:#E8D5E4;--bg:#FFFFFF;--bg-alt:#FBF3F9;
+  --sage:#2A6B4A;--muted:#9A7D8E;--text:#4A3728;
+  --shadow:0 2px 8px rgba(74,55,40,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg-alt);min-height:100vh;color:var(--text)}
+
+header{background:linear-gradient(135deg,var(--plum) 0%,var(--plum-mid) 100%);color:#fff;padding:22px 16px;text-align:center}
+header h1{font-size:19px;font-weight:800;margin-bottom:4px;letter-spacing:-.3px}
+header p{font-size:13px;opacity:.8}
+#nome-cliente{font-size:16px;font-weight:700;background:rgba(255,255,255,.15);display:inline-block;padding:5px 16px;border-radius:20px;margin-top:10px;border:1px solid rgba(255,255,255,.25)}
+
+.container{max-width:640px;margin:0 auto;padding:16px}
+.card{background:var(--bg);border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow);border:1px solid var(--border)}
+
+.instrucoes{border-left:4px solid var(--rose);padding-left:12px;font-size:13.5px;line-height:1.75;color:var(--plum-mid)}
+.instrucoes strong{color:var(--plum)}
+.instrucoes ul{margin:6px 0 0 18px}
+
+.dia-card{border:1.5px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;background:var(--bg)}
+.dia-titulo{font-weight:700;color:var(--plum);font-size:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.dia-data{font-size:12px;color:var(--muted);font-weight:600}
+
+.campo{margin-bottom:10px}
+.campo label{display:block;font-size:12.5px;color:var(--plum-mid);font-weight:600;margin-bottom:5px}
+.pct-row{display:flex;align-items:center;gap:10px}
+.pct-row input[type=range]{flex:1;accent-color:var(--rose)}
+.pct-valor{min-width:46px;text-align:right;font-weight:700;color:var(--rose);font-size:14px}
+textarea{width:100%;padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:13.5px;font-family:inherit;resize:vertical;min-height:56px;color:var(--text)}
+textarea:focus{outline:none;border-color:var(--rose)}
+
+.btn-enviar{width:100%;padding:14px;background:linear-gradient(135deg,var(--plum) 0%,var(--plum-mid) 100%);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;margin-top:4px;transition:.2s}
+.btn-enviar:hover{opacity:.88}
+.btn-enviar:disabled{opacity:.45;cursor:not-allowed}
+
+#loading,#confirmacao{display:none;text-align:center;padding:48px 20px}
+#loading .spin{width:40px;height:40px;border:4px solid var(--border);border-top-color:var(--rose);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+#confirmacao .icon{font-size:64px;margin-bottom:14px}
+#confirmacao h2{color:var(--plum);margin-bottom:8px;font-size:22px}
+#confirmacao p{color:var(--muted);font-size:14px;line-height:1.7}
+
+.erro-msg{text-align:center;padding:40px;color:#8B3A3A}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📈 Monitoramento da Percepção de Capacidade</h1>
+  <p>Registro diário</p>
+  <div id="nome-cliente">Carregando...</div>
+</header>
+
+<div class="container" id="app">
+  <div id="loading" style="display:block"><div class="spin"></div><p>Carregando...</p></div>
+  <div id="erro-msg" class="erro-msg" style="display:none"></div>
+
+  <div id="conteudo" style="display:none">
+    <div class="card instrucoes">
+      <strong>Objetivo:</strong> Observar, dia após dia, como você avalia a própria capacidade diante das situações vividas.
+      <p style="margin-top:8px">Ao final de cada dia, preencha:</p>
+      <ul>
+        <li>Quanto capaz você se sentiu hoje? (0% = pouco capaz · 100% = muito capaz)</li>
+        <li>O que aconteceu ao longo do dia para que você se percebesse assim?</li>
+      </ul>
+      <p style="margin-top:8px">Você pode preencher aos poucos, dia a dia, e enviar quando quiser. Não é necessário preencher todos os dias de uma vez.</p>
+    </div>
+
+    <div id="dias-lista"></div>
+
+    <button class="btn-enviar" id="btn-enviar" onclick="enviar()">Enviar minhas respostas</button>
+  </div>
+
+  <div id="confirmacao">
+    <div class="icon">🎉</div>
+    <h2>Respostas enviadas!</h2>
+    <p>Obrigada por completar o monitoramento.<br>Sua psicóloga já pode ver suas respostas.</p>
+  </div>
+</div>
+
+<script>
+const TOKEN = new URLSearchParams(location.search).get('t') || '';
+let dias = [];
+
+async function init() {
+  if (!TOKEN) { mostrarErro('Link inválido. Verifique com sua psicóloga.'); return; }
+  try {
+    const r = await fetch('/api/monitoramento-capacidade/info/' + TOKEN);
+    if (!r.ok) { mostrarErro('Link inválido ou expirado.'); return; }
+    const info = await r.json();
+    document.getElementById('nome-cliente').textContent = info.paciente_nome;
+    dias = info.dias || [];
+    renderDias();
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('conteudo').style.display = '';
+  } catch(e) { mostrarErro('Erro ao carregar. Tente novamente. (' + e.message + ')'); }
+}
+
+function mostrarErro(msg) {
+  document.getElementById('loading').style.display = 'none';
+  const el = document.getElementById('erro-msg');
+  el.style.display = '';
+  el.innerHTML = '<div style="font-size:48px;margin-bottom:12px">😕</div><h2>Ops!</h2><p style="margin-top:8px">'+msg+'</p>';
+}
+
+function renderDias() {
+  const lista = document.getElementById('dias-lista');
+  lista.innerHTML = dias.map(function(d, i) {
+    return '<div class="dia-card">' +
+      '<div class="dia-titulo"><span>' + d.dia_semana + '</span><span class="dia-data">' + d.data + '</span></div>' +
+      '<div class="campo">' +
+        '<label>Quanto capaz você se sentiu hoje?</label>' +
+        '<div class="pct-row">' +
+          '<input type="range" min="0" max="100" step="5" value="0" id="pct-' + i + '" oninput="atualizarPct(' + i + ')">' +
+          '<span class="pct-valor" id="pct-valor-' + i + '">0%</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="campo">' +
+        '<label>O que aconteceu ao longo do dia para que você se percebesse assim?</label>' +
+        '<textarea id="relato-' + i + '" placeholder="Escreva aqui..."></textarea>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function atualizarPct(i) {
+  document.getElementById('pct-valor-' + i).textContent = document.getElementById('pct-' + i).value + '%';
+}
+
+async function enviar() {
+  const btn = document.getElementById('btn-enviar');
+  const respostas = [];
+  dias.forEach(function(d, i) {
+    const relato = document.getElementById('relato-' + i).value.trim();
+    const pctEl = document.getElementById('pct-' + i);
+    if (!relato) return; // só envia dias que foram efetivamente preenchidos
+    respostas.push({ data: d.data, dia_semana: d.dia_semana, percentual: Number(pctEl.value), relato: relato });
+  });
+  if (respostas.length === 0) {
+    alert('Preencha ao menos um dia antes de enviar.');
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+  try {
+    const r = await fetch('/api/monitoramento-capacidade/responder/' + TOKEN, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ dias: respostas })
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Erro');
+    document.getElementById('conteudo').style.display = 'none';
+    document.getElementById('confirmacao').style.display = '';
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = 'Enviar minhas respostas';
+    alert('Erro ao enviar: ' + e.message);
+  }
+}
+
+init();
+</script>
+</body>
+</html>

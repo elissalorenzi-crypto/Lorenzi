@@ -1442,6 +1442,61 @@ app.get('/api/atividade-profissoes/respostas', (req, res) => {
   res.json(req.db.getRespostasAtivProf(pid));
 });
 
+// ── ATIVIDADE — MONITORAMENTO DA PERCEPÇÃO DE CAPACIDADE ─────
+const DIAS_SEMANA_PT = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+function proximosDias(n) {
+  const dias = [];
+  const hoje = new Date();
+  for (let i = 1; i <= n; i++) {
+    const d = new Date(hoje);
+    d.setDate(d.getDate() + i);
+    dias.push({
+      data: `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`,
+      dia_semana: DIAS_SEMANA_PT[d.getDay()]
+    });
+  }
+  return dias;
+}
+
+// Gera link único para um cliente (requer auth)
+app.post('/api/monitoramento-capacidade/link', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  const { paciente_id } = req.body || {};
+  if (!paciente_id) return res.status(400).json({ error: 'paciente_id obrigatório' });
+  try {
+    const p = req.db.getPacienteById(paciente_id);
+    if (!p) return res.status(404).json({ error: 'Paciente não encontrado' });
+    const token = req.db.gerarLinkMonitCap(paciente_id, p.nome);
+    res.json({ token, url: `/monitoramento-capacidade/?t=${token}` });
+  } catch(e) { erro(res, e); }
+});
+
+// Info pública do token (cliente confere o nome + dias a preencher)
+app.get('/api/monitoramento-capacidade/info/:token', (req, res) => {
+  const link = req.db.getInfoMonitCap(req.params.token);
+  if (!link) return res.status(404).json({ error: 'Link inválido ou expirado' });
+  res.json({ paciente_nome: link.paciente_nome, dias: proximosDias(15) });
+});
+
+// Cliente envia respostas
+app.post('/api/monitoramento-capacidade/responder/:token', (req, res) => {
+  const { dias } = req.body || {};
+  if (!Array.isArray(dias) || dias.length === 0)
+    return res.status(400).json({ error: 'Preencha ao menos um dia' });
+  try {
+    const id = req.db.salvarRespostaMonitCap(req.params.token, dias);
+    if (!id) return res.status(404).json({ error: 'Link inválido' });
+    res.json({ ok: true, id });
+  } catch(e) { erro(res, e); }
+});
+
+// Admin: ver respostas (todas ou de um cliente)
+app.get('/api/monitoramento-capacidade/respostas', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  const pid = req.query.paciente_id ? Number(req.query.paciente_id) : null;
+  res.json(req.db.getRespostasMonitCap(pid));
+});
+
 // ─── ANÁLISE CLÍNICA IA ──────────────────────────────────────
 app.post('/api/analisar-prontuario', auth, async (req, res) => {
   const { conteudo, humor, tecnicas, tarefas, nome_paciente } = req.body || {};
