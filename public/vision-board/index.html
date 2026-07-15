@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Vision Board</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 :root{
   --plum:#4A3728;--plum-mid:#6B4F3A;
@@ -44,10 +45,11 @@ header h1{font-size:22px;font-weight:800;margin-bottom:4px;letter-spacing:-.3px}
 .vazio{text-align:center;padding:60px 20px;color:var(--muted)}
 
 .btns-acao{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:18px}
-.btn-imprimir,.btn-pdf{padding:11px 22px;background:linear-gradient(135deg,var(--plum) 0%,var(--plum-mid) 100%);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer}
+.btn-imprimir,.btn-pdf,.btn-img{padding:11px 22px;background:linear-gradient(135deg,var(--plum) 0%,var(--plum-mid) 100%);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer}
 .btn-pdf{background:var(--rose)}
-.btn-imprimir:hover,.btn-pdf:hover{opacity:.9}
-.btn-imprimir:disabled,.btn-pdf:disabled{opacity:.6;cursor:not-allowed}
+.btn-img{background:#2A6B4A}
+.btn-imprimir:hover,.btn-pdf:hover,.btn-img:hover{opacity:.9}
+.btn-imprimir:disabled,.btn-pdf:disabled,.btn-img:disabled{opacity:.6;cursor:not-allowed}
 
 /* Impressão / salvar como PDF em A4 */
 @page{ size:A4; margin:14mm; }
@@ -74,6 +76,7 @@ header h1{font-size:22px;font-weight:800;margin-bottom:4px;letter-spacing:-.3px}
   <div class="btns-acao" id="btns-acao" style="display:none">
     <button class="btn-imprimir" id="btn-imprimir" onclick="window.print()">🖨️ Imprimir (A4)</button>
     <button class="btn-pdf" id="btn-pdf" onclick="gerarPDF()">📄 Gerar PDF</button>
+    <button class="btn-img" id="btn-img" onclick="gerarImagem()">🖼️ Gerar Imagem</button>
   </div>
   <div class="grid" id="grid"></div>
 </div>
@@ -149,14 +152,41 @@ async function gerarPDF() {
       doc.addImage(dataUrl, 'JPEG', x, y, w, h);
     }
 
-    const nomeArquivo = (document.getElementById('titulo-board').textContent || 'vision-board')
-      .replace(/[^\p{L}\p{N}\- ]/gu, '').trim() || 'vision-board';
-    doc.save(nomeArquivo + '.pdf');
+    doc.save(nomeArquivoAtual() + '.pdf');
   } catch(e) {
     alert('Erro ao gerar o PDF: ' + e.message);
   } finally {
     btn.disabled = false;
     btn.textContent = '📄 Gerar PDF';
+  }
+}
+
+function nomeArquivoAtual() {
+  return (document.getElementById('titulo-board').textContent || 'vision-board')
+    .replace(/[^\p{L}\p{N}\- ]/gu, '').trim() || 'vision-board';
+}
+
+async function gerarImagem() {
+  const btn = document.getElementById('btn-img');
+  btn.disabled = true;
+  btn.textContent = 'Gerando imagem...';
+  try {
+    const canvas = await html2canvas(document.getElementById('grid'), {
+      backgroundColor: '#ffffff',
+      useCORS: true,
+      scale: 2
+    });
+    const a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png');
+    a.download = nomeArquivoAtual() + '.png';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  } catch(e) {
+    alert('Erro ao gerar a imagem: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🖼️ Gerar Imagem';
   }
 }
 
