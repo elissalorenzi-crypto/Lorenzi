@@ -1936,6 +1936,62 @@ Quero que você me explique de forma clara, prática e realista:
             `
           }
         ]
+      },
+      {
+        id: 'monitoramento-percepcao-competencia',
+        nome: 'Monitoramento da Percepção de Competência',
+        icone: '📈',
+        atividades: [
+          {
+            id: 'monitoramento-percepcao-competencia',
+            titulo: 'Monitoramento da Percepção de Competência',
+            subtitulo: 'Combinado · Registro diário',
+            icone: '📈',
+            conteudo: `
+              <h3>Objetivo</h3>
+              <p>Este monitoramento tem como objetivo ajudar você a observar, dia após dia, como avalia a própria competência diante das situações vividas — favorecendo maior autoconhecimento sobre os fatores que influenciam essa percepção.</p>
+
+              <h3>Como preencher</h3>
+              <p>Ao final de cada dia, anote:</p>
+
+              <div class="atv-bloco">
+                <strong>1. Quanto competente você se sentiu hoje?</strong>
+                <p>Dê uma nota de <strong>0% a 100%</strong>:</p>
+                <ul>
+                  <li><strong>0%</strong> = pouco competente</li>
+                  <li><strong>100%</strong> = muito competente</li>
+                </ul>
+              </div>
+
+              <div class="atv-bloco">
+                <strong>2. O que aconteceu ao longo do dia para que você se percebesse assim?</strong>
+                <p>Descreva os fatos, situações, pensamentos ou interações que fizeram você se sentir dessa forma.</p>
+              </div>
+
+              <h3>Registro semanal</h3>
+              <div style="overflow-x:auto">
+                <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+                  <thead>
+                    <tr style="background:#f8f4ff">
+                      <th style="border:1px solid var(--border);padding:8px 10px;text-align:left">Dia</th>
+                      <th style="border:1px solid var(--border);padding:8px 10px;text-align:left">% de competência</th>
+                      <th style="border:1px solid var(--border);padding:8px 10px;text-align:left">O que aconteceu</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td style="border:1px solid var(--border);padding:10px">Segunda-feira</td><td style="border:1px solid var(--border);padding:10px"></td><td style="border:1px solid var(--border);padding:10px"></td></tr>
+                    <tr><td style="border:1px solid var(--border);padding:10px">Terça-feira</td><td style="border:1px solid var(--border);padding:10px"></td><td style="border:1px solid var(--border);padding:10px"></td></tr>
+                    <tr><td style="border:1px solid var(--border);padding:10px">Quarta-feira</td><td style="border:1px solid var(--border);padding:10px"></td><td style="border:1px solid var(--border);padding:10px"></td></tr>
+                    <tr><td style="border:1px solid var(--border);padding:10px">Quinta-feira</td><td style="border:1px solid var(--border);padding:10px"></td><td style="border:1px solid var(--border);padding:10px"></td></tr>
+                    <tr><td style="border:1px solid var(--border);padding:10px">Sexta-feira</td><td style="border:1px solid var(--border);padding:10px"></td><td style="border:1px solid var(--border);padding:10px"></td></tr>
+                    <tr><td style="border:1px solid var(--border);padding:10px">Sábado</td><td style="border:1px solid var(--border);padding:10px"></td><td style="border:1px solid var(--border);padding:10px"></td></tr>
+                    <tr><td style="border:1px solid var(--border);padding:10px">Domingo</td><td style="border:1px solid var(--border);padding:10px"></td><td style="border:1px solid var(--border);padding:10px"></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            `
+          }
+        ]
       }
     ]
   }
