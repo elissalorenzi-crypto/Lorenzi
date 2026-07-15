@@ -1968,24 +1968,33 @@ Quero que você me explique de forma clara, prática e realista:
                 <p>Descreva os fatos, situações, pensamentos ou interações que fizeram você se sentir dessa forma.</p>
               </div>
 
-              <h3>Registro semanal</h3>
+              <h3>Registro dos próximos 15 dias</h3>
               <div style="overflow-x:auto">
                 <table style="width:100%;border-collapse:collapse;font-size:12.5px">
                   <thead>
                     <tr style="background:#f8f4ff">
-                      <th style="border:1px solid var(--border);padding:8px 10px;text-align:left">Dia</th>
+                      <th style="border:1px solid var(--border);padding:8px 10px;text-align:left">Data</th>
+                      <th style="border:1px solid var(--border);padding:8px 10px;text-align:left">Dia da semana</th>
                       <th style="border:1px solid var(--border);padding:8px 10px;text-align:left">% de competência</th>
                       <th style="border:1px solid var(--border);padding:8px 10px;text-align:left">O que aconteceu</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr><td style="border:1px solid var(--border);padding:10px">Segunda-feira</td><td style="border:1px solid var(--border);padding:10px"></td><td style="border:1px solid var(--border);padding:10px"></td></tr>
-                    <tr><td style="border:1px solid var(--border);padding:10px">Terça-feira</td><td style="border:1px solid var(--border);padding:10px"></td><td style="border:1px solid var(--border);padding:10px"></td></tr>
-                    <tr><td style="border:1px solid var(--border);padding:10px">Quarta-feira</td><td style="border:1px solid var(--border);padding:10px"></td><td style="border:1px solid var(--border);padding:10px"></td></tr>
-                    <tr><td style="border:1px solid var(--border);padding:10px">Quinta-feira</td><td style="border:1px solid var(--border);padding:10px"></td><td style="border:1px solid var(--border);padding:10px"></td></tr>
-                    <tr><td style="border:1px solid var(--border);padding:10px">Sexta-feira</td><td style="border:1px solid var(--border);padding:10px"></td><td style="border:1px solid var(--border);padding:10px"></td></tr>
-                    <tr><td style="border:1px solid var(--border);padding:10px">Sábado</td><td style="border:1px solid var(--border);padding:10px"></td><td style="border:1px solid var(--border);padding:10px"></td></tr>
-                    <tr><td style="border:1px solid var(--border);padding:10px">Domingo</td><td style="border:1px solid var(--border);padding:10px"></td><td style="border:1px solid var(--border);padding:10px"></td></tr>
+                    <tr><td style="border:1px solid var(--border);padding:10px">15/07</td><td style="border:1px solid var(--border);padding:10px">Quarta-feira</td><td style="border:1px solid var(--border);padding:10px"></td><td style="border:1px solid var(--border);padding:10px"></td></tr>
+                    <tr><td style="border:1px solid var(--border);padding:10px">16/07</td><td style="border:1px solid var(--border);padding:10px">Quinta-feira</td><td style="border:1px solid var(--border);padding:10px"></td><td style="border:1px solid var(--border);padding:10px"></td></tr>
+                    <tr><td style="border:1px solid var(--border);padding:10px">17/07</td><td style="border:1px solid var(--border);padding:10px">Sexta-feira</td><td style="border:1px solid var(--border);padding:10px"></td><td style="border:1px solid var(--border);padding:10px"></td></tr>
+                    <tr><td style="border:1px solid var(--border);padding:10px">18/07</td><td style="border:1px solid var(--border);padding:10px">Sábado</td><td style="border:1px solid var(--border);padding:10px"></td><td style="border:1px solid var(--border);padding:10px"></td></tr>
+                    <tr><td style="border:1px solid var(--border);padding:10px">19/07</td><td style="border:1px solid var(--border);padding:10px">Domingo</td><td style="border:1px solid var(--border);padding:10px"></td><td style="border:1px solid var(--border);padding:10px"></td></tr>
+                    <tr><td style="border:1px solid var(--border);padding:10px">20/07</td><td style="border:1px solid var(--border);padding:10px">Segunda-feira</td><td style="border:1px solid var(--border);padding:10px"></td><td style="border:1px solid var(--border);padding:10px"></td></tr>
+                    <tr><td style="border:1px solid var(--border);padding:10px">21/07</td><td style="border:1px solid var(--border);padding:10px">Terça-feira</td><td style="border:1px solid var(--border);padding:10px"></td><td style="border:1px solid var(--border);padding:10px"></td></tr>
+                    <tr><td style="border:1px solid var(--border);padding:10px">22/07</td><td style="border:1px solid var(--border);padding:10px">Quarta-feira</td><td style="border:1px solid var(--border);padding:10px"></td><td style="border:1px solid var(--border);padding:10px"></td></tr>
+                    <tr><td style="border:1px solid var(--border);padding:10px">23/07</td><td style="border:1px solid var(--border);padding:10px">Quinta-feira</td><td style="border:1px solid var(--border);padding:10px"></td><td style="border:1px solid var(--border);padding:10px"></td></tr>
+                    <tr><td style="border:1px solid var(--border);padding:10px">24/07</td><td style="border:1px solid var(--border);padding:10px">Sexta-feira</td><td style="border:1px solid var(--border);padding:10px"></td><td style="border:1px solid var(--border);padding:10px"></td></tr>
+                    <tr><td style="border:1px solid var(--border);padding:10px">25/07</td><td style="border:1px solid var(--border);padding:10px">Sábado</td><td style="border:1px solid var(--border);padding:10px"></td><td style="border:1px solid var(--border);padding:10px"></td></tr>
+                    <tr><td style="border:1px solid var(--border);padding:10px">26/07</td><td style="border:1px solid var(--border);padding:10px">Domingo</td><td style="border:1px solid var(--border);padding:10px"></td><td style="border:1px solid var(--border);padding:10px"></td></tr>
+                    <tr><td style="border:1px solid var(--border);padding:10px">27/07</td><td style="border:1px solid var(--border);padding:10px">Segunda-feira</td><td style="border:1px solid var(--border);padding:10px"></td><td style="border:1px solid var(--border);padding:10px"></td></tr>
+                    <tr><td style="border:1px solid var(--border);padding:10px">28/07</td><td style="border:1px solid var(--border);padding:10px">Terça-feira</td><td style="border:1px solid var(--border);padding:10px"></td><td style="border:1px solid var(--border);padding:10px"></td></tr>
+                    <tr><td style="border:1px solid var(--border);padding:10px">29/07</td><td style="border:1px solid var(--border);padding:10px">Quarta-feira</td><td style="border:1px solid var(--border);padding:10px"></td><td style="border:1px solid var(--border);padding:10px"></td></tr>
                   </tbody>
                 </table>
               </div>
