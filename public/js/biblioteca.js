@@ -1938,13 +1938,13 @@ Quero que você me explique de forma clara, prática e realista:
         ]
       },
       {
-        id: 'monitoramento-percepcao-competencia',
-        nome: 'Monitoramento da Percepção de Competência',
+        id: 'monitoramento-percepcao-capacidade',
+        nome: 'Monitoramento da Percepção de Capacidade',
         icone: '📈',
         atividades: [
           {
-            id: 'monitoramento-percepcao-competencia',
-            titulo: 'Monitoramento da Percepção de Competência',
+            id: 'monitoramento-percepcao-capacidade',
+            titulo: 'Monitoramento da Percepção de Capacidade',
             subtitulo: 'Combinado · Registro diário',
             icone: '📈',
             conteudo: `
