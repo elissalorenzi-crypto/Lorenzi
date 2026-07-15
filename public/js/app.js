@@ -1337,6 +1337,7 @@ async function verDetalhePaciente(id) {
         <div style="display:flex;gap:8px">
           <button class="btn btn-outline btn-sm" onclick="exportarHistoricoPDF(${p.id})">📄 Exportar PDF</button>
           <button class="btn btn-outline btn-sm" onclick="openModalAgendamento(null,null,${p.id})">+ Agendar</button>
+          <button class="btn btn-outline btn-sm" onclick="abrirEnviarAtividade(${p.id})">📤 Enviar Atividade</button>
           <button class="btn btn-primary btn-sm" onclick="abrirModalCobranca(${p.id})">💰 Cobrar</button>
         </div>
       </div>
@@ -2502,6 +2503,79 @@ function prontuarioFormHtml(r = {}, agendamentos = []) {
       <textarea id="pr-tarefas" rows="3" spellcheck="true" lang="pt-BR" placeholder="Atividades propostas para a próxima semana...">${r.tarefas||''}</textarea>
     </div>
   `;
+}
+
+function abrirEnviarAtividade(pacienteId) {
+  window._envAtvPacId = pacienteId;
+  const cards = typeof BIB_CARDS !== 'undefined' ? BIB_CARDS : [];
+  const todas = [];
+  for (const area of cards) {
+    for (const pasta of (area.pastas || [])) {
+      for (const atv of (pasta.atividades || [])) {
+        todas.push({ area: area.titulo, pasta: pasta.nome, titulo: atv.titulo, subtitulo: atv.subtitulo || '', conteudo: atv.conteudo });
+      }
+    }
+  }
+  window._envAtvTodas = todas;
+
+  const html = `
+    <div style="margin-bottom:12px">
+      <input type="search" id="env-atv-busca" oninput="filtrarEnviarAtividade(this.value)"
+        placeholder="🔍 Buscar atividade..." style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
+    </div>
+    <div id="env-atv-lista" style="max-height:420px;overflow-y:auto;display:flex;flex-direction:column;gap:6px">
+      ${todas.map((a, i) => `
+        <div class="bib-pick-item" data-titulo="${a.titulo}" data-sub="${a.subtitulo}"
+          style="padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer"
+          onmouseover="this.style.background='#f5f0fb'" onmouseout="this.style.background=''"
+          onclick="enviarAtividadeSelecionada(${i})">
+          <div style="font-weight:600;font-size:13px;color:var(--plum)">${a.titulo}</div>
+          <div style="font-size:11.5px;color:var(--muted)">${a.area} · ${a.pasta}</div>
+        </div>`).join('')}
+    </div>`;
+
+  openModal('📤 Enviar Atividade por WhatsApp', html, null, { saveLabel: null });
+  setTimeout(() => document.getElementById('env-atv-busca')?.focus(), 100);
+}
+
+function filtrarEnviarAtividade(q) {
+  const termo = q.toLowerCase();
+  document.querySelectorAll('#env-atv-lista .bib-pick-item').forEach(el => {
+    const txt = (el.dataset.titulo + ' ' + el.dataset.sub).toLowerCase();
+    el.style.display = txt.includes(termo) ? '' : 'none';
+  });
+}
+
+async function enviarAtividadeSelecionada(idx) {
+  const atv = (window._envAtvTodas || [])[idx];
+  if (!atv) return;
+  const p = await api('GET', `/pacientes/${window._envAtvPacId}`);
+  if (!p.whatsapp) { toast('Cliente não tem WhatsApp cadastrado', 'error'); return; }
+
+  const primeiroNome = (p.apelido || '').trim() || (p.nome || '').split(' ')[0];
+  const tmp = document.createElement('div');
+  tmp.innerHTML = atv.conteudo;
+  const textoAtividade = _atvParaTextoWhats(tmp);
+  const msg = `Oi, ${primeiroNome}! Segue a atividade combinada: *${atv.titulo}*\n\n${textoAtividade}`;
+
+  closeModal();
+  window.open(`https://wa.me/${toWaNum(p.whatsapp)}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+function _atvParaTextoWhats(node) {
+  if (node.nodeType === 3) return node.textContent;
+  const tag = node.tagName?.toLowerCase();
+  const filhos = () => Array.from(node.childNodes).map(_atvParaTextoWhats).join('');
+  if (tag === 'h3')     return '\n\n*' + node.textContent.toUpperCase() + '*\n';
+  if (tag === 'p')      return '\n' + filhos() + '\n';
+  if (tag === 'strong') return '*' + filhos() + '*';
+  if (tag === 'em')     return '_' + filhos() + '_';
+  if (tag === 'ul')     return '\n' + Array.from(node.children).map(li => '• ' + li.textContent).join('\n') + '\n';
+  if (tag === 'ol')     return '\n' + Array.from(node.children).map((li, i) => (i + 1) + '. ' + li.textContent).join('\n') + '\n';
+  if (tag === 'li')     return filhos();
+  if (tag === 'table')  return '\n📋 Preencha diariamente: data, % de capacidade e o que aconteceu no dia.\n';
+  if (tag === 'div')    return filhos() + '\n';
+  return filhos();
 }
 
 function abrirPickerBiblioteca() {
