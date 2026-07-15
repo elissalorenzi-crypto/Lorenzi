@@ -27,14 +27,15 @@ header h1{font-size:22px;font-weight:800;margin-bottom:4px;letter-spacing:-.3px}
   column-gap:10px;
 }
 @media(min-width:640px){ .grid{ columns:3 220px; } }
+.foto-item{position:relative;margin-bottom:10px;break-inside:avoid}
 .grid img{
   width:100%;
   display:block;
-  margin-bottom:10px;
   border-radius:12px;
   box-shadow:var(--shadow);
-  break-inside:avoid;
 }
+.btn-remover{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:14px;line-height:1}
+.btn-remover:hover{background:rgba(150,30,30,.85)}
 
 #loading,#erro-msg{display:none;text-align:center;padding:60px 20px}
 #loading .spin{width:40px;height:40px;border:4px solid var(--border);border-top-color:var(--rose);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px}
@@ -55,7 +56,7 @@ header h1{font-size:22px;font-weight:800;margin-bottom:4px;letter-spacing:-.3px}
 @media print{
   body{ background:#fff }
   header{ background:none!important; color:var(--plum)!important; padding:0 0 10px 0 }
-  .btns-acao{ display:none }
+  .btns-acao,#btns-add,.btn-remover{ display:none!important }
   .container{ max-width:none; padding:0 }
   .grid{ columns:3 180px }
   .grid img{ box-shadow:none; break-inside:avoid; page-break-inside:avoid }
@@ -72,16 +73,24 @@ header h1{font-size:22px;font-weight:800;margin-bottom:4px;letter-spacing:-.3px}
 <div class="container">
   <div id="loading" style="display:block"><div class="spin"></div><p>Carregando...</p></div>
   <div id="erro-msg" class="erro-msg"></div>
+  <div class="btns-acao" id="btns-add" style="display:none">
+    <label class="btn-img" style="cursor:pointer">
+      ➕ Adicionar fotos
+      <input type="file" id="file-input" accept="image/*" multiple style="display:none" onchange="anexarImagens()">
+    </label>
+  </div>
   <div class="btns-acao" id="btns-acao" style="display:none">
     <button class="btn-imprimir" id="btn-imprimir" onclick="window.print()">🖨️ Imprimir (A4)</button>
     <button class="btn-pdf" id="btn-pdf" onclick="gerarPDF()">📄 Gerar PDF</button>
     <button class="btn-img" id="btn-img" onclick="gerarImagem()">🖼️ Gerar Imagem</button>
   </div>
   <div class="grid" id="grid"></div>
+  <div class="vazio" id="vazio" style="display:none">Nenhuma imagem adicionada ainda. Toque em "Adicionar fotos" para começar!</div>
 </div>
 
 <script>
 const TOKEN = new URLSearchParams(location.search).get('t') || '';
+let imagensAtuais = [];
 
 async function init() {
   if (!TOKEN) { mostrarErro('Link inválido.'); return; }
@@ -92,15 +101,62 @@ async function init() {
     document.title = info.titulo || 'Vision Board';
     document.getElementById('titulo-board').textContent = '🖼️ ' + (info.titulo || 'Vision Board');
     document.getElementById('nome-cliente').textContent = info.paciente_nome || '';
-    const grid = document.getElementById('grid');
-    if (!info.imagens || !info.imagens.length) {
-      grid.outerHTML = '<div class="vazio">Nenhuma imagem adicionada ainda.</div>';
-    } else {
-      grid.innerHTML = info.imagens.map(src => '<img src="' + src + '" loading="lazy" alt="">').join('');
-      document.getElementById('btns-acao').style.display = 'flex';
-    }
+    imagensAtuais = info.imagens || [];
+    renderGrid();
+    document.getElementById('btns-add').style.display = 'flex';
     document.getElementById('loading').style.display = 'none';
   } catch(e) { mostrarErro('Erro ao carregar. Tente novamente.'); }
+}
+
+function renderGrid() {
+  const grid = document.getElementById('grid');
+  const vazio = document.getElementById('vazio');
+  const btnsAcao = document.getElementById('btns-acao');
+  if (!imagensAtuais.length) {
+    grid.innerHTML = '';
+    vazio.style.display = 'block';
+    btnsAcao.style.display = 'none';
+    return;
+  }
+  vazio.style.display = 'none';
+  btnsAcao.style.display = 'flex';
+  grid.innerHTML = imagensAtuais.map((src, i) => `
+    <div class="foto-item">
+      <img src="${src}" loading="lazy" alt="">
+      <button class="btn-remover" onclick="removerImagem(${i})" title="Remover">✕</button>
+    </div>`).join('');
+}
+
+async function anexarImagens() {
+  const input = document.getElementById('file-input');
+  const files = input.files;
+  if (!files || !files.length) return;
+  const fd = new FormData();
+  for (const f of files) fd.append('imagens', f);
+  try {
+    const res = await fetch('/api/vision-board/publico/' + TOKEN + '/imagens', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erro ao enviar');
+    imagensAtuais = data.imagens || [];
+    renderGrid();
+  } catch(e) {
+    alert('Erro ao adicionar fotos: ' + e.message);
+  } finally {
+    input.value = '';
+  }
+}
+
+async function removerImagem(index) {
+  if (!confirm('Remover esta foto do seu vision board?')) return;
+  try {
+    const res = await fetch('/api/vision-board/publico/' + TOKEN + '/imagens/' + index, { method: 'DELETE' });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erro ao remover');
+    imagensAtuais = data.imagens || [];
+    renderGrid();
+  } catch(e) {
+    alert('Erro ao remover foto: ' + e.message);
+  }
 }
 
 function carregarImagem(src) {

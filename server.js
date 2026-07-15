@@ -1601,6 +1601,33 @@ app.get('/api/vision-board/info/:token', (req, res) => {
   res.json({ paciente_nome: board.paciente_nome, titulo: board.titulo, imagens: board.imagens });
 });
 
+// Cliente anexa imagens ao próprio board (público, via token)
+app.post('/api/vision-board/publico/:token/imagens', (req, res) => {
+  const board = req.db.getVisionBoardPorToken(req.params.token);
+  if (!board) return res.status(404).json({ error: 'Link inválido ou expirado' });
+  uploadVisionBoard.array('imagens', 30)(req, res, (err) => {
+    if (err) return res.status(400).json({ error: err.message });
+    try {
+      const novas = (req.files || []).map(f => `/uploads/vision-board/${f.filename}`);
+      const atualizado = req.db.addImagensVisionBoard(board.id, novas);
+      res.json({ paciente_nome: atualizado.paciente_nome, titulo: atualizado.titulo, imagens: atualizado.imagens });
+    } catch(e) { erro(res, e); }
+  });
+});
+
+// Cliente remove uma imagem do próprio board (público, via token)
+app.delete('/api/vision-board/publico/:token/imagens/:index', (req, res) => {
+  const board = req.db.getVisionBoardPorToken(req.params.token);
+  if (!board) return res.status(404).json({ error: 'Link inválido ou expirado' });
+  try {
+    const idx = Number(req.params.index);
+    const arquivo = board.imagens[idx];
+    const atualizado = req.db.removerImagemVisionBoard(board.id, idx);
+    if (arquivo) fs.unlink(path.join(__dirname, 'public', arquivo), () => {});
+    res.json({ paciente_nome: atualizado.paciente_nome, titulo: atualizado.titulo, imagens: atualizado.imagens });
+  } catch(e) { erro(res, e); }
+});
+
 // ─── ANÁLISE CLÍNICA IA ──────────────────────────────────────
 app.post('/api/analisar-prontuario', auth, async (req, res) => {
   const { conteudo, humor, tecnicas, tarefas, nome_paciente } = req.body || {};
