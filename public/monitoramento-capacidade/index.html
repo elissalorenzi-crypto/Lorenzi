@@ -117,7 +117,7 @@ function renderDias() {
   const lista = document.getElementById('dias-lista');
   lista.innerHTML = dias.map(function(d, i) {
     return '<div class="dia-card">' +
-      '<div class="dia-titulo"><span>' + d.dia_semana + '</span><span class="dia-data">' + d.data + '</span></div>' +
+      '<div class="dia-titulo"><span>' + d.dia_semana + ' <span class="dia-data">' + d.data + '</span></span></div>' +
       '<div class="campo">' +
         '<label>Quanto capaz você se sentiu hoje?</label>' +
         '<div class="pct-row">' +
