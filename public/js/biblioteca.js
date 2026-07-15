@@ -1958,8 +1958,8 @@ Quero que você me explique de forma clara, prática e realista:
                 <strong>1. Quanto competente você se sentiu hoje?</strong>
                 <p>Dê uma nota de <strong>0% a 100%</strong>:</p>
                 <ul>
-                  <li><strong>0%</strong> = pouco competente</li>
-                  <li><strong>100%</strong> = muito competente</li>
+                  <li><strong>0%</strong> = pouco capaz</li>
+                  <li><strong>100%</strong> = muito capaz</li>
                 </ul>
               </div>
 
