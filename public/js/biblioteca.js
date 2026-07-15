@@ -1976,7 +1976,7 @@ Quero que você me explique de forma clara, prática e realista:
                       <th style="border:1px solid var(--border);padding:8px 10px;text-align:left">Data</th>
                       <th style="border:1px solid var(--border);padding:8px 10px;text-align:left">Dia da semana</th>
                       <th style="border:1px solid var(--border);padding:8px 10px;text-align:left">% de capacidade</th>
-                      <th style="border:1px solid var(--border);padding:8px 10px;text-align:left">O que aconteceu</th>
+                      <th style="border:1px solid var(--border);padding:8px 10px;text-align:left">O que aconteceu ao longo do dia para que você se percebesse assim?</th>
                     </tr>
                   </thead>
                   <tbody>
