@@ -51,6 +51,10 @@ textarea:focus{outline:none;border-color:var(--rose)}
 #confirmacao p{color:var(--muted);font-size:14px;line-height:1.7}
 
 .erro-msg{text-align:center;padding:40px;color:#8B3A3A}
+
+#save-status.salvo{color:var(--sage)}
+#save-status.salvando{color:var(--muted)}
+#save-status.erro{color:#8B3A3A}
 </style>
 </head>
 <body>
@@ -78,6 +82,7 @@ textarea:focus{outline:none;border-color:var(--rose)}
 
     <div id="dias-lista"></div>
 
+    <div id="save-status" style="text-align:center;font-size:12px;color:var(--muted);margin-bottom:8px;min-height:16px"></div>
     <button class="btn-enviar" id="btn-enviar" onclick="enviar()">Enviar minhas respostas</button>
   </div>
 
@@ -101,9 +106,27 @@ async function init() {
     document.getElementById('nome-cliente').textContent = info.paciente_nome;
     dias = info.dias || [];
     renderDias();
+    preencherComRespostasSalvas(info.respostas || []);
     document.getElementById('loading').style.display = 'none';
     document.getElementById('conteudo').style.display = '';
   } catch(e) { mostrarErro('Erro ao carregar. Tente novamente. (' + e.message + ')'); }
+}
+
+function preencherComRespostasSalvas(respostasSalvas) {
+  const porData = {};
+  respostasSalvas.forEach(function(r) { porData[r.data] = r; });
+  dias.forEach(function(d, i) {
+    const r = porData[d.data];
+    if (!r) return;
+    document.getElementById('pct-' + i).value = r.percentual;
+    document.getElementById('pct-valor-' + i).textContent = r.percentual + '%';
+    document.getElementById('relato-' + i).value = r.relato;
+  });
+  if (respostasSalvas.length) {
+    const st = document.getElementById('save-status');
+    st.textContent = '✓ Você já tinha preenchido ' + respostasSalvas.length + ' dia(s) — continue de onde parou';
+    st.className = 'salvo';
+  }
 }
 
 function mostrarErro(msg) {
@@ -121,13 +144,13 @@ function renderDias() {
       '<div class="campo">' +
         '<label>Quanto capaz você se sentiu hoje?</label>' +
         '<div class="pct-row">' +
-          '<input type="range" min="0" max="100" step="5" value="0" id="pct-' + i + '" oninput="atualizarPct(' + i + ')">' +
+          '<input type="range" min="0" max="100" step="5" value="0" id="pct-' + i + '" oninput="atualizarPct(' + i + ');agendarAutoSave()">' +
           '<span class="pct-valor" id="pct-valor-' + i + '">0%</span>' +
         '</div>' +
       '</div>' +
       '<div class="campo">' +
         '<label>O que aconteceu ao longo do dia para que você se percebesse assim?</label>' +
-        '<textarea id="relato-' + i + '" placeholder="Escreva aqui..."></textarea>' +
+        '<textarea id="relato-' + i + '" placeholder="Escreva aqui..." oninput="agendarAutoSave()"></textarea>' +
       '</div>' +
     '</div>';
   }).join('');
@@ -137,19 +160,53 @@ function atualizarPct(i) {
   document.getElementById('pct-valor-' + i).textContent = document.getElementById('pct-' + i).value + '%';
 }
 
-async function enviar() {
-  const btn = document.getElementById('btn-enviar');
+function coletarRespostas() {
   const respostas = [];
   dias.forEach(function(d, i) {
     const relato = document.getElementById('relato-' + i).value.trim();
     const pctEl = document.getElementById('pct-' + i);
-    if (!relato) return; // só envia dias que foram efetivamente preenchidos
+    if (!relato) return; // só conta dias que foram efetivamente preenchidos
     respostas.push({ data: d.data, dia_semana: d.dia_semana, percentual: Number(pctEl.value), relato: relato });
   });
+  return respostas;
+}
+
+let saveTimer = null;
+function agendarAutoSave() {
+  clearTimeout(saveTimer);
+  const st = document.getElementById('save-status');
+  st.textContent = 'Salvando...';
+  st.className = 'salvando';
+  saveTimer = setTimeout(salvarAutomaticamente, 900);
+}
+
+async function salvarAutomaticamente() {
+  const respostas = coletarRespostas();
+  const st = document.getElementById('save-status');
+  if (respostas.length === 0) { st.textContent = ''; return; }
+  try {
+    const r = await fetch('/api/monitoramento-capacidade/responder/' + TOKEN, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ dias: respostas })
+    });
+    if (!r.ok) throw new Error();
+    st.textContent = '✓ Salvo automaticamente';
+    st.className = 'salvo';
+  } catch(e) {
+    st.textContent = 'Não foi possível salvar agora — verifique sua conexão';
+    st.className = 'erro';
+  }
+}
+
+async function enviar() {
+  const btn = document.getElementById('btn-enviar');
+  const respostas = coletarRespostas();
   if (respostas.length === 0) {
     alert('Preencha ao menos um dia antes de enviar.');
     return;
   }
+  clearTimeout(saveTimer);
   btn.disabled = true;
   btn.textContent = 'Enviando...';
   try {

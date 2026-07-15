@@ -1142,13 +1142,14 @@ db.exec(`
   );
   CREATE TABLE IF NOT EXISTS monit_cap_respostas (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
-    token         TEXT NOT NULL,
+    token         TEXT NOT NULL UNIQUE,
     paciente_id   INTEGER NOT NULL,
     paciente_nome TEXT NOT NULL,
     dias          TEXT NOT NULL,
     created_at    TEXT DEFAULT (datetime('now','localtime'))
   );
 `);
+try { db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_monit_cap_resp_token ON monit_cap_respostas(token)'); } catch(_) {}
 
 const gerarLinkMonitCap = (paciente_id, paciente_nome) => {
   const token = require('crypto').randomBytes(20).toString('hex');
@@ -1162,10 +1163,23 @@ const getLinkMonitCap = (paciente_id) =>
 const getInfoMonitCap = (token) =>
   db.prepare('SELECT * FROM monit_cap_links WHERE token=? AND ativo=1').get(token);
 
+// Salva (ou atualiza, se o link já tinha respostas) o estado atual do preenchimento.
+// Assim o link fica sempre com o progresso mais recente da cliente, mesmo que ela
+// preencha aos poucos em visitas diferentes.
 const salvarRespostaMonitCap = (token, dias) => {
   const link = db.prepare('SELECT * FROM monit_cap_links WHERE token=?').get(token);
   if (!link) return null;
-  return rid(db.prepare('INSERT INTO monit_cap_respostas (token, paciente_id, paciente_nome, dias) VALUES (?,?,?,?)').run(token, link.paciente_id, link.paciente_nome, JSON.stringify(dias)));
+  db.prepare(`
+    INSERT INTO monit_cap_respostas (token, paciente_id, paciente_nome, dias)
+    VALUES (?,?,?,?)
+    ON CONFLICT(token) DO UPDATE SET dias=excluded.dias, created_at=datetime('now','localtime')
+  `).run(token, link.paciente_id, link.paciente_nome, JSON.stringify(dias));
+  return db.prepare('SELECT id FROM monit_cap_respostas WHERE token=?').get(token).id;
+};
+
+const getRespostaPorTokenMonitCap = (token) => {
+  const row = db.prepare('SELECT * FROM monit_cap_respostas WHERE token=?').get(token);
+  return row ? { ...row, dias: JSON.parse(row.dias || '[]') } : null;
 };
 
 const getRespostasMonitCap = (paciente_id) => {
@@ -1301,7 +1315,7 @@ return {
   getTarefas, createTarefa, updateTarefa, deleteTarefa, resetTarefasDiarias,
   deletarSessoesFuturas, restaurarSessoesFuturas,
   gerarLinkAtivProf, getLinkAtivProf, getInfoAtivProf, salvarRespostaAtivProf, getRespostasAtivProf,
-  gerarLinkMonitCap, getLinkMonitCap, getInfoMonitCap, salvarRespostaMonitCap, getRespostasMonitCap,
+  gerarLinkMonitCap, getLinkMonitCap, getInfoMonitCap, salvarRespostaMonitCap, getRespostaPorTokenMonitCap, getRespostasMonitCap,
   getPostsSociais, getPostSocialById, createPostSocial, updatePostSocial, deletePostSocial,
   setSession, getSession, deleteSession, cleanExpiredSessions,
   createAuditLog, getAuditLog, deletarDadosPacienteCompleto,

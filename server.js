@@ -1458,7 +1458,7 @@ function proximosDias(n) {
   return dias;
 }
 
-// Gera link único para um cliente (requer auth)
+// Gera link único para um cliente (requer auth) — reaproveita link ativo existente
 app.post('/api/monitoramento-capacidade/link', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
   const { paciente_id } = req.body || {};
@@ -1466,16 +1466,18 @@ app.post('/api/monitoramento-capacidade/link', (req, res) => {
   try {
     const p = req.db.getPacienteById(paciente_id);
     if (!p) return res.status(404).json({ error: 'Paciente não encontrado' });
-    const token = req.db.gerarLinkMonitCap(paciente_id, p.nome);
+    const existente = req.db.getLinkMonitCap(paciente_id);
+    const token = existente ? existente.token : req.db.gerarLinkMonitCap(paciente_id, p.nome);
     res.json({ token, url: `/monitoramento-capacidade/?t=${token}` });
   } catch(e) { erro(res, e); }
 });
 
-// Info pública do token (cliente confere o nome + dias a preencher)
+// Info pública do token (cliente confere o nome, os dias a preencher e o que já preencheu antes)
 app.get('/api/monitoramento-capacidade/info/:token', (req, res) => {
   const link = req.db.getInfoMonitCap(req.params.token);
   if (!link) return res.status(404).json({ error: 'Link inválido ou expirado' });
-  res.json({ paciente_nome: link.paciente_nome, dias: proximosDias(15) });
+  const resposta = req.db.getRespostaPorTokenMonitCap(req.params.token);
+  res.json({ paciente_nome: link.paciente_nome, dias: proximosDias(15), respostas: resposta ? resposta.dias : [] });
 });
 
 // Cliente envia respostas
