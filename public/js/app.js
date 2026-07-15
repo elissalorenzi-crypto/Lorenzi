@@ -1238,7 +1238,7 @@ async function enviarMonitoramentoCapacidade(id) {
     const nome = p.nome, whatsapp = p.whatsapp || '';
     const r = await api('POST', '/monitoramento-capacidade/link', { paciente_id: id });
     if (!r || !r.token) { toast('Erro ao gerar link', 'error'); return; }
-    const url = base + '/monitoramento-capacidade/?t=' + r.token;
+    const url = base + '/monitoramento-da-capacidade/?t=' + r.token;
     const waNome = (p.apelido || '').trim() || nome.split(' ')[0];
     const waMsg = encodeURIComponent('Oi, ' + waNome + '! 😊\nSegue o link do Monitoramento da Percepção de Capacidade:\n' + url + '\n\nÉ só clicar no link e preencher, dia a dia, o quanto você se sentiu capaz e o que aconteceu. Você pode preencher aos poucos e enviar quando quiser!');
     const waLink = whatsapp ? 'https://wa.me/' + toWaNum(whatsapp) + '?text=' + waMsg : '';

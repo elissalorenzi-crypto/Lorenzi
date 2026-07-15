@@ -1468,7 +1468,7 @@ app.post('/api/monitoramento-capacidade/link', (req, res) => {
     if (!p) return res.status(404).json({ error: 'Paciente não encontrado' });
     const existente = req.db.getLinkMonitCap(paciente_id);
     const token = existente ? existente.token : req.db.gerarLinkMonitCap(paciente_id, p.nome);
-    res.json({ token, url: `/monitoramento-capacidade/?t=${token}` });
+    res.json({ token, url: `/monitoramento-da-capacidade/?t=${token}` });
   } catch(e) { erro(res, e); }
 });
 
