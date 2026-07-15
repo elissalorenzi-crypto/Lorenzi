@@ -1949,13 +1949,13 @@ Quero que você me explique de forma clara, prática e realista:
             icone: '📈',
             conteudo: `
               <h3>Objetivo</h3>
-              <p>Este monitoramento tem como objetivo ajudar você a observar, dia após dia, como avalia a própria competência diante das situações vividas — favorecendo maior autoconhecimento sobre os fatores que influenciam essa percepção.</p>
+              <p>Este monitoramento tem como objetivo ajudar você a observar, dia após dia, como avalia a própria capacidade diante das situações vividas — favorecendo maior autoconhecimento sobre os fatores que influenciam essa percepção.</p>
 
               <h3>Como preencher</h3>
               <p>Ao final de cada dia, anote:</p>
 
               <div class="atv-bloco">
-                <strong>1. Quanto competente você se sentiu hoje?</strong>
+                <strong>1. Quanto capaz você se sentiu hoje?</strong>
                 <p>Dê uma nota de <strong>0% a 100%</strong>:</p>
                 <ul>
                   <li><strong>0%</strong> = pouco capaz</li>
@@ -1975,7 +1975,7 @@ Quero que você me explique de forma clara, prática e realista:
                     <tr style="background:#f8f4ff">
                       <th style="border:1px solid var(--border);padding:8px 10px;text-align:left">Data</th>
                       <th style="border:1px solid var(--border);padding:8px 10px;text-align:left">Dia da semana</th>
-                      <th style="border:1px solid var(--border);padding:8px 10px;text-align:left">% de competência</th>
+                      <th style="border:1px solid var(--border);padding:8px 10px;text-align:left">% de capacidade</th>
                       <th style="border:1px solid var(--border);padding:8px 10px;text-align:left">O que aconteceu</th>
                     </tr>
                   </thead>
