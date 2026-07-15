@@ -978,6 +978,13 @@
               <button class="btn btn-outline btn-sm" onclick="preencherEnderecosPorCep()">🔍 Executar agora</button>
             </div>
             <div id="cep-bulk-log" style="display:none;padding:0 20px 16px;font-size:12px;line-height:1.8;color:var(--text-mid);max-height:200px;overflow-y:auto"></div>
+            <div style="padding:16px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;border-top:1px solid var(--border)">
+              <div style="flex:1;min-width:200px">
+                <div style="font-size:13px;font-weight:600;color:var(--plum);margin-bottom:4px">Baixar backup do banco de dados</div>
+                <div style="font-size:12px;color:var(--muted)">Baixa uma cópia completa dos dados atuais do sistema (clientes, agenda, contratos etc). Use para ter uma cópia local caso o site fique fora do ar.</div>
+              </div>
+              <button class="btn btn-outline btn-sm" onclick="baixarBackupBanco()">⬇ Baixar backup</button>
+            </div>
           </div>
         </div>
 

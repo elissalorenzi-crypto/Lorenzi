@@ -4703,6 +4703,30 @@ async function loadAuditLog() {
   </table>`;
 }
 
+async function baixarBackupBanco() {
+  try {
+    const res = await fetch('/api/admin/backup-db', {
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+    if (!res.ok) throw new Error('Falha ao gerar backup');
+    const disposition = res.headers.get('Content-Disposition') || '';
+    const match = disposition.match(/filename="(.+)"/);
+    const filename = match ? match[1] : 'psicologa-backup.db';
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast('Backup baixado com sucesso!');
+  } catch (e) {
+    toast('Erro ao baixar backup: ' + e.message, 'error');
+  }
+}
+
 async function preencherEnderecosPorCep() {
   const log = document.getElementById('cep-bulk-log');
   const btn = document.querySelector('[onclick="preencherEnderecosPorCep()"]');
