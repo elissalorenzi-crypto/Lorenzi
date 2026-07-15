@@ -41,6 +41,20 @@ header h1{font-size:22px;font-weight:800;margin-bottom:4px;letter-spacing:-.3px}
 .erro-msg{color:#8B3A3A}
 
 .vazio{text-align:center;padding:60px 20px;color:var(--muted)}
+
+.btn-imprimir{display:block;margin:0 auto 18px;padding:11px 22px;background:linear-gradient(135deg,var(--plum) 0%,var(--plum-mid) 100%);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer}
+.btn-imprimir:hover{opacity:.9}
+
+/* Impressão / salvar como PDF em A4 */
+@page{ size:A4; margin:14mm; }
+@media print{
+  body{ background:#fff }
+  header{ background:none!important; color:var(--plum)!important; padding:0 0 10px 0 }
+  .btn-imprimir{ display:none }
+  .container{ max-width:none; padding:0 }
+  .grid{ columns:3 180px }
+  .grid img{ box-shadow:none; break-inside:avoid; page-break-inside:avoid }
+}
 </style>
 </head>
 <body>
@@ -53,6 +67,7 @@ header h1{font-size:22px;font-weight:800;margin-bottom:4px;letter-spacing:-.3px}
 <div class="container">
   <div id="loading" style="display:block"><div class="spin"></div><p>Carregando...</p></div>
   <div id="erro-msg" class="erro-msg"></div>
+  <button class="btn-imprimir" id="btn-imprimir" style="display:none" onclick="window.print()">🖨️ Imprimir / Salvar em PDF (A4)</button>
   <div class="grid" id="grid"></div>
 </div>
 
@@ -73,6 +88,7 @@ async function init() {
       grid.outerHTML = '<div class="vazio">Nenhuma imagem adicionada ainda.</div>';
     } else {
       grid.innerHTML = info.imagens.map(src => '<img src="' + src + '" loading="lazy" alt="">').join('');
+      document.getElementById('btn-imprimir').style.display = 'block';
     }
     document.getElementById('loading').style.display = 'none';
   } catch(e) { mostrarErro('Erro ao carregar. Tente novamente.'); }
