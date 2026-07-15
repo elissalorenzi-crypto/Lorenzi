@@ -1446,9 +1446,9 @@ app.get('/api/atividade-profissoes/respostas', (req, res) => {
 const DIAS_SEMANA_PT = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
 function proximosDias(n) {
   const dias = [];
-  const hoje = new Date();
-  for (let i = 1; i <= n; i++) {
-    const d = new Date(hoje);
+  const inicio = new Date(2026, 6, 15); // 15/07/2026 (quarta-feira) — início fixo da atividade
+  for (let i = 0; i < n; i++) {
+    const d = new Date(inicio);
     d.setDate(d.getDate() + i);
     dias.push({
       data: `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`,
