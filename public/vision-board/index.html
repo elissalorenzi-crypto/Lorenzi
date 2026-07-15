@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Vision Board</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 :root{
   --plum:#4A3728;--plum-mid:#6B4F3A;
@@ -114,44 +113,69 @@ function carregarImagem(src) {
   });
 }
 
+function nomeArquivoAtual() {
+  return (document.getElementById('titulo-board').textContent || 'vision-board')
+    .replace(/[^\p{L}\p{N}\- ]/gu, '').trim() || 'vision-board';
+}
+
+// Monta uma colagem única (painel) em proporção de folha A4 paisagem, com as fotos
+// levemente sobrepostas e rotacionadas, como um mural físico.
+async function montarColagem() {
+  const imgs = Array.from(document.querySelectorAll('#grid img'));
+  const W = 2200, H = Math.round(2200 * 210 / 297); // proporção A4 paisagem (297x210mm)
+  const canvas = document.createElement('canvas');
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, W, H);
+
+  const n = imgs.length;
+  const cols = Math.max(1, Math.ceil(Math.sqrt(n * (W / H))));
+  const rows = Math.ceil(n / cols);
+  const cellW = W / cols, cellH = H / rows;
+  const box = Math.min(cellW, cellH) * 1.3; // maior que a célula para sobrepor um pouco
+
+  for (let i = 0; i < n; i++) {
+    const im = await carregarImagem(imgs[i].src);
+    let w = box, h = box * im.naturalHeight / im.naturalWidth;
+    if (h > box) { h = box; w = box * im.naturalWidth / im.naturalHeight; }
+
+    const col = i % cols, row = Math.floor(i / cols);
+    const baseX = col * cellW + cellW / 2;
+    const baseY = row * cellH + cellH / 2;
+    const jitterX = (Math.random() - 0.5) * cellW * 0.3;
+    const jitterY = (Math.random() - 0.5) * cellH * 0.3;
+    const angulo = (Math.random() * 14 - 7) * Math.PI / 180;
+
+    ctx.save();
+    ctx.translate(baseX + jitterX, baseY + jitterY);
+    ctx.rotate(angulo);
+    ctx.shadowColor = 'rgba(0,0,0,0.28)';
+    ctx.shadowBlur = 18;
+    ctx.shadowOffsetY = 6;
+    const pad = 10;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(-w / 2 - pad, -h / 2 - pad, w + pad * 2, h + pad * 2);
+    ctx.shadowColor = 'transparent';
+    ctx.drawImage(im, -w / 2, -h / 2, w, h);
+    ctx.restore();
+  }
+  return canvas;
+}
+
 async function gerarPDF() {
   const btn = document.getElementById('btn-pdf');
-  const imgs = Array.from(document.querySelectorAll('#grid img'));
-  if (!imgs.length) return;
+  if (!document.querySelectorAll('#grid img').length) return;
   btn.disabled = true;
   btn.textContent = 'Gerando PDF...';
   try {
+    const canvas = await montarColagem();
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-    const margin = 10;
-    const cols = 2, rows = 3, perPage = cols * rows;
-    const pageW = doc.internal.pageSize.getWidth() - margin * 2;
-    const pageH = doc.internal.pageSize.getHeight() - margin * 2;
-    const cellW = pageW / cols, cellH = pageH / rows, pad = 3;
-
-    for (let i = 0; i < imgs.length; i++) {
-      const posNaPagina = i % perPage;
-      if (i > 0 && posNaPagina === 0) doc.addPage();
-      const col = posNaPagina % cols;
-      const row = Math.floor(posNaPagina / cols);
-      const cellX = margin + col * cellW;
-      const cellY = margin + row * cellH;
-
-      const im = await carregarImagem(imgs[i].src);
-      const canvas = document.createElement('canvas');
-      canvas.width = im.naturalWidth;
-      canvas.height = im.naturalHeight;
-      canvas.getContext('2d').drawImage(im, 0, 0);
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-
-      const maxW = cellW - pad * 2, maxH = cellH - pad * 2;
-      let w = maxW, h = w * im.naturalHeight / im.naturalWidth;
-      if (h > maxH) { h = maxH; w = h * im.naturalWidth / im.naturalHeight; }
-      const x = cellX + (cellW - w) / 2;
-      const y = cellY + (cellH - h) / 2;
-      doc.addImage(dataUrl, 'JPEG', x, y, w, h);
-    }
-
+    const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    doc.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, pageW, pageH);
     doc.save(nomeArquivoAtual() + '.pdf');
   } catch(e) {
     alert('Erro ao gerar o PDF: ' + e.message);
@@ -161,21 +185,13 @@ async function gerarPDF() {
   }
 }
 
-function nomeArquivoAtual() {
-  return (document.getElementById('titulo-board').textContent || 'vision-board')
-    .replace(/[^\p{L}\p{N}\- ]/gu, '').trim() || 'vision-board';
-}
-
 async function gerarImagem() {
   const btn = document.getElementById('btn-img');
+  if (!document.querySelectorAll('#grid img').length) return;
   btn.disabled = true;
   btn.textContent = 'Gerando imagem...';
   try {
-    const canvas = await html2canvas(document.getElementById('grid'), {
-      backgroundColor: '#ffffff',
-      useCORS: true,
-      scale: 2
-    });
+    const canvas = await montarColagem();
     const a = document.createElement('a');
     a.href = canvas.toDataURL('image/png');
     a.download = nomeArquivoAtual() + '.png';
