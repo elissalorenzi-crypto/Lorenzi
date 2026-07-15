@@ -68,6 +68,25 @@ const uploadEstilo = multer({
   limits: { fileSize: 50 * 1024 * 1024 },
 });
 
+const uploadVisionBoard = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      const dir = path.join(__dirname, 'public/uploads/vision-board');
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      cb(null, dir);
+    },
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname) || '.jpg';
+      cb(null, `vb_${Date.now()}_${Math.round(Math.random()*1e9)}${ext}`);
+    }
+  }),
+  limits: { fileSize: 15 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const ok = ['image/jpeg','image/png','image/jpg','image/webp','image/gif'].includes(file.mimetype);
+    cb(null, ok);
+  }
+});
+
 const crypto = require('crypto');
 
 const app  = express();
@@ -1497,6 +1516,89 @@ app.get('/api/monitoramento-capacidade/respostas', (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
   const pid = req.query.paciente_id ? Number(req.query.paciente_id) : null;
   res.json(req.db.getRespostasMonitCap(pid));
+});
+
+// ── VISION BOARD ──────────────────────────────────────────────
+// Lista os vision boards de um cliente (requer auth)
+app.get('/api/vision-board/paciente/:paciente_id', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  try {
+    res.json(req.db.getVisionBoardsPaciente(Number(req.params.paciente_id)));
+  } catch(e) { erro(res, e); }
+});
+
+// Cria um novo vision board para um cliente (requer auth)
+app.post('/api/vision-board', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  const { paciente_id, titulo } = req.body || {};
+  if (!paciente_id) return res.status(400).json({ error: 'paciente_id obrigatório' });
+  try {
+    const p = req.db.getPacienteById(paciente_id);
+    if (!p) return res.status(404).json({ error: 'Paciente não encontrado' });
+    const { id, token } = req.db.criarVisionBoard(paciente_id, p.nome, titulo);
+    res.json({ id, token, url: `/vision-board/?t=${token}` });
+  } catch(e) { erro(res, e); }
+});
+
+// Atualiza o título (requer auth)
+app.put('/api/vision-board/:id', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  try {
+    req.db.updateVisionBoardTitulo(req.params.id, (req.body || {}).titulo || 'Meu Vision Board');
+    res.json(req.db.getVisionBoard(req.params.id));
+  } catch(e) { erro(res, e); }
+});
+
+// Envia imagens para o board (requer auth)
+app.post('/api/vision-board/:id/imagens', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  uploadVisionBoard.array('imagens', 30)(req, res, (err) => {
+    if (err) return res.status(400).json({ error: err.message });
+    try {
+      const board = req.db.getVisionBoard(req.params.id);
+      if (!board) return res.status(404).json({ error: 'Board não encontrado' });
+      const novas = (req.files || []).map(f => `/uploads/vision-board/${f.filename}`);
+      const atualizado = req.db.addImagensVisionBoard(req.params.id, novas);
+      res.json(atualizado);
+    } catch(e) { erro(res, e); }
+  });
+});
+
+// Remove uma imagem do board pelo índice (requer auth)
+app.delete('/api/vision-board/:id/imagens/:index', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  try {
+    const board = req.db.getVisionBoard(req.params.id);
+    if (!board) return res.status(404).json({ error: 'Board não encontrado' });
+    const idx = Number(req.params.index);
+    const arquivo = board.imagens[idx];
+    const atualizado = req.db.removerImagemVisionBoard(req.params.id, idx);
+    if (arquivo) {
+      const filePath = path.join(__dirname, 'public', arquivo);
+      fs.unlink(filePath, () => {});
+    }
+    res.json(atualizado);
+  } catch(e) { erro(res, e); }
+});
+
+// Exclui o board inteiro (requer auth)
+app.delete('/api/vision-board/:id', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  try {
+    const board = req.db.getVisionBoard(req.params.id);
+    if (board) {
+      board.imagens.forEach(arquivo => fs.unlink(path.join(__dirname, 'public', arquivo), () => {}));
+    }
+    req.db.deleteVisionBoard(req.params.id);
+    res.json({ ok: true });
+  } catch(e) { erro(res, e); }
+});
+
+// Info pública do token (cliente visualiza o vision board)
+app.get('/api/vision-board/info/:token', (req, res) => {
+  const board = req.db.getVisionBoardPorToken(req.params.token);
+  if (!board) return res.status(404).json({ error: 'Link inválido ou expirado' });
+  res.json({ paciente_nome: board.paciente_nome, titulo: board.titulo, imagens: board.imagens });
 });
 
 // ─── ANÁLISE CLÍNICA IA ──────────────────────────────────────

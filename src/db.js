@@ -1189,6 +1189,62 @@ const getRespostasMonitCap = (paciente_id) => {
   return rows.map(r => ({ ...r, dias: JSON.parse(r.dias || '[]') }));
 };
 
+// ============================================================
+// VISION BOARD
+// ============================================================
+db.exec(`
+  CREATE TABLE IF NOT EXISTS vision_boards (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    token         TEXT NOT NULL UNIQUE,
+    paciente_id   INTEGER NOT NULL,
+    paciente_nome TEXT NOT NULL,
+    titulo        TEXT NOT NULL DEFAULT 'Meu Vision Board',
+    imagens       TEXT NOT NULL DEFAULT '[]',
+    created_at    TEXT DEFAULT (datetime('now','localtime')),
+    FOREIGN KEY (paciente_id) REFERENCES pacientes(id)
+  );
+`);
+
+const parseVB = (r) => r ? { ...r, imagens: JSON.parse(r.imagens || '[]') } : null;
+
+const criarVisionBoard = (paciente_id, paciente_nome, titulo) => {
+  const token = require('crypto').randomBytes(20).toString('hex');
+  const info = db.prepare('INSERT INTO vision_boards (token, paciente_id, paciente_nome, titulo) VALUES (?,?,?,?)')
+    .run(token, paciente_id, paciente_nome, titulo || 'Meu Vision Board');
+  return { id: rid(info), token };
+};
+
+const getVisionBoard = (id) =>
+  parseVB(db.prepare('SELECT * FROM vision_boards WHERE id=?').get(id));
+
+const getVisionBoardPorToken = (token) =>
+  parseVB(db.prepare('SELECT * FROM vision_boards WHERE token=?').get(token));
+
+const getVisionBoardsPaciente = (paciente_id) =>
+  db.prepare('SELECT * FROM vision_boards WHERE paciente_id=? ORDER BY id DESC').all(paciente_id).map(parseVB);
+
+const updateVisionBoardTitulo = (id, titulo) =>
+  db.prepare('UPDATE vision_boards SET titulo=? WHERE id=?').run(titulo, id).changes;
+
+const addImagensVisionBoard = (id, novasImagens) => {
+  const board = getVisionBoard(id);
+  if (!board) return null;
+  const imagens = [...board.imagens, ...novasImagens];
+  db.prepare('UPDATE vision_boards SET imagens=? WHERE id=?').run(JSON.stringify(imagens), id);
+  return getVisionBoard(id);
+};
+
+const removerImagemVisionBoard = (id, index) => {
+  const board = getVisionBoard(id);
+  if (!board) return null;
+  const imagens = board.imagens.filter((_, i) => i !== index);
+  db.prepare('UPDATE vision_boards SET imagens=? WHERE id=?').run(JSON.stringify(imagens), id);
+  return getVisionBoard(id);
+};
+
+const deleteVisionBoard = (id) =>
+  db.prepare('DELETE FROM vision_boards WHERE id=?').run(id).changes;
+
 // ── POSTS SOCIAIS ────────────────────────────────────────────
 const getPostsSociais = (rede, status) => {
   let q = 'SELECT * FROM posts_sociais WHERE 1=1';
@@ -1316,6 +1372,7 @@ return {
   deletarSessoesFuturas, restaurarSessoesFuturas,
   gerarLinkAtivProf, getLinkAtivProf, getInfoAtivProf, salvarRespostaAtivProf, getRespostasAtivProf,
   gerarLinkMonitCap, getLinkMonitCap, getInfoMonitCap, salvarRespostaMonitCap, getRespostaPorTokenMonitCap, getRespostasMonitCap,
+  criarVisionBoard, getVisionBoard, getVisionBoardPorToken, getVisionBoardsPaciente, updateVisionBoardTitulo, addImagensVisionBoard, removerImagemVisionBoard, deleteVisionBoard,
   getPostsSociais, getPostSocialById, createPostSocial, updatePostSocial, deletePostSocial,
   setSession, getSession, deleteSession, cleanExpiredSessions,
   createAuditLog, getAuditLog, deletarDadosPacienteCompleto,

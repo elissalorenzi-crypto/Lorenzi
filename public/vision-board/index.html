@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vision Board</title>
+<style>
+:root{
+  --plum:#4A3728;--plum-mid:#6B4F3A;
+  --rose:#C4956A;--rose-pale:#FBF3F9;
+  --border:#E8D5E4;--bg:#FFFFFF;--bg-alt:#FBF3F9;
+  --muted:#9A7D8E;--text:#4A3728;
+  --shadow:0 2px 8px rgba(74,55,40,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg-alt);min-height:100vh;color:var(--text)}
+
+header{background:linear-gradient(135deg,var(--plum) 0%,var(--plum-mid) 100%);color:#fff;padding:26px 16px;text-align:center}
+header h1{font-size:22px;font-weight:800;margin-bottom:4px;letter-spacing:-.3px}
+#nome-cliente{font-size:14px;opacity:.85;margin-top:4px}
+
+.container{max-width:960px;margin:0 auto;padding:16px}
+
+.grid{
+  columns:2 200px;
+  column-gap:10px;
+}
+@media(min-width:640px){ .grid{ columns:3 220px; } }
+.grid img{
+  width:100%;
+  display:block;
+  margin-bottom:10px;
+  border-radius:12px;
+  box-shadow:var(--shadow);
+  break-inside:avoid;
+}
+
+#loading,#erro-msg{display:none;text-align:center;padding:60px 20px}
+#loading .spin{width:40px;height:40px;border:4px solid var(--border);border-top-color:var(--rose);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.erro-msg{color:#8B3A3A}
+
+.vazio{text-align:center;padding:60px 20px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<header>
+  <h1 id="titulo-board">🖼️ Vision Board</h1>
+  <div id="nome-cliente"></div>
+</header>
+
+<div class="container">
+  <div id="loading" style="display:block"><div class="spin"></div><p>Carregando...</p></div>
+  <div id="erro-msg" class="erro-msg"></div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+const TOKEN = new URLSearchParams(location.search).get('t') || '';
+
+async function init() {
+  if (!TOKEN) { mostrarErro('Link inválido.'); return; }
+  try {
+    const r = await fetch('/api/vision-board/info/' + TOKEN);
+    if (!r.ok) { mostrarErro('Link inválido ou expirado.'); return; }
+    const info = await r.json();
+    document.title = info.titulo || 'Vision Board';
+    document.getElementById('titulo-board').textContent = '🖼️ ' + (info.titulo || 'Vision Board');
+    document.getElementById('nome-cliente').textContent = info.paciente_nome || '';
+    const grid = document.getElementById('grid');
+    if (!info.imagens || !info.imagens.length) {
+      grid.outerHTML = '<div class="vazio">Nenhuma imagem adicionada ainda.</div>';
+    } else {
+      grid.innerHTML = info.imagens.map(src => '<img src="' + src + '" loading="lazy" alt="">').join('');
+    }
+    document.getElementById('loading').style.display = 'none';
+  } catch(e) { mostrarErro('Erro ao carregar. Tente novamente.'); }
+}
+
+function mostrarErro(msg) {
+  document.getElementById('loading').style.display = 'none';
+  const el = document.getElementById('erro-msg');
+  el.style.display = 'block';
+  el.textContent = msg;
+}
+
+init();
+</script>
+</body>
+</html>

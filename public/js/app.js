@@ -1277,6 +1277,116 @@ async function enviarMonitoramentoCapacidade(id) {
   }
 }
 
+async function abrirVisionBoard(pacienteId) {
+  window._vbPacienteId = pacienteId;
+  try {
+    const [p, boards] = await Promise.all([
+      api('GET', `/pacientes/${pacienteId}`),
+      api('GET', `/vision-board/paciente/${pacienteId}`)
+    ]);
+    window._vbClienteNome = (p.apelido || '').trim() || p.nome;
+    window._vbWhats = p.whatsapp || '';
+    if (boards && boards.length) {
+      window._vbAtual = boards[0];
+      renderVisionBoardModal();
+    } else {
+      openModal('🖼️ Criar Vision Board — ' + window._vbClienteNome, `
+        <div class="form-group full">
+          <label>Título do quadro</label>
+          <input type="text" id="vb-novo-titulo" placeholder="Ex: Meus objetivos para 2026" value="Meu Vision Board" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px">
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-top:14px">
+          <button class="btn btn-primary" onclick="criarVisionBoard()">Criar</button>
+        </div>
+      `, null, { saveLabel: null });
+      setTimeout(() => document.getElementById('vb-novo-titulo')?.focus(), 100);
+    }
+  } catch(e) { toast('Erro: ' + e.message, 'error'); }
+}
+
+async function criarVisionBoard() {
+  const titulo = document.getElementById('vb-novo-titulo').value.trim() || 'Meu Vision Board';
+  try {
+    const r = await api('POST', '/vision-board', { paciente_id: window._vbPacienteId, titulo });
+    window._vbAtual = { id: r.id, token: r.token, titulo, imagens: [] };
+    renderVisionBoardModal();
+  } catch(e) { toast('Erro ao criar: ' + e.message, 'error'); }
+}
+
+function renderVisionBoardModal() {
+  const b = window._vbAtual;
+  const base = location.origin;
+  const url = base + '/vision-board/?t=' + b.token;
+  window._vbUrl = url;
+
+  const waMsg = encodeURIComponent('Oi, ' + (window._vbClienteNome || '').split(' ')[0] + '! 😊\nCriei um vision board pra você:\n' + url + '\n\nEspero que te inspire muito! 🌟');
+  const waLink = window._vbWhats ? 'https://wa.me/' + toWaNum(window._vbWhats) + '?text=' + waMsg : '';
+
+  const html = `
+    <div style="margin-bottom:12px">
+      <input type="text" id="vb-titulo" value="${(b.titulo || '').replace(/"/g,'&quot;')}" onblur="salvarTituloVisionBoard()"
+        style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-weight:600">
+    </div>
+    <div style="background:#f8f4ff;border:1.5px solid #d8b8ff;border-radius:8px;padding:10px 14px;font-size:12px;word-break:break-all;margin-bottom:12px;color:#5c35a0">${url}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+      <button class="btn btn-outline btn-sm" onclick="navigator.clipboard.writeText(window._vbUrl).then(function(){toast('Link copiado!')})">📋 Copiar link</button>
+      ${waLink ? '<a href="' + waLink + '" target="_blank" class="btn btn-primary btn-sm" style="background:#25d366;border-color:#25d366;text-decoration:none">💬 Enviar pelo WhatsApp</a>' : '<span style="color:#999;font-size:12px;align-self:center">WhatsApp não cadastrado</span>'}
+      <label class="btn btn-outline btn-sm" style="cursor:pointer;margin:0">
+        📤 Adicionar imagens
+        <input type="file" id="vb-file-input" accept="image/*" multiple style="display:none" onchange="enviarImagensVisionBoard()">
+      </label>
+    </div>
+    <div id="vb-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px">
+      ${(b.imagens || []).map((img, i) => `
+        <div style="position:relative">
+          <img src="${img}" style="width:100%;height:110px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">
+          <button onclick="removerImagemVisionBoard(${i})" title="Remover"
+            style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:13px;line-height:1">✕</button>
+        </div>`).join('') || '<p style="grid-column:1/-1;color:var(--muted);font-size:13px">Nenhuma imagem ainda. Clique em "Adicionar imagens" para começar.</p>'}
+    </div>
+  `;
+  openModal('🖼️ Vision Board — ' + window._vbClienteNome, html, null, { saveLabel: null });
+}
+
+async function salvarTituloVisionBoard() {
+  const titulo = document.getElementById('vb-titulo').value.trim() || 'Meu Vision Board';
+  try {
+    const data = await api('PUT', `/vision-board/${window._vbAtual.id}`, { titulo });
+    window._vbAtual = data;
+  } catch(e) { toast('Erro ao salvar título: ' + e.message, 'error'); }
+}
+
+async function enviarImagensVisionBoard() {
+  const input = document.getElementById('vb-file-input');
+  const files = input.files;
+  if (!files || !files.length) return;
+  const fd = new FormData();
+  for (const f of files) fd.append('imagens', f);
+  try {
+    const res = await fetch(`/api/vision-board/${window._vbAtual.id}/imagens`, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + getToken() },
+      body: fd
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erro ao enviar imagens');
+    window._vbAtual = data;
+    renderVisionBoardModal();
+    toast('Imagens adicionadas!');
+  } catch(e) {
+    toast('Erro: ' + e.message, 'error');
+  }
+}
+
+async function removerImagemVisionBoard(index) {
+  if (!confirm('Remover esta imagem do vision board?')) return;
+  try {
+    const data = await api('DELETE', `/vision-board/${window._vbAtual.id}/imagens/${index}`);
+    window._vbAtual = data;
+    renderVisionBoardModal();
+  } catch(e) { toast('Erro: ' + e.message, 'error'); }
+}
+
 async function verDetalhePaciente(id) {
   const p = await api('GET', `/pacientes/${id}`);
   const [ags, respostas, respostasMonit] = await Promise.all([
@@ -1473,6 +1583,7 @@ async function verDetalhePaciente(id) {
       <button class="btn btn-outline" onclick="enviarListaProfissoes(${p.id})">📋 Enviar Lista de Profissões</button>
       <button class="btn btn-outline" onclick="enviarRotasProfissionais(${p.id})">🛤️ Enviar Rotas Profissionais</button>
       <button class="btn btn-outline" onclick="enviarMonitoramentoCapacidade(${p.id})">📈 Enviar Monitoramento de Capacidade</button>
+      <button class="btn btn-outline" onclick="abrirVisionBoard(${p.id})">🖼️ Vision Board</button>
     </div>
   `;
 
