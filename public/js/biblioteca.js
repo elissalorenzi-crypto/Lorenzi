@@ -2077,6 +2077,40 @@ Para cada caminho apresente:
                 </a>
               </div>
             `
+          },
+          {
+            id: 'profissao-zootecnia',
+            titulo: 'Zootecnia',
+            subtitulo: 'Informações sobre a carreira',
+            icone: '🐄',
+            conteudo: `
+              <h3>🐄 Zootecnia</h3>
+
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
+                <a href="https://wa.me/?text=${encodeURIComponent('Olá! Seguem materiais sobre a profissão de *Zootecnia*:\n\n🎬 Vídeo 1: https://youtu.be/o-6AGxPmZSE\n🎬 Vídeo 2: https://vt.tiktok.com/ZSXUtQs2M/\n🎬 Vídeo 3: https://vt.tiktok.com/ZSXUt4cXg/\n\n🌐 Site com mais informações: https://www.guiadacarreira.com.br/blog/o-que-faz-um-zootecnista')}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#25d366;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:700">💬 Enviar links por WhatsApp</a>
+                <button onclick="navigator.clipboard.writeText('Olá! Seguem materiais sobre a profissão de Zootecnia:\\n\\n🎬 Vídeo 1: https://youtu.be/o-6AGxPmZSE\\n🎬 Vídeo 2: https://vt.tiktok.com/ZSXUtQs2M/\\n🎬 Vídeo 3: https://vt.tiktok.com/ZSXUt4cXg/\\n\\n🌐 Site com mais informações: https://www.guiadacarreira.com.br/blog/o-que-faz-um-zootecnista').then(()=>toast('Links copiados!'))" style="display:inline-flex;align-items:center;gap:8px;background:#f0f0f0;color:#333;padding:10px 16px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer">📋 Copiar links</button>
+              </div>
+
+              <h3>🎬 Vídeos — Conheça profissionais da área</h3>
+              <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
+                <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.12)">
+                  <iframe src="https://www.youtube.com/embed/o-6AGxPmZSE" title="Zootecnia" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:10px"></iframe>
+                </div>
+                <a href="https://vt.tiktok.com/ZSXUtQs2M/" target="_blank" style="display:flex;align-items:center;gap:10px;background:#010101;color:#fff;padding:12px 16px;border-radius:10px;text-decoration:none;font-size:13px;font-weight:600">
+                  <span style="font-size:22px">🎵</span><span>Ver vídeo 2 no TikTok</span><span style="margin-left:auto;opacity:.6;font-size:11px">↗ abrir</span>
+                </a>
+                <a href="https://vt.tiktok.com/ZSXUt4cXg/" target="_blank" style="display:flex;align-items:center;gap:10px;background:#010101;color:#fff;padding:12px 16px;border-radius:10px;text-decoration:none;font-size:13px;font-weight:600">
+                  <span style="font-size:22px">🎵</span><span>Ver vídeo 3 no TikTok</span><span style="margin-left:auto;opacity:.6;font-size:11px">↗ abrir</span>
+                </a>
+              </div>
+
+              <h3>🌐 Site</h3>
+              <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+                <a href="https://www.guiadacarreira.com.br/blog/o-que-faz-um-zootecnista" target="_blank" style="display:flex;align-items:center;gap:10px;background:#558b2f;color:#fff;padding:12px 16px;border-radius:10px;text-decoration:none;font-size:13px;font-weight:600">
+                  <span style="font-size:20px">🌐</span><span>Guia da Carreira — Zootecnia</span><span style="margin-left:auto;opacity:.7;font-size:11px">↗ abrir</span>
+                </a>
+              </div>
+            `
           }
         ]
       }
