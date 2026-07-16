@@ -1907,6 +1907,43 @@ Para cada caminho apresente:
                 </a>
               </div>
             `
+          },
+          {
+            id: 'profissao-engenharia-mecanica',
+            titulo: 'Engenharia Mecânica',
+            subtitulo: 'Informações sobre a carreira',
+            icone: '⚙️',
+            conteudo: `
+              <h3>⚙️ Engenharia Mecânica</h3>
+
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
+                <a href="https://wa.me/?text=${encodeURIComponent('Olá! Seguem materiais sobre a profissão de *Engenharia Mecânica*:\n\n🎬 Vídeo 1: https://youtu.be/UBKJh8uxwok\n🎬 Vídeo 2: https://youtu.be/0_5xPpfnzNA\n🎬 Vídeo 3: https://vt.tiktok.com/ZSXUsMdq2/\n🎬 Vídeo 4: https://vt.tiktok.com/ZSXUsLPeJ/\n\n🌐 Site com mais informações: https://www.guiadacarreira.com.br/blog/o-que-faz-um-engenheiro-mecanico')}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#25d366;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:700">💬 Enviar links por WhatsApp</a>
+                <button onclick="navigator.clipboard.writeText('Olá! Seguem materiais sobre a profissão de Engenharia Mecânica:\\n\\n🎬 Vídeo 1: https://youtu.be/UBKJh8uxwok\\n🎬 Vídeo 2: https://youtu.be/0_5xPpfnzNA\\n🎬 Vídeo 3: https://vt.tiktok.com/ZSXUsMdq2/\\n🎬 Vídeo 4: https://vt.tiktok.com/ZSXUsLPeJ/\\n\\n🌐 Site com mais informações: https://www.guiadacarreira.com.br/blog/o-que-faz-um-engenheiro-mecanico').then(()=>toast('Links copiados!'))" style="display:inline-flex;align-items:center;gap:8px;background:#f0f0f0;color:#333;padding:10px 16px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer">📋 Copiar links</button>
+              </div>
+
+              <h3>🎬 Vídeos — Conheça profissionais da área</h3>
+              <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
+                <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.12)">
+                  <iframe src="https://www.youtube.com/embed/UBKJh8uxwok" title="Engenharia Mecânica" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:10px"></iframe>
+                </div>
+                <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.12)">
+                  <iframe src="https://www.youtube.com/embed/0_5xPpfnzNA" title="Engenharia Mecânica vídeo 2" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:10px"></iframe>
+                </div>
+                <a href="https://vt.tiktok.com/ZSXUsMdq2/" target="_blank" style="display:flex;align-items:center;gap:10px;background:#010101;color:#fff;padding:12px 16px;border-radius:10px;text-decoration:none;font-size:13px;font-weight:600">
+                  <span style="font-size:22px">🎵</span><span>Ver vídeo 3 no TikTok</span><span style="margin-left:auto;opacity:.6;font-size:11px">↗ abrir</span>
+                </a>
+                <a href="https://vt.tiktok.com/ZSXUsLPeJ/" target="_blank" style="display:flex;align-items:center;gap:10px;background:#010101;color:#fff;padding:12px 16px;border-radius:10px;text-decoration:none;font-size:13px;font-weight:600">
+                  <span style="font-size:22px">🎵</span><span>Ver vídeo 4 no TikTok</span><span style="margin-left:auto;opacity:.6;font-size:11px">↗ abrir</span>
+                </a>
+              </div>
+
+              <h3>🌐 Site</h3>
+              <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+                <a href="https://www.guiadacarreira.com.br/blog/o-que-faz-um-engenheiro-mecanico" target="_blank" style="display:flex;align-items:center;gap:10px;background:#37474f;color:#fff;padding:12px 16px;border-radius:10px;text-decoration:none;font-size:13px;font-weight:600">
+                  <span style="font-size:20px">🌐</span><span>Guia da Carreira — Engenharia Mecânica</span><span style="margin-left:auto;opacity:.7;font-size:11px">↗ abrir</span>
+                </a>
+              </div>
+            `
           }
         ]
       }
