@@ -172,7 +172,6 @@ async function refreshAll() {
     loadContratos(),
   ];
   if (_currentSection === 'relatorios') tasks.push(loadRelatorios());
-  if (_currentSection === 'financeiro-novo') tasks.push(loadFinanceiroNovo());
   await Promise.all(tasks);
 }
 
@@ -3910,6 +3909,8 @@ async function loadFinanceiro() {
 
   _finIniciarDrag();
   _restaurarFinLayout();
+
+  if (_currentSection === 'financeiro-novo') loadFinanceiroNovo();
 }
 
 // ── FINANCEIRO (NOVO) ─────────────────────────────────────────
@@ -3967,7 +3968,7 @@ function finNovoFiltrar() {
   const tbody = document.getElementById('finn-tbody');
   if (!tbody) return;
   if (!lista.length) {
-    tbody.innerHTML = `<tr><td colspan="5" class="text-muted" style="text-align:center;padding:20px">Nada por aqui 🎉</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" class="text-muted" style="text-align:center;padding:20px">Nada por aqui 🎉</td></tr>`;
     return;
   }
   tbody.innerHTML = lista.map(a => {
@@ -3977,12 +3978,37 @@ function finNovoFiltrar() {
       : (a.status_calc === 'atraso'
           ? `<button class="btn btn-sage btn-xs" onclick="marcarPago(${a.id})">✓ Recebido</button>`
           : '<span style="color:var(--muted);font-size:11px">—</span>');
+
+    const desejaNota = a.paciente_nota_fiscal === 'sim';
+    const notaCell = desejaNota
+      ? '<span style="color:var(--sage);font-weight:700;font-size:12px">Sim</span>'
+      : '<span style="color:var(--muted);font-size:12px">Não</span>';
+
+    let emitidaCell = '<span style="color:var(--muted);font-size:11px">—</span>';
+    if (desejaNota && a.status_calc !== 'aberto') {
+      if (a.nfse_ref) {
+        emitidaCell = a.nfse_manual
+          ? '<span class="badge" style="background:#e8eaf6;color:#3949ab">✓ Emitida Manu</span>'
+          : '<span class="badge" style="background:#e8f5e9;color:#388e3c">✓ Emitida</span>';
+      } else {
+        const [anoS, mesS] = a.data.split('-');
+        emitidaCell = `<button class="btn-nfse" onclick="abrirModalNfse(${a.paciente_id},${anoS},${parseInt(mesS,10)})" title="Emitir NFS-e">📄 Emitir</button>`;
+      }
+    }
+
+    const dtRecebimento = a.data_pagamento
+      ? fmtData(a.data_pagamento)
+      : '<span style="color:var(--muted);font-size:11px">—</span>';
+
     return `
       <tr>
         <td>${fmtData(a.data)}</td>
         <td>${a.paciente_nome || '—'}</td>
         <td class="text-right fw-bold" style="color:var(--plum)">${BRL(a.valor)}</td>
         <td><span class="badge badge-${info.cls}">${info.label}</span></td>
+        <td>${notaCell}</td>
+        <td>${emitidaCell}</td>
+        <td>${dtRecebimento}</td>
         <td>${acao}</td>
       </tr>
     `;
