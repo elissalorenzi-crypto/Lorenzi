@@ -628,6 +628,13 @@ app.get('/api/recebimentos', auth, (req, res) => {
   catch(e) { erro(res, e); }
 });
 
+app.post('/api/recebimentos/marcar-cobranca', auth, (req, res) => {
+  try {
+    const ids = Array.isArray(req.body.ids) ? req.body.ids : [];
+    res.json(req.db.marcarCobrancaEnviada(ids));
+  } catch(e) { erro(res, e); }
+});
+
 app.get('/api/financeiro/previsao-pgto', auth, (req, res) => {
   const hoje = req.query.hoje || new Date().toISOString().slice(0,10);
   res.json(req.db.getPrevisaoPgto(hoje));

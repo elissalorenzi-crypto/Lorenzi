@@ -52,6 +52,7 @@ const migrations = [
   "ALTER TABLE pacientes ADD COLUMN motivo_encerramento TEXT",
   "ALTER TABLE agendamentos ADD COLUMN modalidade TEXT DEFAULT 'presencial'",
   "ALTER TABLE agendamentos ADD COLUMN consentimento_teleconsulta INTEGER DEFAULT 0",
+  "ALTER TABLE agendamentos ADD COLUMN cobranca_enviada_em TEXT",
 ];
 for (const m of migrations) {
   try { db.exec(m); } catch(_) {}
@@ -694,6 +695,13 @@ const getRecebimentos = () => {
   const emAtraso = soma(lista.filter(a => a.status_calc === 'atraso'));
 
   return { recebidoMes, aReceber, emAtraso, lista };
+};
+
+const marcarCobrancaEnviada = (ids) => {
+  const agora = new Date().toISOString();
+  const stmt = db.prepare('UPDATE agendamentos SET cobranca_enviada_em = ? WHERE id = ?');
+  for (const id of ids) stmt.run(agora, id);
+  return { ok: true };
 };
 
 // ============================================================
@@ -1400,7 +1408,7 @@ return {
   getPacientes, getPacienteById, getPacienteByCpf, createPaciente, updatePaciente, deletePaciente,
   getAgendamentos, getAgendamentoById, createAgendamento, updateAgendamento, deleteAgendamento,
   getProntuarios, createProntuario, updateProntuario, deleteProntuario,
-  getDashboard, getFinanceiro, getRecebimentos, getPrevisaoPgto, getProjecaoRecorrente, getRelatorios, getRelatorioFiltrado, getConfig, setConfig,
+  getDashboard, getFinanceiro, getRecebimentos, marcarCobrancaEnviada, getPrevisaoPgto, getProjecaoRecorrente, getRelatorios, getRelatorioFiltrado, getConfig, setConfig,
   getPagamentos, createPagamento, updatePagamento, deletePagamento,
   getContratos, createContrato, updateContrato, deleteContrato, getContratosNovos, marcarContratosVistos,
   createLinkAgendamento, getLinkAgendamento, getLinksAgendamento, desativarLinkAgendamento,

@@ -3915,7 +3915,7 @@ async function loadFinanceiro() {
 
 // ── FINANCEIRO (NOVO) ─────────────────────────────────────────
 let _finNovoDados = [];
-let _finNovoTab = 'aberto';
+let _finNovoTabs = new Set(['aberto']);
 
 const _finNovoStatusInfo = {
   aberto: { label: 'Em aberto', cls: 'confirmado' },
@@ -3949,26 +3949,30 @@ async function loadFinanceiroNovo() {
 }
 
 function finNovoSetTab(tab) {
-  _finNovoTab = tab;
-  document.querySelectorAll('#finn-tabs .fin-seg').forEach(b =>
-    b.classList.toggle('ativo', b.dataset.tab === tab));
+  if (tab === 'todas') {
+    _finNovoTabs = new Set(['aberto', 'atraso', 'paga']);
+  } else if (_finNovoTabs.has(tab)) {
+    _finNovoTabs.delete(tab);
+  } else {
+    _finNovoTabs.add(tab);
+  }
   finNovoFiltrar();
 }
 
 function finNovoFiltrar() {
-  document.querySelectorAll('#finn-tabs .fin-seg').forEach(b =>
-    b.classList.toggle('ativo', b.dataset.tab === _finNovoTab));
+  document.querySelectorAll('#finn-tabs .fin-seg').forEach(b => {
+    const t = b.dataset.tab;
+    b.classList.toggle('ativo', t === 'todas' ? _finNovoTabs.size === 3 : _finNovoTabs.has(t));
+  });
 
   const termo = (document.getElementById('finn-busca')?.value || '').toLowerCase().trim();
-  let lista = _finNovoTab === 'todas'
-    ? _finNovoDados
-    : _finNovoDados.filter(a => a.status_calc === _finNovoTab);
+  let lista = _finNovoDados.filter(a => _finNovoTabs.has(a.status_calc));
   if (termo) lista = lista.filter(a => (a.paciente_nome || '').toLowerCase().includes(termo));
 
   const tbody = document.getElementById('finn-tbody');
   if (!tbody) return;
   if (!lista.length) {
-    tbody.innerHTML = `<tr><td colspan="8" class="text-muted" style="text-align:center;padding:20px">Nada por aqui 🎉</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" class="text-muted" style="text-align:center;padding:20px">Nada por aqui 🎉</td></tr>`;
     return;
   }
   tbody.innerHTML = lista.map(a => {
@@ -4001,6 +4005,12 @@ function finNovoFiltrar() {
       ? fmtData(a.data_pagamento)
       : '<span style="color:var(--muted);font-size:11px">—</span>';
 
+    const cobrancaCell = a.status_calc !== 'atraso'
+      ? '<span style="color:var(--muted);font-size:11px">—</span>'
+      : (a.cobranca_enviada_em
+          ? `<span class="badge badge-realizado" title="Enviada em ${fmtData(a.cobranca_enviada_em.slice(0,10))}">✓ Enviada</span>`
+          : '<span style="color:var(--muted);font-size:12px">Não enviada</span>');
+
     return `
       <tr>
         <td>${fmtData(a.data)} <span style="color:var(--muted);font-size:11px" title="Número da sessão">(${a.numero_sessao})</span></td>
@@ -4010,6 +4020,7 @@ function finNovoFiltrar() {
         <td>${notaCell}</td>
         <td>${emitidaCell}</td>
         <td>${dtRecebimento}</td>
+        <td>${cobrancaCell}</td>
         <td>${acao}</td>
       </tr>
     `;
@@ -4048,6 +4059,20 @@ function finNovoCobrancaAtualizar() {
   ta.value = _finNovoCobrancaMsg(paciente, sessoes);
 }
 
+async function finNovoEnviarCobranca(waNum) {
+  const ta = document.getElementById('finn-cobranca-msg');
+  const ids = [...document.querySelectorAll('.finn-cobr-chk:checked')].map(c => Number(c.dataset.id));
+  if (!ids.length || !ta) return;
+  window.open(`https://wa.me/${waNum}?text=${encodeURIComponent(ta.value)}`, '_blank');
+  try {
+    await api('POST', '/recebimentos/marcar-cobranca', { ids });
+  } catch(e) {
+    toast('Enviado, mas não consegui salvar o status: ' + e.message, 'error');
+  }
+  closeModal();
+  loadFinanceiroNovo();
+}
+
 function finNovoCobranca(id) {
   const a = _finNovoDados.find(x => x.id === id);
   if (!a) return;
@@ -4069,7 +4094,7 @@ function finNovoCobranca(id) {
         <div style="display:flex;flex-direction:column;gap:4px;margin-top:8px">
           ${sessoesCliente.map(s => `
             <label style="display:flex;align-items:center;gap:8px;font-size:13px">
-              <input type="checkbox" class="finn-cobr-chk" data-data="${s.data}" data-valor="${s.valor}" checked onchange="finNovoCobrancaAtualizar()">
+              <input type="checkbox" class="finn-cobr-chk" data-id="${s.id}" data-data="${s.data}" data-valor="${s.valor}" checked onchange="finNovoCobrancaAtualizar()">
               ${fmtData(s.data)} — ${BRL(s.valor)}
             </label>
           `).join('')}
@@ -4078,7 +4103,7 @@ function finNovoCobranca(id) {
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
         <span style="font-weight:700;font-size:13px">Mensagem</span>
         ${waNum
-          ? `<button class="btn btn-sage btn-sm" onclick="window.open('https://wa.me/${waNum}?text='+encodeURIComponent(document.getElementById('finn-cobranca-msg').value),'_blank')">📲 Enviar WhatsApp</button>`
+          ? `<button class="btn btn-sage btn-sm" onclick="finNovoEnviarCobranca('${waNum}')">📲 Enviar WhatsApp</button>`
           : `<span style="color:var(--muted);font-size:12px">⚠️ Sem WhatsApp cadastrado</span>`}
       </div>
       <textarea id="finn-cobranca-msg" data-paciente='${pacienteAttr}' style="width:100%;font-size:12px;line-height:1.5;border:1px solid var(--border);border-radius:6px;padding:8px;resize:vertical;background:var(--bg);color:var(--text)" rows="8">${msgInicial}</textarea>
