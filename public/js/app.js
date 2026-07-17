@@ -3977,7 +3977,7 @@ function finNovoFiltrar() {
   }
   tbody.innerHTML = lista.map(a => {
     const info = _finNovoStatusInfo[a.status_calc];
-    const acao = a.status_calc === 'atraso'
+    const acao = (a.status_calc === 'atraso' || a.status_calc === 'aberto')
       ? `<div style="display:flex;gap:3px">
            <button class="btn btn-sage btn-xs" onclick="marcarPago(${a.id})" title="Marcar como recebido">✓</button>
            <button class="btn btn-outline btn-xs" onclick="finNovoCobranca(${a.id})" title="Enviar cobrança">📲</button>
@@ -4005,7 +4005,7 @@ function finNovoFiltrar() {
       ? fmtData(a.data_pagamento)
       : '<span style="color:var(--muted);font-size:11px">—</span>';
 
-    const cobrancaCell = a.status_calc !== 'atraso'
+    const cobrancaCell = a.status_calc === 'paga'
       ? '<span style="color:var(--muted);font-size:11px">—</span>'
       : (a.cobranca_enviada_em
           ? `<span class="badge badge-realizado" title="Enviada em ${fmtData(a.cobranca_enviada_em.slice(0,10))}">✓</span>`
@@ -4035,8 +4035,8 @@ function _finNovoCobrancaMsg(paciente, sessoes) {
   const total  = sessoes.reduce((s, x) => s + (parseFloat(x.valor) || 0), 0);
   const datas  = sessoes.map(x => fmtData(x.data)).join(', ');
   const sessoesLinha = sessoes.length === 1
-    ? `sessão de orientação profissional realizada em ${datas}`
-    : `sessões de orientação profissional realizadas em ${datas}`;
+    ? `sessão de orientação profissional em ${datas}`
+    : `sessões de orientação profissional em ${datas}`;
   return `Oi ${nomeExibir}, abaixo dados para pagamento das ${sessoesLinha}.\n`
     + (sessoes.length > 1 ? `Valor total: ${BRL(total)}\n` : `Valor: ${BRL(total)}\n`)
     + `\nAbaixo dados para transferência:\n`
@@ -4078,26 +4078,33 @@ function finNovoCobranca(id) {
   if (!a) return;
 
   const sessoesCliente = _finNovoDados
-    .filter(x => x.paciente_id === a.paciente_id && x.status_calc === 'atraso')
+    .filter(x => x.paciente_id === a.paciente_id && x.status_calc !== 'paga')
     .sort((x, y) => (x.data + x.hora).localeCompare(y.data + y.hora));
 
   const paciente = { nome: a.paciente_nome, apelido: a.paciente_apelido, nota_fiscal: a.paciente_nota_fiscal };
   const pacienteAttr = JSON.stringify(paciente).replace(/'/g, '&#39;');
   const waNum   = toWaNum(a.paciente_whatsapp || '');
-  const msgInicial = _finNovoCobrancaMsg(paciente, sessoesCliente);
+  const sessoesMarcadas = sessoesCliente.filter(s => s.status_calc === 'atraso' || s.id === a.id);
+  const msgInicial = _finNovoCobrancaMsg(paciente, sessoesMarcadas);
 
   const html = `
     <div style="border:1px solid var(--border);border-radius:8px;padding:12px">
       <div style="margin-bottom:10px">
         <strong>${a.paciente_nome || '—'}</strong>
-        <div style="font-size:12px;color:var(--muted);margin-top:4px">Selecione as sessões em atraso que deseja incluir na cobrança:</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">Selecione as sessões que deseja incluir na cobrança:</div>
         <div style="display:flex;flex-direction:column;gap:4px;margin-top:8px">
-          ${sessoesCliente.map(s => `
-            <label style="display:flex;align-items:center;gap:8px;font-size:13px">
-              <input type="checkbox" class="finn-cobr-chk" data-id="${s.id}" data-data="${s.data}" data-valor="${s.valor}" checked onchange="finNovoCobrancaAtualizar()">
-              ${fmtData(s.data)} — ${BRL(s.valor)}
-            </label>
-          `).join('')}
+          ${sessoesCliente.map(s => {
+            const marcado = s.status_calc === 'atraso' || s.id === a.id;
+            const tag = s.status_calc === 'aberto'
+              ? '<span style="color:#2a6090;font-size:11px">(em aberto)</span>'
+              : '<span style="color:var(--peach);font-size:11px">(atraso)</span>';
+            return `
+              <label style="display:flex;align-items:center;gap:8px;font-size:13px">
+                <input type="checkbox" class="finn-cobr-chk" data-id="${s.id}" data-data="${s.data}" data-valor="${s.valor}" ${marcado ? 'checked' : ''} onchange="finNovoCobrancaAtualizar()">
+                ${fmtData(s.data)} — ${BRL(s.valor)} ${tag}
+              </label>
+            `;
+          }).join('')}
         </div>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
