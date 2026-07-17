@@ -4028,6 +4028,11 @@ function finNovoCobranca(id) {
     + `Valor: ${BRL(a.valor)}\n`
     + `\nAbaixo dados para transferência:\n`
     + `PIX ${pixTipo}: ${pixKey || '(configure a chave PIX em Configurações)'}\n`
+    + `\nOu via TED/transferência:\n`
+    + `Elissa Catarina Ramos Pereira Lorenzi\n`
+    + `Santander\n`
+    + `Agência: 3822\n`
+    + `Conta: 0001300734-14\n`
     + `\nPor favor, encaminhar o recibo da transferência.\n\nObrigada e um beijo!`;
   const waNum = toWaNum(a.paciente_whatsapp || '');
 
