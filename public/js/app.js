@@ -4016,16 +4016,18 @@ function finNovoFiltrar() {
   }).join('');
 }
 
-function finNovoCobranca(id) {
-  const a = _finNovoDados.find(x => x.id === id);
-  if (!a) return;
-
-  const usaCnpj = a.paciente_nota_fiscal === 'sim';
+function _finNovoCobrancaMsg(paciente, sessoes) {
+  const usaCnpj = paciente.nota_fiscal === 'sim';
   const pixKey  = usaCnpj ? (_config?.chave_pix_cnpj || '') : (_config?.chave_pix || '');
   const pixTipo = usaCnpj ? 'CNPJ' : 'CPF';
-  const nomeExibir = a.paciente_apelido || a.paciente_nome?.split(' ')[0] || a.paciente_nome;
-  const msg = `Oi ${nomeExibir}, abaixo dados para pagamento da sessão de orientação profissional realizada em ${fmtData(a.data)}.\n`
-    + `Valor: ${BRL(a.valor)}\n`
+  const nomeExibir = paciente.apelido || paciente.nome?.split(' ')[0] || paciente.nome;
+  const total  = sessoes.reduce((s, x) => s + (parseFloat(x.valor) || 0), 0);
+  const datas  = sessoes.map(x => fmtData(x.data)).join(', ');
+  const sessoesLinha = sessoes.length === 1
+    ? `sessão de orientação profissional realizada em ${datas}`
+    : `sessões de orientação profissional realizadas em ${datas}`;
+  return `Oi ${nomeExibir}, abaixo dados para pagamento das ${sessoesLinha}.\n`
+    + (sessoes.length > 1 ? `Valor total: ${BRL(total)}\n` : `Valor: ${BRL(total)}\n`)
     + `\nAbaixo dados para transferência:\n`
     + `PIX ${pixTipo}: ${pixKey || '(configure a chave PIX em Configurações)'}\n`
     + `\nOu via TED/transferência:\n`
@@ -4034,17 +4036,52 @@ function finNovoCobranca(id) {
     + `Agência: 3822\n`
     + `Conta: 0001300734-14\n`
     + `\nPor favor, encaminhar o recibo da transferência.\n\nObrigada e um beijo!`;
-  const waNum = toWaNum(a.paciente_whatsapp || '');
+}
+
+function finNovoCobrancaAtualizar() {
+  const ta = document.getElementById('finn-cobranca-msg');
+  if (!ta) return;
+  const chks = [...document.querySelectorAll('.finn-cobr-chk:checked')];
+  if (!chks.length) { ta.value = ''; return; }
+  const sessoes  = chks.map(c => ({ data: c.dataset.data, valor: parseFloat(c.dataset.valor) || 0 }));
+  const paciente = JSON.parse(ta.dataset.paciente);
+  ta.value = _finNovoCobrancaMsg(paciente, sessoes);
+}
+
+function finNovoCobranca(id) {
+  const a = _finNovoDados.find(x => x.id === id);
+  if (!a) return;
+
+  const sessoesCliente = _finNovoDados
+    .filter(x => x.paciente_id === a.paciente_id && x.status_calc === 'atraso')
+    .sort((x, y) => (x.data + x.hora).localeCompare(y.data + y.hora));
+
+  const paciente = { nome: a.paciente_nome, apelido: a.paciente_apelido, nota_fiscal: a.paciente_nota_fiscal };
+  const pacienteAttr = JSON.stringify(paciente).replace(/'/g, '&#39;');
+  const waNum   = toWaNum(a.paciente_whatsapp || '');
+  const msgInicial = _finNovoCobrancaMsg(paciente, sessoesCliente);
 
   const html = `
     <div style="border:1px solid var(--border);border-radius:8px;padding:12px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="margin-bottom:10px">
         <strong>${a.paciente_nome || '—'}</strong>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">Selecione as sessões em atraso que deseja incluir na cobrança:</div>
+        <div style="display:flex;flex-direction:column;gap:4px;margin-top:8px">
+          ${sessoesCliente.map(s => `
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px">
+              <input type="checkbox" class="finn-cobr-chk" data-data="${s.data}" data-valor="${s.valor}" checked onchange="finNovoCobrancaAtualizar()">
+              ${fmtData(s.data)} — ${BRL(s.valor)}
+            </label>
+          `).join('')}
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-weight:700;font-size:13px">Mensagem</span>
         ${waNum
           ? `<button class="btn btn-sage btn-sm" onclick="window.open('https://wa.me/${waNum}?text='+encodeURIComponent(document.getElementById('finn-cobranca-msg').value),'_blank')">📲 Enviar WhatsApp</button>`
           : `<span style="color:var(--muted);font-size:12px">⚠️ Sem WhatsApp cadastrado</span>`}
       </div>
-      <textarea id="finn-cobranca-msg" style="width:100%;font-size:12px;line-height:1.5;border:1px solid var(--border);border-radius:6px;padding:8px;resize:vertical;background:var(--bg);color:var(--text)" rows="7">${msg}</textarea>
+      <textarea id="finn-cobranca-msg" data-paciente='${pacienteAttr}' style="width:100%;font-size:12px;line-height:1.5;border:1px solid var(--border);border-radius:6px;padding:8px;resize:vertical;background:var(--bg);color:var(--text)" rows="8">${msgInicial}</textarea>
     </div>
   `;
   openModal('📲 Cobrança via WhatsApp', html, null, { large: true });
