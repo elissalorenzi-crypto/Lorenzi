@@ -3973,11 +3973,12 @@ function finNovoFiltrar() {
   }
   tbody.innerHTML = lista.map(a => {
     const info = _finNovoStatusInfo[a.status_calc];
-    const acao = a.status_calc === 'aberto'
-      ? '<span style="color:var(--muted);font-size:11px">—</span>'
-      : (a.status_calc === 'atraso'
-          ? `<button class="btn btn-sage btn-xs" onclick="marcarPago(${a.id})">✓ Recebido</button>`
-          : '<span style="color:var(--muted);font-size:11px">—</span>');
+    const acao = a.status_calc === 'atraso'
+      ? `<div style="display:flex;gap:6px;flex-wrap:wrap">
+           <button class="btn btn-sage btn-xs" onclick="marcarPago(${a.id})">✓ Recebido</button>
+           <button class="btn btn-outline btn-xs" onclick="finNovoCobranca(${a.id})">📲 Cobrança</button>
+         </div>`
+      : '<span style="color:var(--muted);font-size:11px">—</span>';
 
     const desejaNota = a.paciente_nota_fiscal === 'sim';
     const notaCell = desejaNota
@@ -4002,7 +4003,7 @@ function finNovoFiltrar() {
 
     return `
       <tr>
-        <td>${fmtData(a.data)}</td>
+        <td>${fmtData(a.data)} <span style="color:var(--muted);font-size:11px" title="Número da sessão">(${a.numero_sessao})</span></td>
         <td>${a.paciente_nome || '—'}</td>
         <td class="text-right fw-bold" style="color:var(--plum)">${BRL(a.valor)}</td>
         <td><span class="badge badge-${info.cls}">${info.label}</span></td>
@@ -4013,6 +4014,35 @@ function finNovoFiltrar() {
       </tr>
     `;
   }).join('');
+}
+
+function finNovoCobranca(id) {
+  const a = _finNovoDados.find(x => x.id === id);
+  if (!a) return;
+
+  const usaCnpj = a.paciente_nota_fiscal === 'sim';
+  const pixKey  = usaCnpj ? (_config?.chave_pix_cnpj || '') : (_config?.chave_pix || '');
+  const pixTipo = usaCnpj ? 'CNPJ' : 'CPF';
+  const nomeExibir = a.paciente_apelido || a.paciente_nome?.split(' ')[0] || a.paciente_nome;
+  const msg = `Oi ${nomeExibir}, abaixo dados para pagamento da sessão de orientação profissional realizada em ${fmtData(a.data)}.\n`
+    + `Valor: ${BRL(a.valor)}\n`
+    + `\nAbaixo dados para transferência:\n`
+    + `PIX ${pixTipo}: ${pixKey || '(configure a chave PIX em Configurações)'}\n`
+    + `\nPor favor, encaminhar o recibo da transferência.\n\nObrigada e um beijo!`;
+  const waNum = toWaNum(a.paciente_whatsapp || '');
+
+  const html = `
+    <div style="border:1px solid var(--border);border-radius:8px;padding:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <strong>${a.paciente_nome || '—'}</strong>
+        ${waNum
+          ? `<button class="btn btn-sage btn-sm" onclick="window.open('https://wa.me/${waNum}?text='+encodeURIComponent(document.getElementById('finn-cobranca-msg').value),'_blank')">📲 Enviar WhatsApp</button>`
+          : `<span style="color:var(--muted);font-size:12px">⚠️ Sem WhatsApp cadastrado</span>`}
+      </div>
+      <textarea id="finn-cobranca-msg" style="width:100%;font-size:12px;line-height:1.5;border:1px solid var(--border);border-radius:6px;padding:8px;resize:vertical;background:var(--bg);color:var(--text)" rows="7">${msg}</textarea>
+    </div>
+  `;
+  openModal('📲 Cobrança via WhatsApp', html, null, { large: true });
 }
 
 // ── UTILITÁRIO DE ORDENAÇÃO GENÉRICA ─────────────────────────

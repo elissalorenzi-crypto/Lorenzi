@@ -670,6 +670,14 @@ const getRecebimentos = () => {
     ORDER BY a.data DESC, a.hora DESC
   `).all();
 
+  // Número sequencial da sessão por paciente (1ª, 2ª, 3ª...), em ordem cronológica
+  const porPaciente = {};
+  linhas.forEach(a => { (porPaciente[a.paciente_id] ??= []).push(a); });
+  Object.values(porPaciente).forEach(arr => {
+    arr.sort((x, y) => (x.data + x.hora).localeCompare(y.data + y.hora));
+    arr.forEach((a, i) => { a.numero_sessao = i + 1; });
+  });
+
   const lista = linhas.map(a => {
     let status_calc;
     if (a.pago === 1) status_calc = 'paga';
