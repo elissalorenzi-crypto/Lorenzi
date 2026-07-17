@@ -132,7 +132,7 @@ function navigate(name) {
   const titles = {
     dashboard: 'Dashboard', contratos: 'Contratos Assinados', agenda: 'Agenda',
     pacientes: 'Clientes', prontuarios: 'Prontuários', biblioteca: 'Biblioteca de Atividades',
-    financeiro: 'Financeiro', configuracoes: 'Configurações',
+    financeiro: 'Financeiro Atual', 'financeiro-novo': 'Financeiro', configuracoes: 'Configurações',
     'agenda-cliente': 'Agenda Cliente'
   };
   document.getElementById('topbar-title').textContent = titles[name] || name;
@@ -153,6 +153,7 @@ function navigate(name) {
     biblioteca:   bibRenderHome,
     relatorios:   loadRelatorios,
     financeiro:   loadFinanceiro,
+    'financeiro-novo': loadFinanceiroNovo,
     pagamentos:   loadPagamentos,
     tarefas:      loadTarefas,
     configuracoes:loadConfiguracoes,
@@ -171,6 +172,7 @@ async function refreshAll() {
     loadContratos(),
   ];
   if (_currentSection === 'relatorios') tasks.push(loadRelatorios());
+  if (_currentSection === 'financeiro-novo') tasks.push(loadFinanceiroNovo());
   await Promise.all(tasks);
 }
 
@@ -3908,6 +3910,83 @@ async function loadFinanceiro() {
 
   _finIniciarDrag();
   _restaurarFinLayout();
+}
+
+// ── FINANCEIRO (NOVO) ─────────────────────────────────────────
+let _finNovoDados = [];
+let _finNovoTab = 'aberto';
+
+const _finNovoStatusInfo = {
+  aberto: { label: 'Em aberto', cls: 'confirmado' },
+  atraso: { label: 'Em atraso', cls: 'falta' },
+  paga:   { label: 'Paga',      cls: 'realizado' }
+};
+
+async function loadFinanceiroNovo() {
+  const data = await api('GET', '/recebimentos');
+  _finNovoDados = data.lista || [];
+
+  document.getElementById('finn-stats').innerHTML = `
+    <div class="stat-card sage">
+      <span class="stat-icon">✓</span>
+      <div class="stat-label">Recebido no mês</div>
+      <div class="stat-value" style="font-size:18px">${BRL(data.recebidoMes)}</div>
+    </div>
+    <div class="stat-card teal">
+      <span class="stat-icon">📆</span>
+      <div class="stat-label">A receber</div>
+      <div class="stat-value" style="font-size:18px">${BRL(data.aReceber)}</div>
+    </div>
+    <div class="stat-card peach">
+      <span class="stat-icon">⏳</span>
+      <div class="stat-label">Em atraso</div>
+      <div class="stat-value" style="font-size:18px">${BRL(data.emAtraso)}</div>
+    </div>
+  `;
+
+  finNovoFiltrar();
+}
+
+function finNovoSetTab(tab) {
+  _finNovoTab = tab;
+  document.querySelectorAll('#finn-tabs .fin-seg').forEach(b =>
+    b.classList.toggle('ativo', b.dataset.tab === tab));
+  finNovoFiltrar();
+}
+
+function finNovoFiltrar() {
+  document.querySelectorAll('#finn-tabs .fin-seg').forEach(b =>
+    b.classList.toggle('ativo', b.dataset.tab === _finNovoTab));
+
+  const termo = (document.getElementById('finn-busca')?.value || '').toLowerCase().trim();
+  let lista = _finNovoTab === 'todas'
+    ? _finNovoDados
+    : _finNovoDados.filter(a => a.status_calc === _finNovoTab);
+  if (termo) lista = lista.filter(a => (a.paciente_nome || '').toLowerCase().includes(termo));
+
+  const tbody = document.getElementById('finn-tbody');
+  if (!tbody) return;
+  if (!lista.length) {
+    tbody.innerHTML = `<tr><td colspan="5" class="text-muted" style="text-align:center;padding:20px">Nada por aqui 🎉</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = lista.map(a => {
+    const info = _finNovoStatusInfo[a.status_calc];
+    const acao = a.status_calc === 'aberto'
+      ? '<span style="color:var(--muted);font-size:11px">—</span>'
+      : (a.status_calc === 'atraso'
+          ? `<button class="btn btn-sage btn-xs" onclick="marcarPago(${a.id})">✓ Recebido</button>`
+          : '<span style="color:var(--muted);font-size:11px">—</span>');
+    return `
+      <tr>
+        <td>${fmtData(a.data)}</td>
+        <td>${a.paciente_nome || '—'}</td>
+        <td class="text-right fw-bold" style="color:var(--plum)">${BRL(a.valor)}</td>
+        <td><span class="badge badge-${info.cls}">${info.label}</span></td>
+        <td>${acao}</td>
+      </tr>
+    `;
+  }).join('');
 }
 
 // ── UTILITÁRIO DE ORDENAÇÃO GENÉRICA ─────────────────────────

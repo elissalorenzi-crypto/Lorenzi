@@ -656,6 +656,35 @@ const getFinanceiro = (ano, mes) => {
   return { resumo, porDia, lista, pendentes, previsaoLista };
 };
 
+// Painel simplificado de recebimentos (Em aberto / Em atraso / Pagas / Todas)
+const getRecebimentos = () => {
+  const hoje  = new Date().toISOString().slice(0, 10);
+  const anoMes = hoje.slice(0, 7);
+
+  const linhas = db.prepare(`
+    SELECT a.*, p.nome as paciente_nome, p.apelido as paciente_apelido,
+           p.nota_fiscal as paciente_nota_fiscal, p.whatsapp as paciente_whatsapp
+    FROM agendamentos a
+    LEFT JOIN pacientes p ON p.id = a.paciente_id
+    WHERE a.status IN ('realizado','agendado','confirmado')
+    ORDER BY a.data DESC, a.hora DESC
+  `).all();
+
+  const lista = linhas.map(a => ({
+    ...a,
+    status_calc: a.status === 'realizado' ? (a.pago === 1 ? 'paga' : 'atraso') : 'aberto'
+  }));
+
+  const soma = arr => arr.reduce((s, a) => s + (a.valor || 0), 0);
+
+  const recebidoMes = soma(lista.filter(a =>
+    a.status_calc === 'paga' && (a.data_pagamento || a.data).slice(0, 7) === anoMes));
+  const aReceber = soma(lista.filter(a => a.status_calc === 'aberto'));
+  const emAtraso = soma(lista.filter(a => a.status_calc === 'atraso'));
+
+  return { recebidoMes, aReceber, emAtraso, lista };
+};
+
 // ============================================================
 // CONFIGURAÇÕES
 // ============================================================
@@ -1360,7 +1389,7 @@ return {
   getPacientes, getPacienteById, getPacienteByCpf, createPaciente, updatePaciente, deletePaciente,
   getAgendamentos, getAgendamentoById, createAgendamento, updateAgendamento, deleteAgendamento,
   getProntuarios, createProntuario, updateProntuario, deleteProntuario,
-  getDashboard, getFinanceiro, getPrevisaoPgto, getProjecaoRecorrente, getRelatorios, getRelatorioFiltrado, getConfig, setConfig,
+  getDashboard, getFinanceiro, getRecebimentos, getPrevisaoPgto, getProjecaoRecorrente, getRelatorios, getRelatorioFiltrado, getConfig, setConfig,
   getPagamentos, createPagamento, updatePagamento, deletePagamento,
   getContratos, createContrato, updateContrato, deleteContrato, getContratosNovos, marcarContratosVistos,
   createLinkAgendamento, getLinkAgendamento, getLinksAgendamento, desativarLinkAgendamento,

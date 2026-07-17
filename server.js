@@ -623,6 +623,11 @@ app.post('/api/agendamentos/:id/zoom', auth, async (req, res) => {
   } catch(e) { erro(res, e); }
 });
 
+app.get('/api/recebimentos', auth, (req, res) => {
+  try { res.json(req.db.getRecebimentos()); }
+  catch(e) { erro(res, e); }
+});
+
 app.get('/api/financeiro/previsao-pgto', auth, (req, res) => {
   const hoje = req.query.hoje || new Date().toISOString().slice(0,10);
   res.json(req.db.getPrevisaoPgto(hoje));

@@ -54,8 +54,11 @@
     <a href="#" class="nav-link" data-section="relatorios">
       <span class="icon">📊</span> Relatórios
     </a>
-    <a href="#" class="nav-link" data-section="financeiro">
+    <a href="#" class="nav-link" data-section="financeiro-novo">
       <span class="icon">💰</span> Financeiro
+    </a>
+    <a href="#" class="nav-link" data-section="financeiro">
+      <span class="icon">💰</span> Financeiro Atual
     </a>
     <a href="#" class="nav-link" data-section="pagamentos">
       <span class="icon">💳</span> Pagamentos
@@ -570,6 +573,38 @@
     </div>
 
     <!-- ── FINANCEIRO ── -->
+    <!-- ── FINANCEIRO (NOVO) ── -->
+    <div class="section" id="section-financeiro-novo">
+      <div class="stats-row" id="finn-stats" style="margin-bottom:20px"></div>
+
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+        <div class="fin-seg-ctrl" id="finn-tabs">
+          <button class="fin-seg" data-tab="aberto" onclick="finNovoSetTab('aberto')">Em aberto</button>
+          <button class="fin-seg" data-tab="atraso" onclick="finNovoSetTab('atraso')">Em atraso</button>
+          <button class="fin-seg" data-tab="paga"   onclick="finNovoSetTab('paga')">Pagas</button>
+          <button class="fin-seg" data-tab="todas"  onclick="finNovoSetTab('todas')">Todas</button>
+        </div>
+        <input id="finn-busca" type="search" placeholder="Filtrar por paciente…" oninput="finNovoFiltrar()" style="margin-left:auto;padding:6px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;width:220px;outline:none">
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Cliente</th>
+                <th class="text-right">Valor</th>
+                <th>Status</th>
+                <th>Ação</th>
+              </tr>
+            </thead>
+            <tbody id="finn-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <div class="section" id="section-financeiro">
       <!-- Navegador de mês + filtros -->
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
