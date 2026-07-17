@@ -3918,9 +3918,9 @@ let _finNovoDados = [];
 let _finNovoTabs = new Set(['aberto']);
 
 const _finNovoStatusInfo = {
-  aberto: { label: 'Em aberto', cls: 'confirmado' },
-  atraso: { label: 'Em atraso', cls: 'falta' },
-  paga:   { label: 'Paga',      cls: 'realizado' }
+  aberto: { label: 'Aberto', cls: 'confirmado' },
+  atraso: { label: 'Atraso', cls: 'falta' },
+  paga:   { label: 'Paga',   cls: 'realizado' }
 };
 
 async function loadFinanceiroNovo() {
@@ -3978,26 +3978,26 @@ function finNovoFiltrar() {
   tbody.innerHTML = lista.map(a => {
     const info = _finNovoStatusInfo[a.status_calc];
     const acao = a.status_calc === 'atraso'
-      ? `<div style="display:flex;gap:6px;flex-wrap:wrap">
-           <button class="btn btn-sage btn-xs" onclick="marcarPago(${a.id})">✓ Recebido</button>
-           <button class="btn btn-outline btn-xs" onclick="finNovoCobranca(${a.id})">📲 Cobrança</button>
+      ? `<div style="display:flex;gap:3px">
+           <button class="btn btn-sage btn-xs" onclick="marcarPago(${a.id})" title="Marcar como recebido">✓</button>
+           <button class="btn btn-outline btn-xs" onclick="finNovoCobranca(${a.id})" title="Enviar cobrança">📲</button>
          </div>`
       : '<span style="color:var(--muted);font-size:11px">—</span>';
 
     const desejaNota = a.paciente_nota_fiscal === 'sim';
     const notaCell = desejaNota
-      ? '<span style="color:var(--sage);font-weight:700;font-size:12px">Sim</span>'
-      : '<span style="color:var(--muted);font-size:12px">Não</span>';
+      ? '<span style="color:var(--sage);font-weight:700;font-size:11.5px">Sim</span>'
+      : '<span style="color:var(--muted);font-size:11.5px">Não</span>';
 
     let emitidaCell = '<span style="color:var(--muted);font-size:11px">—</span>';
     if (desejaNota && a.status_calc !== 'aberto') {
       if (a.nfse_ref) {
         emitidaCell = a.nfse_manual
-          ? '<span class="badge" style="background:#e8eaf6;color:#3949ab">✓ Emitida Manu</span>'
+          ? '<span class="badge" style="background:#e8eaf6;color:#3949ab" title="Emitida manualmente">✓ Manual</span>'
           : '<span class="badge" style="background:#e8f5e9;color:#388e3c">✓ Emitida</span>';
       } else {
         const [anoS, mesS] = a.data.split('-');
-        emitidaCell = `<button class="btn-nfse" onclick="abrirModalNfse(${a.paciente_id},${anoS},${parseInt(mesS,10)})" title="Emitir NFS-e">📄 Emitir</button>`;
+        emitidaCell = `<button class="btn-nfse" onclick="abrirModalNfse(${a.paciente_id},${anoS},${parseInt(mesS,10)})" title="Emitir NFS-e">📄</button>`;
       }
     }
 
@@ -4008,13 +4008,13 @@ function finNovoFiltrar() {
     const cobrancaCell = a.status_calc !== 'atraso'
       ? '<span style="color:var(--muted);font-size:11px">—</span>'
       : (a.cobranca_enviada_em
-          ? `<span class="badge badge-realizado" title="Enviada em ${fmtData(a.cobranca_enviada_em.slice(0,10))}">✓ Enviada</span>`
-          : '<span style="color:var(--muted);font-size:12px">Não enviada</span>');
+          ? `<span class="badge badge-realizado" title="Enviada em ${fmtData(a.cobranca_enviada_em.slice(0,10))}">✓</span>`
+          : '<span style="color:var(--muted);font-size:11.5px" title="Cobrança ainda não enviada">Não</span>');
 
     return `
       <tr>
         <td>${fmtData(a.data)} <span style="color:var(--muted);font-size:11px" title="Número da sessão">(${a.numero_sessao})</span></td>
-        <td>${a.paciente_nome || '—'}</td>
+        <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis" title="${a.paciente_nome || ''}">${a.paciente_nome || '—'}</td>
         <td class="text-right fw-bold" style="color:var(--plum)">${BRL(a.valor)}</td>
         <td><span class="badge badge-${info.cls}">${info.label}</span></td>
         <td>${notaCell}</td>
