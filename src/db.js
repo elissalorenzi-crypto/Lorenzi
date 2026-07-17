@@ -670,10 +670,13 @@ const getRecebimentos = () => {
     ORDER BY a.data DESC, a.hora DESC
   `).all();
 
-  const lista = linhas.map(a => ({
-    ...a,
-    status_calc: a.status === 'realizado' ? (a.pago === 1 ? 'paga' : 'atraso') : 'aberto'
-  }));
+  const lista = linhas.map(a => {
+    let status_calc;
+    if (a.pago === 1) status_calc = 'paga';
+    else if (a.status === 'realizado') status_calc = 'atraso';
+    else status_calc = a.data < hoje ? 'atraso' : 'aberto'; // agendado/confirmado com data já passada e nunca finalizado
+    return { ...a, status_calc };
+  });
 
   const soma = arr => arr.reduce((s, a) => s + (a.valor || 0), 0);
 
