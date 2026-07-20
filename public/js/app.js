@@ -1955,6 +1955,17 @@ async function abrirModalDevolutiva(pacienteId) {
     const nome = (p.apelido || '').trim() || p.nome;
 
     const html = `
+      <div class="form-group full" style="background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;padding:10px 14px">
+        <label>Importar informações de um PDF (opcional)</label>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:4px">
+          <label class="btn btn-outline btn-sm" style="cursor:pointer;margin:0">
+            📎 Selecionar PDF
+            <input type="file" id="dev-pdf-input" accept="application/pdf" style="display:none" onchange="importarDevolutivaPdf(this)">
+          </label>
+          <span id="dev-pdf-status" style="font-size:12px;color:var(--muted)">A IA lê o PDF e preenche as reflexões, caminhos e considerações abaixo.</span>
+        </div>
+      </div>
+
       <div class="form-group full">
         <label>Período do processo</label>
         <input type="text" id="dev-periodo" value="${realizadas.length ? `${primeira} a ${ultima}` : ''}" placeholder="DD/MM/AAAA a DD/MM/AAAA" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px">
@@ -2006,6 +2017,41 @@ async function abrirModalDevolutiva(pacienteId) {
     openModal('📄 Relatório de Devolutiva — ' + nome, html, null, { large: true, saveLabel: null });
   } catch(e) {
     toast('Erro ao carregar dados: ' + e.message, 'error');
+  }
+}
+
+async function importarDevolutivaPdf(input) {
+  const file = input.files?.[0];
+  if (!file) return;
+  const statusEl = document.getElementById('dev-pdf-status');
+  statusEl.style.color = 'var(--muted)';
+  statusEl.textContent = '⏳ Lendo o PDF com IA, aguarde...';
+
+  try {
+    const fd = new FormData();
+    fd.append('arquivo', file);
+    fd.append('nome_paciente', window._devPaciente?.nome || '');
+    const resp = await fetch('/api/devolutiva/analisar-pdf', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + getToken() },
+      body: fd
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Erro ao processar o PDF');
+
+    if (data.atividades?.length) {
+      const extra = document.getElementById('dev-ativ-extra');
+      extra.value = [extra.value.trim(), ...data.atividades].filter(Boolean).join('\n');
+    }
+    if (data.reflexoes)     document.getElementById('dev-reflexoes').value = data.reflexoes;
+    if (data.caminhos)      document.getElementById('dev-caminhos').value = data.caminhos;
+    if (data.consideracoes) document.getElementById('dev-consideracoes').value = data.consideracoes;
+
+    statusEl.style.color = 'var(--sage)';
+    statusEl.textContent = '✓ Informações importadas — revise os campos antes de gerar o PDF';
+  } catch(e) {
+    statusEl.style.color = 'var(--red)';
+    statusEl.textContent = '⚠️ ' + e.message;
   }
 }
 

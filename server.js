@@ -7,6 +7,7 @@ const multer  = require('multer');
 const db      = require('./src/db');
 const mainDb  = require('./src/main-db');
 const fs      = require('fs');
+const Anthropic = require('@anthropic-ai/sdk');
 
 // ── MULTI-TENANT: cache de instâncias de DB por profissional ──
 const _tenantCache = new Map();
@@ -85,6 +86,12 @@ const uploadVisionBoard = multer({
     const ok = ['image/jpeg','image/png','image/jpg','image/webp','image/gif'].includes(file.mimetype);
     cb(null, ok);
   }
+});
+
+const uploadDevolutivaPdf = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 20 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => cb(null, file.mimetype === 'application/pdf')
 });
 
 const crypto = require('crypto');
@@ -1752,6 +1759,58 @@ Diretrizes:
     });
   } catch(e) {
     console.error('estruturar-ditado:', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ─── DEVOLUTIVA: ANALISAR PDF COM IA ───────────────────────────
+app.post('/api/devolutiva/analisar-pdf', auth, uploadDevolutivaPdf.single('arquivo'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'Nenhum arquivo enviado' });
+
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return res.status(503).json({ error: 'ANTHROPIC_API_KEY não configurada' });
+
+  const nomePaciente = req.body.nome_paciente || '';
+
+  const prompt = `Você é um(a) psicólogo(a) experiente em orientação profissional e de carreira. Em anexo está um PDF com anotações, registros de atividades e/ou observações de um processo de orientação profissional${nomePaciente ? ` de ${nomePaciente}` : ''}.
+
+Leia todo o conteúdo do documento e organize as informações para compor um relatório de devolutiva profissional, destinado aos pais/responsáveis do(a) adolescente. Use linguagem técnica porém acessível, acolhedora e apresentável — como a de um(a) psicólogo(a) experiente relatando o processo à família.
+
+Retorne APENAS um JSON (sem markdown, sem explicações) com exatamente estes campos:
+{
+  "atividades": ["lista de atividades realizadas identificadas no documento, uma por item, em frases curtas"],
+  "reflexoes": "parágrafo(s) com reflexões sobre o perfil do(a) adolescente com base no que consta no documento (interesses, habilidades, valores, maturidade para a escolha profissional)",
+  "caminhos": "parágrafo(s) sobre os caminhos profissionais explorados e/ou indicados, com base no documento",
+  "consideracoes": "parágrafo(s) com considerações finais sobre o processo"
+}
+
+Se alguma informação não constar no documento, deixe o campo como string vazia "" (ou array vazio [] para atividades). Não invente informações que não estejam no documento.`;
+
+  try {
+    const anthropic = new Anthropic({ apiKey });
+    const msg = await anthropic.messages.create({
+      model: 'claude-opus-4-8',
+      max_tokens: 4096,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: req.file.buffer.toString('base64') } },
+          { type: 'text', text: prompt }
+        ]
+      }]
+    });
+    const bloco = msg.content?.find(b => b.type === 'text');
+    const texto = bloco?.text || '{}';
+    const jsonMatch = texto.match(/\{[\s\S]*\}/);
+    const resultado = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
+    res.json({
+      atividades:    Array.isArray(resultado.atividades) ? resultado.atividades : [],
+      reflexoes:     resultado.reflexoes     || '',
+      caminhos:      resultado.caminhos      || '',
+      consideracoes: resultado.consideracoes || '',
+    });
+  } catch(e) {
+    console.error('devolutiva/analisar-pdf:', e.message);
     res.status(500).json({ error: e.message });
   }
 });
