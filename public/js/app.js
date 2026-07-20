@@ -1585,6 +1585,7 @@ async function verDetalhePaciente(id) {
       <button class="btn btn-outline" onclick="enviarRotasProfissionais(${p.id})">🛤️ Enviar Rotas Profissionais</button>
       <button class="btn btn-outline" onclick="enviarMonitoramentoCapacidade(${p.id})">📈 Enviar Monitoramento de Capacidade</button>
       <button class="btn btn-outline" onclick="abrirVisionBoard(${p.id})">🖼️ Vision Board</button>
+      <button class="btn btn-outline" onclick="abrirModalDevolutiva(${p.id})">📄 Relatório de Devolutiva</button>
     </div>
   `;
 
@@ -1916,6 +1917,198 @@ async function exportarHistoricoPDF(pacienteId) {
 <div class="assinatura">
   <div class="linha"></div>
   <p>${psico}${crp}</p>
+</div>
+
+<div class="footer">Documento gerado pelo sistema de gestão do consultório · ${hoje}</div>
+
+<script>window.onload = () => window.print();<\/script>
+</body>
+</html>`;
+
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+}
+
+// ── RELATÓRIO DE DEVOLUTIVA (Orientação Profissional) ──────────
+async function abrirModalDevolutiva(pacienteId) {
+  try {
+    const [p, ags, respProf, respMonit, boards] = await Promise.all([
+      api('GET', `/pacientes/${pacienteId}`),
+      api('GET', `/pacientes/${pacienteId}/agendamentos`),
+      api('GET', `/atividade-profissoes/respostas?paciente_id=${pacienteId}`).catch(() => []),
+      api('GET', `/monitoramento-capacidade/respostas?paciente_id=${pacienteId}`).catch(() => []),
+      api('GET', `/vision-board/paciente/${pacienteId}`).catch(() => [])
+    ]);
+
+    const realizadas = ags.filter(a => a.status === 'realizado').sort((a,b) => (a.data+a.hora).localeCompare(b.data+b.hora));
+    const primeira = realizadas[0]?.data ? realizadas[0].data.split('-').reverse().join('/') : '—';
+    const ultima   = realizadas.length ? realizadas[realizadas.length-1].data.split('-').reverse().join('/') : '—';
+
+    const profsMarcadas = (respProf?.[0]?.profissoes) || [];
+    const diasMonit     = (respMonit?.[0]?.dias) || [];
+    const temVB         = boards && boards.length > 0;
+
+    window._devPaciente = p;
+    window._devDados = { realizadas, profsMarcadas, diasMonit, boardTitulo: temVB ? boards[0].titulo : '' };
+
+    const nome = (p.apelido || '').trim() || p.nome;
+
+    const html = `
+      <div class="form-group full">
+        <label>Período do processo</label>
+        <input type="text" id="dev-periodo" value="${realizadas.length ? `${primeira} a ${ultima}` : ''}" placeholder="DD/MM/AAAA a DD/MM/AAAA" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px">
+      </div>
+      <div class="form-group full">
+        <label>Nº de sessões realizadas</label>
+        <input type="text" id="dev-sessoes" value="${realizadas.length}" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px">
+      </div>
+
+      <div class="form-group full">
+        <label>Atividades realizadas</label>
+        <div style="display:flex;flex-direction:column;gap:6px;background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;padding:10px 14px">
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px"><input type="checkbox" id="dev-chk-anamnese" checked> Entrevista de anamnese e levantamento de expectativas</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px"><input type="checkbox" id="dev-chk-autoconhecimento" checked> Atividades de autoconhecimento (interesses, habilidades e valores)</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px"><input type="checkbox" id="dev-chk-emep" checked> Aplicação da EMEP — Escala de Maturidade para Escolha Profissional</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px"><input type="checkbox" id="dev-chk-desenhos" checked> Desenhos e Estórias Profissionais</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px"><input type="checkbox" id="dev-chk-rotas"> Exploração das Rotas Profissionais</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px"><input type="checkbox" id="dev-chk-listaprof" ${profsMarcadas.length ? 'checked' : ''}> Mapeamento de profissões de interesse${profsMarcadas.length ? ` (${profsMarcadas.length} selecionadas)` : ''}</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px"><input type="checkbox" id="dev-chk-monitcap" ${diasMonit.length ? 'checked' : ''}> Monitoramento da percepção de capacidade${diasMonit.length ? ` (${diasMonit.length} dias registrados)` : ''}</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px"><input type="checkbox" id="dev-chk-visionboard" ${temVB ? 'checked' : ''}> Elaboração do Vision Board de carreira</label>
+        </div>
+      </div>
+      <div class="form-group full">
+        <label>Outras atividades (opcional, uma por linha)</label>
+        <textarea id="dev-ativ-extra" rows="2" placeholder="Ex: Entrevista com profissional da área de interesse" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;resize:vertical"></textarea>
+      </div>
+
+      <div class="form-group full">
+        <label>Reflexões sobre o perfil do(a) adolescente</label>
+        <textarea id="dev-reflexoes" rows="5" placeholder="Ex: Ao longo do processo, ${nome} demonstrou interesse consistente por atividades que envolvem..., além de apresentar facilidade em..." style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;resize:vertical"></textarea>
+      </div>
+      <div class="form-group full">
+        <label>Caminhos profissionais explorados/indicados</label>
+        <textarea id="dev-caminhos" rows="4" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;resize:vertical">${profsMarcadas.length ? `Durante o processo, ${nome} explorou e demonstrou interesse pelas seguintes áreas: ${profsMarcadas.join(', ')}.` : ''}</textarea>
+      </div>
+      <div class="form-group full">
+        <label>Orientações para os pais</label>
+        <textarea id="dev-orientacoes" rows="5" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;resize:vertical">É importante que a escolha profissional continue sendo construída com autonomia por ${nome}, cabendo à família o papel de apoiar e oferecer segurança, sem antecipar decisões ou impor expectativas. Conversar sobre as descobertas feitas no processo, valorizar o percurso (e não apenas o resultado final) e permitir que ${nome} siga pesquisando e vivenciando experiências relacionadas às áreas de interesse são formas concretas de apoio nesse momento.</textarea>
+      </div>
+      <div class="form-group full">
+        <label>Considerações finais</label>
+        <textarea id="dev-consideracoes" rows="3" placeholder="Ex: O processo encontra-se concluído / em andamento, com indicação de..." style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;resize:vertical"></textarea>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;margin-top:14px">
+        <button class="btn btn-primary" onclick="gerarPDFDevolutiva()">📄 Gerar Relatório em PDF</button>
+      </div>
+    `;
+    openModal('📄 Relatório de Devolutiva — ' + nome, html, null, { large: true, saveLabel: null });
+  } catch(e) {
+    toast('Erro ao carregar dados: ' + e.message, 'error');
+  }
+}
+
+async function gerarPDFDevolutiva() {
+  const p = window._devPaciente;
+  const { realizadas, boardTitulo } = window._devDados;
+  const cfg = await api('GET', '/configuracoes');
+
+  const nome    = (p.apelido || '').trim() || p.nome;
+  const psico   = cfg.nome_psicologa || 'Psicóloga';
+  const crpRaw  = (cfg.crp || '').replace(/^CRP\s*/i, '');
+  const crp     = crpRaw ? `CRP ${crpRaw}` : '';
+  const hoje    = new Date().toLocaleDateString('pt-BR', {day:'2-digit',month:'long',year:'numeric'});
+
+  const ativChecks = [
+    ['dev-chk-anamnese', 'Entrevista de anamnese e levantamento de expectativas'],
+    ['dev-chk-autoconhecimento', 'Atividades de autoconhecimento (interesses, habilidades e valores)'],
+    ['dev-chk-emep', 'Aplicação da EMEP — Escala de Maturidade para Escolha Profissional'],
+    ['dev-chk-desenhos', 'Desenhos e Estórias Profissionais'],
+    ['dev-chk-rotas', 'Exploração das Rotas Profissionais'],
+    ['dev-chk-listaprof', 'Mapeamento de profissões de interesse'],
+    ['dev-chk-monitcap', 'Monitoramento da percepção de capacidade'],
+    ['dev-chk-visionboard', `Elaboração do Vision Board de carreira${boardTitulo ? ` — "${boardTitulo}"` : ''}`],
+  ];
+  const atividades = ativChecks
+    .filter(([id]) => document.getElementById(id)?.checked)
+    .map(([, label]) => label);
+  const extra = (document.getElementById('dev-ativ-extra').value || '')
+    .split('\n').map(s => s.trim()).filter(Boolean);
+  atividades.push(...extra);
+
+  const periodo      = document.getElementById('dev-periodo').value.trim();
+  const nSessoes      = document.getElementById('dev-sessoes').value.trim();
+  const reflexoes     = document.getElementById('dev-reflexoes').value.trim();
+  const caminhos      = document.getElementById('dev-caminhos').value.trim();
+  const orientacoes   = document.getElementById('dev-orientacoes').value.trim();
+  const consideracoes = document.getElementById('dev-consideracoes').value.trim();
+
+  const paragrafos = txt => txt.split('\n').filter(Boolean).map(p => `<p>${p}</p>`).join('');
+
+  const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Devolutiva — ${nome}</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Segoe UI',Arial,sans-serif; font-size:11pt; color:#2d2028; padding:30px 46px; line-height:1.6; }
+  .header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; padding-bottom:16px; border-bottom:2px solid #7a5a48; }
+  .header-left h1 { font-size:17pt; color:#7a5a48; font-weight:700; }
+  .header-left p  { font-size:10pt; color:#888; margin-top:2px; }
+  .header-right   { text-align:right; font-size:10pt; color:#666; line-height:1.7; }
+  .paciente-box { background:#faf7f4; border:1px solid #e0d5cb; border-radius:8px; padding:14px 18px; margin-bottom:22px; display:flex; gap:40px; flex-wrap:wrap; }
+  .paciente-box div { font-size:10pt; }
+  .paciente-box .label { font-size:9pt; color:#888; margin-bottom:2px; }
+  .paciente-box .val   { font-weight:600; color:#2d2028; }
+  h2 { font-size:12.5pt; color:#7a5a48; margin:22px 0 10px; padding-bottom:5px; border-bottom:1px solid #e0d5cb; }
+  p { margin-bottom:8px; text-align:justify; }
+  ul { margin:0 0 8px 20px; }
+  li { margin-bottom:5px; }
+  .intro { font-size:10.5pt; color:#555; font-style:italic; margin-bottom:6px; }
+  .footer { margin-top:40px; text-align:center; font-size:9pt; color:#aaa; border-top:1px solid #e0d5cb; padding-top:14px; }
+  .assinatura { margin-top:56px; text-align:center; }
+  .assinatura .linha { width:220px; border-top:1px solid #2d2028; margin:0 auto 6px; }
+  .assinatura p { font-size:10pt; text-align:center; }
+  @media print { body { padding:20px 30px; } h2 { break-after:avoid; } }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <h1>Relatório de Devolutiva</h1>
+    <p>Processo de Orientação Profissional</p>
+  </div>
+  <div class="header-right">
+    <div>${psico}${crp ? ' · '+crp : ''}</div>
+    <div>Emitido em ${hoje}</div>
+    <div style="font-size:9pt;color:#bbb;margin-top:4px">Documento confidencial</div>
+  </div>
+</div>
+
+<div class="paciente-box">
+  <div><div class="label">Cliente</div><div class="val">${p.nome}</div></div>
+  ${periodo ? `<div><div class="label">Período do processo</div><div class="val">${periodo}</div></div>` : ''}
+  ${nSessoes ? `<div><div class="label">Sessões realizadas</div><div class="val">${nSessoes}</div></div>` : ''}
+</div>
+
+<p class="intro">Prezados pais e/ou responsáveis, seguem abaixo as informações referentes ao processo de orientação profissional realizado por ${nome}.</p>
+
+<h2>Percurso do processo</h2>
+<p>Ao longo do acompanhamento, foram realizadas as seguintes atividades:</p>
+<ul>
+  ${atividades.map(a => `<li>${a}</li>`).join('') || '<li style="color:#aaa">Nenhuma atividade selecionada.</li>'}
+</ul>
+
+${reflexoes ? `<h2>Reflexões sobre o perfil</h2>${paragrafos(reflexoes)}` : ''}
+${caminhos ? `<h2>Caminhos profissionais explorados</h2>${paragrafos(caminhos)}` : ''}
+${orientacoes ? `<h2>Orientações para os pais</h2>${paragrafos(orientacoes)}` : ''}
+${consideracoes ? `<h2>Considerações finais</h2>${paragrafos(consideracoes)}` : ''}
+
+<div class="assinatura">
+  <div class="linha"></div>
+  <p>${psico}${crp ? ' · '+crp : ''}</p>
 </div>
 
 <div class="footer">Documento gerado pelo sistema de gestão do consultório · ${hoje}</div>
