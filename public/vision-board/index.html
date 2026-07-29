@@ -192,14 +192,22 @@ async function montarColagem() {
   const cellW = W / cols, cellH = H / rows;
   const box = Math.min(cellW, cellH) * 1.3; // maior que a célula para sobrepor um pouco
 
+  // Última linha (e a colagem como um todo) fica centralizada, não colada à esquerda
+  const itensUltimaLinha = n - (rows - 1) * cols;
+  const alturaUsada = rows * cellH;
+  const offsetYGeral = (H - alturaUsada) / 2;
+
   for (let i = 0; i < n; i++) {
     const im = await carregarImagem(imgs[i].src);
     let w = box, h = box * im.naturalHeight / im.naturalWidth;
     if (h > box) { h = box; w = box * im.naturalWidth / im.naturalHeight; }
 
-    const col = i % cols, row = Math.floor(i / cols);
-    const baseX = col * cellW + cellW / 2;
-    const baseY = row * cellH + cellH / 2;
+    const row = Math.floor(i / cols);
+    const col = i % cols;
+    const itensNaLinha = (row === rows - 1) ? itensUltimaLinha : cols;
+    const offsetXLinha = (W - itensNaLinha * cellW) / 2;
+    const baseX = offsetXLinha + col * cellW + cellW / 2;
+    const baseY = offsetYGeral + row * cellH + cellH / 2;
     const jitterX = (Math.random() - 0.5) * cellW * 0.3;
     const jitterY = (Math.random() - 0.5) * cellH * 0.3;
     const angulo = (Math.random() * 14 - 7) * Math.PI / 180;
