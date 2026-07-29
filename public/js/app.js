@@ -346,17 +346,20 @@ async function loadDashboard() {
     }).join('');
   }
 
-  // Pop-up aniversariantes de HOJE
-  if (data.aniversariantesHoje && data.aniversariantesHoje.length) {
-    const bdayHoje = data.aniversariantesHoje;
+  // Pop-up aniversariantes de HOJE — não mostra de novo quem já foi marcado como parabenizado hoje
+  const bdayParabenizadosHoje = JSON.parse(localStorage.getItem('bdayParabenizados') || '{}');
+  const hojeIso = HOJE();
+  const bdayHoje = (data.aniversariantesHoje || []).filter(p => bdayParabenizadosHoje[p.id] !== hojeIso);
+  if (bdayHoje.length) {
     const nomes = bdayHoje.map(p => p.apelido || p.nome.split(' ')[0]).join(', ');
     const plural = bdayHoje.length > 1;
+    const idsHoje = bdayHoje.map(p => p.id);
     const waLinks = bdayHoje
       .filter(p => p.whatsapp)
       .map(p => {
         const primeiroNome = p.apelido || p.nome.split(' ')[0];
         const msg = encodeURIComponent(`Olá, ${primeiroNome}! 🎉 Desejo a você um feliz aniversário! Que este novo ano traga muitas alegrias e conquistas. 🎂`);
-        return `<a href="https://wa.me/${toWaNum(p.whatsapp)}?text=${msg}" target="_blank" class="btn btn-sage" style="gap:6px;width:100%;justify-content:center">💬 Enviar parabéns para ${primeiroNome}</a>`;
+        return `<a href="https://wa.me/${toWaNum(p.whatsapp)}?text=${msg}" target="_blank" onclick="marcarBdayParabenizado(${p.id}, false)" class="btn btn-sage" style="gap:6px;width:100%;justify-content:center">💬 Enviar parabéns para ${primeiroNome}</a>`;
       }).join('');
     const popup = document.createElement('div');
     popup.id = 'bday-popup-overlay';
@@ -369,7 +372,8 @@ async function loadDashboard() {
         <p style="font-size:13px;color:var(--muted);margin:0 0 22px">${plural ? 'Seus clientes fazem' : 'Seu cliente faz'} aniversário hoje! 🎉</p>
         <div style="display:flex;flex-direction:column;gap:10px">
           ${waLinks}
-          <button onclick="document.getElementById('bday-popup-overlay').remove()" class="btn btn-outline" style="width:100%;justify-content:center">Fechar</button>
+          <button onclick="marcarBdayParabenizado([${idsHoje.join(',')}])" class="btn btn-outline" style="width:100%;justify-content:center">✓ Já dei os parabéns</button>
+          <button onclick="document.getElementById('bday-popup-overlay').remove()" class="btn btn-ghost" style="width:100%;justify-content:center">Fechar (lembrar depois)</button>
         </div>
       </div>
     `;
@@ -395,6 +399,17 @@ async function loadDashboard() {
       `;
     }).join('');
   }
+}
+
+// Marca um ou mais clientes como "já parabenizado hoje". Guardado por data
+// (não por ano), então volta a avisar naturalmente no aniversário seguinte.
+function marcarBdayParabenizado(pacienteIds, fechar = true) {
+  const ids = Array.isArray(pacienteIds) ? pacienteIds : [pacienteIds];
+  const marcados = JSON.parse(localStorage.getItem('bdayParabenizados') || '{}');
+  const hojeIso = HOJE();
+  ids.forEach(id => { marcados[id] = hojeIso; });
+  localStorage.setItem('bdayParabenizados', JSON.stringify(marcados));
+  if (fechar) document.getElementById('bday-popup-overlay')?.remove();
 }
 
 // ============================================================
@@ -1388,6 +1403,92 @@ async function removerImagemVisionBoard(index) {
   } catch(e) { toast('Erro: ' + e.message, 'error'); }
 }
 
+async function abrirGeradorCurriculo(pacienteId) {
+  window._crPacienteId = pacienteId;
+  try {
+    const [p, cv] = await Promise.all([
+      api('GET', `/pacientes/${pacienteId}`),
+      api('GET', `/curriculo/paciente/${pacienteId}`)
+    ]);
+    window._crClienteNome = (p.apelido || '').trim() || p.nome;
+    window._crWhats = p.whatsapp || '';
+    if (!cv) {
+      openModal('🎓 Gerador de Currículo — ' + window._crClienteNome, `
+        <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Ative para gerar um link exclusivo onde ${window._crClienteNome} pode enviar o currículo do LinkedIn, revisar os dados e baixar o PDF final.</p>
+        <div style="display:flex;justify-content:flex-end">
+          <button class="btn btn-primary" onclick="ativarGeradorCurriculo()">Ativar para este cliente</button>
+        </div>
+      `, null, { saveLabel: null });
+      return;
+    }
+    window._crAtual = cv;
+    renderGeradorCurriculoModal();
+  } catch(e) { toast('Erro: ' + e.message, 'error'); }
+}
+
+async function ativarGeradorCurriculo() {
+  try {
+    const cv = await api('POST', '/curriculo/ativar', { paciente_id: window._crPacienteId });
+    window._crAtual = cv;
+    renderGeradorCurriculoModal();
+  } catch(e) { toast('Erro ao ativar: ' + e.message, 'error'); }
+}
+
+const CR_STATUS_LABEL = { nao_iniciado: 'Não iniciado', em_andamento: 'Em andamento', concluido: 'Concluído' };
+const CR_STATUS_COLOR  = { nao_iniciado: '#9a7d8e', em_andamento: '#e65100', concluido: '#2A6B4A' };
+
+function renderGeradorCurriculoModal() {
+  const cv = window._crAtual;
+  const base = location.origin;
+  const url = base + '/curriculo/?t=' + cv.token;
+  window._crUrl = url;
+
+  const waMsg = encodeURIComponent('Oi, ' + (window._crClienteNome || '').split(' ')[0] + '! 😊\nCriei um link pra você montar seu currículo profissional:\n' + url + '\n\nÉ só enviar o PDF do seu LinkedIn (ou preencher na mão) que o sistema te ajuda a organizar tudo!');
+  const waLink = window._crWhats ? 'https://wa.me/' + toWaNum(window._crWhats) + '?text=' + waMsg : '';
+
+  const statusLabel = CR_STATUS_LABEL[cv.status] || cv.status;
+  const statusColor = CR_STATUS_COLOR[cv.status] || 'var(--muted)';
+
+  const html = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <span style="font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:${statusColor}22;color:${statusColor}">${statusLabel}</span>
+      ${cv.ativo ? '' : '<span style="font-size:12px;color:var(--red)">· Desativado</span>'}
+    </div>
+    <div style="background:#f8f4ff;border:1.5px solid #d8b8ff;border-radius:8px;padding:10px 14px;font-size:12px;word-break:break-all;margin-bottom:12px;color:#5c35a0">${url}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+      <button class="btn btn-outline btn-sm" onclick="navigator.clipboard.writeText(window._crUrl).then(function(){toast('Link copiado!')})">📋 Copiar link</button>
+      ${waLink ? '<a href="' + waLink + '" target="_blank" class="btn btn-primary btn-sm" style="background:#25d366;border-color:#25d366;text-decoration:none">💬 Enviar pelo WhatsApp</a>' : '<span style="color:#999;font-size:12px;align-self:center">WhatsApp não cadastrado</span>'}
+      <a href="${url}" target="_blank" class="btn btn-outline btn-sm">👁️ Ver / Baixar PDF</a>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:12px">
+      <button class="btn btn-ghost btn-sm" onclick="novoLinkGeradorCurriculo()">🔄 Gerar novo link</button>
+      ${cv.ativo
+        ? `<button class="btn btn-ghost btn-sm" style="color:var(--red);border-color:var(--red)" onclick="desativarGeradorCurriculo()">🚫 Desativar</button>`
+        : `<button class="btn btn-ghost btn-sm" style="color:var(--sage);border-color:var(--sage)" onclick="ativarGeradorCurriculo()">✓ Reativar</button>`}
+    </div>
+  `;
+  openModal('🎓 Gerador de Currículo — ' + window._crClienteNome, html, null, { saveLabel: null });
+}
+
+async function novoLinkGeradorCurriculo() {
+  if (!confirm('Gerar um novo link vai invalidar o link atual (quem já tinha o link antigo não conseguirá mais acessar). Os dados já preenchidos são mantidos. Continuar?')) return;
+  try {
+    const cv = await api('POST', `/curriculo/${window._crAtual.id}/novo-link`);
+    window._crAtual = cv;
+    renderGeradorCurriculoModal();
+    toast('Novo link gerado!');
+  } catch(e) { toast('Erro: ' + e.message, 'error'); }
+}
+
+async function desativarGeradorCurriculo() {
+  try {
+    await api('POST', `/curriculo/${window._crAtual.id}/desativar`);
+    window._crAtual.ativo = 0;
+    renderGeradorCurriculoModal();
+    toast('Gerador de Currículo desativado');
+  } catch(e) { toast('Erro: ' + e.message, 'error'); }
+}
+
 async function verDetalhePaciente(id) {
   const p = await api('GET', `/pacientes/${id}`);
   const [ags, respostas, respostasMonit] = await Promise.all([
@@ -1586,6 +1687,7 @@ async function verDetalhePaciente(id) {
       <button class="btn btn-outline" onclick="enviarMonitoramentoCapacidade(${p.id})">📈 Enviar Monitoramento de Capacidade</button>
       <button class="btn btn-outline" onclick="abrirVisionBoard(${p.id})">🖼️ Vision Board</button>
       <button class="btn btn-outline" onclick="abrirModalDevolutiva(${p.id})">📄 Relatório de Devolutiva</button>
+      <button class="btn btn-outline" onclick="abrirGeradorCurriculo(${p.id})">🎓 Gerador de Currículo</button>
     </div>
   `;
 
@@ -5394,6 +5496,8 @@ async function loadConfiguracoes() {
   document.getElementById('cfg-focusnfe-ambiente').value   = cfg.focusnfe_ambiente           || 'homologacao';
   document.getElementById('cfg-focusnfe-simples').value    = cfg.focusnfe_simples_nacional   || '3';
   document.getElementById('cfg-focusnfe-aliquota').value   = cfg.focusnfe_aliquota_iss       || '3.62';
+  document.getElementById('cfg-curriculo-estilo').value    = cfg.curriculo_modelo_estilo     || 'moderno';
+  document.getElementById('cfg-curriculo-cor').value       = cfg.curriculo_modelo_cor        || '#7a5a48';
 }
 
 async function loadAuditLog() {
@@ -5503,6 +5607,8 @@ async function salvarConfiguracoes() {
     focusnfe_ambiente:           document.getElementById('cfg-focusnfe-ambiente').value,
     focusnfe_simples_nacional:   document.getElementById('cfg-focusnfe-simples').value,
     focusnfe_aliquota_iss:       document.getElementById('cfg-focusnfe-aliquota').value,
+    curriculo_modelo_estilo:     document.getElementById('cfg-curriculo-estilo').value,
+    curriculo_modelo_cor:        document.getElementById('cfg-curriculo-cor').value,
   };
   try {
     await api('POST', '/configuracoes', body);

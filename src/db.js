@@ -1293,6 +1293,96 @@ const removerImagemVisionBoard = (id, index) => {
 const deleteVisionBoard = (id) =>
   db.prepare('DELETE FROM vision_boards WHERE id=?').run(id).changes;
 
+// ============================================================
+// GERADOR DE CURRÍCULO
+// ============================================================
+db.exec(`
+  CREATE TABLE IF NOT EXISTS curriculos (
+    id                     INTEGER PRIMARY KEY AUTOINCREMENT,
+    paciente_id            INTEGER NOT NULL UNIQUE,
+    paciente_nome          TEXT NOT NULL,
+    token                  TEXT NOT NULL UNIQUE,
+    ativo                  INTEGER DEFAULT 1,
+    status                 TEXT NOT NULL DEFAULT 'nao_iniciado',
+    dados                  TEXT NOT NULL DEFAULT '{}',
+    linkedin_arquivo       TEXT,
+    linkedin_nome_original TEXT,
+    created_at             TEXT DEFAULT (datetime('now','localtime')),
+    updated_at             TEXT DEFAULT (datetime('now','localtime')),
+    FOREIGN KEY (paciente_id) REFERENCES pacientes(id)
+  );
+  CREATE TABLE IF NOT EXISTS curriculo_versoes (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    curriculo_id INTEGER NOT NULL,
+    dados        TEXT NOT NULL,
+    created_at   TEXT DEFAULT (datetime('now','localtime'))
+  );
+`);
+
+const parseCV = (r) => r ? { ...r, dados: JSON.parse(r.dados || '{}') } : null;
+
+const getCurriculoPaciente = (paciente_id) =>
+  parseCV(db.prepare('SELECT * FROM curriculos WHERE paciente_id=?').get(paciente_id));
+
+const getCurriculoById = (id) =>
+  parseCV(db.prepare('SELECT * FROM curriculos WHERE id=?').get(id));
+
+const getCurriculoPorToken = (token) =>
+  parseCV(db.prepare('SELECT * FROM curriculos WHERE token=? AND ativo=1').get(token));
+
+// Cria o registro na primeira vez; se já existir (mesmo desativado), apenas reativa e mantém os dados.
+const ativarCurriculo = (paciente_id, paciente_nome) => {
+  const existente = db.prepare('SELECT * FROM curriculos WHERE paciente_id=?').get(paciente_id);
+  if (existente) {
+    db.prepare('UPDATE curriculos SET ativo=1 WHERE id=?').run(existente.id);
+    return getCurriculoById(existente.id);
+  }
+  const token = require('crypto').randomBytes(20).toString('hex');
+  const info = db.prepare('INSERT INTO curriculos (paciente_id, paciente_nome, token) VALUES (?,?,?)')
+    .run(paciente_id, paciente_nome, token);
+  return getCurriculoById(rid(info));
+};
+
+const desativarCurriculo = (id) =>
+  db.prepare('UPDATE curriculos SET ativo=0 WHERE id=?').run(id).changes;
+
+// Gera um novo token (invalida o link anterior) mantendo os dados já preenchidos.
+const gerarNovoLinkCurriculo = (id) => {
+  const token = require('crypto').randomBytes(20).toString('hex');
+  db.prepare('UPDATE curriculos SET token=?, ativo=1 WHERE id=?').run(token, id);
+  return getCurriculoById(id);
+};
+
+const salvarDadosCurriculo = (token, dados) => {
+  const cv = db.prepare('SELECT * FROM curriculos WHERE token=?').get(token);
+  if (!cv) return null;
+  const novoStatus = cv.status === 'nao_iniciado' ? 'em_andamento' : cv.status;
+  db.prepare(`UPDATE curriculos SET dados=?, status=?, updated_at=datetime('now','localtime') WHERE id=?`)
+    .run(JSON.stringify(dados), novoStatus, cv.id);
+  return getCurriculoById(cv.id);
+};
+
+const salvarLinkedinArquivo = (token, arquivo, nomeOriginal) => {
+  const cv = db.prepare('SELECT * FROM curriculos WHERE token=?').get(token);
+  if (!cv) return null;
+  db.prepare(`UPDATE curriculos SET linkedin_arquivo=?, linkedin_nome_original=?, updated_at=datetime('now','localtime') WHERE id=?`)
+    .run(arquivo, nomeOriginal, cv.id);
+  return getCurriculoById(cv.id);
+};
+
+// Marca como concluído e grava uma versão (snapshot) dos dados no momento do download do PDF final.
+const concluirCurriculo = (token) => {
+  const cv = db.prepare('SELECT * FROM curriculos WHERE token=?').get(token);
+  if (!cv) return null;
+  db.prepare(`UPDATE curriculos SET status='concluido', updated_at=datetime('now','localtime') WHERE id=?`).run(cv.id);
+  db.prepare('INSERT INTO curriculo_versoes (curriculo_id, dados) VALUES (?,?)').run(cv.id, cv.dados);
+  return getCurriculoById(cv.id);
+};
+
+const getVersoesCurriculo = (curriculo_id) =>
+  db.prepare('SELECT * FROM curriculo_versoes WHERE curriculo_id=? ORDER BY created_at DESC').all(curriculo_id)
+    .map(v => ({ ...v, dados: JSON.parse(v.dados || '{}') }));
+
 // ── POSTS SOCIAIS ────────────────────────────────────────────
 const getPostsSociais = (rede, status) => {
   let q = 'SELECT * FROM posts_sociais WHERE 1=1';
@@ -1421,6 +1511,7 @@ return {
   gerarLinkAtivProf, getLinkAtivProf, getInfoAtivProf, salvarRespostaAtivProf, getRespostasAtivProf,
   gerarLinkMonitCap, getLinkMonitCap, getInfoMonitCap, salvarRespostaMonitCap, getRespostaPorTokenMonitCap, getRespostasMonitCap,
   criarVisionBoard, getVisionBoard, getVisionBoardPorToken, getVisionBoardsPaciente, updateVisionBoardTitulo, addImagensVisionBoard, removerImagemVisionBoard, deleteVisionBoard,
+  getCurriculoPaciente, getCurriculoById, getCurriculoPorToken, ativarCurriculo, desativarCurriculo, gerarNovoLinkCurriculo, salvarDadosCurriculo, salvarLinkedinArquivo, concluirCurriculo, getVersoesCurriculo,
   getPostsSociais, getPostSocialById, createPostSocial, updatePostSocial, deletePostSocial,
   setSession, getSession, deleteSession, cleanExpiredSessions,
   createAuditLog, getAuditLog, deletarDadosPacienteCompleto,

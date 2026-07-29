@@ -105,6 +105,14 @@ const uploadDevolutivaPdf = multer({
   fileFilter: (req, file, cb) => cb(null, file.mimetype === 'application/pdf')
 });
 
+// PDF do LinkedIn: fica em memória (vai para a IA como base64) e depois é
+// também salvo em disco (UPLOADS_ROOT) para o admin poder consultar depois.
+const uploadCurriculoPdf = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 15 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => cb(null, file.mimetype === 'application/pdf')
+});
+
 const crypto = require('crypto');
 
 const app  = express();
@@ -1657,6 +1665,199 @@ app.delete('/api/vision-board/publico/:token/imagens/:index', (req, res) => {
     const atualizado = req.db.removerImagemVisionBoard(board.id, idx);
     if (arquivo) fs.unlink(uploadFsPath(arquivo), () => {});
     res.json({ paciente_nome: atualizado.paciente_nome, titulo: atualizado.titulo, imagens: atualizado.imagens });
+  } catch(e) { erro(res, e); }
+});
+
+// ── GERADOR DE CURRÍCULO ───────────────────────────────────────
+// Admin: dados do currículo do cliente (ou null, se nunca foi ativado)
+app.get('/api/curriculo/paciente/:paciente_id', auth, (req, res) => {
+  try {
+    res.json(req.db.getCurriculoPaciente(Number(req.params.paciente_id)));
+  } catch(e) { erro(res, e); }
+});
+
+// Admin: ativa a funcionalidade para o cliente (cria o registro na 1ª vez, reativa se já existia)
+app.post('/api/curriculo/ativar', auth, (req, res) => {
+  const { paciente_id } = req.body || {};
+  if (!paciente_id) return res.status(400).json({ error: 'paciente_id obrigatório' });
+  try {
+    const p = req.db.getPacienteById(paciente_id);
+    if (!p) return res.status(404).json({ error: 'Paciente não encontrado' });
+    res.json(req.db.ativarCurriculo(paciente_id, p.nome));
+  } catch(e) { erro(res, e); }
+});
+
+app.post('/api/curriculo/:id/desativar', auth, (req, res) => {
+  try {
+    req.db.desativarCurriculo(req.params.id);
+    res.json({ ok: true });
+  } catch(e) { erro(res, e); }
+});
+
+// Admin: invalida o link atual e gera um novo (mantém os dados já preenchidos)
+app.post('/api/curriculo/:id/novo-link', auth, (req, res) => {
+  try {
+    const cv = req.db.gerarNovoLinkCurriculo(req.params.id);
+    if (!cv) return res.status(404).json({ error: 'Currículo não encontrado' });
+    res.json(cv);
+  } catch(e) { erro(res, e); }
+});
+
+app.get('/api/curriculo/:id/versoes', auth, (req, res) => {
+  try {
+    res.json(req.db.getVersoesCurriculo(req.params.id));
+  } catch(e) { erro(res, e); }
+});
+
+// Público: info do currículo pelo token (cliente acessa via link exclusivo)
+app.get('/api/curriculo/info/:token', (req, res) => {
+  const cv = req.db.getCurriculoPorToken(req.params.token);
+  if (!cv) return res.status(404).json({ error: 'Link inválido ou expirado' });
+  const cfg = req.db.getConfig();
+  res.json({
+    paciente_nome: cv.paciente_nome,
+    status: cv.status,
+    dados: cv.dados,
+    tem_linkedin: !!cv.linkedin_arquivo,
+    modelo: {
+      estilo: cfg.curriculo_modelo_estilo || 'moderno',
+      cor:    cfg.curriculo_modelo_cor    || '#7a5a48',
+    },
+  });
+});
+
+// Público: cliente envia o PDF exportado do LinkedIn — a IA extrai os dados estruturados
+app.post('/api/curriculo/importar-linkedin/:token', uploadCurriculoPdf.single('arquivo'), async (req, res) => {
+  const cv = req.db.getCurriculoPorToken(req.params.token);
+  if (!cv) return res.status(404).json({ error: 'Link inválido ou expirado' });
+  if (!req.file) return res.status(400).json({ error: 'Nenhum arquivo enviado' });
+
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return res.status(503).json({ error: 'ANTHROPIC_API_KEY não configurada' });
+
+  const prompt = `Em anexo está um PDF exportado do perfil do LinkedIn de uma pessoa. Leia todo o conteúdo e extraia as informações do currículo profissional dela.
+
+Retorne APENAS um JSON (sem markdown, sem explicações) com exatamente estes campos:
+{
+  "nome": "nome completo",
+  "titulo_profissional": "título/headline exibido no LinkedIn",
+  "email": "",
+  "telefone": "",
+  "localizacao": "cidade/estado/país",
+  "linkedin_url": "URL do perfil, se constar no documento",
+  "resumo": "texto do resumo/sobre",
+  "experiencias": [{"cargo":"","empresa":"","local":"","inicio":"","fim":"","atual":false,"descricao":""}],
+  "formacao": [{"curso":"","instituicao":"","inicio":"","fim":""}],
+  "competencias": ["lista de habilidades/competências mencionadas"],
+  "idiomas": [{"idioma":"","nivel":""}]
+}
+
+Regras importantes:
+- Extraia SOMENTE o que está explicitamente escrito no documento. NUNCA invente, deduza ou complete informações que não constem no PDF.
+- Se um campo não estiver presente no documento, deixe como string vazia "" (ou array vazio [], conforme o caso).
+- Datas no formato como aparecem no documento (ex: "jan de 2020" ou "2020").
+- "atual": true somente se o documento indicar claramente que o cargo é o atual (ex: "o momento", "presente", sem data de término).`;
+
+  try {
+    const anthropic = new Anthropic({ apiKey });
+    const msg = await anthropic.messages.create({
+      model: 'claude-opus-4-8',
+      max_tokens: 4096,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: req.file.buffer.toString('base64') } },
+          { type: 'text', text: prompt }
+        ]
+      }]
+    });
+    const bloco = msg.content?.find(b => b.type === 'text');
+    const texto = bloco?.text || '{}';
+    const jsonMatch = texto.match(/\{[\s\S]*\}/);
+    const extraido = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
+
+    // Só sobrescreve campos que a IA de fato encontrou — preserva o que o cliente já tiver editado
+    const limpo = {};
+    for (const k of Object.keys(extraido)) {
+      const v = extraido[k];
+      if (Array.isArray(v) ? v.length : v) limpo[k] = v;
+    }
+    const dadosMesclados = { ...cv.dados, ...limpo };
+
+    const dir = path.join(UPLOADS_ROOT, 'curriculos');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    const filename = `linkedin_${Date.now()}_${Math.round(Math.random()*1e9)}.pdf`;
+    fs.writeFileSync(path.join(dir, filename), req.file.buffer);
+
+    req.db.salvarLinkedinArquivo(req.params.token, `/uploads/curriculos/${filename}`, req.file.originalname);
+    const atualizado = req.db.salvarDadosCurriculo(req.params.token, dadosMesclados);
+    res.json({ status: atualizado.status, dados: atualizado.dados });
+  } catch(e) {
+    console.error('curriculo/importar-linkedin:', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Público: salva as edições manuais do cliente
+app.put('/api/curriculo/dados/:token', (req, res) => {
+  try {
+    const atualizado = req.db.salvarDadosCurriculo(req.params.token, req.body?.dados || {});
+    if (!atualizado) return res.status(404).json({ error: 'Link inválido ou expirado' });
+    res.json({ status: atualizado.status, dados: atualizado.dados });
+  } catch(e) { erro(res, e); }
+});
+
+// Público: melhora a redação de um campo com IA — sem inventar fatos, só reescreve
+app.post('/api/curriculo/melhorar-texto/:token', async (req, res) => {
+  const cv = req.db.getCurriculoPorToken(req.params.token);
+  if (!cv) return res.status(404).json({ error: 'Link inválido ou expirado' });
+  const { campo, texto } = req.body || {};
+  if (!texto?.trim()) return res.status(400).json({ error: 'Texto vazio' });
+
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return res.status(503).json({ error: 'ANTHROPIC_API_KEY não configurada' });
+
+  const prompt = `Você é um redator especializado em currículos profissionais. Melhore o texto abaixo, do campo "${campo || 'texto'}" de um currículo, tornando-o mais claro, profissional e gramaticalmente correto.
+
+Regras importantes:
+- NÃO invente fatos, datas, empresas, cargos, números ou qualquer informação que não esteja no texto original.
+- Apenas reescreva, organize e corrija a redação do que já existe.
+- Retorne APENAS o texto melhorado, sem comentários, sem aspas, sem markdown.
+
+Texto original:
+---
+${texto}
+---`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1024,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data?.error?.message || 'Erro na API');
+    res.json({ texto: (data.content?.[0]?.text || '').trim() });
+  } catch(e) {
+    console.error('curriculo/melhorar-texto:', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Público: cliente finaliza — marca concluído e grava uma versão (snapshot)
+app.post('/api/curriculo/concluir/:token', (req, res) => {
+  try {
+    const atualizado = req.db.concluirCurriculo(req.params.token);
+    if (!atualizado) return res.status(404).json({ error: 'Link inválido ou expirado' });
+    res.json({ status: atualizado.status });
   } catch(e) { erro(res, e); }
 });
 

@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gerador de Currículo</title>
+<style>
+:root{
+  --plum:#4A3728;--plum-mid:#6B4F3A;
+  --rose:#C4956A;--rose-pale:#FBF3F9;
+  --border:#E8D5E4;--bg:#FFFFFF;--bg-alt:#FBF3F9;
+  --muted:#9A7D8E;--text:#4A3728;
+  --shadow:0 2px 8px rgba(74,55,40,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg-alt);min-height:100vh;color:var(--text)}
+.container{max-width:760px;margin:0 auto;padding:16px 16px 60px}
+
+/* Topo */
+.topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:18px;padding:18px 20px;background:linear-gradient(135deg,var(--plum) 0%,var(--plum-mid) 100%);border-radius:14px;color:#fff}
+.topbar h1{font-size:19px;font-weight:800;letter-spacing:-.3px}
+.topbar .sub{font-size:13px;opacity:.85;margin-top:2px}
+.topbar-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.status-badge{font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;white-space:nowrap}
+.status-nao_iniciado{background:#ffffff33;color:#fff}
+.status-em_andamento{background:#ffe0b2;color:#e65100}
+.status-concluido{background:#c8e6c9;color:#2A6B4A}
+#save-indicator{font-size:11px;color:#fff;opacity:0;transition:opacity .3s}
+
+/* Cards */
+.card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:14px;box-shadow:var(--shadow)}
+.card h2{font-size:15px;color:var(--plum);font-weight:700}
+.card-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){ .grid2{grid-template-columns:1fr} }
+.field label{display:block;font-size:11.5px;color:var(--muted);font-weight:600;margin-bottom:4px}
+.field input,.field select,.field textarea{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13.5px;font-family:inherit;color:var(--text);background:#fff}
+.field textarea{resize:vertical}
+.row-inline{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.row-inline>div{flex:1;min-width:110px}
+.chk{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);white-space:nowrap;padding-bottom:9px}
+
+/* Itens repetíveis (experiência, formação, idiomas) */
+.item-card{position:relative;border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px;background:var(--bg-alt)}
+.item-card .field{margin-top:10px}
+.item-card .grid2{margin-top:0}
+.btn-remove{position:absolute;top:8px;right:8px;background:none;border:none;color:#c62828;font-size:15px;cursor:pointer;line-height:1;padding:4px}
+.vazio{color:var(--muted);font-size:13px;padding:4px 0}
+
+/* Chips (competências) */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.chip{background:#f3e5f5;color:#6a1b9a;padding:5px 12px;border-radius:16px;font-size:12.5px;display:flex;align-items:center;gap:6px}
+.chip button{background:none;border:none;color:#6a1b9a;cursor:pointer;font-size:12px;line-height:1;padding:0}
+.chip-input-row{display:flex;gap:8px}
+.chip-input-row input{flex:1}
+
+/* Botões */
+.btn-primary,.btn-outline,.btn-add,.btn-ia,.btn-ia-sm,.btn-link{
+  border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;border:none;padding:9px 16px;
+}
+.btn-primary{background:linear-gradient(135deg,var(--plum) 0%,var(--plum-mid) 100%);color:#fff}
+.btn-outline{background:#fff;color:var(--plum);border:1.5px solid var(--plum)}
+.btn-add{background:#e8f5e9;color:#2e7d32;padding:6px 12px;font-size:12.5px}
+.btn-ia{background:#f3e5f5;color:#7b1fa2;padding:6px 12px;font-size:12.5px}
+.btn-ia-sm{background:#f3e5f5;color:#7b1fa2;padding:4px 10px;font-size:11.5px}
+.btn-link{background:none;color:var(--muted);text-decoration:underline;padding:8px}
+.btn-primary:disabled,.btn-ia:disabled,.btn-ia-sm:disabled{opacity:.6;cursor:not-allowed}
+.actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:20px;margin-bottom:20px}
+.actions .btn-primary,.actions .btn-outline{padding:12px 24px;font-size:14px}
+
+/* Tela de upload */
+.upload-screen{background:#fff;border-radius:16px;padding:44px 28px;text-align:center;box-shadow:var(--shadow);border:1px solid var(--border)}
+.upload-icon{font-size:46px;margin-bottom:10px}
+.upload-screen h1{font-size:20px;color:var(--plum);margin-bottom:10px}
+.upload-screen p{font-size:14px;color:var(--muted);max-width:440px;margin:0 auto 22px;line-height:1.6}
+.upload-label{display:inline-block;cursor:pointer}
+#upload-status{margin-top:14px;font-size:13px;min-height:18px}
+#upload-status.muted{color:var(--muted)}
+#upload-status.erro{color:#c62828}
+
+#loading,#erro-fatal{display:none;text-align:center;padding:80px 20px}
+#loading .spin{width:40px;height:40px;border:4px solid var(--border);border-top-color:var(--rose);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.erro-msg{color:#8B3A3A}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div id="loading" style="display:block"><div class="spin"></div><p>Carregando...</p></div>
+  <div id="erro-fatal" class="erro-msg"></div>
+  <div id="app"></div>
+</div>
+
+<script>
+const TOKEN = new URLSearchParams(location.search).get('t') || '';
+let dadosAtual = {};
+let STATUS = 'nao_iniciado';
+let MODELO = { estilo: 'moderno', cor: '#7a5a48' };
+let NOME_CLIENTE = '';
+const STATUS_LABEL = { nao_iniciado: 'Não iniciado', em_andamento: 'Em andamento', concluido: 'Concluído' };
+const NIVEIS_IDIOMA = ['Básico','Intermediário','Avançado','Fluente','Nativo'];
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function mostrarErroFatal(msg) {
+  document.getElementById('loading').style.display = 'none';
+  const el = document.getElementById('erro-fatal');
+  el.style.display = 'block';
+  el.textContent = msg;
+}
+
+async function init() {
+  if (!TOKEN) return mostrarErroFatal('Link inválido.');
+  try {
+    const r = await fetch('/api/curriculo/info/' + TOKEN);
+    if (!r.ok) return mostrarErroFatal('Link inválido ou expirado.');
+    const info = await r.json();
+    NOME_CLIENTE = info.paciente_nome || '';
+    STATUS = info.status || 'nao_iniciado';
+    dadosAtual = (info.dados && Object.keys(info.dados).length) ? info.dados : {};
+    MODELO = info.modelo || MODELO;
+    document.getElementById('loading').style.display = 'none';
+    if (STATUS === 'nao_iniciado') renderUpload(); else renderForm();
+  } catch(e) {
+    mostrarErroFatal('Erro ao carregar. Tente novamente.');
+  }
+}
+
+// ── TELA DE UPLOAD ────────────────────────────────────────────
+function renderUpload() {
+  document.getElementById('app').innerHTML = `
+    <div class="upload-screen">
+      <div class="upload-icon">🎓</div>
+      <h1>Vamos montar seu currículo!</h1>
+      <p>${NOME_CLIENTE ? 'Olá, ' + esc(NOME_CLIENTE.split(' ')[0]) + '! ' : ''}Exporte seu perfil do LinkedIn em PDF (no seu perfil do LinkedIn → botão "Mais" → "Salvar como PDF") e envie aqui. A gente lê tudo automaticamente pra você não precisar digitar do zero.</p>
+      <label class="btn-primary upload-label">
+        📤 Enviar PDF do LinkedIn
+        <input type="file" id="upload-input" accept="application/pdf,.pdf" style="display:none" onchange="enviarLinkedinPdf()">
+      </label>
+      <div id="upload-status"></div>
+      <div style="margin-top:10px"><button class="btn-link" onclick="dadosAtual={};renderForm()">Prefiro preencher manualmente</button></div>
+    </div>
+  `;
+}
+
+async function enviarLinkedinPdf() {
+  const input = document.getElementById('upload-input');
+  const file = input.files?.[0];
+  if (!file) return;
+  const statusEl = document.getElementById('upload-status');
+  statusEl.className = 'muted';
+  statusEl.textContent = '⏳ Lendo seu PDF com IA, aguarde alguns segundos...';
+  try {
+    const fd = new FormData();
+    fd.append('arquivo', file);
+    const r = await fetch('/api/curriculo/importar-linkedin/' + TOKEN, { method: 'POST', body: fd });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Erro ao processar o PDF');
+    dadosAtual = data.dados || {};
+    STATUS = data.status;
+    renderForm();
+  } catch(e) {
+    statusEl.className = 'erro';
+    statusEl.textContent = '⚠️ ' + e.message;
+  } finally {
+    input.value = '';
+  }
+}
+
+// ── FORMULÁRIO EDITÁVEL ────────────────────────────────────────
+function renderForm() {
+  const c = dadosAtual.contato || {};
+  document.getElementById('app').innerHTML = `
+    <div class="topbar">
+      <div>
+        <h1>🎓 Gerador de Currículo</h1>
+        <div class="sub">${esc(NOME_CLIENTE)}</div>
+      </div>
+      <div class="topbar-right">
+        <span class="status-badge status-${STATUS}">${STATUS_LABEL[STATUS] || STATUS}</span>
+        <span id="save-indicator"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-bottom:12px">Dados de contato</h2>
+      <div class="grid2">
+        <div class="field"><label>Nome completo</label><input id="cr-nome" value="${esc(c.nome)}" onblur="agendarSalvar()"></div>
+        <div class="field"><label>Título profissional</label><input id="cr-titulo" value="${esc(c.titulo_profissional)}" onblur="agendarSalvar()" placeholder="Ex: Analista de Marketing"></div>
+        <div class="field"><label>E-mail</label><input id="cr-email" type="email" value="${esc(c.email)}" onblur="agendarSalvar()"></div>
+        <div class="field"><label>Telefone</label><input id="cr-telefone" value="${esc(c.telefone)}" onblur="agendarSalvar()"></div>
+        <div class="field"><label>Localização</label><input id="cr-local" value="${esc(c.localizacao)}" onblur="agendarSalvar()" placeholder="Cidade, Estado"></div>
+        <div class="field"><label>LinkedIn</label><input id="cr-linkedin" value="${esc(c.linkedin_url)}" onblur="agendarSalvar()" placeholder="linkedin.com/in/..."></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Resumo profissional</h2><button class="btn-ia" onclick="melhorarResumo(this)">✨ Melhorar com IA</button></div>
+      <textarea id="cr-resumo" rows="5" onblur="agendarSalvar()" placeholder="Um breve resumo sobre sua trajetória e objetivos profissionais...">${esc(dadosAtual.resumo)}</textarea>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Experiência profissional</h2><button class="btn-add" onclick="adicionarExperiencia()">+ Adicionar</button></div>
+      <div id="cr-experiencias">${renderExperiencias()}</div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Formação acadêmica</h2><button class="btn-add" onclick="adicionarFormacao()">+ Adicionar</button></div>
+      <div id="cr-formacoes">${renderFormacoes()}</div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Competências</h2><button class="btn-ia" onclick="melhorarCompetencias(this)">✨ Organizar com IA</button></div>
+      <div id="cr-chips" class="chips"></div>
+      <div class="chip-input-row">
+        <input id="cr-comp-input" placeholder="Digite uma competência e pressione Enter" onkeydown="if(event.key==='Enter'){event.preventDefault();adicionarCompetencia();}">
+        <button class="btn-add" onclick="adicionarCompetencia()">+ Adicionar</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Idiomas</h2><button class="btn-add" onclick="adicionarIdioma()">+ Adicionar</button></div>
+      <div id="cr-idiomas">${renderIdiomas()}</div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-outline" onclick="prever()">👁️ Pré-visualizar</button>
+      <button class="btn-primary" onclick="baixarPdf()">📄 Baixar PDF</button>
+    </div>
+  `;
+  renderChips();
+}
+
+function renderExperiencias() {
+  const exps = dadosAtual.experiencias || [];
+  if (!exps.length) return '<p class="vazio">Nenhuma experiência adicionada ainda.</p>';
+  return exps.map((e, i) => `
+    <div class="item-card cr-exp-card" data-idx="${i}">
+      <button class="btn-remove" onclick="removerExperiencia(${i})" title="Remover">✕</button>
+      <div class="grid2">
+        <div class="field"><label>Cargo</label><input class="cr-exp-cargo" value="${esc(e.cargo)}" onblur="agendarSalvar()"></div>
+        <div class="field"><label>Empresa</label><input class="cr-exp-empresa" value="${esc(e.empresa)}" onblur="agendarSalvar()"></div>
+      </div>
+      <div class="field"><label>Local</label><input class="cr-exp-local" value="${esc(e.local)}" onblur="agendarSalvar()"></div>
+      <div class="field row-inline">
+        <div><label>Início</label><input class="cr-exp-inicio" value="${esc(e.inicio)}" onblur="agendarSalvar()" placeholder="jan 2020"></div>
+        <div><label>Fim</label><input class="cr-exp-fim" value="${esc(e.fim)}" onblur="agendarSalvar()" placeholder="dez 2022" ${e.atual ? 'disabled' : ''}></div>
+        <label class="chk"><input type="checkbox" class="cr-exp-atual" ${e.atual ? 'checked' : ''} onchange="toggleAtual(this)"> Atual</label>
+      </div>
+      <div class="field">
+        <div class="card-head" style="margin-bottom:4px"><label>Descrição</label><button class="btn-ia-sm" onclick="melhorarDescricaoExp(${i}, this)">✨ Melhorar</button></div>
+        <textarea class="cr-exp-descricao" rows="3" onblur="agendarSalvar()">${esc(e.descricao)}</textarea>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderFormacoes() {
+  const forms = dadosAtual.formacao || [];
+  if (!forms.length) return '<p class="vazio">Nenhuma formação adicionada ainda.</p>';
+  return forms.map((f, i) => `
+    <div class="item-card cr-form-card" data-idx="${i}">
+      <button class="btn-remove" onclick="removerFormacao(${i})" title="Remover">✕</button>
+      <div class="grid2">
+        <div class="field"><label>Curso</label><input class="cr-form-curso" value="${esc(f.curso)}" onblur="agendarSalvar()"></div>
+        <div class="field"><label>Instituição</label><input class="cr-form-instituicao" value="${esc(f.instituicao)}" onblur="agendarSalvar()"></div>
+      </div>
+      <div class="field row-inline">
+        <div><label>Início</label><input class="cr-form-inicio" value="${esc(f.inicio)}" onblur="agendarSalvar()" placeholder="2018"></div>
+        <div><label>Fim</label><input class="cr-form-fim" value="${esc(f.fim)}" onblur="agendarSalvar()" placeholder="2022"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderIdiomas() {
+  const idiomas = dadosAtual.idiomas || [];
+  if (!idiomas.length) return '<p class="vazio">Nenhum idioma adicionado ainda.</p>';
+  return idiomas.map((idm, i) => `
+    <div class="item-card cr-idioma-card" data-idx="${i}">
+      <button class="btn-remove" onclick="removerIdioma(${i})" title="Remover">✕</button>
+      <div class="grid2">
+        <div class="field"><label>Idioma</label><input class="cr-idioma-nome" value="${esc(idm.idioma)}" onblur="agendarSalvar()"></div>
+        <div class="field"><label>Nível</label>
+          <select class="cr-idioma-nivel" onchange="agendarSalvar()">
+            ${NIVEIS_IDIOMA.map(n => `<option ${idm.nivel === n ? 'selected' : ''}>${n}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderChips() {
+  const el = document.getElementById('cr-chips');
+  if (!el) return;
+  el.innerHTML = (dadosAtual.competencias || []).map((comp, i) => `
+    <span class="chip">${esc(comp)} <button onclick="removerCompetencia(${i})" title="Remover">✕</button></span>
+  `).join('') || '<p class="vazio">Nenhuma competência adicionada ainda.</p>';
+}
+
+// ── COLETA E AUTOSAVE ──────────────────────────────────────────
+function coletarFormulario() {
+  dadosAtual.contato = {
+    nome:               document.getElementById('cr-nome')?.value.trim() || '',
+    titulo_profissional:document.getElementById('cr-titulo')?.value.trim() || '',
+    email:              document.getElementById('cr-email')?.value.trim() || '',
+    telefone:           document.getElementById('cr-telefone')?.value.trim() || '',
+    localizacao:        document.getElementById('cr-local')?.value.trim() || '',
+    linkedin_url:       document.getElementById('cr-linkedin')?.value.trim() || '',
+  };
+  dadosAtual.resumo = document.getElementById('cr-resumo')?.value.trim() || '';
+
+  dadosAtual.experiencias = Array.from(document.querySelectorAll('.cr-exp-card')).map(card => ({
+    cargo:      card.querySelector('.cr-exp-cargo').value.trim(),
+    empresa:    card.querySelector('.cr-exp-empresa').value.trim(),
+    local:      card.querySelector('.cr-exp-local').value.trim(),
+    inicio:     card.querySelector('.cr-exp-inicio').value.trim(),
+    fim:        card.querySelector('.cr-exp-fim').value.trim(),
+    atual:      card.querySelector('.cr-exp-atual').checked,
+    descricao:  card.querySelector('.cr-exp-descricao').value.trim(),
+  }));
+
+  dadosAtual.formacao = Array.from(document.querySelectorAll('.cr-form-card')).map(card => ({
+    curso:       card.querySelector('.cr-form-curso').value.trim(),
+    instituicao: card.querySelector('.cr-form-instituicao').value.trim(),
+    inicio:      card.querySelector('.cr-form-inicio').value.trim(),
+    fim:         card.querySelector('.cr-form-fim').value.trim(),
+  }));
+
+  dadosAtual.idiomas = Array.from(document.querySelectorAll('.cr-idioma-card')).map(card => ({
+    idioma: card.querySelector('.cr-idioma-nome').value.trim(),
+    nivel:  card.querySelector('.cr-idioma-nivel').value,
+  }));
+
+  return dadosAtual;
+}
+
+let _salvarTimeout = null;
+function agendarSalvar() {
+  coletarFormulario();
+  clearTimeout(_salvarTimeout);
+  _salvarTimeout = setTimeout(salvarAgora, 400);
+}
+
+async function salvarAgora() {
+  const ind = document.getElementById('save-indicator');
+  if (ind) { ind.textContent = 'Salvando...'; ind.style.opacity = 1; }
+  try {
+    const r = await fetch('/api/curriculo/dados/' + TOKEN, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dados: dadosAtual })
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Erro ao salvar');
+    if (data.status && data.status !== STATUS) {
+      STATUS = data.status;
+      const badge = document.querySelector('.status-badge');
+      if (badge) { badge.className = 'status-badge status-' + STATUS; badge.textContent = STATUS_LABEL[STATUS] || STATUS; }
+    }
+    if (ind) { ind.textContent = '✓ Salvo'; setTimeout(() => { ind.style.opacity = 0; }, 1500); }
+  } catch(e) {
+    if (ind) { ind.textContent = '⚠️ Erro ao salvar'; ind.style.opacity = 1; }
+  }
+}
+
+// ── AÇÕES: EXPERIÊNCIAS ────────────────────────────────────────
+function adicionarExperiencia() {
+  coletarFormulario();
+  dadosAtual.experiencias = dadosAtual.experiencias || [];
+  dadosAtual.experiencias.push({ cargo:'', empresa:'', local:'', inicio:'', fim:'', atual:false, descricao:'' });
+  document.getElementById('cr-experiencias').innerHTML = renderExperiencias();
+  agendarSalvar();
+}
+function removerExperiencia(i) {
+  coletarFormulario();
+  dadosAtual.experiencias.splice(i, 1);
+  document.getElementById('cr-experiencias').innerHTML = renderExperiencias();
+  agendarSalvar();
+}
+function toggleAtual(chk) {
+  const fim = chk.closest('.cr-exp-card').querySelector('.cr-exp-fim');
+  fim.disabled = chk.checked;
+  if (chk.checked) fim.value = '';
+  agendarSalvar();
+}
+async function melhorarDescricaoExp(i, btn) {
+  coletarFormulario();
+  const exp = dadosAtual.experiencias[i];
+  if (!exp || !exp.descricao) { alert('Escreva algo na descrição antes de melhorar.'); return; }
+  const textoOriginal = btn.textContent;
+  btn.disabled = true; btn.textContent = '✨ Melhorando...';
+  try {
+    const r = await fetch('/api/curriculo/melhorar-texto/' + TOKEN, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ campo: 'descrição de experiência profissional' + (exp.cargo ? ' (' + exp.cargo + ')' : ''), texto: exp.descricao })
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Erro ao melhorar texto');
+    exp.descricao = data.texto;
+    document.getElementById('cr-experiencias').innerHTML = renderExperiencias();
+    agendarSalvar();
+  } catch(e) {
+    alert('Erro ao melhorar texto: ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = textoOriginal;
+  }
+}
+
+// ── AÇÕES: FORMAÇÃO ─────────────────────────────────────────────
+function adicionarFormacao() {
+  coletarFormulario();
+  dadosAtual.formacao = dadosAtual.formacao || [];
+  dadosAtual.formacao.push({ curso:'', instituicao:'', inicio:'', fim:'' });
+  document.getElementById('cr-formacoes').innerHTML = renderFormacoes();
+  agendarSalvar();
+}
+function removerFormacao(i) {
+  coletarFormulario();
+  dadosAtual.formacao.splice(i, 1);
+  document.getElementById('cr-formacoes').innerHTML = renderFormacoes();
+  agendarSalvar();
+}
+
+// ── AÇÕES: IDIOMAS ───────────────────────────────────────────────
+function adicionarIdioma() {
+  coletarFormulario();
+  dadosAtual.idiomas = dadosAtual.idiomas || [];
+  dadosAtual.idiomas.push({ idioma:'', nivel: NIVEIS_IDIOMA[0] });
+  document.getElementById('cr-idiomas').innerHTML = renderIdiomas();
+  agendarSalvar();
+}
+function removerIdioma(i) {
+  coletarFormulario();
+  dadosAtual.idiomas.splice(i, 1);
+  document.getElementById('cr-idiomas').innerHTML = renderIdiomas();
+  agendarSalvar();
+}
+
+// ── AÇÕES: COMPETÊNCIAS ──────────────────────────────────────────
+function adicionarCompetencia() {
+  const inp = document.getElementById('cr-comp-input');
+  const v = inp.value.trim();
+  if (!v) return;
+  dadosAtual.competencias = dadosAtual.competencias || [];
+  dadosAtual.competencias.push(v);
+  inp.value = '';
+  renderChips();
+  agendarSalvar();
+}
+function removerCompetencia(i) {
+  dadosAtual.competencias.splice(i, 1);
+  renderChips();
+  agendarSalvar();
+}
+async function melhorarCompetencias(btn) {
+  const texto = (dadosAtual.competencias || []).join(', ');
+  if (!texto) { alert('Adicione ao menos uma competência antes.'); return; }
+  const textoOriginal = btn.textContent;
+  btn.disabled = true; btn.textContent = '✨ Organizando...';
+  try {
+    const r = await fetch('/api/curriculo/melhorar-texto/' + TOKEN, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ campo: 'lista de competências profissionais — responda apenas com os itens separados por vírgula, sem numeração', texto })
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Erro ao organizar competências');
+    dadosAtual.competencias = data.texto.split(/[,;\n]/).map(s => s.trim()).filter(Boolean);
+    renderChips();
+    agendarSalvar();
+  } catch(e) {
+    alert('Erro: ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = textoOriginal;
+  }
+}
+
+// ── RESUMO PROFISSIONAL ──────────────────────────────────────────
+async function melhorarResumo(btn) {
+  const el = document.getElementById('cr-resumo');
+  const texto = el.value.trim();
+  if (!texto) { alert('Escreva algo no resumo antes de melhorar.'); return; }
+  const textoOriginal = btn.textContent;
+  btn.disabled = true; btn.textContent = '✨ Melhorando...';
+  try {
+    const r = await fetch('/api/curriculo/melhorar-texto/' + TOKEN, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ campo: 'resumo profissional', texto })
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Erro ao melhorar texto');
+    el.value = data.texto;
+    agendarSalvar();
+  } catch(e) {
+    alert('Erro ao melhorar texto: ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = textoOriginal;
+  }
+}
+
+// ── PRÉ-VISUALIZAÇÃO E PDF ───────────────────────────────────────
+function periodoTexto(inicio, fim, atual) {
+  return [inicio, atual ? 'Atual' : fim].filter(Boolean).join(' — ');
+}
+
+function montarHtmlCurriculo(comImpressao) {
+  coletarFormulario();
+  const c = dadosAtual.contato || {};
+  const cor = MODELO.cor || '#7a5a48';
+  const estilo = MODELO.estilo || 'moderno';
+  const exps = (dadosAtual.experiencias || []).filter(e => e.cargo || e.empresa || e.descricao);
+  const forms = (dadosAtual.formacao || []).filter(f => f.curso || f.instituicao);
+  const comps = dadosAtual.competencias || [];
+  const idiomas = (dadosAtual.idiomas || []).filter(i => i.idioma);
+  const criativo = estilo === 'criativo';
+  const classico = estilo === 'classico';
+
+  return `<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"><title>Currículo — ${esc(c.nome || '')}</title>
+<style>
+  :root{ --cor:${cor}; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:${classico ? "'Georgia','Times New Roman',serif" : "'Segoe UI',Arial,sans-serif"};color:#2d2028;padding:36px 46px;line-height:1.55;font-size:11pt}
+  header{${criativo ? 'background:var(--cor);color:#fff;padding:26px 32px;margin:-36px -46px 26px;border-radius:0 0 0 60px;' : 'border-bottom:3px solid var(--cor);padding-bottom:16px;margin-bottom:22px;'}}
+  header h1{font-size:${criativo ? '24pt' : '20pt'};font-weight:800;letter-spacing:-.3px;color:${criativo ? '#fff' : 'var(--cor)'}}
+  header .titulo-prof{font-size:13pt;margin-top:2px;color:${criativo ? 'rgba(255,255,255,.85)' : '#555'}}
+  header .contatos{font-size:10pt;margin-top:8px;display:flex;gap:14px;flex-wrap:wrap;color:${criativo ? 'rgba(255,255,255,.85)' : '#666'}}
+  h2{font-size:12.5pt;color:var(--cor);margin:20px 0 8px;padding-bottom:4px;border-bottom:1px solid #e0d5cb;text-transform:${classico ? 'uppercase' : 'none'};letter-spacing:${classico ? '.5px' : '0'}}
+  .item{margin-bottom:12px}
+  .item-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px}
+  .item-titulo{font-weight:700;font-size:11pt}
+  .item-sub{font-size:10pt;color:#666}
+  .item-periodo{font-size:9.5pt;color:#888;white-space:nowrap}
+  .item p{margin-top:4px;text-align:justify;font-size:10.5pt}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{background:${criativo ? 'var(--cor)' : '#f3e9e4'};color:${criativo ? '#fff' : 'var(--cor)'};padding:4px 12px;border-radius:20px;font-size:9.5pt;font-weight:600}
+  .resumo{font-size:10.5pt;text-align:justify}
+  @page{ size:A4; margin:14mm; }
+  @media print{ body{padding:20px 30px} header{margin:-20px -30px 20px} h2{break-after:avoid} .item{break-inside:avoid} }
+</style></head>
+<body>
+  <header>
+    <h1>${esc(c.nome || 'Nome não informado')}</h1>
+    ${c.titulo_profissional ? `<div class="titulo-prof">${esc(c.titulo_profissional)}</div>` : ''}
+    <div class="contatos">
+      ${c.email ? `<span>✉️ ${esc(c.email)}</span>` : ''}
+      ${c.telefone ? `<span>📞 ${esc(c.telefone)}</span>` : ''}
+      ${c.localizacao ? `<span>📍 ${esc(c.localizacao)}</span>` : ''}
+      ${c.linkedin_url ? `<span>🔗 ${esc(c.linkedin_url)}</span>` : ''}
+    </div>
+  </header>
+
+  ${dadosAtual.resumo ? `<section><h2>Resumo Profissional</h2><p class="resumo">${esc(dadosAtual.resumo)}</p></section>` : ''}
+
+  ${exps.length ? `<section><h2>Experiência Profissional</h2>
+    ${exps.map(e => `
+      <div class="item">
+        <div class="item-head">
+          <div><span class="item-titulo">${esc(e.cargo || '')}</span>${e.empresa ? ` <span class="item-sub">· ${esc(e.empresa)}</span>` : ''}</div>
+          <span class="item-periodo">${esc(periodoTexto(e.inicio, e.fim, e.atual))}</span>
+        </div>
+        ${e.local ? `<div class="item-sub">${esc(e.local)}</div>` : ''}
+        ${e.descricao ? `<p>${esc(e.descricao).replace(/\n/g,'<br>')}</p>` : ''}
+      </div>
+    `).join('')}
+  </section>` : ''}
+
+  ${forms.length ? `<section><h2>Formação Acadêmica</h2>
+    ${forms.map(f => `
+      <div class="item">
+        <div class="item-head">
+          <div><span class="item-titulo">${esc(f.curso || '')}</span>${f.instituicao ? ` <span class="item-sub">· ${esc(f.instituicao)}</span>` : ''}</div>
+          <span class="item-periodo">${esc(periodoTexto(f.inicio, f.fim, false))}</span>
+        </div>
+      </div>
+    `).join('')}
+  </section>` : ''}
+
+  ${comps.length ? `<section><h2>Competências</h2><div class="chips">${comps.map(x => `<span class="chip">${esc(x)}</span>`).join('')}</div></section>` : ''}
+
+  ${idiomas.length ? `<section><h2>Idiomas</h2>
+    ${idiomas.map(i => `<div class="item-sub" style="margin-bottom:4px"><strong>${esc(i.idioma)}</strong>${i.nivel ? ' — ' + esc(i.nivel) : ''}</div>`).join('')}
+  </section>` : ''}
+  ${comImpressao ? '<script>window.onload=()=>window.print();<\/script>' : ''}
+</body></html>`;
+}
+
+function prever() {
+  const w = window.open('', '_blank');
+  w.document.write(montarHtmlCurriculo(false));
+  w.document.close();
+}
+
+async function baixarPdf() {
+  const w = window.open('', '_blank');
+  w.document.write(montarHtmlCurriculo(true));
+  w.document.close();
+  try {
+    await fetch('/api/curriculo/concluir/' + TOKEN, { method: 'POST' });
+    STATUS = 'concluido';
+    const badge = document.querySelector('.status-badge');
+    if (badge) { badge.className = 'status-badge status-' + STATUS; badge.textContent = STATUS_LABEL[STATUS]; }
+  } catch(e) {}
+}
+
+init();
+</script>
+</body>
+</html>
