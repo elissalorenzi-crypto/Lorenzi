@@ -189,13 +189,25 @@ async function montarColagem() {
   const n = imgs.length;
   const cols = Math.max(1, Math.ceil(Math.sqrt(n * (W / H))));
   const rows = Math.ceil(n / cols);
-  const cellW = W / cols, cellH = H / rows;
+  const pad = 10;
+
+  // As fotos são desenhadas 30% maiores que a célula (para sobrepor, efeito mural), rotacionam
+  // até 7° e ainda "tremem" um pouco de posição (jitter) — sem margem, as da borda (sobretudo
+  // a primeira linha) estouram para fora do canvas e ficam cortadas. Reserva-se uma margem
+  // que cobre o pior caso (foto quadrada + rotação máxima + jitter máximo).
+  const anguloMax = 7 * Math.PI / 180;
+  const fatorRotacao = Math.abs(Math.cos(anguloMax)) + Math.abs(Math.sin(anguloMax));
+  const cellW0 = W / cols, cellH0 = H / rows;
+  const box0 = Math.min(cellW0, cellH0) * 1.3;
+  const raio0 = (box0 + pad * 2) / 2 * fatorRotacao;
+  const margemX = Math.max(0, raio0 + cellW0 * 0.15 - cellW0 / 2);
+  const margemY = Math.max(0, raio0 + cellH0 * 0.15 - cellH0 / 2);
+  const areaW = W - margemX * 2, areaH = H - margemY * 2;
+  const cellW = areaW / cols, cellH = areaH / rows;
   const box = Math.min(cellW, cellH) * 1.3; // maior que a célula para sobrepor um pouco
 
-  // Última linha (e a colagem como um todo) fica centralizada, não colada à esquerda
+  // Última linha fica centralizada, não colada à esquerda
   const itensUltimaLinha = n - (rows - 1) * cols;
-  const alturaUsada = rows * cellH;
-  const offsetYGeral = (H - alturaUsada) / 2;
 
   for (let i = 0; i < n; i++) {
     const im = await carregarImagem(imgs[i].src);
@@ -205,9 +217,9 @@ async function montarColagem() {
     const row = Math.floor(i / cols);
     const col = i % cols;
     const itensNaLinha = (row === rows - 1) ? itensUltimaLinha : cols;
-    const offsetXLinha = (W - itensNaLinha * cellW) / 2;
+    const offsetXLinha = margemX + (areaW - itensNaLinha * cellW) / 2;
     const baseX = offsetXLinha + col * cellW + cellW / 2;
-    const baseY = offsetYGeral + row * cellH + cellH / 2;
+    const baseY = margemY + row * cellH + cellH / 2;
     const jitterX = (Math.random() - 0.5) * cellW * 0.3;
     const jitterY = (Math.random() - 0.5) * cellH * 0.3;
     const angulo = (Math.random() * 14 - 7) * Math.PI / 180;
@@ -218,7 +230,6 @@ async function montarColagem() {
     ctx.shadowColor = 'rgba(0,0,0,0.28)';
     ctx.shadowBlur = 18;
     ctx.shadowOffsetY = 6;
-    const pad = 10;
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(-w / 2 - pad, -h / 2 - pad, w + pad * 2, h + pad * 2);
     ctx.shadowColor = 'transparent';
