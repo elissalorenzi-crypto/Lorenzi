@@ -45,8 +45,19 @@ try {
   }
 } catch(_) {}
 
+// Uploads ficam no mesmo volume persistente do banco (DATABASE_PATH), pois a
+// pasta public/ é recriada do zero pelo Railway a cada deploy e perderia os arquivos.
+const UPLOADS_ROOT = process.env.DATABASE_PATH
+  ? path.join(path.dirname(process.env.DATABASE_PATH), 'uploads')
+  : path.join(__dirname, 'public/uploads');
+
+// Converte uma URL salva no banco (ex: "/uploads/vision-board/x.jpg") no caminho físico real
+function uploadFsPath(url) {
+  return path.join(UPLOADS_ROOT, String(url).replace(/^\/?uploads\//, ''));
+}
+
 const upload = multer({
-  dest: path.join(__dirname, 'public/uploads/contratos/'),
+  dest: path.join(UPLOADS_ROOT, 'contratos/'),
   limits: { fileSize: 20 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const ok = ['application/pdf','image/jpeg','image/png','image/jpg'].includes(file.mimetype);
@@ -57,7 +68,7 @@ const upload = multer({
 const uploadEstilo = multer({
   storage: multer.diskStorage({
     destination: (req, file, cb) => {
-      const dir = path.join(__dirname, 'public/uploads/social/estilo');
+      const dir = path.join(UPLOADS_ROOT, 'social/estilo');
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
       cb(null, dir);
     },
@@ -72,7 +83,7 @@ const uploadEstilo = multer({
 const uploadVisionBoard = multer({
   storage: multer.diskStorage({
     destination: (req, file, cb) => {
-      const dir = path.join(__dirname, 'public/uploads/vision-board');
+      const dir = path.join(UPLOADS_ROOT, 'vision-board');
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
       cb(null, dir);
     },
@@ -181,6 +192,9 @@ app.use('/uploads/contratos', (req, res, next) => {
   if (!authOkFile(req)) return res.status(401).send('Não autorizado');
   next();
 });
+
+// Serve os uploads a partir do volume persistente (fora de public/)
+app.use('/uploads', express.static(UPLOADS_ROOT));
 
 // Limpeza periódica de sessões expiradas é feita internamente pelo mainDb
 
@@ -997,7 +1011,7 @@ app.post('/api/contratos/upload', upload.single('arquivo'), (req, res) => {
     const nome = req.body.nome || 'Cliente';
     const filename = `${Date.now()}_${nome.replace(/\s+/g,'_')}.${ext}`;
     const fs   = require('fs');
-    const dest = path.join(__dirname, 'public/uploads/contratos/', filename);
+    const dest = path.join(UPLOADS_ROOT, 'contratos/', filename);
     fs.renameSync(req.file.path, dest);
     const id = req.db.createContrato({
       nome,
@@ -1593,8 +1607,7 @@ app.delete('/api/vision-board/:id/imagens/:index', (req, res) => {
     const arquivo = board.imagens[idx];
     const atualizado = req.db.removerImagemVisionBoard(req.params.id, idx);
     if (arquivo) {
-      const filePath = path.join(__dirname, 'public', arquivo);
-      fs.unlink(filePath, () => {});
+      fs.unlink(uploadFsPath(arquivo), () => {});
     }
     res.json(atualizado);
   } catch(e) { erro(res, e); }
@@ -1606,7 +1619,7 @@ app.delete('/api/vision-board/:id', (req, res) => {
   try {
     const board = req.db.getVisionBoard(req.params.id);
     if (board) {
-      board.imagens.forEach(arquivo => fs.unlink(path.join(__dirname, 'public', arquivo), () => {}));
+      board.imagens.forEach(arquivo => fs.unlink(uploadFsPath(arquivo), () => {}));
     }
     req.db.deleteVisionBoard(req.params.id);
     res.json({ ok: true });
@@ -1642,7 +1655,7 @@ app.delete('/api/vision-board/publico/:token/imagens/:index', (req, res) => {
     const idx = Number(req.params.index);
     const arquivo = board.imagens[idx];
     const atualizado = req.db.removerImagemVisionBoard(board.id, idx);
-    if (arquivo) fs.unlink(path.join(__dirname, 'public', arquivo), () => {});
+    if (arquivo) fs.unlink(uploadFsPath(arquivo), () => {});
     res.json({ paciente_nome: atualizado.paciente_nome, titulo: atualizado.titulo, imagens: atualizado.imagens });
   } catch(e) { erro(res, e); }
 });
@@ -1863,7 +1876,7 @@ app.post('/api/gerar-arte', async (req, res) => {
     if (!resp.ok) return res.status(500).json({ error: data.error?.message || 'Erro na API OpenAI' });
     // gpt-image-1 retorna b64_json — salvar em disco e retornar URL local
     const b64 = data.data[0].b64_json;
-    const imgDir = path.join(__dirname, 'public/uploads/social');
+    const imgDir = path.join(UPLOADS_ROOT, 'social');
     if (!fs.existsSync(imgDir)) fs.mkdirSync(imgDir, { recursive: true });
     const filename = `arte_${Date.now()}.png`;
     fs.writeFileSync(path.join(imgDir, filename), Buffer.from(b64, 'base64'));
@@ -1897,7 +1910,7 @@ app.delete('/api/social/estilo-midia', (req, res) => {
   const nova = atual.filter(m => m.url !== url);
   req.db.setConfig('social_estilo_midias', JSON.stringify(nova));
   // Remove arquivo do disco
-  try { fs.unlinkSync(path.join(__dirname, 'public', url)); } catch(_) {}
+  try { fs.unlinkSync(uploadFsPath(url)); } catch(_) {}
   res.json({ ok: true });
 });
 
@@ -1916,7 +1929,7 @@ app.post('/api/analisar-midia', async (req, res) => {
   const refsImagem = midiaRefs.filter(m => m.tipo === 'imagem').slice(0, 3);
   const refContent = refsImagem.map(m => {
     try {
-      const b64ref = fs.readFileSync(path.join(__dirname, 'public', m.url)).toString('base64');
+      const b64ref = fs.readFileSync(uploadFsPath(m.url)).toString('base64');
       const ext = path.extname(m.url).slice(1) || 'jpeg';
       return { type: 'image_url', image_url: { url: `data:image/${ext};base64,${b64ref}`, detail: 'low' } };
     } catch(_) { return null; }
@@ -1966,7 +1979,7 @@ app.post('/api/gerar-texto-post', async (req, res) => {
   const refsImagem = midiaRefs.filter(m => m.tipo === 'imagem').slice(0, 3);
   const refContent = refsImagem.map(m => {
     try {
-      const b64ref = fs.readFileSync(path.join(__dirname, 'public', m.url)).toString('base64');
+      const b64ref = fs.readFileSync(uploadFsPath(m.url)).toString('base64');
       const ext = path.extname(m.url).slice(1) || 'jpeg';
       return { type: 'image_url', image_url: { url: `data:image/${ext};base64,${b64ref}`, detail: 'low' } };
     } catch(_) { return null; }
