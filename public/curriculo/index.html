@@ -198,6 +198,11 @@ function renderForm() {
     </div>
 
     <div class="card">
+      <h2 style="margin-bottom:12px">Objetivo profissional</h2>
+      <input id="cr-objetivo" value="${esc(dadosAtual.objetivo)}" onblur="agendarSalvar()" placeholder="Ex: Estagiária de Marketing | Marketing Estratégico | Branding">
+    </div>
+
+    <div class="card">
       <div class="card-head"><h2>Resumo profissional</h2><button class="btn-ia" onclick="melhorarResumo(this)">✨ Melhorar com IA</button></div>
       <textarea id="cr-resumo" rows="5" onblur="agendarSalvar()" placeholder="Um breve resumo sobre sua trajetória e objetivos profissionais...">${esc(dadosAtual.resumo)}</textarea>
     </div>
@@ -210,6 +215,11 @@ function renderForm() {
     <div class="card">
       <div class="card-head"><h2>Formação acadêmica</h2><button class="btn-add" onclick="adicionarFormacao()">+ Adicionar</button></div>
       <div id="cr-formacoes">${renderFormacoes()}</div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Extracurriculares / Cursos complementares</h2><button class="btn-add" onclick="adicionarCurso()">+ Adicionar</button></div>
+      <div id="cr-cursos">${renderCursos()}</div>
     </div>
 
     <div class="card">
@@ -276,6 +286,21 @@ function renderFormacoes() {
   `).join('');
 }
 
+function renderCursos() {
+  const cursos = dadosAtual.cursos || [];
+  if (!cursos.length) return '<p class="vazio">Nenhum curso/atividade adicionado ainda.</p>';
+  return cursos.map((c, i) => `
+    <div class="item-card cr-curso-card" data-idx="${i}">
+      <button class="btn-remove" onclick="removerCurso(${i})" title="Remover">✕</button>
+      <div class="grid2">
+        <div class="field"><label>Nome</label><input class="cr-curso-nome" value="${esc(c.nome)}" onblur="agendarSalvar()" placeholder="Ex: Branding (Gestão de Marcas)"></div>
+        <div class="field"><label>Instituição</label><input class="cr-curso-instituicao" value="${esc(c.instituicao)}" onblur="agendarSalvar()"></div>
+      </div>
+      <div class="field"><label>Período</label><input class="cr-curso-periodo" value="${esc(c.periodo)}" onblur="agendarSalvar()" placeholder="Ex: Jan – Jun/2025 ou em andamento"></div>
+    </div>
+  `).join('');
+}
+
 function renderIdiomas() {
   const idiomas = dadosAtual.idiomas || [];
   if (!idiomas.length) return '<p class="vazio">Nenhum idioma adicionado ainda.</p>';
@@ -312,6 +337,7 @@ function coletarFormulario() {
     localizacao:        document.getElementById('cr-local')?.value.trim() || '',
     linkedin_url:       document.getElementById('cr-linkedin')?.value.trim() || '',
   };
+  dadosAtual.objetivo = document.getElementById('cr-objetivo')?.value.trim() || '';
   dadosAtual.resumo = document.getElementById('cr-resumo')?.value.trim() || '';
 
   dadosAtual.experiencias = Array.from(document.querySelectorAll('.cr-exp-card')).map(card => ({
@@ -334,6 +360,12 @@ function coletarFormulario() {
   dadosAtual.idiomas = Array.from(document.querySelectorAll('.cr-idioma-card')).map(card => ({
     idioma: card.querySelector('.cr-idioma-nome').value.trim(),
     nivel:  card.querySelector('.cr-idioma-nivel').value,
+  }));
+
+  dadosAtual.cursos = Array.from(document.querySelectorAll('.cr-curso-card')).map(card => ({
+    nome:        card.querySelector('.cr-curso-nome').value.trim(),
+    instituicao: card.querySelector('.cr-curso-instituicao').value.trim(),
+    periodo:     card.querySelector('.cr-curso-periodo').value.trim(),
   }));
 
   return dadosAtual;
@@ -426,6 +458,21 @@ function removerFormacao(i) {
   agendarSalvar();
 }
 
+// ── AÇÕES: EXTRACURRICULARES / CURSOS ────────────────────────────
+function adicionarCurso() {
+  coletarFormulario();
+  dadosAtual.cursos = dadosAtual.cursos || [];
+  dadosAtual.cursos.push({ nome:'', instituicao:'', periodo:'' });
+  document.getElementById('cr-cursos').innerHTML = renderCursos();
+  agendarSalvar();
+}
+function removerCurso(i) {
+  coletarFormulario();
+  dadosAtual.cursos.splice(i, 1);
+  document.getElementById('cr-cursos').innerHTML = renderCursos();
+  agendarSalvar();
+}
+
 // ── AÇÕES: IDIOMAS ───────────────────────────────────────────────
 function adicionarIdioma() {
   coletarFormulario();
@@ -514,28 +561,35 @@ function montarHtmlCurriculo(comImpressao) {
   const estilo = MODELO.estilo || 'moderno';
   const exps = (dadosAtual.experiencias || []).filter(e => e.cargo || e.empresa || e.descricao);
   const forms = (dadosAtual.formacao || []).filter(f => f.curso || f.instituicao);
+  const cursosExtra = (dadosAtual.cursos || []).filter(x => x.nome || x.instituicao);
   const comps = dadosAtual.competencias || [];
   const idiomas = (dadosAtual.idiomas || []).filter(i => i.idioma);
   const criativo = estilo === 'criativo';
   const classico = estilo === 'classico';
+  const executivo = estilo === 'executivo'; // modelo preto e branco, estilo ATS
+  const corTexto = executivo ? '#000' : 'var(--cor)';
+  const contatosPlano = [c.localizacao, c.telefone, c.email, c.linkedin_url].filter(Boolean).join(' | ');
 
   return `<!DOCTYPE html>
 <html lang="pt-BR"><head><meta charset="UTF-8"><title>Currículo — ${esc(c.nome || '')}</title>
 <style>
-  :root{ --cor:${cor}; }
+  :root{ --cor:${executivo ? '#000' : cor}; }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:${classico ? "'Georgia','Times New Roman',serif" : "'Segoe UI',Arial,sans-serif"};color:#2d2028;padding:36px 46px;line-height:1.55;font-size:11pt}
-  header{${criativo ? 'background:var(--cor);color:#fff;padding:26px 32px;margin:-36px -46px 26px;border-radius:0 0 0 60px;' : 'border-bottom:3px solid var(--cor);padding-bottom:16px;margin-bottom:22px;'}}
-  header h1{font-size:${criativo ? '24pt' : '20pt'};font-weight:800;letter-spacing:-.3px;color:${criativo ? '#fff' : 'var(--cor)'}}
-  header .titulo-prof{font-size:13pt;margin-top:2px;color:${criativo ? 'rgba(255,255,255,.85)' : '#555'}}
-  header .contatos{font-size:10pt;margin-top:8px;display:flex;gap:14px;flex-wrap:wrap;color:${criativo ? 'rgba(255,255,255,.85)' : '#666'}}
-  h2{font-size:12.5pt;color:var(--cor);margin:20px 0 8px;padding-bottom:4px;border-bottom:1px solid #e0d5cb;text-transform:${classico ? 'uppercase' : 'none'};letter-spacing:${classico ? '.5px' : '0'}}
+  body{font-family:${(classico || executivo) ? "'Georgia','Times New Roman',serif" : "'Segoe UI',Arial,sans-serif"};color:${executivo ? '#111' : '#2d2028'};padding:36px 46px;line-height:1.55;font-size:11pt}
+  header{${criativo ? 'background:var(--cor);color:#fff;padding:26px 32px;margin:-36px -46px 26px;border-radius:0 0 0 60px;' : executivo ? 'border-bottom:2px solid #000;padding-bottom:14px;margin-bottom:20px;' : 'border-bottom:3px solid var(--cor);padding-bottom:16px;margin-bottom:22px;'}}
+  header h1{font-size:${criativo ? '24pt' : executivo ? '18pt' : '20pt'};font-weight:800;letter-spacing:${executivo ? '.5px' : '-.3px'};text-transform:${executivo ? 'uppercase' : 'none'};color:${criativo ? '#fff' : executivo ? '#000' : 'var(--cor)'}}
+  header .titulo-prof{font-size:13pt;margin-top:2px;color:${criativo ? 'rgba(255,255,255,.85)' : executivo ? '#333' : '#555'}}
+  header .contatos{font-size:10pt;margin-top:8px;display:flex;gap:14px;flex-wrap:wrap;color:${criativo ? 'rgba(255,255,255,.85)' : executivo ? '#333' : '#666'}}
+  h2{font-size:12.5pt;color:${corTexto};margin:20px 0 8px;padding-bottom:4px;border-bottom:1px solid ${executivo ? '#000' : '#e0d5cb'};text-transform:${(classico || executivo) ? 'uppercase' : 'none'};letter-spacing:${(classico || executivo) ? '.5px' : '0'}}
+  .objetivo{font-size:10.5pt}
   .item{margin-bottom:12px}
   .item-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px}
   .item-titulo{font-weight:700;font-size:11pt}
-  .item-sub{font-size:10pt;color:#666}
-  .item-periodo{font-size:9.5pt;color:#888;white-space:nowrap}
+  .item-sub{font-size:10pt;color:${executivo ? '#333' : '#666'}}
+  .item-periodo{font-size:9.5pt;color:${executivo ? '#333' : '#888'};white-space:nowrap}
   .item p{margin-top:4px;text-align:justify;font-size:10.5pt}
+  .item ul{margin:4px 0 0 16px}
+  .item li{font-size:10.5pt;margin-bottom:2px}
   .chips{display:flex;flex-wrap:wrap;gap:6px}
   .chip{background:${criativo ? 'var(--cor)' : '#f3e9e4'};color:${criativo ? '#fff' : 'var(--cor)'};padding:4px 12px;border-radius:20px;font-size:9.5pt;font-weight:600}
   .resumo{font-size:10.5pt;text-align:justify}
@@ -547,26 +601,35 @@ function montarHtmlCurriculo(comImpressao) {
     <h1>${esc(c.nome || 'Nome não informado')}</h1>
     ${c.titulo_profissional ? `<div class="titulo-prof">${esc(c.titulo_profissional)}</div>` : ''}
     <div class="contatos">
+      ${executivo ? esc(contatosPlano) : `
       ${c.email ? `<span>✉️ ${esc(c.email)}</span>` : ''}
       ${c.telefone ? `<span>📞 ${esc(c.telefone)}</span>` : ''}
       ${c.localizacao ? `<span>📍 ${esc(c.localizacao)}</span>` : ''}
       ${c.linkedin_url ? `<span>🔗 ${esc(c.linkedin_url)}</span>` : ''}
+      `}
     </div>
   </header>
+
+  ${dadosAtual.objetivo ? `<section><h2>Objetivo</h2><p class="objetivo">${esc(dadosAtual.objetivo)}</p></section>` : ''}
 
   ${dadosAtual.resumo ? `<section><h2>Resumo Profissional</h2><p class="resumo">${esc(dadosAtual.resumo)}</p></section>` : ''}
 
   ${exps.length ? `<section><h2>Experiência Profissional</h2>
-    ${exps.map(e => `
+    ${exps.map(e => {
+      const linhas = (e.descricao || '').split('\n').map(s => s.trim()).filter(Boolean);
+      const descricaoHtml = executivo
+        ? (linhas.length ? `<ul>${linhas.map(l => `<li>${esc(l)}</li>`).join('')}</ul>` : '')
+        : (e.descricao ? `<p>${esc(e.descricao).replace(/\n/g,'<br>')}</p>` : '');
+      return `
       <div class="item">
         <div class="item-head">
           <div><span class="item-titulo">${esc(e.cargo || '')}</span>${e.empresa ? ` <span class="item-sub">· ${esc(e.empresa)}</span>` : ''}</div>
           <span class="item-periodo">${esc(periodoTexto(e.inicio, e.fim, e.atual))}</span>
         </div>
         ${e.local ? `<div class="item-sub">${esc(e.local)}</div>` : ''}
-        ${e.descricao ? `<p>${esc(e.descricao).replace(/\n/g,'<br>')}</p>` : ''}
-      </div>
-    `).join('')}
+        ${descricaoHtml}
+      </div>`;
+    }).join('')}
   </section>` : ''}
 
   ${forms.length ? `<section><h2>Formação Acadêmica</h2>
@@ -580,11 +643,28 @@ function montarHtmlCurriculo(comImpressao) {
     `).join('')}
   </section>` : ''}
 
-  ${comps.length ? `<section><h2>Competências</h2><div class="chips">${comps.map(x => `<span class="chip">${esc(x)}</span>`).join('')}</div></section>` : ''}
-
-  ${idiomas.length ? `<section><h2>Idiomas</h2>
-    ${idiomas.map(i => `<div class="item-sub" style="margin-bottom:4px"><strong>${esc(i.idioma)}</strong>${i.nivel ? ' — ' + esc(i.nivel) : ''}</div>`).join('')}
+  ${cursosExtra.length ? `<section><h2>Extracurriculares / Cursos Complementares</h2>
+    ${cursosExtra.map(x => `
+      <div class="item">
+        <div class="item-head">
+          <div><span class="item-titulo">${esc(x.nome || '')}</span>${x.instituicao ? ` <span class="item-sub">· ${esc(x.instituicao)}</span>` : ''}</div>
+          ${x.periodo ? `<span class="item-periodo">${esc(x.periodo)}</span>` : ''}
+        </div>
+      </div>
+    `).join('')}
   </section>` : ''}
+
+  ${comps.length ? `<section><h2>Competências</h2>${
+    executivo
+      ? `<p style="font-size:10.5pt">${esc(comps.join(', '))}</p>`
+      : `<div class="chips">${comps.map(x => `<span class="chip">${esc(x)}</span>`).join('')}</div>`
+  }</section>` : ''}
+
+  ${idiomas.length ? `<section><h2>Idiomas</h2>${
+    executivo
+      ? `<p style="font-size:10.5pt">${esc(idiomas.map(i => i.idioma + (i.nivel ? ' – ' + i.nivel : '')).join(' | '))}</p>`
+      : idiomas.map(i => `<div class="item-sub" style="margin-bottom:4px"><strong>${esc(i.idioma)}</strong>${i.nivel ? ' — ' + esc(i.nivel) : ''}</div>`).join('')
+  }</section>` : ''}
   ${comImpressao ? '<script>window.onload=()=>window.print();<\/script>' : ''}
 </body></html>`;
 }
