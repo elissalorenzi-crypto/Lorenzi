@@ -209,17 +209,17 @@ function renderForm() {
     </div>
 
     <div class="card">
-      <div class="card-head"><h2>Experiência profissional</h2><button class="btn-add" onclick="adicionarExperiencia()">+ Adicionar</button></div>
-      <div id="cr-experiencias">${renderExperiencias()}</div>
-    </div>
-
-    <div class="card">
       <div class="card-head"><h2>Formação acadêmica</h2><button class="btn-add" onclick="adicionarFormacao()">+ Adicionar</button></div>
       <div id="cr-formacoes">${renderFormacoes()}</div>
     </div>
 
     <div class="card">
-      <div class="card-head"><h2>Extracurriculares / Cursos complementares</h2><button class="btn-add" onclick="adicionarCurso()">+ Adicionar</button></div>
+      <div class="card-head"><h2>Experiência profissional</h2><button class="btn-add" onclick="adicionarExperiencia()">+ Adicionar</button></div>
+      <div id="cr-experiencias">${renderExperiencias()}</div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Cursos Extracurriculares</h2><button class="btn-add" onclick="adicionarCurso()">+ Adicionar</button></div>
       <div id="cr-cursos">${renderCursos()}</div>
     </div>
 
@@ -616,6 +616,17 @@ function montarHtmlCurriculo(comImpressao) {
 
   ${dadosAtual.resumo ? `<section><h2>Resumo Profissional</h2><p class="resumo">${esc(dadosAtual.resumo)}</p></section>` : ''}
 
+  ${forms.length ? `<section><h2>Formação Acadêmica</h2>
+    ${forms.map(f => `
+      <div class="item">
+        <div class="item-head">
+          <div><span class="item-titulo">${esc(f.curso || '')}</span>${f.instituicao ? ` <span class="item-sub">· ${esc(f.instituicao)}</span>` : ''}</div>
+          <span class="item-periodo">${esc(periodoTexto(f.inicio, f.fim, false))}</span>
+        </div>
+      </div>
+    `).join('')}
+  </section>` : ''}
+
   ${exps.length ? `<section><h2>Experiência Profissional</h2>
     ${exps.map(e => {
       const linhas = (e.descricao || '').split('\n').map(s => s.trim()).filter(Boolean);
@@ -634,18 +645,7 @@ function montarHtmlCurriculo(comImpressao) {
     }).join('')}
   </section>` : ''}
 
-  ${forms.length ? `<section><h2>Formação Acadêmica</h2>
-    ${forms.map(f => `
-      <div class="item">
-        <div class="item-head">
-          <div><span class="item-titulo">${esc(f.curso || '')}</span>${f.instituicao ? ` <span class="item-sub">· ${esc(f.instituicao)}</span>` : ''}</div>
-          <span class="item-periodo">${esc(periodoTexto(f.inicio, f.fim, false))}</span>
-        </div>
-      </div>
-    `).join('')}
-  </section>` : ''}
-
-  ${cursosExtra.length ? `<section><h2>Extracurriculares / Cursos Complementares</h2>
+  ${cursosExtra.length ? `<section><h2>Cursos Extracurriculares</h2>
     ${cursosExtra.map(x => `
       <div class="item">
         <div class="item-head">

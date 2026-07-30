@@ -1745,9 +1745,11 @@ Retorne APENAS um JSON (sem markdown, sem explicações) com exatamente estes ca
   "telefone": "",
   "localizacao": "cidade/estado/país",
   "linkedin_url": "URL do perfil, se constar no documento",
+  "objetivo": "objetivo profissional/cargo pretendido, apenas se estiver explícito no documento (ex: seção 'Sobre' que diga claramente o que a pessoa busca)",
   "resumo": "texto do resumo/sobre",
   "experiencias": [{"cargo":"","empresa":"","local":"","inicio":"","fim":"","atual":false,"descricao":""}],
   "formacao": [{"curso":"","instituicao":"","inicio":"","fim":""}],
+  "cursos": [{"nome":"curso ou atividade extracurricular/complementar (não é graduação)","instituicao":"","periodo":""}],
   "competencias": ["lista de habilidades/competências mencionadas"],
   "idiomas": [{"idioma":"","nivel":""}]
 }
