@@ -575,18 +575,18 @@ function montarHtmlCurriculo(comImpressao) {
 <style>
   :root{ --cor:${executivo ? '#000' : cor}; }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:${(classico || executivo) ? "'Georgia','Times New Roman',serif" : "'Segoe UI',Arial,sans-serif"};color:${executivo ? '#111' : '#2d2028'};padding:36px 46px;line-height:1.55;font-size:11pt}
+  body{font-family:${(classico || executivo) ? "'Georgia','Times New Roman',serif" : "'Segoe UI',Arial,sans-serif"};color:${executivo ? '#000' : '#2d2028'};padding:36px 46px;line-height:1.55;font-size:11pt}
   header{${criativo ? 'background:var(--cor);color:#fff;padding:26px 32px;margin:-36px -46px 26px;border-radius:0 0 0 60px;' : executivo ? 'border-bottom:2px solid #000;padding-bottom:14px;margin-bottom:20px;' : 'border-bottom:3px solid var(--cor);padding-bottom:16px;margin-bottom:22px;'}}
   header h1{font-size:${criativo ? '24pt' : executivo ? '18pt' : '20pt'};font-weight:800;letter-spacing:${executivo ? '.5px' : '-.3px'};text-transform:${executivo ? 'uppercase' : 'none'};color:${criativo ? '#fff' : executivo ? '#000' : 'var(--cor)'}}
-  header .titulo-prof{font-size:13pt;margin-top:2px;color:${criativo ? 'rgba(255,255,255,.85)' : executivo ? '#333' : '#555'}}
-  header .contatos{font-size:10pt;margin-top:8px;display:flex;gap:14px;flex-wrap:wrap;color:${criativo ? 'rgba(255,255,255,.85)' : executivo ? '#333' : '#666'}}
+  header .titulo-prof{font-size:13pt;margin-top:2px;color:${criativo ? 'rgba(255,255,255,.85)' : executivo ? '#000' : '#555'}}
+  header .contatos{font-size:10pt;margin-top:8px;display:flex;gap:14px;flex-wrap:wrap;color:${criativo ? 'rgba(255,255,255,.85)' : executivo ? '#000' : '#666'}}
   h2{font-size:12.5pt;color:${corTexto};margin:20px 0 8px;padding-bottom:4px;border-bottom:1px solid ${executivo ? '#000' : '#e0d5cb'};text-transform:${(classico || executivo) ? 'uppercase' : 'none'};letter-spacing:${(classico || executivo) ? '.5px' : '0'}}
   .objetivo{font-size:10.5pt}
   .item{margin-bottom:12px}
   .item-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px}
   .item-titulo{font-weight:700;font-size:11pt}
-  .item-sub{font-size:10pt;color:${executivo ? '#333' : '#666'}}
-  .item-periodo{font-size:9.5pt;color:${executivo ? '#333' : '#888'};white-space:nowrap}
+  .item-sub{font-size:10pt;color:${executivo ? '#000' : '#666'}}
+  .item-periodo{font-size:9.5pt;color:${executivo ? '#000' : '#888'};white-space:nowrap}
   .item p{margin-top:4px;text-align:justify;font-size:10.5pt}
   .item ul{margin:4px 0 0 16px}
   .item li{font-size:10.5pt;margin-bottom:2px}
