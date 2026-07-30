@@ -1559,6 +1559,48 @@ app.get('/api/monitoramento-capacidade/respostas', (req, res) => {
   res.json(req.db.getRespostasMonitCap(pid));
 });
 
+// ── ATIVIDADE — ASSESSMENT PAPEL PROFISSIONAL ────────────────
+// Gera link único para um cliente (requer auth) — reaproveita link ativo existente
+app.post('/api/assessment-papel/link', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  const { paciente_id } = req.body || {};
+  if (!paciente_id) return res.status(400).json({ error: 'paciente_id obrigatório' });
+  try {
+    const p = req.db.getPacienteById(paciente_id);
+    if (!p) return res.status(404).json({ error: 'Paciente não encontrado' });
+    const existente = req.db.getLinkAssessmentPapel(paciente_id);
+    const token = existente ? existente.token : req.db.gerarLinkAssessmentPapel(paciente_id, p.nome);
+    res.json({ token, url: `/assessment-papel-profissional/?t=${token}` });
+  } catch(e) { erro(res, e); }
+});
+
+// Info pública do token (cliente confere o nome e o que já preencheu antes)
+app.get('/api/assessment-papel/info/:token', (req, res) => {
+  const link = req.db.getInfoAssessmentPapel(req.params.token);
+  if (!link) return res.status(404).json({ error: 'Link inválido ou expirado' });
+  const resposta = req.db.getRespostaPorTokenAssessmentPapel(req.params.token);
+  res.json({ paciente_nome: link.paciente_nome, resposta1: resposta?.resposta1 || '', resposta2: resposta?.resposta2 || '' });
+});
+
+// Cliente envia (ou atualiza, via autosave) as respostas
+app.post('/api/assessment-papel/responder/:token', (req, res) => {
+  const { resposta1, resposta2 } = req.body || {};
+  if (!resposta1?.trim() && !resposta2?.trim())
+    return res.status(400).json({ error: 'Preencha ao menos uma resposta' });
+  try {
+    const id = req.db.salvarRespostaAssessmentPapel(req.params.token, resposta1, resposta2);
+    if (!id) return res.status(404).json({ error: 'Link inválido' });
+    res.json({ ok: true, id });
+  } catch(e) { erro(res, e); }
+});
+
+// Admin: ver respostas (todas ou de um cliente)
+app.get('/api/assessment-papel/respostas', (req, res) => {
+  if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
+  const pid = req.query.paciente_id ? Number(req.query.paciente_id) : null;
+  res.json(req.db.getRespostasAssessmentPapel(pid));
+});
+
 // ── VISION BOARD ──────────────────────────────────────────────
 // Lista os vision boards de um cliente (requer auth)
 app.get('/api/vision-board/paciente/:paciente_id', (req, res) => {

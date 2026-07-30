@@ -1238,6 +1238,62 @@ const getRespostasMonitCap = (paciente_id) => {
 };
 
 // ============================================================
+// ATIVIDADE — ASSESSMENT PAPEL PROFISSIONAL
+// ============================================================
+db.exec(`
+  CREATE TABLE IF NOT EXISTS assessment_papel_links (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    token         TEXT NOT NULL UNIQUE,
+    paciente_id   INTEGER NOT NULL,
+    paciente_nome TEXT NOT NULL,
+    ativo         INTEGER DEFAULT 1,
+    created_at    TEXT DEFAULT (datetime('now','localtime')),
+    FOREIGN KEY (paciente_id) REFERENCES pacientes(id)
+  );
+  CREATE TABLE IF NOT EXISTS assessment_papel_respostas (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    token         TEXT NOT NULL UNIQUE,
+    paciente_id   INTEGER NOT NULL,
+    paciente_nome TEXT NOT NULL,
+    resposta1     TEXT,
+    resposta2     TEXT,
+    created_at    TEXT DEFAULT (datetime('now','localtime'))
+  );
+`);
+
+const gerarLinkAssessmentPapel = (paciente_id, paciente_nome) => {
+  const token = require('crypto').randomBytes(20).toString('hex');
+  db.prepare('INSERT INTO assessment_papel_links (token, paciente_id, paciente_nome) VALUES (?,?,?)').run(token, paciente_id, paciente_nome);
+  return token;
+};
+
+const getLinkAssessmentPapel = (paciente_id) =>
+  db.prepare('SELECT * FROM assessment_papel_links WHERE paciente_id=? AND ativo=1 ORDER BY id DESC LIMIT 1').get(paciente_id);
+
+const getInfoAssessmentPapel = (token) =>
+  db.prepare('SELECT * FROM assessment_papel_links WHERE token=? AND ativo=1').get(token);
+
+// Salva (ou atualiza) a reflexão do cliente — permite preencher aos poucos (autosave).
+const salvarRespostaAssessmentPapel = (token, resposta1, resposta2) => {
+  const link = db.prepare('SELECT * FROM assessment_papel_links WHERE token=?').get(token);
+  if (!link) return null;
+  db.prepare(`
+    INSERT INTO assessment_papel_respostas (token, paciente_id, paciente_nome, resposta1, resposta2)
+    VALUES (?,?,?,?,?)
+    ON CONFLICT(token) DO UPDATE SET resposta1=excluded.resposta1, resposta2=excluded.resposta2, created_at=datetime('now','localtime')
+  `).run(token, link.paciente_id, link.paciente_nome, resposta1 || '', resposta2 || '');
+  return db.prepare('SELECT id FROM assessment_papel_respostas WHERE token=?').get(token).id;
+};
+
+const getRespostaPorTokenAssessmentPapel = (token) =>
+  db.prepare('SELECT * FROM assessment_papel_respostas WHERE token=?').get(token);
+
+const getRespostasAssessmentPapel = (paciente_id) =>
+  paciente_id
+    ? db.prepare('SELECT * FROM assessment_papel_respostas WHERE paciente_id=? ORDER BY created_at DESC').all(paciente_id)
+    : db.prepare('SELECT * FROM assessment_papel_respostas ORDER BY created_at DESC').all();
+
+// ============================================================
 // VISION BOARD
 // ============================================================
 db.exec(`
@@ -1510,6 +1566,7 @@ return {
   deletarSessoesFuturas, restaurarSessoesFuturas,
   gerarLinkAtivProf, getLinkAtivProf, getInfoAtivProf, salvarRespostaAtivProf, getRespostasAtivProf,
   gerarLinkMonitCap, getLinkMonitCap, getInfoMonitCap, salvarRespostaMonitCap, getRespostaPorTokenMonitCap, getRespostasMonitCap,
+  gerarLinkAssessmentPapel, getLinkAssessmentPapel, getInfoAssessmentPapel, salvarRespostaAssessmentPapel, getRespostaPorTokenAssessmentPapel, getRespostasAssessmentPapel,
   criarVisionBoard, getVisionBoard, getVisionBoardPorToken, getVisionBoardsPaciente, updateVisionBoardTitulo, addImagensVisionBoard, removerImagemVisionBoard, deleteVisionBoard,
   getCurriculoPaciente, getCurriculoById, getCurriculoPorToken, ativarCurriculo, desativarCurriculo, gerarNovoLinkCurriculo, salvarDadosCurriculo, salvarLinkedinArquivo, concluirCurriculo, getVersoesCurriculo,
   getPostsSociais, getPostSocialById, createPostSocial, updatePostSocial, deletePostSocial,

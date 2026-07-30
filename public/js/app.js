@@ -1293,6 +1293,53 @@ async function enviarMonitoramentoCapacidade(id) {
   }
 }
 
+async function enviarAssessmentPapel(id) {
+  try {
+    const base = location.origin;
+    const [p, respostas] = await Promise.all([
+      api('GET', `/pacientes/${id}`),
+      api('GET', `/assessment-papel/respostas?paciente_id=${id}`).catch(() => [])
+    ]);
+    const nome = p.nome, whatsapp = p.whatsapp || '';
+    const r = await api('POST', '/assessment-papel/link', { paciente_id: id });
+    if (!r || !r.token) { toast('Erro ao gerar link', 'error'); return; }
+    const url = base + '/assessment-papel-profissional/?t=' + r.token;
+    const waNome = (p.apelido || '').trim() || nome.split(' ')[0];
+    const waMsg = encodeURIComponent('Oi, ' + waNome + '! 😊\nSegue o link do Assessment de Papel Profissional:\n' + url + '\n\nÉ uma reflexão rápida sobre como você se vê no seu papel e nas suas responsabilidades atuais. Pode preencher aos poucos e enviar quando quiser!');
+    const waLink = whatsapp ? 'https://wa.me/' + toWaNum(whatsapp) + '?text=' + waMsg : '';
+    window._urlAssessmentPapel = url;
+
+    let respostasHtml = '';
+    if (respostas && respostas.length) {
+      const ultima = respostas[0];
+      const dt = ultima.created_at ? ultima.created_at.slice(0,10).split('-').reverse().join('/') : '';
+      respostasHtml = `
+        <hr style="margin:16px 0;border-color:#e0d5cb">
+        <strong style="color:var(--plum);font-size:13px">🪞 Resposta recebida (${dt})</strong>
+        <div style="margin-top:8px;font-size:13px">
+          <p style="font-weight:600;color:var(--plum-mid);margin-bottom:4px">O que você percebe que faz bem hoje?</p>
+          <p style="margin-bottom:12px;white-space:pre-wrap">${ultima.resposta1 || '<span style="color:#aaa">— não preenchido —</span>'}</p>
+          <p style="font-weight:600;color:var(--plum-mid);margin-bottom:4px">Conhecimentos, habilidades e atitudes que contribuem para o seu papel</p>
+          <p style="white-space:pre-wrap">${ultima.resposta2 || '<span style="color:#aaa">— não preenchido —</span>'}</p>
+        </div>`;
+    } else {
+      respostasHtml = `<hr style="margin:16px 0;border-color:#e0d5cb"><p style="font-size:12px;color:#aaa">Nenhuma resposta recebida ainda.</p>`;
+    }
+
+    openModal('🪞 Assessment Papel Profissional — ' + nome, `
+      <p style="margin-bottom:12px;font-size:14px;color:#555">Link gerado para <strong>${nome}</strong>. Envie pelo WhatsApp ou copie o link.</p>
+      <div style="background:#f1f8f2;border:1.5px solid #a5d6a7;border-radius:8px;padding:10px 14px;font-size:12px;word-break:break-all;margin-bottom:14px;color:#2A6B4A">${url}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="navigator.clipboard.writeText(window._urlAssessmentPapel).then(function(){toast('Link copiado!')})">📋 Copiar link</button>
+        ${waLink ? '<a href="' + waLink + '" target="_blank" class="btn btn-primary" style="background:#25d366;border-color:#25d366;text-decoration:none">💬 Enviar pelo WhatsApp</a>' : '<span style="color:#999;font-size:13px">WhatsApp não cadastrado</span>'}
+      </div>
+      ${respostasHtml}
+    `, null);
+  } catch(e) {
+    toast('Erro ao gerar link: ' + e.message, 'error');
+  }
+}
+
 async function abrirVisionBoard(pacienteId) {
   window._vbPacienteId = pacienteId;
   try {
@@ -1491,10 +1538,11 @@ async function desativarGeradorCurriculo() {
 
 async function verDetalhePaciente(id) {
   const p = await api('GET', `/pacientes/${id}`);
-  const [ags, respostas, respostasMonit] = await Promise.all([
+  const [ags, respostas, respostasMonit, respostasAssessment] = await Promise.all([
     api('GET', `/pacientes/${id}/agendamentos`),
     api('GET', `/atividade-profissoes/respostas?paciente_id=${id}`).catch(() => []),
-    api('GET', `/monitoramento-capacidade/respostas?paciente_id=${id}`).catch(() => [])
+    api('GET', `/monitoramento-capacidade/respostas?paciente_id=${id}`).catch(() => []),
+    api('GET', `/assessment-papel/respostas?paciente_id=${id}`).catch(() => [])
   ]);
 
   document.getElementById('pacientes-list-view').style.display = 'none';
@@ -1642,6 +1690,7 @@ async function verDetalhePaciente(id) {
 
     <div id="respostas-profissoes-${p.id}" style="margin:16px 0"></div>
     <div id="respostas-monitcap-${p.id}" style="margin:16px 0"></div>
+    <div id="respostas-assessmentpapel-${p.id}" style="margin:16px 0"></div>
 
     <!-- Acompanhamento (CFP Res. 001/2009) -->
     <div class="card" style="margin-top:16px;border:${p.data_encerramento ? '2px solid #c62828' : '1px solid var(--border)'}">
@@ -1685,6 +1734,7 @@ async function verDetalhePaciente(id) {
       <button class="btn btn-outline" onclick="enviarListaProfissoes(${p.id})">📋 Enviar Lista de Profissões</button>
       <button class="btn btn-outline" onclick="enviarRotasProfissionais(${p.id})">🛤️ Enviar Rotas Profissionais</button>
       <button class="btn btn-outline" onclick="enviarMonitoramentoCapacidade(${p.id})">📈 Enviar Monitoramento de Capacidade</button>
+      <button class="btn btn-outline" onclick="enviarAssessmentPapel(${p.id})">🪞 Enviar Assessment Papel Profissional</button>
       <button class="btn btn-outline" onclick="abrirVisionBoard(${p.id})">🖼️ Vision Board</button>
       <button class="btn btn-outline" onclick="abrirModalDevolutiva(${p.id})">📄 Relatório de Devolutiva</button>
       <button class="btn btn-outline" onclick="abrirGeradorCurriculo(${p.id})">🎓 Gerador de Currículo</button>
@@ -1742,6 +1792,24 @@ async function verDetalhePaciente(id) {
             </table>
           </div>
           ${respostasMonit.length > 1 ? `<p style="font-size:11px;color:#aaa;margin-top:8px">Mostrando envio mais recente. Total: ${respostasMonit.length} envios.</p>` : ''}
+        </div>
+      </div>`;
+  }
+
+  // Render resposta do Assessment de Papel Profissional
+  const elRespAssessment = document.getElementById('respostas-assessmentpapel-' + p.id);
+  if (elRespAssessment && respostasAssessment && respostasAssessment.length) {
+    const ultimaAssessment = respostasAssessment[0];
+    elRespAssessment.innerHTML = `
+      <div class="card" style="border:2px solid var(--plum)">
+        <div class="card-body">
+          <strong style="color:var(--plum)">🪞 Assessment Papel Profissional — Resposta</strong>
+          <div style="margin-top:10px;font-size:13px">
+            <p style="font-weight:600;color:var(--plum-mid);margin-bottom:4px">O que você percebe que faz bem hoje?</p>
+            <p style="margin-bottom:12px;white-space:pre-wrap">${ultimaAssessment.resposta1 || '<span style="color:#aaa">— não preenchido —</span>'}</p>
+            <p style="font-weight:600;color:var(--plum-mid);margin-bottom:4px">Conhecimentos, habilidades e atitudes que contribuem para o seu papel</p>
+            <p style="white-space:pre-wrap">${ultimaAssessment.resposta2 || '<span style="color:#aaa">— não preenchido —</span>'}</p>
+          </div>
         </div>
       </div>`;
   }
