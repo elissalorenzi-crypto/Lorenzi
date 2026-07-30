@@ -100,6 +100,7 @@ let MODELO = { estilo: 'moderno', cor: '#7a5a48' };
 let NOME_CLIENTE = '';
 const STATUS_LABEL = { nao_iniciado: 'Não iniciado', em_andamento: 'Em andamento', concluido: 'Concluído' };
 const NIVEIS_IDIOMA = ['Básico','Intermediário','Avançado','Fluente','Nativo'];
+const BOM_UTF8 = '﻿'; // marca de encoding exigida pelo Word ao interpretar HTML como .doc
 
 function esc(s) {
   return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -238,6 +239,7 @@ function renderForm() {
 
     <div class="actions">
       <button class="btn-outline" onclick="prever()">👁️ Pré-visualizar</button>
+      <button class="btn-outline" onclick="baixarWord()">📝 Baixar Word</button>
       <button class="btn-primary" onclick="baixarPdf()">📄 Baixar PDF</button>
     </div>
   `;
@@ -675,16 +677,46 @@ function prever() {
   w.document.close();
 }
 
-async function baixarPdf() {
-  const w = window.open('', '_blank');
-  w.document.write(montarHtmlCurriculo(true));
-  w.document.close();
+async function marcarConcluido() {
   try {
     await fetch('/api/curriculo/concluir/' + TOKEN, { method: 'POST' });
     STATUS = 'concluido';
     const badge = document.querySelector('.status-badge');
     if (badge) { badge.className = 'status-badge status-' + STATUS; badge.textContent = STATUS_LABEL[STATUS]; }
   } catch(e) {}
+}
+
+function nomeArquivo() {
+  const nome = (dadosAtual.contato && dadosAtual.contato.nome) || 'curriculo';
+  return nome.replace(/[^\p{L}\p{N}\- ]/gu, '').trim() || 'curriculo';
+}
+
+async function baixarPdf() {
+  const w = window.open('', '_blank');
+  w.document.write(montarHtmlCurriculo(true));
+  w.document.close();
+  await marcarConcluido();
+}
+
+// Gera um .doc (HTML reconhecido pelo Word) com o mesmo conteúdo/estilo do PDF.
+// Abre normalmente no Microsoft Word e também pode ser enviado ao Google Drive
+// e aberto/editado como Google Docs (o Drive converte automaticamente).
+async function baixarWord() {
+  const html = montarHtmlCurriculo(false);
+  const htmlWord = html.replace(
+    '<html lang="pt-BR">',
+    '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">'
+  );
+  const blob = new Blob([BOM_UTF8, htmlWord], { type: 'application/msword' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = nomeArquivo() + '.doc';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  await marcarConcluido();
 }
 
 init();
