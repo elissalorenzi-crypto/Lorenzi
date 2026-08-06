@@ -67,6 +67,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg-alt);min-he
 .btn-primary:disabled,.btn-ia:disabled,.btn-ia-sm:disabled{opacity:.6;cursor:not-allowed}
 .actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:20px;margin-bottom:20px}
 .actions .btn-primary,.actions .btn-outline{padding:12px 24px;font-size:14px}
+.actions-en{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:30px;padding-top:14px;border-top:1px dashed var(--border)}
+.actions-en-label{font-size:12px;color:var(--muted);font-weight:600;margin-right:4px}
+.btn-sm{padding:7px 14px;font-size:12.5px}
 
 /* Tela de upload */
 .upload-screen{background:#fff;border-radius:16px;padding:44px 28px;text-align:center;box-shadow:var(--shadow);border:1px solid var(--border)}
@@ -241,6 +244,13 @@ function renderForm() {
       <button class="btn-outline" onclick="prever()">👁️ Pré-visualizar</button>
       <button class="btn-outline" onclick="baixarWord()">📝 Baixar Word</button>
       <button class="btn-primary" onclick="baixarPdf()">📄 Baixar PDF</button>
+    </div>
+
+    <div class="actions-en">
+      <span class="actions-en-label">🌐 English version</span>
+      <button class="btn-outline btn-sm" onclick="preverIngles(this)">👁️ Preview</button>
+      <button class="btn-outline btn-sm" onclick="baixarWordIngles(this)">📝 Word</button>
+      <button class="btn-outline btn-sm" onclick="baixarPdfIngles(this)">📄 PDF</button>
     </div>
   `;
   renderChips();
@@ -552,20 +562,29 @@ async function melhorarResumo(btn) {
 }
 
 // ── PRÉ-VISUALIZAÇÃO E PDF ───────────────────────────────────────
-function periodoTexto(inicio, fim, atual) {
-  return [inicio, atual ? 'Atual' : fim].filter(Boolean).join(' — ');
+const LABELS = {
+  pt: { objetivo:'Objetivo', resumo:'Resumo Profissional', formacao:'Formação Acadêmica', experiencia:'Experiência Profissional', cursos:'Cursos Extracurriculares', competencias:'Competências', idiomas:'Idiomas', nomeNaoInformado:'Nome não informado', atual:'Atual' },
+  en: { objetivo:'Objective', resumo:'Professional Summary', formacao:'Education', experiencia:'Professional Experience', cursos:'Extracurricular Activities', competencias:'Skills', idiomas:'Languages', nomeNaoInformado:'Name not provided', atual:'Present' }
+};
+
+function periodoTexto(inicio, fim, atual, atualLabel) {
+  return [inicio, atual ? (atualLabel || 'Atual') : fim].filter(Boolean).join(' — ');
 }
 
-function montarHtmlCurriculo(comImpressao) {
-  coletarFormulario();
-  const c = dadosAtual.contato || {};
+// idioma: 'pt' (padrão) ou 'en'. dadosOverride: usado para gerar a versão em inglês
+// (já traduzida) sem sobrescrever os dados reais (em português) do formulário.
+function montarHtmlCurriculo(comImpressao, idioma, dadosOverride) {
+  idioma = idioma === 'en' ? 'en' : 'pt';
+  const L = LABELS[idioma];
+  const dados = dadosOverride || (coletarFormulario(), dadosAtual);
+  const c = dados.contato || {};
   const cor = MODELO.cor || '#7a5a48';
   const estilo = MODELO.estilo || 'moderno';
-  const exps = (dadosAtual.experiencias || []).filter(e => e.cargo || e.empresa || e.descricao);
-  const forms = (dadosAtual.formacao || []).filter(f => f.curso || f.instituicao);
-  const cursosExtra = (dadosAtual.cursos || []).filter(x => x.nome || x.instituicao);
-  const comps = dadosAtual.competencias || [];
-  const idiomas = (dadosAtual.idiomas || []).filter(i => i.idioma);
+  const exps = (dados.experiencias || []).filter(e => e.cargo || e.empresa || e.descricao);
+  const forms = (dados.formacao || []).filter(f => f.curso || f.instituicao);
+  const cursosExtra = (dados.cursos || []).filter(x => x.nome || x.instituicao);
+  const comps = dados.competencias || [];
+  const idiomas = (dados.idiomas || []).filter(i => i.idioma);
   const criativo = estilo === 'criativo';
   const classico = estilo === 'classico';
   const executivo = estilo === 'executivo'; // modelo preto e branco, estilo ATS
@@ -573,7 +592,7 @@ function montarHtmlCurriculo(comImpressao) {
   const contatosPlano = [c.localizacao, c.telefone, c.email, c.linkedin_url].filter(Boolean).join(' | ');
 
   return `<!DOCTYPE html>
-<html lang="pt-BR"><head><meta charset="UTF-8"><title>Currículo — ${esc(c.nome || '')}</title>
+<html lang="${idioma}"><head><meta charset="UTF-8"><title>${idioma === 'en' ? 'Resume' : 'Currículo'} — ${esc(c.nome || '')}</title>
 <style>
   :root{ --cor:${executivo ? '#000' : cor}; }
   *{box-sizing:border-box;margin:0;padding:0}
@@ -600,7 +619,7 @@ function montarHtmlCurriculo(comImpressao) {
 </style></head>
 <body>
   <header>
-    <h1>${esc(c.nome || 'Nome não informado')}</h1>
+    <h1>${esc(c.nome || L.nomeNaoInformado)}</h1>
     ${c.titulo_profissional ? `<div class="titulo-prof">${esc(c.titulo_profissional)}</div>` : ''}
     <div class="contatos">
       ${executivo ? esc(contatosPlano) : `
@@ -612,22 +631,22 @@ function montarHtmlCurriculo(comImpressao) {
     </div>
   </header>
 
-  ${dadosAtual.objetivo ? `<section><h2>Objetivo</h2><p class="objetivo">${esc(dadosAtual.objetivo)}</p></section>` : ''}
+  ${dados.objetivo ? `<section><h2>${L.objetivo}</h2><p class="objetivo">${esc(dados.objetivo)}</p></section>` : ''}
 
-  ${dadosAtual.resumo ? `<section><h2>Resumo Profissional</h2><p class="resumo">${esc(dadosAtual.resumo)}</p></section>` : ''}
+  ${dados.resumo ? `<section><h2>${L.resumo}</h2><p class="resumo">${esc(dados.resumo)}</p></section>` : ''}
 
-  ${forms.length ? `<section><h2>Formação Acadêmica</h2>
+  ${forms.length ? `<section><h2>${L.formacao}</h2>
     ${forms.map(f => `
       <div class="item">
         <div class="item-head">
           <div><span class="item-titulo">${esc(f.curso || '')}</span>${f.instituicao ? ` <span class="item-sub">· ${esc(f.instituicao)}</span>` : ''}</div>
-          <span class="item-periodo">${esc(periodoTexto(f.inicio, f.fim, false))}</span>
+          <span class="item-periodo">${esc(periodoTexto(f.inicio, f.fim, false, L.atual))}</span>
         </div>
       </div>
     `).join('')}
   </section>` : ''}
 
-  ${exps.length ? `<section><h2>Experiência Profissional</h2>
+  ${exps.length ? `<section><h2>${L.experiencia}</h2>
     ${exps.map(e => {
       const linhas = (e.descricao || '').split('\n').map(s => s.trim()).filter(Boolean);
       const descricaoHtml = executivo
@@ -637,7 +656,7 @@ function montarHtmlCurriculo(comImpressao) {
       <div class="item">
         <div class="item-head">
           <div><span class="item-titulo">${esc(e.cargo || '')}</span>${e.empresa ? ` <span class="item-sub">· ${esc(e.empresa)}</span>` : ''}</div>
-          <span class="item-periodo">${esc(periodoTexto(e.inicio, e.fim, e.atual))}</span>
+          <span class="item-periodo">${esc(periodoTexto(e.inicio, e.fim, e.atual, L.atual))}</span>
         </div>
         ${e.local ? `<div class="item-sub">${esc(e.local)}</div>` : ''}
         ${descricaoHtml}
@@ -645,7 +664,7 @@ function montarHtmlCurriculo(comImpressao) {
     }).join('')}
   </section>` : ''}
 
-  ${cursosExtra.length ? `<section><h2>Cursos Extracurriculares</h2>
+  ${cursosExtra.length ? `<section><h2>${L.cursos}</h2>
     ${cursosExtra.map(x => `
       <div class="item">
         <div class="item-head">
@@ -656,13 +675,13 @@ function montarHtmlCurriculo(comImpressao) {
     `).join('')}
   </section>` : ''}
 
-  ${comps.length ? `<section><h2>Competências</h2>${
+  ${comps.length ? `<section><h2>${L.competencias}</h2>${
     executivo
       ? `<p style="font-size:10.5pt">${esc(comps.join(', '))}</p>`
       : `<div class="chips">${comps.map(x => `<span class="chip">${esc(x)}</span>`).join('')}</div>`
   }</section>` : ''}
 
-  ${idiomas.length ? `<section><h2>Idiomas</h2>${
+  ${idiomas.length ? `<section><h2>${L.idiomas}</h2>${
     executivo
       ? `<p style="font-size:10.5pt">${esc(idiomas.map(i => i.idioma + (i.nivel ? ' – ' + i.nivel : '')).join(' | '))}</p>`
       : idiomas.map(i => `<div class="item-sub" style="margin-bottom:4px"><strong>${esc(i.idioma)}</strong>${i.nivel ? ' — ' + esc(i.nivel) : ''}</div>`).join('')
@@ -686,8 +705,9 @@ async function marcarConcluido() {
   } catch(e) {}
 }
 
-function nomeArquivo() {
-  const nome = (dadosAtual.contato && dadosAtual.contato.nome) || 'curriculo';
+function nomeArquivo(dados) {
+  const d = dados || dadosAtual;
+  const nome = (d.contato && d.contato.nome) || 'curriculo';
   return nome.replace(/[^\p{L}\p{N}\- ]/gu, '').trim() || 'curriculo';
 }
 
@@ -701,22 +721,78 @@ async function baixarPdf() {
 // Gera um .doc (HTML reconhecido pelo Word) com o mesmo conteúdo/estilo do PDF.
 // Abre normalmente no Microsoft Word e também pode ser enviado ao Google Drive
 // e aberto/editado como Google Docs (o Drive converte automaticamente).
-async function baixarWord() {
-  const html = montarHtmlCurriculo(false);
+async function baixarWord(idioma, dadosOverride) {
+  const html = montarHtmlCurriculo(false, idioma, dadosOverride);
   const htmlWord = html.replace(
-    '<html lang="pt-BR">',
+    /<html lang="[^"]*">/,
     '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">'
   );
   const blob = new Blob([BOM_UTF8, htmlWord], { type: 'application/msword' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = nomeArquivo() + '.doc';
+  a.download = nomeArquivo(dadosOverride) + (idioma === 'en' ? '-EN' : '') + '.doc';
   document.body.appendChild(a);
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
   await marcarConcluido();
+}
+
+// ── VERSÃO EM INGLÊS ──────────────────────────────────────────────
+// Traduz o currículo inteiro (via IA) sob demanda — não altera os dados
+// reais em português salvos no formulário, é só para gerar o arquivo.
+async function obterDadosIngles(btn) {
+  coletarFormulario();
+  const textoOriginal = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = '🌐 Translating...'; }
+  try {
+    const r = await fetch('/api/curriculo/traduzir-ingles/' + TOKEN, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dados: dadosAtual })
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Erro ao traduzir');
+    return data.dados;
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = textoOriginal; }
+  }
+}
+
+async function preverIngles(btn) {
+  // Abre a aba já na hora do clique para não ser bloqueada pelo navegador
+  // enquanto a tradução (assíncrona) acontece.
+  const w = window.open('', '_blank');
+  if (w) w.document.write('<p style="font-family:sans-serif;padding:40px;text-align:center;color:#666">🌐 Translating to English, please wait...</p>');
+  try {
+    const dadosEn = await obterDadosIngles(btn);
+    if (w) { w.document.open(); w.document.write(montarHtmlCurriculo(false, 'en', dadosEn)); w.document.close(); }
+  } catch(e) {
+    if (w) w.document.write('<p style="font-family:sans-serif;padding:40px;color:#c62828">Error: ' + e.message + '</p>');
+    alert('Erro ao gerar versão em inglês: ' + e.message);
+  }
+}
+
+async function baixarPdfIngles(btn) {
+  const w = window.open('', '_blank');
+  if (w) w.document.write('<p style="font-family:sans-serif;padding:40px;text-align:center;color:#666">🌐 Translating to English, please wait...</p>');
+  try {
+    const dadosEn = await obterDadosIngles(btn);
+    if (w) { w.document.open(); w.document.write(montarHtmlCurriculo(true, 'en', dadosEn)); w.document.close(); }
+    await marcarConcluido();
+  } catch(e) {
+    if (w) w.document.write('<p style="font-family:sans-serif;padding:40px;color:#c62828">Error: ' + e.message + '</p>');
+    alert('Erro ao gerar versão em inglês: ' + e.message);
+  }
+}
+
+async function baixarWordIngles(btn) {
+  try {
+    const dadosEn = await obterDadosIngles(btn);
+    await baixarWord('en', dadosEn);
+  } catch(e) {
+    alert('Erro ao gerar versão em inglês: ' + e.message);
+  }
 }
 
 init();

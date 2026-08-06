@@ -1896,6 +1896,56 @@ ${texto}
   }
 });
 
+// Público: traduz o currículo inteiro para inglês (usado para gerar a versão em inglês do PDF/Word)
+app.post('/api/curriculo/traduzir-ingles/:token', async (req, res) => {
+  const cv = req.db.getCurriculoPorToken(req.params.token);
+  if (!cv) return res.status(404).json({ error: 'Link inválido ou expirado' });
+  const { dados } = req.body || {};
+  if (!dados) return res.status(400).json({ error: 'Dados obrigatórios' });
+
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return res.status(503).json({ error: 'ANTHROPIC_API_KEY não configurada' });
+
+  const prompt = `Traduza o currículo abaixo (em português, representado em JSON) para um inglês profissional, no padrão de currículo americano.
+
+Regras importantes:
+- Retorne um JSON com EXATAMENTE a mesma estrutura, os mesmos campos e a mesma quantidade de itens em cada lista do original.
+- NÃO invente nem acrescente informações que não estejam no original. NÃO traduza nomes próprios: nome da pessoa, nome de empresas, nome de instituições de ensino, e-mail, telefone, URL do LinkedIn e nomes de ferramentas/produtos (ex: Excel, PowerPoint, Canva, Google Analytics) — mantenha exatamente como estão.
+- Traduza: título profissional, objetivo, resumo, cargos, local de trabalho, descrições de experiência, nome do curso/formação, competências genéricas, nomes de idiomas (ex: "Português"→"Portuguese", "Inglês"→"English") e níveis de idioma (ex: "Fluente"→"Fluent", "Nativo"→"Native", "Avançado"→"Advanced", "Intermediário"→"Intermediate", "Básico"→"Basic").
+- A localização (cidade/estado) pode permanecer como está.
+- Campos vazios ("" ou []) continuam vazios. O campo "atual" continua um valor booleano (true/false), sem alteração.
+- Responda APENAS com o JSON traduzido, sem markdown, sem explicações.
+
+JSON original:
+${JSON.stringify(dados)}`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-8',
+        max_tokens: 4096,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data?.error?.message || 'Erro na API');
+    const texto = data.content?.[0]?.text || '{}';
+    const jsonMatch = texto.match(/\{[\s\S]*\}/);
+    const traduzido = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+    if (!traduzido) throw new Error('Não foi possível interpretar a tradução');
+    res.json({ dados: traduzido });
+  } catch(e) {
+    console.error('curriculo/traduzir-ingles:', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // Público: cliente finaliza — marca concluído e grava uma versão (snapshot)
 app.post('/api/curriculo/concluir/:token', (req, res) => {
   try {
