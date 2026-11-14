@@ -133,7 +133,7 @@ function navigate(name) {
     dashboard: 'Dashboard', contratos: 'Contratos Assinados', agenda: 'Agenda',
     pacientes: 'Clientes', prontuarios: 'Prontuários', biblioteca: 'Biblioteca de Atividades',
     financeiro: 'Financeiro Atual', 'financeiro-novo': 'Financeiro', configuracoes: 'Configurações',
-    'agenda-cliente': 'Agenda Cliente', lucca: 'Lucca'
+    'agenda-cliente': 'Agenda Cliente'
   };
   document.getElementById('topbar-title').textContent = titles[name] || name;
   _currentSection = name;
