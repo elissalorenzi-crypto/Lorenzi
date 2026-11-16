@@ -45,8 +45,8 @@ body { display: flex; }
 #sidebar {
   width: 240px;
   min-height: 100vh;
-  background: linear-gradient(170deg, #1A1816 0%, #000000 100%);
-  border-right: 1px solid rgba(255,255,255,.06);
+  background: linear-gradient(170deg, #F2F1ED 0%, #E3E0DA 100%);
+  border-right: 1px solid rgba(0,0,0,.08);
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -66,7 +66,7 @@ body { display: flex; }
 /* ── SIDEBAR ──────────────────────────────────────────────── */
 .brand {
   padding: 28px 20px 24px;
-  border-bottom: 1px solid rgba(255,255,255,.10);
+  border-bottom: 1px solid rgba(26,24,22,.10);
 }
 .brand-icon {
   font-size: 32px;
@@ -76,13 +76,13 @@ body { display: flex; }
 .brand-name {
   font-size: 15px;
   font-weight: 700;
-  color: #F5F3F0;
+  color: var(--plum);
   letter-spacing: .3px;
   line-height: 1.2;
 }
 .brand-crp {
   font-size: 11px;
-  color: rgba(255,255,255,.60);
+  color: rgba(26,24,22,.60);
   margin-top: 3px;
   letter-spacing: .5px;
 }
@@ -92,7 +92,7 @@ nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
 .nav-group-label {
   font-size: 10px;
   font-weight: 700;
-  color: rgba(255,255,255,.40);
+  color: rgba(26,24,22,.40);
   text-transform: uppercase;
   letter-spacing: 1.2px;
   padding: 14px 10px 6px;
@@ -104,15 +104,15 @@ nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
   gap: 10px;
   padding: 10px 12px;
   border-radius: var(--radius-sm);
-  color: rgba(255,255,255,.80);
+  color: rgba(26,24,22,.78);
   font-size: 13.5px;
   font-weight: 500;
   transition: all .18s;
   margin-bottom: 2px;
 }
 .nav-link .icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
-.nav-link:hover { background: rgba(255,255,255,.10); color: #fff; }
-.nav-link-ext { color: rgba(255,255,255,.45); font-size: 13px; }
+.nav-link:hover { background: rgba(26,24,22,.08); color: var(--plum); }
+.nav-link-ext { color: rgba(26,24,22,.45); font-size: 13px; }
 .nav-link-ext::after { content: '↗'; font-size: 10px; margin-left: auto; opacity: .5; }
 .nav-badge {
   background: var(--red);
@@ -131,14 +131,14 @@ nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
   background: linear-gradient(90deg, #8A7F70 0%, #6E6456 100%);
   color: #fff;
   font-weight: 600;
-  box-shadow: 0 3px 12px rgba(0,0,0,.40);
+  box-shadow: 0 3px 12px rgba(0,0,0,.20);
 }
 
 .sidebar-footer {
   padding: 16px 20px;
-  border-top: 1px solid rgba(255,255,255,.10);
+  border-top: 1px solid rgba(26,24,22,.10);
   font-size: 11px;
-  color: rgba(255,255,255,.40);
+  color: rgba(26,24,22,.45);
   text-align: center;
 }
 
@@ -267,11 +267,11 @@ nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
 .btn-lg { padding: 11px 22px; font-size: 14px; }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--rose) 0%, #000000 100%);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(26,24,22,.30);
+  background: linear-gradient(135deg, #DCD9D1 0%, #C7C3B8 100%);
+  color: var(--plum);
+  box-shadow: 0 2px 8px rgba(26,24,22,.12);
 }
-.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(26,24,22,.40); }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(26,24,22,.18); }
 
 .btn-lavender {
   background: linear-gradient(135deg, var(--lavender) 0%, var(--rose-soft) 100%);
@@ -1300,22 +1300,22 @@ tbody tr:hover { background: var(--rose-pale); }
   bottom: 24px;
   right: 24px;
   z-index: 9500;
-  background: var(--plum);
-  color: #fff;
+  background: linear-gradient(135deg, #F2F1ED 0%, #E3E0DA 100%);
+  color: var(--plum);
   padding: 16px 18px;
   border-radius: 14px;
   display: flex;
   align-items: center;
   gap: 12px;
-  box-shadow: 0 6px 28px rgba(74,55,40,.40);
+  box-shadow: 0 6px 28px rgba(26,24,22,.20);
   max-width: 420px;
   animation: zoomBannerIn .3s ease;
   font-size: 14px;
 }
 .notif-zoom-btn {
-  background: rgba(255,255,255,.18);
+  background: rgba(26,24,22,.08);
   border: none;
-  color: #fff;
+  color: var(--plum);
   padding: 7px 13px;
   border-radius: 8px;
   cursor: pointer;
@@ -1323,9 +1323,9 @@ tbody tr:hover { background: var(--rose-pale); }
   white-space: nowrap;
   transition: background .15s;
 }
-.notif-zoom-btn:hover { background: rgba(255,255,255,.28); }
-.notif-zoom-btn-primary { background: var(--rose); }
-.notif-zoom-btn-primary:hover { background: var(--rose-soft); }
+.notif-zoom-btn:hover { background: rgba(26,24,22,.14); }
+.notif-zoom-btn-primary { background: var(--rose-soft); color: #fff; }
+.notif-zoom-btn-primary:hover { background: #6E6456; }
 @keyframes zoomBannerIn {
   from { transform: translateY(20px); opacity: 0; }
   to   { transform: translateY(0);    opacity: 1; }
