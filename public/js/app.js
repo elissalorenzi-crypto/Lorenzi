@@ -2922,7 +2922,7 @@ function renderClientesHoje(ags, pacs) {
   if (!hoje.length) { el.innerHTML = ''; return; }
 
   const STATUS_COR = {
-    agendado:   { bg: '#FBF3F9', border: '#E8D5E4', dot: '#CEBBAD',  label: 'Agendado'   },
+    agendado:   { bg: '#F7F6F3', border: '#E3E0DA', dot: '#1A1816',  label: 'Agendado'   },
     confirmado: { bg: '#f0fdf4', border: '#a8d5c2', dot: '#2A6B4A',  label: 'Confirmado' },
     realizado:  { bg: '#f5f0f7', border: '#c8a8d5', dot: '#5B4466',  label: 'Realizado'  },
   };
@@ -3137,7 +3137,7 @@ function prontuarioFormHtml(r = {}, agendamentos = []) {
       <input type="date" id="pr-data" value="${r.data || HOJE()}">
     </div>
     <!-- Ditado por voz -->
-    <div id="ditado-box" style="background:#FBF3F9;border:1.5px solid #E8D5E4;border-radius:12px;padding:14px 16px;margin-bottom:16px">
+    <div id="ditado-box" style="background:var(--bg-alt);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
         <button type="button" id="btn-mic" onclick="toggleDitado()" title="Gravar relato por voz" style="width:42px;height:42px;border-radius:50%;border:none;background:var(--rose);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s">🎙️</button>
         <div>
@@ -3146,7 +3146,7 @@ function prontuarioFormHtml(r = {}, agendamentos = []) {
         </div>
         <button type="button" id="btn-estruturar" onclick="estruturarDitado()" style="display:none;margin-left:auto" class="btn btn-sm btn-primary">✨ Estruturar com IA</button>
       </div>
-      <textarea id="ditado-transcricao" rows="3" placeholder="A transcrição aparecerá aqui enquanto você fala..." style="width:100%;border:1px solid #E8D5E4;border-radius:8px;padding:10px;font-size:13px;color:var(--text);background:#fff;resize:vertical;display:none"></textarea>
+      <textarea id="ditado-transcricao" rows="3" placeholder="A transcrição aparecerá aqui enquanto você fala..." style="width:100%;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;color:var(--text);background:#fff;resize:vertical;display:none"></textarea>
     </div>
     <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
       <button type="button" class="btn btn-sm btn-outline" id="btn-corrigir-pront" onclick="corrigirProntuario()" title="Organiza e estrutura suas anotações seguindo as diretrizes do CFP, preservando todo o conteúdo que você escreveu">
