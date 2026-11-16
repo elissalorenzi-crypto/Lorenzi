@@ -707,10 +707,9 @@ async function openModalAgendamento(ag = null, dataPreset = null, pacienteIdPres
         <label>Nome do Compromisso</label>
         <input type="text" id="ag-titulo" placeholder="Ex: Reunião, Supervisão, Consulta médica..." value="${ag?.titulo || ''}">
       </div>
-      ${!isEdit ? `
       <div class="form-group full" id="ag-recorrencia-box">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-          <input type="checkbox" id="ag-recorrente" onchange="toggleRecorrenciaCompromisso()"> Repetir este agendamento
+          <input type="checkbox" id="ag-recorrente" onchange="toggleRecorrenciaCompromisso()"> ${isEdit ? 'Repetir a partir deste agendamento' : 'Repetir este agendamento'}
         </label>
         <div id="ag-recorrencia-opcoes" class="form-grid" style="display:none;margin-top:10px">
           <div class="form-group">
@@ -722,12 +721,11 @@ async function openModalAgendamento(ag = null, dataPreset = null, pacienteIdPres
             </select>
           </div>
           <div class="form-group">
-            <label>Número de sessões</label>
+            <label>${isEdit ? 'Número de novas sessões' : 'Número de sessões'}</label>
             <input type="number" id="ag-recorrencia-qtd" value="4" min="2" max="52">
           </div>
         </div>
       </div>
-      ` : ''}
       <div class="form-group">
         <label>Data</label>
         <input type="date" id="ag-data" value="${ag?.data || defaultDate}">
@@ -821,14 +819,25 @@ async function openModalAgendamento(ag = null, dataPreset = null, pacienteIdPres
       consentimento_teleconsulta: modalidade === 'online' && document.getElementById('ag-consent-tele')?.checked ? 1 : 0
     };
     if (!body.data || !body.hora) return toast('Data e hora são obrigatórios', 'error') || false;
-    const recorrente = !isEdit && document.getElementById('ag-recorrente')?.checked;
+    const recorrente = document.getElementById('ag-recorrente')?.checked;
     const recQtd  = recorrente ? (parseInt(document.getElementById('ag-recorrencia-qtd').value) || 1) : 1;
     const recFreq = recorrente ? (parseInt(document.getElementById('ag-recorrencia-freq').value) || 7) : 7;
     try {
       const savedPacId = body.paciente_id;
       const dv = document.getElementById('pacientes-detail-view');
       const detailWasOpen = dv && dv.style.display !== 'none';
-      if (isEdit) { await api('PUT', `/agendamentos/${ag.id}`, body); toast('Agendamento atualizado!'); }
+      if (isEdit) {
+        await api('PUT', `/agendamentos/${ag.id}`, body);
+        if (recorrente && recQtd > 1) {
+          const { ids } = await api('POST', '/agendamentos/serie', {
+            paciente_id: body.paciente_id, titulo: body.titulo, data_inicio: addDays(body.data, recFreq), hora: body.hora,
+            quantidade: recQtd - 1, tipo: body.tipo, valor: body.valor, duracao: body.duracao, intervalo: recFreq, obs: body.obs
+          });
+          toast(`Agendamento atualizado e ${ids.length} nova(s) ocorrência(s) criada(s)!`);
+        } else {
+          toast('Agendamento atualizado!');
+        }
+      }
       else if (recorrente && recQtd > 1) {
         const { ids } = await api('POST', '/agendamentos/serie', {
           paciente_id: body.paciente_id, titulo: body.titulo, data_inicio: body.data, hora: body.hora, quantidade: recQtd,
