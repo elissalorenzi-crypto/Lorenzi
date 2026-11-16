@@ -708,9 +708,9 @@ async function openModalAgendamento(ag = null, dataPreset = null, pacienteIdPres
         <input type="text" id="ag-titulo" placeholder="Ex: Reunião, Supervisão, Consulta médica..." value="${ag?.titulo || ''}">
       </div>
       ${!isEdit ? `
-      <div class="form-group full" id="ag-recorrencia-box" style="${modoInicial==='compromisso'?'':'display:none'}">
+      <div class="form-group full" id="ag-recorrencia-box">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-          <input type="checkbox" id="ag-recorrente" onchange="toggleRecorrenciaCompromisso()"> Repetir este compromisso
+          <input type="checkbox" id="ag-recorrente" onchange="toggleRecorrenciaCompromisso()"> Repetir este agendamento
         </label>
         <div id="ag-recorrencia-opcoes" class="form-grid" style="display:none;margin-top:10px">
           <div class="form-group">
@@ -821,7 +821,7 @@ async function openModalAgendamento(ag = null, dataPreset = null, pacienteIdPres
       consentimento_teleconsulta: modalidade === 'online' && document.getElementById('ag-consent-tele')?.checked ? 1 : 0
     };
     if (!body.data || !body.hora) return toast('Data e hora são obrigatórios', 'error') || false;
-    const recorrente = !isEdit && modo === 'compromisso' && document.getElementById('ag-recorrente')?.checked;
+    const recorrente = !isEdit && document.getElementById('ag-recorrente')?.checked;
     const recQtd  = recorrente ? (parseInt(document.getElementById('ag-recorrencia-qtd').value) || 1) : 1;
     const recFreq = recorrente ? (parseInt(document.getElementById('ag-recorrencia-freq').value) || 7) : 7;
     try {
@@ -831,10 +831,10 @@ async function openModalAgendamento(ag = null, dataPreset = null, pacienteIdPres
       if (isEdit) { await api('PUT', `/agendamentos/${ag.id}`, body); toast('Agendamento atualizado!'); }
       else if (recorrente && recQtd > 1) {
         const { ids } = await api('POST', '/agendamentos/serie', {
-          titulo: body.titulo, data_inicio: body.data, hora: body.hora, quantidade: recQtd,
+          paciente_id: body.paciente_id, titulo: body.titulo, data_inicio: body.data, hora: body.hora, quantidade: recQtd,
           tipo: body.tipo, valor: body.valor, duracao: body.duracao, intervalo: recFreq, obs: body.obs
         });
-        toast(`${ids.length} compromissos agendados!`);
+        toast(`${ids.length} ${modo === 'compromisso' ? 'compromissos' : 'sessões'} agendados!`);
       }
       else {
         await api('POST', '/agendamentos', body);
@@ -878,10 +878,8 @@ function toggleModoAgendamento() {
   const modo = document.getElementById('ag-modo')?.value;
   const clienteBox = document.getElementById('ag-cliente-box');
   const tituloBox  = document.getElementById('ag-titulo-box');
-  const recBox     = document.getElementById('ag-recorrencia-box');
   if (clienteBox) clienteBox.style.display = modo === 'compromisso' ? 'none' : '';
   if (tituloBox)  tituloBox.style.display  = modo === 'compromisso' ? '' : 'none';
-  if (recBox)     recBox.style.display     = modo === 'compromisso' ? '' : 'none';
 }
 
 function toggleRecorrenciaCompromisso() {
