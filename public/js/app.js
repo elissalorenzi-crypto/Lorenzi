@@ -779,7 +779,7 @@ async function openModalAgendamento(ag = null, dataPreset = null, pacienteIdPres
     </div>
   `;
 
-  openModal(isEdit ? 'Editar Agendamento' : 'Nova Sessão', html, async () => {
+  openModal(isEdit ? 'Editar Agendamento' : 'Novo Compromisso', html, async () => {
     const modalidade = document.getElementById('ag-modalidade')?.value || 'presencial';
     const modo = document.getElementById('ag-modo').value;
     const titulo = document.getElementById('ag-titulo').value.trim();
