@@ -478,10 +478,10 @@ function renderAgendaGrid() {
         <div class="day-slots">
           ${appts.length
             ? appts.map(a => `
-                <div class="appt-chip ${a.status}" title="${a.paciente_nome||''}">
+                <div class="appt-chip ${a.status}" title="${a.titulo || a.paciente_nome || ''}">
                   <div onclick="editAgendamento(${a.id})" style="cursor:pointer">
                     <div class="appt-hora">${a.hora}</div>
-                    <div class="appt-nome">${a.paciente_nome || 'Sem cliente'}</div>
+                    <div class="appt-nome">${a.titulo || a.paciente_nome || 'Sem cliente'}</div>
                     <div class="appt-tipo">${TIPO_LABEL[a.tipo]||a.tipo}</div>
                     ${(() => { const si = calcSessao(a); return si ? `<div class="appt-sessao">S${si.s}/${si.total} · faltam ${si.faltam}</div>` : ''; })()}
                   </div>
@@ -518,7 +518,7 @@ function _renderAgendaRow(a) { return `
     <tr>
       <td>${fmtData(a.data)}</td>
       <td><strong>${a.hora}</strong></td>
-      <td>${a.paciente_nome || '<span class="text-muted">—</span>'}${(() => { const si = calcSessao(a); return si ? ` <span class="hor-sessao" style="vertical-align:middle">S${si.s}/${si.total}</span>` : ''; })()}</td>
+      <td>${a.titulo || a.paciente_nome || '<span class="text-muted">—</span>'}${(() => { const si = calcSessao(a); return si ? ` <span class="hor-sessao" style="vertical-align:middle">S${si.s}/${si.total}</span>` : ''; })()}</td>
       <td>${TIPO_LABEL[a.tipo]||a.tipo}</td>
       <td>${badgeStatus(a.status)}</td>
       <td class="text-right fw-bold">${BRL(a.valor)}</td>
@@ -649,7 +649,7 @@ function renderAgendaHorario() {
       const _si = calcSessao(a);
       const sessaoTag = _si ? `<span class="hor-sessao">S${_si.s}/${_si.total}</span>` : '';
       const bloco = `<div class="hor-appt ${sc}">
-        <span class="hor-nome">${a.paciente_nome || '—'}${duplo}</span>${sessaoTag}
+        <span class="hor-nome">${a.titulo || a.paciente_nome || '—'}${duplo}</span>${sessaoTag}
         <div class="hor-actions">
           ${zoomBtn}
           <button class="appt-btn appt-btn-ok"  onclick="marcarRealizado(${a.id})"       title="Finalizar">✓</button>
@@ -685,14 +685,27 @@ async function openModalAgendamento(ag = null, dataPreset = null, pacienteIdPres
     `<option value="${p.id}" ${pacIdSel == p.id ? 'selected' : ''}>${p.nome}</option>`
   ).join('');
 
+  const modoInicial = !pacIdSel && ag?.titulo ? 'compromisso' : 'cliente';
+
   const html = `
     <div class="form-grid">
       <div class="form-group full">
+        <label>Tipo de Agendamento</label>
+        <select id="ag-modo" onchange="toggleModoAgendamento()">
+          <option value="cliente"     ${modoInicial==='cliente'?'selected':''}>Cliente</option>
+          <option value="compromisso" ${modoInicial==='compromisso'?'selected':''}>Compromisso (sem cliente)</option>
+        </select>
+      </div>
+      <div class="form-group full" id="ag-cliente-box" style="${modoInicial==='compromisso'?'display:none':''}">
         <label>Cliente</label>
         <select id="ag-paciente" onchange="autoPreencherAgendamento()">
           <option value="">Sem cliente (bloquear horário)</option>
           ${pacOptions}
         </select>
+      </div>
+      <div class="form-group full" id="ag-titulo-box" style="${modoInicial==='compromisso'?'':'display:none'}">
+        <label>Nome do Compromisso</label>
+        <input type="text" id="ag-titulo" placeholder="Ex: Reunião, Supervisão, Consulta médica..." value="${ag?.titulo || ''}">
       </div>
       <div class="form-group">
         <label>Data</label>
@@ -768,8 +781,12 @@ async function openModalAgendamento(ag = null, dataPreset = null, pacienteIdPres
 
   openModal(isEdit ? 'Editar Agendamento' : 'Nova Sessão', html, async () => {
     const modalidade = document.getElementById('ag-modalidade')?.value || 'presencial';
+    const modo = document.getElementById('ag-modo').value;
+    const titulo = document.getElementById('ag-titulo').value.trim();
+    if (modo === 'compromisso' && !titulo) return toast('Informe o nome do compromisso', 'error') || false;
     const body = {
-      paciente_id:              document.getElementById('ag-paciente').value || null,
+      paciente_id:              modo === 'compromisso' ? null : (document.getElementById('ag-paciente').value || null),
+      titulo:                   modo === 'compromisso' ? titulo : null,
       data:                     document.getElementById('ag-data').value,
       hora:                     document.getElementById('ag-hora').value,
       duracao:                  parseInt(document.getElementById('ag-duracao').value),
@@ -824,6 +841,14 @@ async function openModalAgendamento(ag = null, dataPreset = null, pacienteIdPres
       }
     } catch(e) { toast(e.message, 'error'); }
   });
+}
+
+function toggleModoAgendamento() {
+  const modo = document.getElementById('ag-modo')?.value;
+  const clienteBox = document.getElementById('ag-cliente-box');
+  const tituloBox  = document.getElementById('ag-titulo-box');
+  if (clienteBox) clienteBox.style.display = modo === 'compromisso' ? 'none' : '';
+  if (tituloBox)  tituloBox.style.display  = modo === 'compromisso' ? '' : 'none';
 }
 
 function toggleConsentTeleconsulta() {

@@ -438,7 +438,7 @@ app.post('/api/agendamentos', auth, async (req, res) => {
       const ag  = req.db.getAgendamentoById(id);
       const cfg = req.db.getConfig();
       if (cfg.zoom_account_id && ag) {
-        const nome = ag.paciente_nome || 'Consulta';
+        const nome = ag.titulo || ag.paciente_nome || 'Consulta';
         const link = await criarReuniaozoom(cfg, `Sessão — ${nome}`, `${ag.data}T${ag.hora}:00`, ag.duracao || cfg.duracao_sessao || 50);
         req.db.updateAgendamento(id, { ...ag, zoom_link: link });
       }

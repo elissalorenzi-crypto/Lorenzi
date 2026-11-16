@@ -53,6 +53,7 @@ const migrations = [
   "ALTER TABLE agendamentos ADD COLUMN modalidade TEXT DEFAULT 'presencial'",
   "ALTER TABLE agendamentos ADD COLUMN consentimento_teleconsulta INTEGER DEFAULT 0",
   "ALTER TABLE agendamentos ADD COLUMN cobranca_enviada_em TEXT",
+  "ALTER TABLE agendamentos ADD COLUMN titulo TEXT",
 ];
 for (const m of migrations) {
   try { db.exec(m); } catch(_) {}
@@ -182,6 +183,7 @@ db.exec(`
     pago        INTEGER DEFAULT 0,
     forma_pgto  TEXT,
     obs         TEXT,
+    titulo      TEXT,
     created_at  TEXT DEFAULT (datetime('now','localtime')),
     FOREIGN KEY (paciente_id) REFERENCES pacientes(id)
   );
@@ -462,25 +464,26 @@ try { db.prepare("UPDATE pacientes SET freq_pgto='fp-mensal' WHERE freq_pgto='ca
 
 const createAgendamento = (data) =>
   rid(db.prepare(`
-    INSERT INTO agendamentos (paciente_id, data, hora, duracao, tipo, status, valor, pago, forma_pgto, obs, zoom_link)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?)
+    INSERT INTO agendamentos (paciente_id, data, hora, duracao, tipo, status, valor, pago, forma_pgto, obs, zoom_link, titulo)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
   `).run(
     data.paciente_id || null, data.data, data.hora,
     data.duracao || 50, data.tipo || 'sessao', data.status || 'agendado',
-    data.valor || 0, data.pago || 0, data.forma_pgto || null, data.obs || null, data.zoom_link || null
+    data.valor || 0, data.pago || 0, data.forma_pgto || null, data.obs || null, data.zoom_link || null,
+    data.titulo || null
   ));
 
 const updateAgendamento = (id, data) =>
   db.prepare(`
     UPDATE agendamentos SET
       paciente_id=?, data=?, hora=?, duracao=?, tipo=?, status=?,
-      valor=?, pago=?, forma_pgto=?, obs=?, zoom_link=?, data_pagamento=?
+      valor=?, pago=?, forma_pgto=?, obs=?, zoom_link=?, data_pagamento=?, titulo=?
     WHERE id=?
   `).run(
     data.paciente_id || null, data.data, data.hora,
     data.duracao || 50, data.tipo || 'sessao', data.status || 'agendado',
     data.valor || 0, data.pago || 0, data.forma_pgto || null, data.obs || null,
-    data.zoom_link || null, data.data_pagamento || null, id
+    data.zoom_link || null, data.data_pagamento || null, data.titulo || null, id
   );
 
 const deleteAgendamento = (id) =>
