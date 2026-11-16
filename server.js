@@ -456,19 +456,23 @@ app.post('/api/agendamentos', auth, async (req, res) => {
   } catch(e) { erro(res, e); }
 });
 
-// Cria uma série de sessões para um paciente
+// Cria uma série de sessões (para um paciente ou um compromisso sem cliente)
 app.post('/api/agendamentos/serie', async (req, res) => {
   if (!authOk(req)) return res.status(401).json({ error: 'Não autorizado' });
   try {
-    const { paciente_id, data_inicio, hora, quantidade, tipo, valor, duracao, intervalo } = req.body;
-    if (!paciente_id || !data_inicio || !hora || !quantidade) return res.status(400).json({ error: 'Dados incompletos' });
+    const { paciente_id, titulo, data_inicio, hora, quantidade, tipo, valor, duracao, intervalo, obs } = req.body;
+    if ((!paciente_id && !titulo) || !data_inicio || !hora || !quantidade) return res.status(400).json({ error: 'Dados incompletos' });
     const cfg = req.db.getConfig();
     const ids = [];
     const dias = intervalo || 7;
     let d = new Date(data_inicio + 'T12:00:00');
     for (let i = 0; i < quantidade; i++) {
       const data = d.toISOString().slice(0, 10);
-      const id = req.db.createAgendamento({ paciente_id, data, hora, tipo: tipo || 'sessao', status: 'agendado', valor: valor || 0, duracao: duracao || cfg.duracao_sessao || 50 });
+      const id = req.db.createAgendamento({
+        paciente_id: paciente_id || null, titulo: titulo || null, data, hora,
+        tipo: tipo || 'sessao', status: 'agendado', valor: valor || 0,
+        duracao: duracao || cfg.duracao_sessao || 50, obs: obs || null
+      });
       ids.push(id);
       d.setDate(d.getDate() + dias);
     }

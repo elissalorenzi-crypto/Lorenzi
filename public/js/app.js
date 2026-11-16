@@ -707,6 +707,27 @@ async function openModalAgendamento(ag = null, dataPreset = null, pacienteIdPres
         <label>Nome do Compromisso</label>
         <input type="text" id="ag-titulo" placeholder="Ex: Reunião, Supervisão, Consulta médica..." value="${ag?.titulo || ''}">
       </div>
+      ${!isEdit ? `
+      <div class="form-group full" id="ag-recorrencia-box" style="${modoInicial==='compromisso'?'':'display:none'}">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" id="ag-recorrente" onchange="toggleRecorrenciaCompromisso()"> Repetir este compromisso
+        </label>
+        <div id="ag-recorrencia-opcoes" class="form-grid" style="display:none;margin-top:10px">
+          <div class="form-group">
+            <label>Frequência</label>
+            <select id="ag-recorrencia-freq">
+              <option value="7">Semanal</option>
+              <option value="14">Quinzenal</option>
+              <option value="30">Mensal</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Número de sessões</label>
+            <input type="number" id="ag-recorrencia-qtd" value="4" min="2" max="52">
+          </div>
+        </div>
+      </div>
+      ` : ''}
       <div class="form-group">
         <label>Data</label>
         <input type="date" id="ag-data" value="${ag?.data || defaultDate}">
@@ -800,11 +821,21 @@ async function openModalAgendamento(ag = null, dataPreset = null, pacienteIdPres
       consentimento_teleconsulta: modalidade === 'online' && document.getElementById('ag-consent-tele')?.checked ? 1 : 0
     };
     if (!body.data || !body.hora) return toast('Data e hora são obrigatórios', 'error') || false;
+    const recorrente = !isEdit && modo === 'compromisso' && document.getElementById('ag-recorrente')?.checked;
+    const recQtd  = recorrente ? (parseInt(document.getElementById('ag-recorrencia-qtd').value) || 1) : 1;
+    const recFreq = recorrente ? (parseInt(document.getElementById('ag-recorrencia-freq').value) || 7) : 7;
     try {
       const savedPacId = body.paciente_id;
       const dv = document.getElementById('pacientes-detail-view');
       const detailWasOpen = dv && dv.style.display !== 'none';
       if (isEdit) { await api('PUT', `/agendamentos/${ag.id}`, body); toast('Agendamento atualizado!'); }
+      else if (recorrente && recQtd > 1) {
+        const { ids } = await api('POST', '/agendamentos/serie', {
+          titulo: body.titulo, data_inicio: body.data, hora: body.hora, quantidade: recQtd,
+          tipo: body.tipo, valor: body.valor, duracao: body.duracao, intervalo: recFreq, obs: body.obs
+        });
+        toast(`${ids.length} compromissos agendados!`);
+      }
       else {
         await api('POST', '/agendamentos', body);
         toast('Sessão agendada!');
@@ -847,8 +878,16 @@ function toggleModoAgendamento() {
   const modo = document.getElementById('ag-modo')?.value;
   const clienteBox = document.getElementById('ag-cliente-box');
   const tituloBox  = document.getElementById('ag-titulo-box');
+  const recBox     = document.getElementById('ag-recorrencia-box');
   if (clienteBox) clienteBox.style.display = modo === 'compromisso' ? 'none' : '';
   if (tituloBox)  tituloBox.style.display  = modo === 'compromisso' ? '' : 'none';
+  if (recBox)     recBox.style.display     = modo === 'compromisso' ? '' : 'none';
+}
+
+function toggleRecorrenciaCompromisso() {
+  const chk = document.getElementById('ag-recorrente');
+  const box = document.getElementById('ag-recorrencia-opcoes');
+  if (box) box.style.display = chk?.checked ? '' : 'none';
 }
 
 function toggleConsentTeleconsulta() {
