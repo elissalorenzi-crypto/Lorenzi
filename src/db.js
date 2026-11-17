@@ -1406,10 +1406,16 @@ const ativarCurriculo = (paciente_id, paciente_nome) => {
 const desativarCurriculo = (id) =>
   db.prepare('UPDATE curriculos SET ativo=0 WHERE id=?').run(id).changes;
 
-// Gera um novo token (invalida o link anterior) mantendo os dados já preenchidos.
+// Gera um novo token (invalida o link anterior) e reseta o currículo para começar do zero.
 const gerarNovoLinkCurriculo = (id) => {
   const token = require('crypto').randomBytes(20).toString('hex');
-  db.prepare('UPDATE curriculos SET token=?, ativo=1 WHERE id=?').run(token, id);
+  db.prepare(`
+    UPDATE curriculos SET
+      token=?, ativo=1, status='nao_iniciado', dados='{}',
+      linkedin_arquivo=NULL, linkedin_nome_original=NULL,
+      updated_at=datetime('now','localtime')
+    WHERE id=?
+  `).run(token, id);
   return getCurriculoById(id);
 };
 

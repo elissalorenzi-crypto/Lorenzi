@@ -1633,7 +1633,7 @@ function renderGeradorCurriculoModal() {
 }
 
 async function novoLinkGeradorCurriculo() {
-  if (!confirm('Gerar um novo link vai invalidar o link atual (quem já tinha o link antigo não conseguirá mais acessar). Os dados já preenchidos são mantidos. Continuar?')) return;
+  if (!confirm('Gerar um novo link vai invalidar o link atual (quem já tinha o link antigo não conseguirá mais acessar) e apagar os dados já preenchidos, recomeçando do zero. Continuar?')) return;
   try {
     const cv = await api('POST', `/curriculo/${window._crAtual.id}/novo-link`);
     window._crAtual = cv;

@@ -1740,7 +1740,7 @@ app.post('/api/curriculo/:id/desativar', auth, (req, res) => {
   } catch(e) { erro(res, e); }
 });
 
-// Admin: invalida o link atual e gera um novo (mantém os dados já preenchidos)
+// Admin: invalida o link atual, gera um novo e reseta o currículo para começar do zero
 app.post('/api/curriculo/:id/novo-link', auth, (req, res) => {
   try {
     const cv = req.db.gerarNovoLinkCurriculo(req.params.id);
