@@ -420,8 +420,8 @@ app.get('/api/pacientes/:id/agendamentos', auth, (req, res) =>
 
 // ── AGENDAMENTOS ─────────────────────────────────────────────
 app.get('/api/agendamentos', auth, (req, res) => {
-  const { data, data_de, data_ate, paciente_id, status } = req.query;
-  res.json(req.db.getAgendamentos({ data, data_de, data_ate, paciente_id, status }));
+  const { data, data_de, data_ate, paciente_id, titulo, status } = req.query;
+  res.json(req.db.getAgendamentos({ data, data_de, data_ate, paciente_id, titulo, status }));
 });
 
 app.get('/api/agendamentos/:id', auth, (req, res) => {

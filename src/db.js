@@ -430,6 +430,7 @@ const getAgendamentos = (filtros = {}) => {
   if (filtros.data_de)    { sql += ' AND a.data >= ?';      params.push(filtros.data_de); }
   if (filtros.data_ate)   { sql += ' AND a.data <= ?';      params.push(filtros.data_ate); }
   if (filtros.paciente_id){ sql += ' AND a.paciente_id = ?';params.push(filtros.paciente_id); }
+  if (filtros.titulo)     { sql += ' AND a.titulo = ?';     params.push(filtros.titulo); }
   if (filtros.status)     { sql += ' AND a.status = ?';     params.push(filtros.status); }
   sql += ' ORDER BY a.data, a.hora';
   return db.prepare(sql).all(...params);

@@ -1025,10 +1025,54 @@ async function gerarZoom(id) {
   }
 }
 
+let _delRecorrenciaIds = [];
+
 async function deleteAgendamentoItem(id) {
-  if (!confirm('Remover este agendamento?')) return;
+  const ag = await api('GET', `/agendamentos/${id}`);
+  if (!ag?.id) return;
+
+  let futuros = [];
+  if (ag.paciente_id)      futuros = await api('GET', `/agendamentos?paciente_id=${ag.paciente_id}&data_de=${HOJE()}`);
+  else if (ag.titulo)      futuros = await api('GET', `/agendamentos?titulo=${encodeURIComponent(ag.titulo)}&data_de=${HOJE()}`);
+
+  const irmaos = futuros.filter(a =>
+    a.id !== ag.id && a.hora === ag.hora && a.tipo === ag.tipo &&
+    a.duracao === ag.duracao && ['agendado','confirmado'].includes(a.status)
+  );
+
+  if (!irmaos.length) {
+    if (!confirm('Remover este agendamento?')) return;
+    await api('DELETE', `/agendamentos/${id}`);
+    toast('Agendamento removido');
+    refreshAll();
+    return;
+  }
+
+  _delRecorrenciaIds = irmaos.map(a => a.id);
+  const nomeItem = ag.titulo || ag.paciente_nome || 'Este agendamento';
+  openModal('Excluir Agendamento Recorrente', `
+    <p style="margin-bottom:16px;color:var(--text-mid)">
+      <strong>${nomeItem}</strong> faz parte de uma recorrência. O que você deseja excluir?
+    </p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button type="button" class="btn btn-outline" onclick="_excluirSomenteEstaData(${id})">Somente esta data (${fmtData(ag.data)})</button>
+      <button type="button" class="btn btn-danger" onclick="_excluirTodaRecorrencia(${id})">Toda a recorrência (${irmaos.length + 1} datas)</button>
+    </div>
+  `, null);
+}
+
+async function _excluirSomenteEstaData(id) {
   await api('DELETE', `/agendamentos/${id}`);
+  closeModal();
   toast('Agendamento removido');
+  refreshAll();
+}
+
+async function _excluirTodaRecorrencia(id) {
+  const ids = [id, ..._delRecorrenciaIds];
+  await Promise.all(ids.map(i => api('DELETE', `/agendamentos/${i}`)));
+  closeModal();
+  toast(`${ids.length} agendamentos removidos`);
   refreshAll();
 }
 
