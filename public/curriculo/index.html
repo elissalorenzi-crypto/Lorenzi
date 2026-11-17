@@ -262,6 +262,7 @@ function renderForm() {
     <div class="actions">
       <button class="btn-outline" onclick="prever()">👁️ Pré-visualizar</button>
       <button class="btn-outline" onclick="baixarWord()">📝 Baixar Word</button>
+      <button class="btn-outline" onclick="gerarGoogleDocs()">📑 Gerar no Google Docs</button>
       <button class="btn-primary" onclick="baixarPdf()">📄 Baixar PDF</button>
     </div>
 
@@ -269,6 +270,7 @@ function renderForm() {
       <span class="actions-en-label">🌐 English version</span>
       <button class="btn-outline btn-sm" onclick="preverIngles(this)">👁️ Preview</button>
       <button class="btn-outline btn-sm" onclick="baixarWordIngles(this)">📝 Word</button>
+      <button class="btn-outline btn-sm" onclick="gerarGoogleDocsIngles(this)">📑 Google Docs</button>
       <button class="btn-outline btn-sm" onclick="baixarPdfIngles(this)">📄 PDF</button>
     </div>
   `;
@@ -785,6 +787,14 @@ async function baixarWord(idioma, dadosOverride) {
   await marcarConcluido();
 }
 
+// Baixa o arquivo Word e abre o Google Drive em outra aba — basta arrastar o
+// arquivo baixado para dentro do Drive, que ele é convertido em Google Docs.
+async function gerarGoogleDocs(idioma, dadosOverride) {
+  alert('Vamos baixar o arquivo do seu currículo e abrir o Google Drive em outra aba.\n\nDepois, arraste o arquivo baixado para dentro do Google Drive — ele abre automaticamente como um Google Docs editável.');
+  await baixarWord(idioma, dadosOverride);
+  window.open('https://drive.google.com/drive/my-drive', '_blank');
+}
+
 // ── VERSÃO EM INGLÊS ──────────────────────────────────────────────
 // Traduz o currículo inteiro (via IA) sob demanda — não altera os dados
 // reais em português salvos no formulário, é só para gerar o arquivo.
@@ -836,6 +846,15 @@ async function baixarWordIngles(btn) {
   try {
     const dadosEn = await obterDadosIngles(btn);
     await baixarWord('en', dadosEn);
+  } catch(e) {
+    alert('Erro ao gerar versão em inglês: ' + e.message);
+  }
+}
+
+async function gerarGoogleDocsIngles(btn) {
+  try {
+    const dadosEn = await obterDadosIngles(btn);
+    await gerarGoogleDocs('en', dadosEn);
   } catch(e) {
     alert('Erro ao gerar versão em inglês: ' + e.message);
   }
