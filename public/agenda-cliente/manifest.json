@@ -6,8 +6,8 @@
   "scope": "/agenda-cliente/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#FBF3F9",
-  "theme_color": "#C4956A",
+  "background_color": "#FFFFFF",
+  "theme_color": "#8A7F70",
   "icons": [
     {
       "src": "/icons/icon.svg",
