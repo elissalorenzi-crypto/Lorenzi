@@ -584,8 +584,8 @@ async function melhorarResumo(btn) {
 
 // ── PRÉ-VISUALIZAÇÃO E PDF ───────────────────────────────────────
 const LABELS = {
-  pt: { objetivo:'Objetivo', resumo:'Resumo Profissional', formacao:'Formação Acadêmica', experiencia:'Experiências', cursos:'Cursos Extracurriculares', competencias:'Competências', idiomas:'Idiomas', nomeNaoInformado:'Nome não informado', atual:'Atual' },
-  en: { objetivo:'Objective', resumo:'Professional Summary', formacao:'Education', experiencia:'Professional Experience', cursos:'Extracurricular Activities', competencias:'Skills', idiomas:'Languages', nomeNaoInformado:'Name not provided', atual:'Present' }
+  pt: { objetivo:'Objetivo', resumo:'Resumo Profissional', formacao:'Formação Acadêmica', experiencia:'Experiências', experienciaVoluntaria:'Experiência Voluntária', cursos:'Cursos Extracurriculares', competencias:'Competências', idiomas:'Idiomas', nomeNaoInformado:'Nome não informado', atual:'Atual' },
+  en: { objetivo:'Objective', resumo:'Professional Summary', formacao:'Education', experiencia:'Professional Experience', experienciaVoluntaria:'Volunteer Experience', cursos:'Extracurricular Activities', competencias:'Skills', idiomas:'Languages', nomeNaoInformado:'Name not provided', atual:'Present' }
 };
 
 function periodoTexto(inicio, fim, atual, atualLabel) {
@@ -619,6 +619,37 @@ function ordenarExperienciasPorData(exps) {
   });
 }
 
+function _normalizarTexto(s) {
+  return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+
+// Identifica trabalho voluntário pelo texto do cargo/descrição, para separar
+// em uma seção própria ("Experiência Voluntária") fora das experiências gerais.
+function _eExperienciaVoluntaria(e) {
+  return _normalizarTexto(e.cargo).includes('voluntari') || _normalizarTexto(e.descricao).includes('voluntari');
+}
+
+// Markup de um item de experiência (usado tanto na seção de Experiências quanto
+// na de Experiência Voluntária).
+function renderItemExperiencia(e, executivo, L) {
+  const linhas = (e.descricao || '').split('\n').map(s => s.trim()).filter(Boolean);
+  const descricaoHtml = executivo
+    ? (linhas.length ? `<ul>${linhas.map(l => `<li>${esc(l)}</li>`).join('')}</ul>` : '')
+    : (e.descricao ? `<p>${esc(e.descricao).replace(/\n/g,'<br>')}</p>` : '');
+  // Empresa em destaque primeiro, cargo em seguida (se ambos existirem)
+  const principal = e.empresa || e.cargo || '';
+  const secundario = (e.empresa && e.cargo) ? e.cargo : '';
+  return `
+  <div class="item">
+    <div class="item-head">
+      <span class="item-titulo">${esc(principal)}</span>${secundario ? ` <span class="item-sub">· ${esc(secundario)}</span>` : ''}
+      ${periodoTexto(e.inicio, e.fim, e.atual, L.atual) ? `<span class="item-periodo">(${esc(periodoTexto(e.inicio, e.fim, e.atual, L.atual))})</span>` : ''}
+    </div>
+    ${e.local ? `<div class="item-sub">${esc(e.local)}</div>` : ''}
+    ${descricaoHtml}
+  </div>`;
+}
+
 // idioma: 'pt' (padrão) ou 'en'. dadosOverride: usado para gerar a versão em inglês
 // (já traduzida) sem sobrescrever os dados reais (em português) do formulário.
 function montarHtmlCurriculo(comImpressao, idioma, dadosOverride) {
@@ -628,7 +659,9 @@ function montarHtmlCurriculo(comImpressao, idioma, dadosOverride) {
   const c = dados.contato || {};
   const cor = MODELO.cor || '#7a5a48';
   const estilo = MODELO.estilo || 'moderno';
-  const exps = ordenarExperienciasPorData((dados.experiencias || []).filter(e => e.cargo || e.empresa || e.descricao));
+  const expsTodas = (dados.experiencias || []).filter(e => e.cargo || e.empresa || e.descricao);
+  const exps = ordenarExperienciasPorData(expsTodas.filter(e => !_eExperienciaVoluntaria(e)));
+  const expsVoluntarias = ordenarExperienciasPorData(expsTodas.filter(_eExperienciaVoluntaria));
   const forms = (dados.formacao || []).filter(f => f.curso || f.instituicao);
   const cursosExtra = (dados.cursos || []).filter(x => x.nome || x.instituicao);
   const comps = dados.competencias || [];
@@ -695,24 +728,11 @@ function montarHtmlCurriculo(comImpressao, idioma, dadosOverride) {
   </section>` : ''}
 
   ${exps.length ? `<section><h2>${L.experiencia}</h2>
-    ${exps.map(e => {
-      const linhas = (e.descricao || '').split('\n').map(s => s.trim()).filter(Boolean);
-      const descricaoHtml = executivo
-        ? (linhas.length ? `<ul>${linhas.map(l => `<li>${esc(l)}</li>`).join('')}</ul>` : '')
-        : (e.descricao ? `<p>${esc(e.descricao).replace(/\n/g,'<br>')}</p>` : '');
-      // Empresa em destaque primeiro, cargo em seguida (se ambos existirem)
-      const principal = e.empresa || e.cargo || '';
-      const secundario = (e.empresa && e.cargo) ? e.cargo : '';
-      return `
-      <div class="item">
-        <div class="item-head">
-          <span class="item-titulo">${esc(principal)}</span>${secundario ? ` <span class="item-sub">· ${esc(secundario)}</span>` : ''}
-          ${periodoTexto(e.inicio, e.fim, e.atual, L.atual) ? `<span class="item-periodo">(${esc(periodoTexto(e.inicio, e.fim, e.atual, L.atual))})</span>` : ''}
-        </div>
-        ${e.local ? `<div class="item-sub">${esc(e.local)}</div>` : ''}
-        ${descricaoHtml}
-      </div>`;
-    }).join('')}
+    ${exps.map(e => renderItemExperiencia(e, executivo, L)).join('')}
+  </section>` : ''}
+
+  ${expsVoluntarias.length ? `<section><h2>${L.experienciaVoluntaria}</h2>
+    ${expsVoluntarias.map(e => renderItemExperiencia(e, executivo, L)).join('')}
   </section>` : ''}
 
   ${cursosExtra.length ? `<section><h2>${L.cursos}</h2>
