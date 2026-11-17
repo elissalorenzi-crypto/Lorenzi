@@ -584,7 +584,7 @@ async function melhorarResumo(btn) {
 
 // ── PRÉ-VISUALIZAÇÃO E PDF ───────────────────────────────────────
 const LABELS = {
-  pt: { objetivo:'Objetivo', resumo:'Resumo Profissional', formacao:'Formação Acadêmica', experiencia:'Experiência Profissional', cursos:'Cursos Extracurriculares', competencias:'Competências', idiomas:'Idiomas', nomeNaoInformado:'Nome não informado', atual:'Atual' },
+  pt: { objetivo:'Objetivo', resumo:'Resumo Profissional', formacao:'Formação Acadêmica', experiencia:'Experiências', cursos:'Cursos Extracurriculares', competencias:'Competências', idiomas:'Idiomas', nomeNaoInformado:'Nome não informado', atual:'Atual' },
   en: { objetivo:'Objective', resumo:'Professional Summary', formacao:'Education', experiencia:'Professional Experience', cursos:'Extracurricular Activities', competencias:'Skills', idiomas:'Languages', nomeNaoInformado:'Name not provided', atual:'Present' }
 };
 
@@ -700,10 +700,13 @@ function montarHtmlCurriculo(comImpressao, idioma, dadosOverride) {
       const descricaoHtml = executivo
         ? (linhas.length ? `<ul>${linhas.map(l => `<li>${esc(l)}</li>`).join('')}</ul>` : '')
         : (e.descricao ? `<p>${esc(e.descricao).replace(/\n/g,'<br>')}</p>` : '');
+      // Empresa em destaque primeiro, cargo em seguida (se ambos existirem)
+      const principal = e.empresa || e.cargo || '';
+      const secundario = (e.empresa && e.cargo) ? e.cargo : '';
       return `
       <div class="item">
         <div class="item-head">
-          <span class="item-titulo">${esc(e.cargo || '')}</span>${e.empresa ? ` <span class="item-sub">· ${esc(e.empresa)}</span>` : ''}
+          <span class="item-titulo">${esc(principal)}</span>${secundario ? ` <span class="item-sub">· ${esc(secundario)}</span>` : ''}
           ${periodoTexto(e.inicio, e.fim, e.atual, L.atual) ? `<span class="item-periodo">(${esc(periodoTexto(e.inicio, e.fim, e.atual, L.atual))})</span>` : ''}
         </div>
         ${e.local ? `<div class="item-sub">${esc(e.local)}</div>` : ''}
