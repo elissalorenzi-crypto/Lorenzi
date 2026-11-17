@@ -590,6 +590,33 @@ function periodoTexto(inicio, fim, atual, atualLabel) {
   return [inicio, atual ? (atualLabel || 'Atual') : fim].filter(Boolean).join(' — ');
 }
 
+const MESES_PT = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+
+// Extrai uma chave numérica [ano, mes] aproximada de uma data em texto livre
+// (ex: "jan de 2020", "2 semestre 2025", "2025/2026", "2020"), para permitir ordenação
+// cronológica mesmo com formatos de data inconsistentes digitados pela pessoa.
+function _chaveDataTexto(txt) {
+  const s = (txt || '').toLowerCase();
+  const anos = s.match(/\d{4}/g);
+  const ano = anos ? parseInt(anos[anos.length - 1], 10) : 0;
+  let mes = 0;
+  const mIdx = MESES_PT.findIndex(m => s.includes(m));
+  if (mIdx >= 0) mes = mIdx + 1;
+  else if (s.includes('1') && s.includes('semestre')) mes = 6;
+  else if (s.includes('2') && s.includes('semestre')) mes = 12;
+  return ano * 12 + mes;
+}
+
+// Ordena experiências da mais atual/recente para a mais antiga.
+function ordenarExperienciasPorData(exps) {
+  return [...exps].sort((a, b) => {
+    if (!!a.atual !== !!b.atual) return a.atual ? -1 : 1;
+    const chaveA = Math.max(_chaveDataTexto(a.fim), _chaveDataTexto(a.inicio));
+    const chaveB = Math.max(_chaveDataTexto(b.fim), _chaveDataTexto(b.inicio));
+    return chaveB - chaveA;
+  });
+}
+
 // idioma: 'pt' (padrão) ou 'en'. dadosOverride: usado para gerar a versão em inglês
 // (já traduzida) sem sobrescrever os dados reais (em português) do formulário.
 function montarHtmlCurriculo(comImpressao, idioma, dadosOverride) {
@@ -599,7 +626,7 @@ function montarHtmlCurriculo(comImpressao, idioma, dadosOverride) {
   const c = dados.contato || {};
   const cor = MODELO.cor || '#7a5a48';
   const estilo = MODELO.estilo || 'moderno';
-  const exps = (dados.experiencias || []).filter(e => e.cargo || e.empresa || e.descricao);
+  const exps = ordenarExperienciasPorData((dados.experiencias || []).filter(e => e.cargo || e.empresa || e.descricao));
   const forms = (dados.formacao || []).filter(f => f.curso || f.instituicao);
   const cursosExtra = (dados.cursos || []).filter(x => x.nome || x.instituicao);
   const comps = dados.competencias || [];
@@ -623,10 +650,10 @@ function montarHtmlCurriculo(comImpressao, idioma, dadosOverride) {
   h2{font-size:12.5pt;color:${corTexto};margin:20px 0 8px;padding-bottom:4px;border-bottom:1px solid ${executivo ? '#000' : '#e0d5cb'};text-transform:${(classico || executivo) ? 'uppercase' : 'none'};letter-spacing:${(classico || executivo) ? '.5px' : '0'}}
   .objetivo{font-size:10.5pt}
   .item{margin-bottom:12px}
-  .item-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px}
+  .item-head{display:block}
   .item-titulo{font-weight:700;font-size:11pt}
   .item-sub{font-size:10pt;color:${executivo ? '#000' : '#666'}}
-  .item-periodo{font-size:9.5pt;color:${executivo ? '#000' : '#888'};white-space:nowrap}
+  .item-periodo{font-size:9.5pt;color:${executivo ? '#000' : '#888'};white-space:nowrap;margin-left:6px}
   .item p{margin-top:4px;text-align:justify;font-size:10.5pt}
   .item ul{margin:4px 0 0 16px}
   .item li{font-size:10.5pt;margin-bottom:2px}
@@ -658,8 +685,8 @@ function montarHtmlCurriculo(comImpressao, idioma, dadosOverride) {
     ${forms.map(f => `
       <div class="item">
         <div class="item-head">
-          <div><span class="item-titulo">${esc(f.curso || '')}</span>${f.instituicao ? ` <span class="item-sub">· ${esc(f.instituicao)}</span>` : ''}</div>
-          <span class="item-periodo">${esc(periodoTexto(f.inicio, f.fim, false, L.atual))}</span>
+          <span class="item-titulo">${esc(f.curso || '')}</span>${f.instituicao ? ` <span class="item-sub">· ${esc(f.instituicao)}</span>` : ''}
+          ${periodoTexto(f.inicio, f.fim, false, L.atual) ? `<span class="item-periodo">(${esc(periodoTexto(f.inicio, f.fim, false, L.atual))})</span>` : ''}
         </div>
       </div>
     `).join('')}
@@ -674,8 +701,8 @@ function montarHtmlCurriculo(comImpressao, idioma, dadosOverride) {
       return `
       <div class="item">
         <div class="item-head">
-          <div><span class="item-titulo">${esc(e.cargo || '')}</span>${e.empresa ? ` <span class="item-sub">· ${esc(e.empresa)}</span>` : ''}</div>
-          <span class="item-periodo">${esc(periodoTexto(e.inicio, e.fim, e.atual, L.atual))}</span>
+          <span class="item-titulo">${esc(e.cargo || '')}</span>${e.empresa ? ` <span class="item-sub">· ${esc(e.empresa)}</span>` : ''}
+          ${periodoTexto(e.inicio, e.fim, e.atual, L.atual) ? `<span class="item-periodo">(${esc(periodoTexto(e.inicio, e.fim, e.atual, L.atual))})</span>` : ''}
         </div>
         ${e.local ? `<div class="item-sub">${esc(e.local)}</div>` : ''}
         ${descricaoHtml}
@@ -687,8 +714,8 @@ function montarHtmlCurriculo(comImpressao, idioma, dadosOverride) {
     ${cursosExtra.map(x => `
       <div class="item">
         <div class="item-head">
-          <div><span class="item-titulo">${esc(x.nome || '')}</span>${x.instituicao ? ` <span class="item-sub">· ${esc(x.instituicao)}</span>` : ''}</div>
-          ${x.periodo ? `<span class="item-periodo">${esc(x.periodo)}</span>` : ''}
+          <span class="item-titulo">${esc(x.nome || '')}</span>${x.instituicao ? ` <span class="item-sub">· ${esc(x.instituicao)}</span>` : ''}
+          ${x.periodo ? `<span class="item-periodo">(${esc(x.periodo)})</span>` : ''}
         </div>
       </div>
     `).join('')}
