@@ -1776,12 +1776,22 @@ app.get('/api/curriculo/info/:token', (req, res) => {
 app.post('/api/curriculo/importar-linkedin/:token', uploadCurriculoPdf.single('arquivo'), async (req, res) => {
   const cv = req.db.getCurriculoPorToken(req.params.token);
   if (!cv) return res.status(404).json({ error: 'Link inválido ou expirado' });
-  if (!req.file) return res.status(400).json({ error: 'Nenhum arquivo enviado' });
+  const textoAdicional = (req.body.texto_adicional || '').trim();
+  if (!req.file && !textoAdicional) return res.status(400).json({ error: 'Anexe um PDF ou escreva alguma informação' });
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return res.status(503).json({ error: 'ANTHROPIC_API_KEY não configurada' });
 
-  const prompt = `Em anexo está um PDF exportado do perfil do LinkedIn de uma pessoa. Leia todo o conteúdo e extraia as informações do currículo profissional dela.
+  let introducao;
+  if (req.file && textoAdicional) {
+    introducao = 'Você recebeu duas fontes sobre o currículo profissional de uma pessoa: (1) um PDF exportado do perfil do LinkedIn dela, em anexo, e (2) um texto livre com informações adicionais escritas por ela mesma, incluído no final deste prompt. Combine as duas fontes — sem duplicar o que aparecer nas duas — e extraia os dados do currículo completo.';
+  } else if (req.file) {
+    introducao = 'Em anexo está um PDF exportado do perfil do LinkedIn de uma pessoa. Leia todo o conteúdo e extraia as informações do currículo profissional dela.';
+  } else {
+    introducao = 'A pessoa forneceu um texto livre com informações sobre seu currículo profissional (sem PDF do LinkedIn), incluído no final deste prompt. Leia o texto e extraia as informações do currículo profissional dela.';
+  }
+
+  const prompt = `${introducao}
 
 Retorne APENAS um JSON (sem markdown, sem explicações) com exatamente estes campos:
 {
@@ -1801,23 +1811,22 @@ Retorne APENAS um JSON (sem markdown, sem explicações) com exatamente estes ca
 }
 
 Regras importantes:
-- Extraia SOMENTE o que está explicitamente escrito no documento. NUNCA invente, deduza ou complete informações que não constem no PDF.
-- Se um campo não estiver presente no documento, deixe como string vazia "" (ou array vazio [], conforme o caso).
-- Datas no formato como aparecem no documento (ex: "jan de 2020" ou "2020").
-- "atual": true somente se o documento indicar claramente que o cargo é o atual (ex: "o momento", "presente", sem data de término).`;
+- Extraia SOMENTE o que está explicitamente escrito nas fontes fornecidas (PDF e/ou texto adicional). NUNCA invente, deduza ou complete informações que não constem em nenhuma delas.
+- Se as duas fontes mencionarem a mesma informação, combine sem duplicar; se houver conflito, prefira a mais completa/detalhada.
+- Se um campo não estiver presente em nenhuma fonte, deixe como string vazia "" (ou array vazio [], conforme o caso).
+- Datas no formato como aparecem na fonte (ex: "jan de 2020" ou "2020").
+- "atual": true somente se alguma fonte indicar claramente que o cargo é o atual (ex: "o momento", "presente", sem data de término).`
+    + (textoAdicional ? `\n\nTexto adicional fornecido pela pessoa:\n"""\n${textoAdicional}\n"""` : '');
 
   try {
     const anthropic = new Anthropic({ apiKey });
+    const content = [];
+    if (req.file) content.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: req.file.buffer.toString('base64') } });
+    content.push({ type: 'text', text: prompt });
     const msg = await anthropic.messages.create({
       model: 'claude-opus-4-8',
       max_tokens: 4096,
-      messages: [{
-        role: 'user',
-        content: [
-          { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: req.file.buffer.toString('base64') } },
-          { type: 'text', text: prompt }
-        ]
-      }]
+      messages: [{ role: 'user', content }]
     });
     const bloco = msg.content?.find(b => b.type === 'text');
     const texto = bloco?.text || '{}';
@@ -1832,12 +1841,13 @@ Regras importantes:
     }
     const dadosMesclados = { ...cv.dados, ...limpo };
 
-    const dir = path.join(UPLOADS_ROOT, 'curriculos');
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    const filename = `linkedin_${Date.now()}_${Math.round(Math.random()*1e9)}.pdf`;
-    fs.writeFileSync(path.join(dir, filename), req.file.buffer);
-
-    req.db.salvarLinkedinArquivo(req.params.token, `/uploads/curriculos/${filename}`, req.file.originalname);
+    if (req.file) {
+      const dir = path.join(UPLOADS_ROOT, 'curriculos');
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      const filename = `linkedin_${Date.now()}_${Math.round(Math.random()*1e9)}.pdf`;
+      fs.writeFileSync(path.join(dir, filename), req.file.buffer);
+      req.db.salvarLinkedinArquivo(req.params.token, `/uploads/curriculos/${filename}`, req.file.originalname);
+    }
     const atualizado = req.db.salvarDadosCurriculo(req.params.token, dadosMesclados);
     res.json({ status: atualizado.status, dados: atualizado.dados });
   } catch(e) {

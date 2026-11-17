@@ -134,43 +134,62 @@ async function init() {
 }
 
 // ── TELA DE UPLOAD ────────────────────────────────────────────
+let _pdfSelecionado = null;
+
 function renderUpload() {
+  _pdfSelecionado = null;
   document.getElementById('app').innerHTML = `
     <div class="upload-screen">
       <div class="upload-icon">🎓</div>
       <h1>Vamos montar seu currículo!</h1>
-      <p>${NOME_CLIENTE ? 'Olá, ' + esc(NOME_CLIENTE.split(' ')[0]) + '! ' : ''}Exporte seu perfil do LinkedIn em PDF (no seu perfil do LinkedIn → botão "Mais" → "Salvar como PDF") e envie aqui. A gente lê tudo automaticamente pra você não precisar digitar do zero.</p>
-      <label class="btn-primary upload-label">
-        📤 Enviar PDF do LinkedIn
-        <input type="file" id="upload-input" accept="application/pdf,.pdf" style="display:none" onchange="enviarLinkedinPdf()">
-      </label>
+      <p>${NOME_CLIENTE ? 'Olá, ' + esc(NOME_CLIENTE.split(' ')[0]) + '! ' : ''}Exporte seu perfil do LinkedIn em PDF (no seu perfil do LinkedIn → botão "Mais" → "Salvar como PDF") e anexe aqui, e/ou escreva informações adicionais no campo abaixo. A IA junta tudo, organiza e monta seu currículo — você não precisa digitar do zero.</p>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;align-items:center">
+        <label class="btn-primary upload-label">
+          📎 Anexar PDF do LinkedIn
+          <input type="file" id="upload-input" accept="application/pdf,.pdf" style="display:none" onchange="selecionarPdf()">
+        </label>
+      </div>
+      <div id="upload-nome-arquivo" style="margin-top:8px;font-size:12.5px;color:var(--muted)"></div>
+      <div style="text-align:left;max-width:460px;margin:18px auto 0">
+        <label style="font-size:13px;font-weight:600;color:var(--plum);display:block;margin-bottom:6px">✏️ Inserir informações adicionais (opcional)</label>
+        <textarea id="upload-texto" rows="5" placeholder="Cole ou digite aqui experiências, formação, cursos, competências etc. que você quer incluir junto com o PDF (ou em vez dele)." style="width:100%;border:1px solid var(--border);border-radius:10px;padding:10px;font-size:13.5px;font-family:inherit;resize:vertical;box-sizing:border-box"></textarea>
+      </div>
+      <button class="btn-primary" style="margin-top:16px" onclick="gerarCurriculoComIA()">✨ Organizar e Gerar Currículo</button>
       <div id="upload-status"></div>
       <div style="margin-top:10px"><button class="btn-link" onclick="dadosAtual={};renderForm()">Prefiro preencher manualmente</button></div>
     </div>
   `;
 }
 
-async function enviarLinkedinPdf() {
+function selecionarPdf() {
   const input = document.getElementById('upload-input');
-  const file = input.files?.[0];
-  if (!file) return;
+  _pdfSelecionado = input.files?.[0] || null;
+  document.getElementById('upload-nome-arquivo').textContent = _pdfSelecionado ? '📄 ' + _pdfSelecionado.name : '';
+}
+
+async function gerarCurriculoComIA() {
+  const texto = document.getElementById('upload-texto').value.trim();
   const statusEl = document.getElementById('upload-status');
+  if (!_pdfSelecionado && !texto) {
+    statusEl.className = 'erro';
+    statusEl.textContent = '⚠️ Anexe um PDF ou escreva alguma informação.';
+    return;
+  }
   statusEl.className = 'muted';
-  statusEl.textContent = '⏳ Lendo seu PDF com IA, aguarde alguns segundos...';
+  statusEl.textContent = '⏳ Organizando suas informações com IA, aguarde alguns segundos...';
   try {
     const fd = new FormData();
-    fd.append('arquivo', file);
+    if (_pdfSelecionado) fd.append('arquivo', _pdfSelecionado);
+    if (texto) fd.append('texto_adicional', texto);
     const r = await fetch('/api/curriculo/importar-linkedin/' + TOKEN, { method: 'POST', body: fd });
     const data = await r.json();
-    if (!r.ok) throw new Error(data.error || 'Erro ao processar o PDF');
+    if (!r.ok) throw new Error(data.error || 'Erro ao processar as informações');
     dadosAtual = data.dados || {};
     STATUS = data.status;
     renderForm();
   } catch(e) {
     statusEl.className = 'erro';
     statusEl.textContent = '⚠️ ' + e.message;
-  } finally {
-    input.value = '';
   }
 }
 
